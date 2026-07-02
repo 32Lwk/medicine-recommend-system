@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "date": "2026-07-02",
+    "report_suffix": "p4a-metrics-test",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-07-02T03:06:40.723367+00:00",
+    "elapsed_sec": 6.0,
+    "scenario_count": 1,
+    "total_turns": 1,
+    "auto_pass": 1,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "session-ops-01",
+      "session_id": "1782961600751297348948",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

@@ -1,5 +1,9 @@
 """
 LLM 機能フラグ（環境変数）
+
+開発ランタイム（APP_ENV=development 等）では Chat Pipeline v2 および
+UX品質改善 Phase 2–4b の大半が env 未設定でも自動 ON。
+本番は env 明示 + ALLOWLIST カナリア。pytest 中は未設定時 OFF。
 """
 from __future__ import annotations
 
@@ -75,6 +79,30 @@ def _v2_subflag_enabled(name: str) -> bool:
     return val.strip().lower() in ("1", "true", "yes", "on")
 
 
+def _ux_rollout_flag(name: str) -> bool:
+    """
+    UX品質改善 Phase 2–4b の機能フラグ。
+
+    - 明示 env → その値
+    - 未設定 + 開発ランタイム（APP_ENV=development 等）→ True（GCP dev / ローカル一括 ON）
+    - 未設定 + 本番 → False（カナリアは env で明示 ON）
+    - pytest 実行中は未設定時 False（既存テストの OFF 前提を維持）
+    """
+    val = os.getenv(name)
+    if val is not None:
+        return val.strip().lower() in ("1", "true", "yes", "on")
+    if _is_pytest_running():
+        return False
+    from config.app_config import is_development_runtime
+
+    return is_development_runtime()
+
+
+def _primary_master_enabled() -> bool:
+    """PRIMARY マスター。開発ランタイムでは未設定時 ON、本番は未設定時 OFF。"""
+    return _ux_rollout_flag("CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY")
+
+
 def _parse_sid_list(env_name: str) -> frozenset[str]:
     raw = os.getenv(env_name) or ""
     return frozenset(s.strip() for s in raw.split(",") if s.strip())
@@ -131,6 +159,41 @@ def is_intent_router_llm_enabled(sid: str | None = None) -> bool:
     return _v2_subflag_enabled("CHAT_PIPELINE_V2_INTENT_ROUTER_LLM")
 
 
+def is_intent_router_primary_enabled(sid: str | None = None) -> bool:
+    """
+    Phase 4b-2 — IntentRouter LLM を triage map（legacy）より優先する主スイッチ。
+    開発ランタイムでは未設定時 ON（全セッション）。本番は未設定時 OFF。
+    production で ON 時は PRIMARY_ALLOWLIST / PRIMARY_DENYLIST を適用。
+    """
+    if not is_intent_router_dispatch_enabled(sid):
+        return False
+    if not _primary_master_enabled():
+        return False
+    if not sid:
+        return True
+    deny = _parse_sid_list("CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY_DENYLIST")
+    if sid in deny:
+        return False
+    from config.app_config import is_development_runtime
+
+    if is_development_runtime():
+        return True
+    allow = _parse_sid_list("CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY_ALLOWLIST")
+    if allow:
+        return sid in allow
+    return False
+
+
+def is_legacy_fallback_trim_enabled(sid: str | None = None) -> bool:
+    """
+    Phase 4b-5a — PRIMARY ON 時に legacy category route / Other fallback の実効範囲を縮小。
+    開発ランタイムでは未設定時 ON。PRIMARY OFF または dispatch 無効時は常に False。
+    """
+    if not is_intent_router_primary_enabled(sid):
+        return False
+    return _ux_rollout_flag("CHAT_PIPELINE_V2_LEGACY_FALLBACK_TRIM")
+
+
 # --- Phase 1 レイテンシ最適化フラグ（既定 OFF = post-p0 と同一挙動） ---
 # 独立フラグにして A/B（OFF=baseline / ON=after）を同一ビルドで計測可能にする。
 
@@ -185,7 +248,7 @@ def is_score_parallel_enabled() -> bool:
     return _flag("LATENCY_SCORE_PARALLEL", False)
 
 
-# --- Phase 2 安全ガードフラグ（既定 OFF = 現状維持） ---
+# --- Phase 2 安全ガードフラグ（本番は env 明示 ON、dev は未設定で ON） ---
 
 
 def is_violence_context_guard_enabled() -> bool:
@@ -194,7 +257,7 @@ def is_violence_context_guard_enabled() -> bool:
     ON 時、曖昧語単体では緊急検知せず、強い暴力シグナルの共起を要求する
     （「友人と喧嘩しました」等の心理相談文脈を誤って緊急扱いしないため）。
     """
-    return _flag("SAFETY_VIOLENCE_CONTEXT_GUARD", False)
+    return _ux_rollout_flag("SAFETY_VIOLENCE_CONTEXT_GUARD")
 
 
 def is_emergency_channel_split_enabled() -> bool:
@@ -204,7 +267,7 @@ def is_emergency_channel_split_enabled() -> bool:
     公的窓口（119/110/受診）中心の文言に置き換える。店頭キオスク
     （`is_kiosk_deployment()`）ではスタッフ文言を維持する。
     """
-    return _flag("SAFETY_EMERGENCY_CHANNEL_SPLIT", False)
+    return _ux_rollout_flag("SAFETY_EMERGENCY_CHANNEL_SPLIT")
 
 
 def is_kiosk_deployment() -> bool:
@@ -223,7 +286,7 @@ def is_counseling_context_maintain_enabled() -> bool:
     フォローアップ回答（「1ヶ月ほどです」「残業が続いています」等）ではカウンセリングを
     終了しない（「1ヶ月ほどです」等が no_recommendation 受診テンプレへ落ちる回帰の是正）。
     """
-    return _flag("UX_COUNSELING_CONTEXT_MAINTAIN", False)
+    return _ux_rollout_flag("UX_COUNSELING_CONTEXT_MAINTAIN")
 
 
 def is_counseling_tone_variety_enabled() -> bool:
@@ -232,7 +295,7 @@ def is_counseling_tone_variety_enabled() -> bool:
     ON 時、プロンプトの定型句リテラル例示を抽象化し、直近使用済みの定型句を
     避けるよう LLM に指示する。エラーフォールバックの定型句もローテーションする。
     """
-    return _flag("UX_COUNSELING_TONE_VARIETY", False)
+    return _ux_rollout_flag("UX_COUNSELING_TONE_VARIETY")
 
 
 def is_concierge_intent_routing_enabled() -> bool:
@@ -243,7 +306,7 @@ def is_concierge_intent_routing_enabled() -> bool:
     技術詳細コンテンツ（concierge_knowledge.ja.json の technical_details）は本フラグ ON かつ
     development ランタイムの場合のみ参照される（production は既存の抽象的な内容のまま）。
     """
-    return _flag("ROUTING_CONCIERGE_INTENT", False)
+    return _ux_rollout_flag("ROUTING_CONCIERGE_INTENT")
 
 
 def is_concierge_followup_routing_enabled() -> bool:
@@ -253,7 +316,7 @@ def is_concierge_followup_routing_enabled() -> bool:
     「具体例を教えて」「SSEについて」「Cloud Runは？」等の短いトピック継続を
     gate / orchestrator で Concierge に優先ルーティングする（症状文脈より優先）。
     """
-    return _flag("ROUTING_CONCIERGE_FOLLOWUP", False)
+    return _ux_rollout_flag("ROUTING_CONCIERGE_FOLLOWUP")
 
 
 def is_store_procurement_routing_enabled() -> bool:
@@ -263,7 +326,7 @@ def is_store_procurement_routing_enabled() -> bool:
     OTC/市販薬文脈が明示されていれば "otc_store" をデフォルトとする
     （店舗案内へ正しく振り分け、`counseling_unknown_request`/Physical への誤流入を防ぐ）。
     """
-    return _flag("ROUTING_STORE_PROCUREMENT", False)
+    return _ux_rollout_flag("ROUTING_STORE_PROCUREMENT")
 
 
 def is_low_risk_headache_reco_enabled() -> bool:
@@ -272,7 +335,7 @@ def is_low_risk_headache_reco_enabled() -> bool:
     ON 時、年齢未入力セッションでも主要解熱鎮痛薬を `_filter_medicines_when_age_unknown`
     で全除外しない（小児文脈・赤旗頭痛は除外）。めまい等 CAUTION_DEFER 症状は変更しない。
     """
-    return _flag("RECO_LOW_RISK_HEADACHE", False)
+    return _ux_rollout_flag("RECO_LOW_RISK_HEADACHE")
 
 
 def is_ux_correction_delete_cancel_enabled() -> bool:
@@ -282,7 +345,7 @@ def is_ux_correction_delete_cancel_enabled() -> bool:
     または直前 bot の memory_delete_confirm から削除確認待ちを復元し、
     counseling_unknown_request へ流さず memory_delete_cancelled を返す。
     """
-    return _flag("UX_CORRECTION_DELETE_CANCEL", False)
+    return _ux_rollout_flag("UX_CORRECTION_DELETE_CANCEL")
 
 
 def is_ux_session_ops_real_data_enabled() -> bool:
@@ -291,7 +354,7 @@ def is_ux_session_ops_real_data_enabled() -> bool:
     ON 時、ステータス / 記録項目一覧 / LLM要約 / 会話履歴参照を別 handler・別 kind で出し分ける。
     OFF 時は従来どおり status→統合ステータス、summarize→要約（履歴参照も要約経路）の使い回し。
     """
-    return _flag("UX_SESSION_OPS_REAL_DATA", False)
+    return _ux_rollout_flag("UX_SESSION_OPS_REAL_DATA")
 
 
 def is_ux_progressive_clarification_enabled() -> bool:
@@ -300,7 +363,7 @@ def is_ux_progressive_clarification_enabled() -> bool:
     ON 時、1回目は従来の確認質問、2回目は別の症状例・選択肢、3回目以降は既存の
     clarification ループ脱出（llm_unavailable short_circuit）と整合する。
     """
-    return _flag("UX_PROGRESSIVE_CLARIFICATION", False)
+    return _ux_rollout_flag("UX_PROGRESSIVE_CLARIFICATION")
 
 
 def is_ux_reco_dedup_enabled() -> bool:
@@ -309,4 +372,4 @@ def is_ux_reco_dedup_enabled() -> bool:
     ON 時、前ターンと同一の推奨薬リストは再推奨せず要約応答へ。
     「ありがとう」「これで終わり」等の終了意図では sage_reco を出さず締め応答へ。
     """
-    return _flag("UX_RECO_DEDUP", False)
+    return _ux_rollout_flag("UX_RECO_DEDUP")

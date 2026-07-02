@@ -15,6 +15,7 @@ def log_dialogue_route_shadow(
     triage_category: Optional[str] = None,
     triage_subcategory: Optional[str] = None,
     mismatch: bool = False,
+    mismatch_kind: Optional[str] = None,
     dialogue_flags: Optional[dict[str, bool]] = None,
 ) -> None:
     """dialogue_route_shadow を app.log + JSONL に記録。"""
@@ -31,5 +32,6 @@ def log_dialogue_route_shadow(
         triage_category=triage_category,
         triage_subcategory=triage_subcategory,
         mismatch=mismatch,
+        mismatch_kind=mismatch_kind,
         dialogue_flags=dialogue_flags,
     )

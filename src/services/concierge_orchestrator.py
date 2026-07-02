@@ -90,6 +90,25 @@ def enrich_other_concierge_intent(
         out.pop("concierge_intent_source", None)
         return out
 
+    from config.llm_flags import is_intent_router_primary_enabled
+
+    if out.get("_intent_router_dispatch") and is_intent_router_primary_enabled(session_id):
+        pre = out.get("concierge_intent")
+        if pre in _VALID_CONCIERGE_INTENTS:
+            logger.info(
+                "🛎️ ConciergeOrchestrator: PRIMARY locked, skip meta_triage intent=%s",
+                pre,
+            )
+            return out
+        if pre:
+            out["concierge_intent"] = _resolve_router_dispatched_concierge_intent(pre, text)
+            out["concierge_intent_source"] = "router_primary_resolve"
+            logger.info(
+                "🛎️ ConciergeOrchestrator: PRIMARY resolve without meta_triage intent=%s",
+                out["concierge_intent"],
+            )
+            return out
+
     sub = str((out or {}).get("subcategory") or "").lower()
     try:
         triage_conf = float((out or {}).get("confidence", 0))
@@ -135,6 +154,16 @@ def enrich_other_concierge_intent(
                 last_bot=last_bot,
                 triage_result=out,
             )
+
+        from src.services.concierge_intent import probe_meta_concierge_intent
+
+        probed_direct = probe_meta_concierge_intent(text)
+        if probed_direct and not _is_medicine_consultation(text):
+            out["concierge_intent"] = probed_direct
+            out["concierge_intent_source"] = "keyword_probe"
+            logger.info("🛎️ ConciergeOrchestrator: keyword_probe intent=%s", probed_direct)
+            return out
+
         lost = infer_lost_context_follow_up_intent(text)
         if lost:
             return _apply_follow_up_intent(
@@ -276,7 +305,8 @@ def resolve_intent_from_triage(
     from src.services.routing_context import evaluate_store_gate
 
     triage = triage_result or {}
-    if evaluate_store_gate(
+    router_dispatch = bool(triage.get("_intent_router_dispatch"))
+    if not router_dispatch and evaluate_store_gate(
         user_text,
         *(alt_texts or []),
         triage_result=triage,
@@ -286,6 +316,8 @@ def resolve_intent_from_triage(
 
     pre = triage.get("concierge_intent")
     if pre not in _VALID_CONCIERGE_INTENTS:
+        if router_dispatch and pre:
+            return _resolve_router_dispatched_concierge_intent(pre, user_text)
         return None
 
     if pre == "chitchat":
@@ -294,6 +326,37 @@ def resolve_intent_from_triage(
         if resolve_off_topic_turns(session, sid) >= 2:
             return "redirect"
     return pre  # type: ignore[return-value]
+
+
+def _resolve_router_dispatched_concierge_intent(
+    pre: str,
+    user_text: str,
+) -> ConciergeIntent:
+    """IntentRouter が Concierge を確定したが triage intent が未登録のときの解決。"""
+    from src.services.concierge_intent import (
+        classify_concierge_intent,
+        infer_structural_concierge_intent,
+        probe_meta_concierge_intent,
+    )
+
+    for resolver in (
+        classify_concierge_intent,
+        probe_meta_concierge_intent,
+        infer_structural_concierge_intent,
+    ):
+        hit = resolver(user_text)
+        if hit in _VALID_CONCIERGE_INTENTS:
+            return hit  # type: ignore[return-value]
+    if pre == "general_other":
+        logger.info(
+            "🛎️ ConciergeOrchestrator: router dispatch general_other → redirect fallback"
+        )
+        return "redirect"
+    logger.info(
+        "🛎️ ConciergeOrchestrator: router dispatch unknown intent=%s → redirect",
+        pre,
+    )
+    return "redirect"
 
 
 def _verify_meta_async(

@@ -229,29 +229,34 @@ class ChatOrchestrator:
                 )
                 resp = None
                 if not store_probable:
-                    mark_pipeline_step("orch_enrich_start")
-                    self._enrich_concierge_intent(ctx)
-                    mark_pipeline_step("orch_enrich_end")
-                    from config.llm_flags import is_intent_router_dispatch_enabled
-
-                    if not is_intent_router_dispatch_enabled(ctx.sid):
-                        resp = self._try_session_agent(ctx)
+                    if self._is_primary_router_decision_locked(ctx):
+                        mark_pipeline_step("orch_router_locked_start")
+                        resp = self._route_locked_router_decision(ctx, monitor)
+                        mark_pipeline_step("orch_router_locked_end")
                     else:
-                        from src.dialogue.pipeline import try_session_ops_route
+                        mark_pipeline_step("orch_enrich_start")
+                        self._enrich_concierge_intent(ctx)
+                        mark_pipeline_step("orch_enrich_end")
+                        from config.llm_flags import is_intent_router_dispatch_enabled
 
-                        resp = try_session_ops_route(
-                            ctx.session,
-                            ctx.sid,
-                            ctx.sanitized_message or ctx.user_message,
-                            self._client,
-                            triage_result=ctx.triage_result,
-                            phase="orchestrator_other",
-                        )
-                    triage_after = ctx.triage_result or {}
-                    if resp is None and triage_after.get("concierge_intent") != "session_ops":
-                        mark_pipeline_step("orch_route_concierge_start")
-                        resp = self._route_concierge(ctx, monitor)
-                        mark_pipeline_step("orch_route_concierge_end")
+                        if not is_intent_router_dispatch_enabled(ctx.sid):
+                            resp = self._try_session_agent(ctx)
+                        else:
+                            from src.dialogue.pipeline import try_session_ops_route
+
+                            resp = try_session_ops_route(
+                                ctx.session,
+                                ctx.sid,
+                                ctx.sanitized_message or ctx.user_message,
+                                self._client,
+                                triage_result=ctx.triage_result,
+                                phase="orchestrator_other",
+                            )
+                        triage_after = ctx.triage_result or {}
+                        if resp is None and triage_after.get("concierge_intent") != "session_ops":
+                            mark_pipeline_step("orch_route_concierge_start")
+                            resp = self._route_concierge(ctx, monitor)
+                            mark_pipeline_step("orch_route_concierge_end")
                 if resp is None:
                     resp = self._route_store(ctx)
             else:
@@ -494,6 +499,83 @@ class ChatOrchestrator:
             self._client,
             triage_result=triage,
         )
+
+    def _is_primary_router_decision_locked(self, ctx: Any) -> bool:
+        """PRIMARY ON かつ dispatch が context に Router 決定を書き込んだ後の Orchestrator フォールバック。"""
+        from config.llm_flags import is_intent_router_primary_enabled
+
+        if not is_intent_router_primary_enabled(ctx.sid):
+            return False
+        triage = ctx.triage_result or {}
+        if not triage.get("_intent_router_dispatch"):
+            return False
+        dec = ctx.session.get("_intent_router_dispatch")
+        if not isinstance(dec, dict):
+            return False
+        route = dec.get("primary_route")
+        if not route or route == "Unknown":
+            return False
+        if dec.get("sub_route") == "clarification":
+            return False
+        return True
+
+    def _apply_locked_router_intent(self, ctx: Any) -> None:
+        """Router sub_route を triage concierge_intent に写し、meta_triage 二重分類を避ける。"""
+        from src.services.concierge_orchestrator import (
+            _VALID_CONCIERGE_INTENTS,
+            _resolve_router_dispatched_concierge_intent,
+        )
+
+        dec = ctx.session.get("_intent_router_dispatch") or {}
+        triage = dict(ctx.triage_result or {})
+        primary = dec.get("primary_route")
+        sub = str(dec.get("sub_route") or "")
+        user_text = ctx.sanitized_message or ctx.user_message or ""
+        if primary == "Concierge" and sub:
+            if sub in _VALID_CONCIERGE_INTENTS:
+                triage["concierge_intent"] = sub
+                triage["concierge_intent_source"] = "router_primary_locked"
+            else:
+                triage["concierge_intent"] = _resolve_router_dispatched_concierge_intent(
+                    sub, user_text
+                )
+                triage["concierge_intent_source"] = "router_primary_resolve"
+        ctx.triage_result = triage
+        if hasattr(ctx.session, "modified"):
+            ctx.session["last_triage_result"] = triage
+            ctx.session.modified = True
+        else:
+            ctx.session["last_triage_result"] = triage
+
+    def _route_locked_router_decision(
+        self, ctx: Any, monitor: Any
+    ) -> Optional[ResponseTuple]:
+        """PRIMARY ロック時: enrich をスキップし Router primary_route で handler へ。"""
+        self._apply_locked_router_intent(ctx)
+        dec = ctx.session.get("_intent_router_dispatch") or {}
+        primary = dec.get("primary_route")
+        logger.info(
+            "ChatOrchestrator router_locked sid=%s route=%s/%s skip_enrich=true",
+            ctx.sid,
+            primary,
+            dec.get("sub_route"),
+        )
+        if primary == "SessionOps":
+            from src.dialogue.pipeline import try_session_ops_route
+
+            return try_session_ops_route(
+                ctx.session,
+                ctx.sid,
+                ctx.sanitized_message or ctx.user_message,
+                self._client,
+                triage_result=ctx.triage_result,
+                phase="orchestrator_router_locked",
+            )
+        if primary == "Concierge":
+            return self._route_concierge(ctx, monitor)
+        if primary == "Store":
+            return self._route_store(ctx)
+        return None
 
     def _enrich_concierge_intent(self, ctx: Any) -> None:
         from src.services.concierge_orchestrator import enrich_other_concierge_intent

@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "service": "medicine-recommend-dev",
+    "region": "asia-northeast1",
+    "project": "medicine-recommend",
+    "revision_before": "medicine-recommend-dev-00142-ln2",
+    "revision_after": null,
+    "url": "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app",
+    "rollout_at": null,
+    "monitoring_window_hours": 24,
+    "monitoring_ends_at": null,
+    "smoke_sid": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+    "allowlist_env": "none (dev bulk rollout, code auto-on via _ux_rollout_flag)",
+    "note": "p4b-5c-dev: t0 reset on code deploy (replaces 2026-07-02 env-only rollout)"
+  },
+  "env_cleanup": {
+    "typo_fixed": "developmen -> development",
+    "redundant_keys_removable": [
+      "CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY",
+      "CHAT_PIPELINE_V2_LEGACY_FALLBACK_TRIM",
+      "RECO_LOW_RISK_HEADACHE",
+      "ROUTING_STORE_PROCUREMENT",
+      "ROUTING_CONCIERGE_INTENT",
+      "ROUTING_CONCIERGE_FOLLOWUP",
+      "UX_CORRECTION_DELETE_CANCEL",
+      "UX_SESSION_OPS_REAL_DATA",
+      "UX_PROGRESSIVE_CLARIFICATION",
+      "UX_RECO_DEDUP",
+      "SAFETY_VIOLENCE_CONTEXT_GUARD",
+      "SAFETY_EMERGENCY_CHANNEL_SPLIT",
+      "UX_COUNSELING_CONTEXT_MAINTAIN",
+      "UX_COUNSELING_TONE_VARIETY"
+    ],
+    "required_env": ["APP_ENV=development"]
+  },
+  "kpi_baseline_t0": null,
+  "kpi_thresholds": {
+    "dispatch_success_rate_pct_min": 92,
+    "handler_none_max": 0,
+    "shadow_regression_pct_max": 0.5,
+    "major_safety_incidents_max": 0
+  },
+  "kpi_t24h": null,
+  "status": "pending_code_deploy",
+  "prod_canary1_go": "pending_24h_dev_kpi"
+}

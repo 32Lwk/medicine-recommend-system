@@ -25,10 +25,49 @@ def test_parse_llm_route_response_invalid_primary():
     assert parse_llm_route_response('{"primary_route":"Banana","confidence":0.9}') is None
 
 
-def test_pick_best_route_decision():
+def test_pick_best_route_decision_off_max_confidence():
     low = RouteDecision(primary_route="Unknown", confidence=0.2, resolved_by="legacy")
     high = RouteDecision(primary_route="Physical", confidence=0.88, resolved_by="llm")
-    assert pick_best_route_decision(low, high) == high
+    assert pick_best_route_decision(legacy=low, llm=high) == high
+
+
+def test_pick_best_route_decision_primary_llm_over_legacy_despite_lower_conf():
+    legacy = RouteDecision(primary_route="Physical", confidence=0.92, resolved_by="legacy")
+    llm = RouteDecision(primary_route="Counseling", confidence=0.70, resolved_by="llm")
+    picked = pick_best_route_decision(legacy=legacy, llm=llm, primary_llm_over_legacy=True)
+    assert picked is not None
+    assert picked.primary_route == "Counseling"
+    assert picked.resolved_by == "llm"
+
+
+def test_pick_best_route_decision_primary_high_gate_wins():
+    gate = RouteDecision(primary_route="Emergency", confidence=0.90, resolved_by="gate")
+    llm = RouteDecision(primary_route="Counseling", confidence=0.95, resolved_by="llm")
+    legacy = RouteDecision(primary_route="Physical", confidence=0.99, resolved_by="legacy")
+    picked = pick_best_route_decision(
+        legacy=legacy, gate_decision=gate, llm=llm, primary_llm_over_legacy=True
+    )
+    assert picked is not None
+    assert picked.primary_route == "Emergency"
+    assert picked.resolved_by == "gate"
+
+
+def test_pick_best_route_decision_primary_llm_none_falls_back_legacy():
+    legacy = RouteDecision(primary_route="Physical", confidence=0.80, resolved_by="legacy")
+    gate = RouteDecision(primary_route="Unknown", confidence=0.30, resolved_by="gate")
+    picked = pick_best_route_decision(
+        legacy=legacy, gate_decision=gate, llm=None, primary_llm_over_legacy=True
+    )
+    assert picked is not None
+    assert picked.primary_route == "Physical"
+
+
+def test_pick_best_route_decision_off_legacy_beats_llm_when_higher_conf():
+    legacy = RouteDecision(primary_route="Physical", confidence=0.92, resolved_by="legacy")
+    llm = RouteDecision(primary_route="Counseling", confidence=0.70, resolved_by="llm")
+    picked = pick_best_route_decision(legacy=legacy, llm=llm, primary_llm_over_legacy=False)
+    assert picked is not None
+    assert picked.primary_route == "Physical"
 
 
 @patch("src.dialogue.routing.intent_router_llm.is_intent_router_llm_enabled", return_value=False)
@@ -72,6 +111,22 @@ def test_run_intent_router_llm_prefers_llm_when_higher_conf(mock_llm):
     assert d is not None
     assert d.primary_route == "Concierge"
     assert d.confidence == 0.95
+
+
+@patch("config.llm_flags.is_intent_router_primary_enabled", return_value=True)
+@patch("src.dialogue.routing.intent_router_llm.call_intent_router_llm")
+def test_run_intent_router_llm_primary_prefers_llm_over_higher_legacy(mock_llm, _primary):
+    mock_llm.return_value = RouteDecision(
+        primary_route="Counseling",
+        sub_route=None,
+        confidence=0.72,
+        resolved_by="llm",
+    )
+    triage = {"category": "Physical", "confidence": 0.90}
+    d = run_intent_router_llm("2週間くらいです", {}, "web:U1", triage_result=triage)
+    assert d is not None
+    assert d.primary_route == "Counseling"
+    assert d.resolved_by == "llm"
 
 
 @patch("src.dialogue.routing.intent_router_llm.is_intent_router_llm_enabled", return_value=True)

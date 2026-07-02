@@ -374,6 +374,15 @@ def try_handle_session_ops(
 
     from src.services.line_user_memory import is_line_memory_session
 
+    triage = triage_result or {}
+    router_dispatch = bool(triage.get("_intent_router_dispatch"))
+    forced_session_intent = str(triage.get("session_intent") or "").strip()
+
+    if router_dispatch and forced_session_intent == "pending_clear":
+        resp = try_answer_pending_delete_cancel(session, sid, user_text)
+        if resp is not None:
+            return resp
+
     if is_line_memory_session(sid, session):
         resp = try_handle_session_request(
             session,
@@ -392,6 +401,12 @@ def try_handle_session_ops(
         return resp
 
     intent = classify_session_intent(user_text, triage_result=triage_result)
+    if router_dispatch and intent == "none" and forced_session_intent in (
+        "delete",
+        "summarize",
+        "status",
+    ):
+        intent = forced_session_intent  # type: ignore[assignment]
     detail = None
     try:
         from config.llm_flags import is_ux_session_ops_real_data_enabled
@@ -419,6 +434,32 @@ def try_handle_session_ops(
         return resp
     if intent == "summarize" or detail == "summarize":
         resp = _handle_web_summarize(session, sid, user_text, client)
+        _sync_dialogue_state(session, sid)
+        return resp
+    if router_dispatch and forced_session_intent == "session_admin":
+        if is_pending_delete_cancel(user_text):
+            resp = try_answer_pending_delete_cancel(session, sid, user_text)
+            if resp is not None:
+                return resp
+        detail = classify_session_ops_detail(user_text, triage_result=triage_result)
+        if detail == "recorded_items":
+            resp = _handle_web_recorded_items(session, sid, user_text)
+            _sync_dialogue_state(session, sid)
+            return resp
+        if detail == "history_overview":
+            resp = _handle_web_history_overview(session, sid, user_text)
+            _sync_dialogue_state(session, sid)
+            return resp
+        if detail in ("status", "summarize", "delete"):
+            if detail == "delete":
+                resp = _handle_web_delete(session, sid, user_text)
+            elif detail == "summarize":
+                resp = _handle_web_summarize(session, sid, user_text, client)
+            else:
+                resp = _handle_web_status(session, sid, user_text)
+            _sync_dialogue_state(session, sid)
+            return resp
+        resp = _handle_web_status(session, sid, user_text)
         _sync_dialogue_state(session, sid)
         return resp
     return None

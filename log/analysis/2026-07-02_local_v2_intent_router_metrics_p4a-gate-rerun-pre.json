@@ -1,0 +1,216 @@
+{
+  "sources": {
+    "shadow_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_shadow_log.jsonl",
+    "dispatch_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_dispatch_log.jsonl",
+    "gcp_log": null
+  },
+  "local": {
+    "shadow_total": 3756,
+    "shadow_mismatch": 229,
+    "shadow_mismatch_rate_pct": 6.1,
+    "shadow_improvement_mismatch": 216,
+    "shadow_improvement_mismatch_rate_pct": 5.75,
+    "shadow_regression_mismatch": 13,
+    "shadow_regression_mismatch_rate_pct": 0.35,
+    "shadow_exempt": 58,
+    "shadow_exempt_rate_pct": 1.54,
+    "shadow_by_mismatch_kind": {
+      "agree": 3469,
+      "gate_improvement": 216,
+      "exempt": 58,
+      "regression": 13
+    },
+    "shadow_by_primary_route": {
+      "Physical": 789,
+      "SessionOps": 44,
+      "Concierge": 2558,
+      "Emergency": 84,
+      "Store": 76,
+      "Counseling": 205
+    },
+    "shadow_by_resolved_by": {
+      "gate": 1049,
+      "llm": 48,
+      "legacy": 510,
+      "guard": 2149
+    },
+    "shadow_with_fever_context_flag": 161,
+    "shadow_with_pending_cancelled_flag": 0,
+    "dispatch_with_fever_context_flag": 105,
+    "dispatch_with_pending_cancelled_flag": 0,
+    "dispatch_total": 1380,
+    "dispatch_handled": 1199,
+    "dispatch_unhandled": 181,
+    "dispatch_success_rate_pct": 86.88,
+    "dispatch_by_handler": {
+      "physical_agent": 623,
+      "emergency_agent": 53,
+      "session_ops": 42,
+      "concierge_agent": 406,
+      "counseling_processor": 199,
+      "store_inquiry": 57
+    },
+    "mismatch_samples": [
+      {
+        "session_id": "1782717318767958735458",
+        "user_input": "鮠ｻ豌ｴ縺梧ｭ｢縺ｾ繧峨↑縺・,
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717331790692413145",
+        "user_input": "閭・′逞帙＞",
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717345002559786616",
+        "user_input": "荳狗里繧偵＠縺ｦ縺・∪縺・,
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717358082145444600",
+        "user_input": "萓ｿ遘倥〒縺・,
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717371111493981907",
+        "user_input": "逶ｮ縺後°繧・＞",
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717384636630906807",
+        "user_input": "閠ｳ縺檎李縺・,
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717397324593708841",
+        "user_input": "閧ｩ縺薙ｊ縺後・縺ｩ縺・,
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717410097228277780",
+        "user_input": "閻ｰ縺檎李縺・,
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717422969711323681",
+        "user_input": "繧√∪縺・′縺吶ｋ",
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717436561396105511",
+        "user_input": "蜷舌″豌励′縺励∪縺・,
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717464619914328725",
+        "user_input": "貉ｿ逍ｹ縺悟・縺ｾ縺励◆",
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717478082699486770",
+        "user_input": "蜿｣蜀・ｎ縺檎李縺・,
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717491022406289792",
+        "user_input": "遲玖ｉ逞帙〒縺・,
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717543896938653172",
+        "user_input": "辭ｱ縺ｨ鬆ｭ逞帙′縺ゅｊ縺ｾ縺・,
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782717582631833194827",
+        "user_input": "辭ｱ縺御ｸ九′繧翫∪縺帙ｓ",
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782718275694404951104",
+        "user_input": "逍ｲ繧後′蜿悶ｌ縺ｾ縺帙ｓ",
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782718420081736662986",
+        "user_input": "縺・ｄ縲・ｭ逞帙〒縺・,
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782718459605389105878",
+        "user_input": "驕輔≧縲・ｭ縺檎李縺・,
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782718507019374296805",
+        "user_input": "險よｭ｣・壹・縺ｩ縺ｮ逞帙∩縺御ｸｻ縺ｧ縺・,
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782718530224157903605",
+        "user_input": "縺・∴縲√◆縺縺ｮ鬆ｭ逞帙〒縺励◆",
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      }
+    ]
+  }
+}

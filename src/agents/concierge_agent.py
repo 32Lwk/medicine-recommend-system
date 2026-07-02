@@ -1936,6 +1936,11 @@ def should_concierge_handle(
         return (triage_result or {}).get("category") != "Emergency"
 
     if _is_medicine_consultation(user_text):
+        triage = triage_result or {}
+        if triage.get("_intent_router_dispatch"):
+            probed = probe_meta_concierge_intent(user_text)
+            if probed in CONCIERGE_META_INTENTS:
+                return _concierge_meta_allowed()
         return False
 
     if evaluate_store_gate(

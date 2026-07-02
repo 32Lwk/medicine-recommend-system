@@ -15,6 +15,8 @@ ResponseTuple = tuple[dict, int]
 _SESSION_SUB_ALIASES: dict[str, str] = {
     "delete_confirm": "delete",
     "status_card": "status",
+    "pending_clear": "pending_clear",
+    "cancel": "pending_clear",
 }
 
 _PRIMARY_TO_TRIAGE_CATEGORY: dict[str, str] = {
@@ -86,6 +88,10 @@ def _apply_decision_to_context(ctx: Any, decision: RouteDecision) -> None:
     elif primary == "SessionOps" and sub:
         triage["concierge_intent"] = "session_ops"
         triage["session_intent"] = _SESSION_SUB_ALIASES.get(sub, sub)
+    elif primary == "Store":
+        triage["subcategory"] = "store_inquiry"
+        if sub:
+            triage["_store_dispatch_sub"] = sub
     elif primary == "Physical":
         if sub == "fever_flow":
             triage["subcategory"] = "fever"
@@ -228,15 +234,14 @@ def _dispatch_counseling(ctx: Any) -> Optional[ResponseTuple]:
 
 
 def _dispatch_session_ops(ctx: Any) -> Optional[ResponseTuple]:
-    from src.dialogue.pipeline import try_session_ops_route
+    from src.dialogue.session_ops import try_handle_session_ops
 
-    return try_session_ops_route(
+    return try_handle_session_ops(
         ctx.session,
         ctx.sid,
         ctx.sanitized_message or ctx.user_message,
         ctx.recommendation_client,
         triage_result=ctx.triage_result,
-        phase="dispatch",
     )
 
 
@@ -283,6 +288,7 @@ def try_agent_dispatch(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
         **decision.to_dialogue_routing_dict(),
         "handler": resolve_handler_name(decision),
     }
+    ctx.session["_router_dispatch_attempted"] = True
 
     dispatch_fn = _DISPATCH_TABLE.get(decision.primary_route)
     if dispatch_fn is None:
@@ -302,14 +308,16 @@ def try_agent_dispatch(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
         return None
 
     logger.info(
-        "AgentDispatcher route=%s/%s sid=%s handled=%s ms=%.0f",
+        "AgentDispatcher route=%s/%s sid=%s handled=%s resolved_by=%s ms=%.0f",
         decision.primary_route,
         decision.sub_route,
         ctx.sid,
         resp is not None,
+        decision.resolved_by,
         (time.time() - t0) * 1000,
     )
     if resp is not None:
+        ctx.session["_router_dispatch_handled_turn"] = True
         try:
             from src.dialogue.context import load_dialogue_context, save_dialogue_context
 
