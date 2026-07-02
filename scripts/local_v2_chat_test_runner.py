@@ -298,7 +298,7 @@ def _kind_route(kind: str, content: str = "") -> str:
 
     # --- kind ベース判定（優先） ---
     if k:
-        if "aggressive" in k or "known_attack" in k or "security" in k:
+        if "aggressive" in k or "known_attack" in k or "security" in k or k.startswith("inappropriate_") or k == "system_abuse":
             return "Security"
         if "emergency" in k or "crisis" in k or "manual_queue" in k:
             return "Emergency"

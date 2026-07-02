@@ -64,3 +64,40 @@ def test_has_recent_counseling_false_after_resend_user_appended():
         ]
     }
     assert has_recent_counseling_reply_for_user(session, "こんにちは") is False
+
+
+def test_filter_messages_for_user_api_keeps_blocked_placeholder_strips_admin_fields():
+    from src.services.session_manager import filter_messages_for_user_api
+
+    messages = [
+        {"type": "user", "content": "頭痛", "uuid": "u1"},
+        {
+            "type": "user",
+            "content": "（この入力はブロックされました）",
+            "original_content": "sex",
+            "admin_only": True,
+            "blocked_input": True,
+            "uuid": "u2",
+        },
+        {"type": "bot", "content": "sage_status", "uuid": "b1"},
+    ]
+    filtered = filter_messages_for_user_api(messages)
+    assert len(filtered) == 3
+    blocked = filtered[1]
+    assert blocked["content"] == "（この入力はブロックされました）"
+    assert blocked["uuid"] == "u2"
+    assert "original_content" not in blocked
+    assert "admin_only" not in blocked
+    assert "blocked_input" not in blocked
+
+
+def test_filter_messages_for_user_api_legacy_placeholder_strips_nothing_extra():
+    from src.services.session_manager import filter_messages_for_user_api
+
+    messages = [
+        {"type": "user", "content": "（この入力はブロックされました）", "uuid": "u1"},
+        {"type": "bot", "content": "notice", "uuid": "b1"},
+    ]
+    filtered = filter_messages_for_user_api(messages)
+    assert len(filtered) == 2
+    assert filtered[0]["content"] == "（この入力はブロックされました）"
