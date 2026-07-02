@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "report_suffix": "p4b5c-dev-post-deploy",
+    "started_at": "2026-07-02T16:10:27.205862+00:00",
+    "base_url": "https://medicine-recommend-dev-4jnmo2x4wa-an.a.run.app/",
+    "canary_sid": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+    "non_canary_sid": "line:non-canary-test-99"
+  },
+  "results": [
+    {
+      "label": "canary_physical",
+      "sid": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+      "message": "頭が痛いです",
+      "http_status": 200,
+      "elapsed_ms": 56349.8,
+      "ok": true
+    },
+    {
+      "label": "canary_store",
+      "sid": "line:U20a3beee49563dcd07bb3dd0fc1ca32c",
+      "message": "近くの薬局を教えて",
+      "http_status": 200,
+      "elapsed_ms": 8889.0,
+      "ok": true
+    },
+    {
+      "label": "non_canary_physical",
+      "sid": "line:non-canary-test-99",
+      "message": "頭が痛いです",
+      "http_status": 200,
+      "elapsed_ms": 6178.6,
+      "ok": true
+    }
+  ],
+  "all_ok": true,
+  "trim_log_counts": {
+    "legacy_fallback_trimmed": 0,
+    "legacy_fallback_allowed": 0,
+    "legacy_category_route_skipped": 0
+  }
+}
