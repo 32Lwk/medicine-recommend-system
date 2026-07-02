@@ -1,0 +1,1221 @@
+{
+  "meta": {
+    "date": "2026-07-02",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-07-02T02:57:25.130265+00:00",
+    "elapsed_sec": 213.4,
+    "scenario_count": 8,
+    "total_turns": 16,
+    "auto_pass": 7,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "metrics": {
+    "since_unix": 1782961045.130266,
+    "pipeline_baseline": {
+      "exit_code": 0,
+      "data": {
+        "counseling_detail_path": "D:\\Programing\\medicine-recommend\\log\\counseling_detail_log.jsonl",
+        "counseling_detail_total": 7575,
+        "with_response": 7575,
+        "response_missing": 0,
+        "response_missing_rate_pct": 0.0,
+        "intent_router": {
+          "shadow_total": 3638,
+          "shadow_mismatch": 219,
+          "shadow_mismatch_rate_pct": 6.02,
+          "shadow_improvement_mismatch": 207,
+          "shadow_improvement_mismatch_rate_pct": 5.69,
+          "shadow_regression_mismatch": 12,
+          "shadow_regression_mismatch_rate_pct": 0.33,
+          "shadow_exempt": 58,
+          "shadow_exempt_rate_pct": 1.59,
+          "shadow_by_mismatch_kind": {
+            "agree": 3361,
+            "gate_improvement": 207,
+            "exempt": 58,
+            "regression": 12
+          },
+          "shadow_by_primary_route": {
+            "Physical": 745,
+            "SessionOps": 43,
+            "Concierge": 2524,
+            "Emergency": 76,
+            "Store": 67,
+            "Counseling": 183
+          },
+          "shadow_by_resolved_by": {
+            "gate": 979,
+            "llm": 43,
+            "legacy": 467,
+            "guard": 2149
+          },
+          "shadow_with_fever_context_flag": 147,
+          "shadow_with_pending_cancelled_flag": 0,
+          "dispatch_with_fever_context_flag": 91,
+          "dispatch_with_pending_cancelled_flag": 0,
+          "dispatch_total": 1267,
+          "dispatch_handled": 1099,
+          "dispatch_unhandled": 168,
+          "dispatch_success_rate_pct": 86.74,
+          "dispatch_by_handler": {
+            "physical_agent": 577,
+            "emergency_agent": 52,
+            "session_ops": 41,
+            "concierge_agent": 371,
+            "counseling_processor": 178,
+            "store_inquiry": 48
+          },
+          "mismatch_samples": [
+            {
+              "session_id": "1782717318767958735458",
+              "user_input": "鼻水が止まらない",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717331790692413145",
+              "user_input": "胃が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717345002559786616",
+              "user_input": "下痢をしています",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717358082145444600",
+              "user_input": "便秘です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717371111493981907",
+              "user_input": "目がかゆい",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717384636630906807",
+              "user_input": "耳が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717397324593708841",
+              "user_input": "肩こりがひどい",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717410097228277780",
+              "user_input": "腰が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717422969711323681",
+              "user_input": "めまいがする",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717436561396105511",
+              "user_input": "吐き気がします",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717464619914328725",
+              "user_input": "湿疹が出ました",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717478082699486770",
+              "user_input": "口内炎が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717491022406289792",
+              "user_input": "筋肉痛です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717543896938653172",
+              "user_input": "熱と頭痛があります",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717582631833194827",
+              "user_input": "熱が下がりません",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718275694404951104",
+              "user_input": "疲れが取れません",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718420081736662986",
+              "user_input": "いや、頭痛です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718459605389105878",
+              "user_input": "違う、頭が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718507019374296805",
+              "user_input": "訂正：のどの痛みが主です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718530224157903605",
+              "user_input": "いえ、ただの頭痛でした",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            }
+          ]
+        },
+        "latency": {
+          "pipeline_perf_requests": 566,
+          "total_ms_p50": 12500.0,
+          "total_ms_p95": 43222.9,
+          "total_ms_max": 60819.55,
+          "llm_calls_total": 1444,
+          "llm_calls_per_request_avg": 2.55,
+          "llm_by_path": {
+            "explanation_generator.batch_usage_notes": {
+              "count": 219,
+              "latency_ms_sum": 1856867.0,
+              "latency_ms_p50": 8738.22,
+              "latency_ms_p95": 12825.74
+            },
+            "missing_info_service": {
+              "count": 261,
+              "latency_ms_sum": 649647.99,
+              "latency_ms_p50": 2275.48,
+              "latency_ms_p95": 3098.57
+            },
+            "llm_triage.stage1": {
+              "count": 245,
+              "latency_ms_sum": 376826.72,
+              "latency_ms_p50": 1381.48,
+              "latency_ms_p95": 2370.93
+            },
+            "chat_response_service.personalized_advice": {
+              "count": 171,
+              "latency_ms_sum": 282232.1,
+              "latency_ms_p50": 1530.77,
+              "latency_ms_p95": 2338.44
+            },
+            "dialogue.intent_router_llm": {
+              "count": 179,
+              "latency_ms_sum": 221041.41,
+              "latency_ms_p50": 1172.33,
+              "latency_ms_p95": 1709.11
+            },
+            "concierge_agent.meta_architecture": {
+              "count": 74,
+              "latency_ms_sum": 126262.01,
+              "latency_ms_p50": 1646.95,
+              "latency_ms_p95": 2072.06
+            },
+            "counseling_followup.alt": {
+              "count": 75,
+              "latency_ms_sum": 122623.24,
+              "latency_ms_p50": 1372.14,
+              "latency_ms_p95": 2040.52
+            },
+            "counseling_generator.main": {
+              "count": 86,
+              "latency_ms_sum": 103790.82,
+              "latency_ms_p50": 1130.63,
+              "latency_ms_p95": 1723.71
+            },
+            "llm_triage.stage2": {
+              "count": 43,
+              "latency_ms_sum": 51058.09,
+              "latency_ms_p50": 1165.25,
+              "latency_ms_p95": 1504.32
+            },
+            "llm_triage.combined": {
+              "count": 21,
+              "latency_ms_sum": 34766.56,
+              "latency_ms_p50": 1544.03,
+              "latency_ms_p95": 2305.76
+            },
+            "concierge_agent.greeting": {
+              "count": 19,
+              "latency_ms_sum": 32613.84,
+              "latency_ms_p50": 1460.76,
+              "latency_ms_p95": 2575.67
+            },
+            "concierge_agent.meta_capabilities": {
+              "count": 16,
+              "latency_ms_sum": 19536.67,
+              "latency_ms_p50": 1050.47,
+              "latency_ms_p95": 1578.07
+            },
+            "concierge_agent.doc_privacy": {
+              "count": 4,
+              "latency_ms_sum": 12601.57,
+              "latency_ms_p50": 3290.38,
+              "latency_ms_p95": 3441.05
+            },
+            "explanation_generator.individual_usage": {
+              "count": 3,
+              "latency_ms_sum": 11991.26,
+              "latency_ms_p50": 4110.41,
+              "latency_ms_p95": 5004.11
+            },
+            "meta_triage.classify": {
+              "count": 9,
+              "latency_ms_sum": 8396.32,
+              "latency_ms_p50": 928.79,
+              "latency_ms_p95": 1220.22
+            },
+            "llm_medicine_service.select_symptoms": {
+              "count": 8,
+              "latency_ms_sum": 7491.59,
+              "latency_ms_p50": 888.99,
+              "latency_ms_p95": 1866.3
+            },
+            "episode_summary_agent": {
+              "count": 2,
+              "latency_ms_sum": 4641.46,
+              "latency_ms_p50": 2320.73,
+              "latency_ms_p95": 2320.73
+            },
+            "triage.stage1": {
+              "count": 9,
+              "latency_ms_sum": 1110.6,
+              "latency_ms_p50": 123.4,
+              "latency_ms_p95": 123.4
+            }
+          },
+          "breakdown_steps_avg_ms": {
+            "after_get_session_db": 438.02,
+            "after_security": 1436.82,
+            "after_triage": 4326.13,
+            "before_emoji_route": 1434.92,
+            "before_llm_setup": 750.46,
+            "before_orchestrator": 7144.21,
+            "before_security": 1394.57,
+            "before_triage": 1435.03,
+            "concierge_build_payload_end": 10436.26,
+            "concierge_build_payload_start": 8232.39,
+            "concierge_resolve_intent_end": 8232.07,
+            "concierge_resolve_intent_start": 8232.0,
+            "confidence_gate_done": 9105.11,
+            "delivery_mode": 352.85,
+            "emit_cards": 32021.45,
+            "explanation_phase_done": 32021.53,
+            "explanation_phase_start": 32021.52,
+            "first": 0.0,
+            "line_carousel_push": 32021.46,
+            "line_loading_start": 0.07,
+            "line_profile_fetch": 0.72,
+            "line_reply_done": 119.82,
+            "meta_triage_end": 10088.15,
+            "meta_triage_start": 8656.67,
+            "nlu_batch_done": 10809.87,
+            "nlu_batch_start": 7606.65,
+            "orch_enrich_end": 9729.94,
+            "orch_enrich_start": 9122.6,
+            "orch_handoff": 9107.14,
+            "orch_pre_social_intent": 9109.23,
+            "orch_route_concierge_end": 12855.74,
+            "orch_route_concierge_start": 9730.23,
+            "orch_route_end": 12855.76,
+            "parsed_message": 0.63,
+            "personalized_advice": 34505.52,
+            "post_start": 0.43,
+            "rb_explain_batch_done": 32136.32,
+            "rb_missing_info_done": 14505.97,
+            "rb_scoring_only_done": 17276.74,
+            "rule_based_scoring_only_done": 29643.18,
+            "rule_based_start": 12083.5,
+            "safety_gate_done": 6230.81,
+            "second": 0.01,
+            "session_db_read": 0.67
+          }
+        },
+        "gcp_analysis": {
+          "source_md": "log\\analysis\\2026-06-28_downloaded-logs-20260626-20260627-20260627-162735.md",
+          "counseling_detail_count_from_report": 0,
+          "turns_response_missing_from_report": 36,
+          "line_reply_fallback_push": 9,
+          "slowest_post_seconds": 49.4
+        },
+        "notes": {
+          "fast_path_ratio": "requires triage skip fields in structured logs (Wave 0 TODO)",
+          "end_guard_redirect_rate": "requires pipeline_end_guard field in session/logs"
+        }
+      },
+      "stderr": ""
+    },
+    "intent_router_shadow": {
+      "exit_code": 0,
+      "data": {
+        "sources": {
+          "shadow_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_shadow_log.jsonl",
+          "dispatch_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_dispatch_log.jsonl",
+          "gcp_log": null
+        },
+        "local": {
+          "shadow_total": 3638,
+          "shadow_mismatch": 219,
+          "shadow_mismatch_rate_pct": 6.02,
+          "shadow_improvement_mismatch": 207,
+          "shadow_improvement_mismatch_rate_pct": 5.69,
+          "shadow_regression_mismatch": 12,
+          "shadow_regression_mismatch_rate_pct": 0.33,
+          "shadow_exempt": 58,
+          "shadow_exempt_rate_pct": 1.59,
+          "shadow_by_mismatch_kind": {
+            "agree": 3361,
+            "gate_improvement": 207,
+            "exempt": 58,
+            "regression": 12
+          },
+          "shadow_by_primary_route": {
+            "Physical": 745,
+            "SessionOps": 43,
+            "Concierge": 2524,
+            "Emergency": 76,
+            "Store": 67,
+            "Counseling": 183
+          },
+          "shadow_by_resolved_by": {
+            "gate": 979,
+            "llm": 43,
+            "legacy": 467,
+            "guard": 2149
+          },
+          "shadow_with_fever_context_flag": 147,
+          "shadow_with_pending_cancelled_flag": 0,
+          "dispatch_with_fever_context_flag": 91,
+          "dispatch_with_pending_cancelled_flag": 0,
+          "dispatch_total": 1267,
+          "dispatch_handled": 1099,
+          "dispatch_unhandled": 168,
+          "dispatch_success_rate_pct": 86.74,
+          "dispatch_by_handler": {
+            "physical_agent": 577,
+            "emergency_agent": 52,
+            "session_ops": 41,
+            "concierge_agent": 371,
+            "counseling_processor": 178,
+            "store_inquiry": 48
+          },
+          "mismatch_samples": [
+            {
+              "session_id": "1782717318767958735458",
+              "user_input": "鼻水が止まらない",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717331790692413145",
+              "user_input": "胃が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717345002559786616",
+              "user_input": "下痢をしています",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717358082145444600",
+              "user_input": "便秘です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717371111493981907",
+              "user_input": "目がかゆい",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717384636630906807",
+              "user_input": "耳が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717397324593708841",
+              "user_input": "肩こりがひどい",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717410097228277780",
+              "user_input": "腰が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717422969711323681",
+              "user_input": "めまいがする",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717436561396105511",
+              "user_input": "吐き気がします",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717464619914328725",
+              "user_input": "湿疹が出ました",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717478082699486770",
+              "user_input": "口内炎が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717491022406289792",
+              "user_input": "筋肉痛です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717543896938653172",
+              "user_input": "熱と頭痛があります",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782717582631833194827",
+              "user_input": "熱が下がりません",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718275694404951104",
+              "user_input": "疲れが取れません",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718420081736662986",
+              "user_input": "いや、頭痛です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718459605389105878",
+              "user_input": "違う、頭が痛い",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718507019374296805",
+              "user_input": "訂正：のどの痛みが主です",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782718530224157903605",
+              "user_input": "いえ、ただの頭痛でした",
+              "primary_route": "Physical",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            }
+          ]
+        }
+      },
+      "stderr": ""
+    },
+    "intent_evaluation": {
+      "sessions_tracked": 8,
+      "counseling_rows_matched": 16,
+      "route_rows_matched": 32,
+      "per_session": {
+        "1782961232194561245205": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 4,
+          "routes": {
+            "Concierge": 4
+          },
+          "intent_samples": [
+            {
+              "user_input": "対応言語は？",
+              "has_response": true
+            },
+            {
+              "user_input": "英語でも使えますか",
+              "has_response": true
+            }
+          ]
+        },
+        "1782961073388630286351": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 4,
+          "routes": {
+            "Concierge": 4
+          },
+          "intent_samples": [
+            {
+              "user_input": "技術スタックは？",
+              "has_response": true
+            },
+            {
+              "user_input": "もっと詳しく",
+              "has_response": true
+            }
+          ]
+        },
+        "1782961121567414745595": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 4,
+          "routes": {
+            "Concierge": 4
+          },
+          "intent_samples": [
+            {
+              "user_input": "Sage Terraceとは",
+              "has_response": true
+            },
+            {
+              "user_input": "もう少し教えて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782961202919885999899": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 4,
+          "routes": {
+            "Concierge": 4
+          },
+          "intent_samples": [
+            {
+              "user_input": "医薬品推奨の仕組み",
+              "has_response": true
+            },
+            {
+              "user_input": "rule_basedの詳細",
+              "has_response": true
+            }
+          ]
+        },
+        "1782961177246937590788": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 4,
+          "routes": {
+            "Concierge": 4
+          },
+          "intent_samples": [
+            {
+              "user_input": "インフラ構成を教えて",
+              "has_response": true
+            },
+            {
+              "user_input": "Cloud Runは？",
+              "has_response": true
+            }
+          ]
+        },
+        "1782961101143250306195": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 4,
+          "routes": {
+            "Concierge": 4
+          },
+          "intent_samples": [
+            {
+              "user_input": "プリンシプルオブプログラミングとは？",
+              "has_response": true
+            },
+            {
+              "user_input": "具体例を教えて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782961045158280845886": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 4,
+          "routes": {
+            "Concierge": 4
+          },
+          "intent_samples": [
+            {
+              "user_input": "技術スタックは？",
+              "has_response": true
+            },
+            {
+              "user_input": "技術面を詳しく",
+              "has_response": true
+            }
+          ]
+        },
+        "1782961149256044827428": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 4,
+          "routes": {
+            "Concierge": 4
+          },
+          "intent_samples": [
+            {
+              "user_input": "APIの仕組みを教えて",
+              "has_response": true
+            },
+            {
+              "user_input": "SSEについて",
+              "has_response": true
+            }
+          ]
+        }
+      },
+      "intent_router_metrics": {
+        "shadow_total": 16,
+        "shadow_mismatch": 0,
+        "shadow_mismatch_rate_pct": 0.0,
+        "shadow_improvement_mismatch": 0,
+        "shadow_improvement_mismatch_rate_pct": 0.0,
+        "shadow_regression_mismatch": 0,
+        "shadow_regression_mismatch_rate_pct": 0.0,
+        "shadow_exempt": 0,
+        "shadow_exempt_rate_pct": 0.0,
+        "shadow_by_mismatch_kind": {
+          "agree": 16
+        },
+        "shadow_by_primary_route": {
+          "Concierge": 16
+        },
+        "shadow_by_resolved_by": {
+          "legacy": 16
+        },
+        "shadow_with_fever_context_flag": 0,
+        "shadow_with_pending_cancelled_flag": 0,
+        "dispatch_with_fever_context_flag": 0,
+        "dispatch_with_pending_cancelled_flag": 0,
+        "dispatch_total": 16,
+        "dispatch_handled": 14,
+        "dispatch_unhandled": 2,
+        "dispatch_success_rate_pct": 87.5,
+        "dispatch_by_handler": {
+          "concierge_agent": 16
+        },
+        "mismatch_samples": []
+      }
+    },
+    "counseling_detail_log.jsonl_lines_since_run": 18,
+    "dialogue_route_shadow_log.jsonl_lines_since_run": 18,
+    "dialogue_route_dispatch_log.jsonl_lines_since_run": 18,
+    "latency_this_run": {
+      "turns_measured": 16,
+      "e2e_ms_p50": 12324.0,
+      "e2e_ms_p95": 13635.0,
+      "e2e_ms_max": 14311.0,
+      "phase_breakdown": {
+        "pipeline_perf_requests": 16,
+        "total_ms_p50": 9930.69,
+        "total_ms_p95": 11292.01,
+        "total_ms_max": 11919.57,
+        "llm_calls_total": 43,
+        "llm_calls_per_request_avg": 2.69,
+        "llm_by_path": {
+          "concierge_agent.meta_architecture": {
+            "count": 12,
+            "latency_ms_sum": 20101.03,
+            "latency_ms_p50": 1720.6,
+            "latency_ms_p95": 1836.24
+          },
+          "dialogue.intent_router_llm": {
+            "count": 16,
+            "latency_ms_sum": 18054.46,
+            "latency_ms_p50": 1030.06,
+            "latency_ms_p95": 1409.07
+          },
+          "llm_triage.stage1": {
+            "count": 6,
+            "latency_ms_sum": 8614.91,
+            "latency_ms_p50": 1338.86,
+            "latency_ms_p95": 1631.12
+          },
+          "llm_triage.stage2": {
+            "count": 6,
+            "latency_ms_sum": 6539.75,
+            "latency_ms_p50": 1009.9,
+            "latency_ms_p95": 1280.81
+          },
+          "concierge_agent.meta_capabilities": {
+            "count": 2,
+            "latency_ms_sum": 1847.55,
+            "latency_ms_p50": 825.95,
+            "latency_ms_p95": 1021.6
+          },
+          "meta_triage.classify": {
+            "count": 1,
+            "latency_ms_sum": 1012.04,
+            "latency_ms_p50": 1012.04,
+            "latency_ms_p95": 1012.04
+          }
+        },
+        "breakdown_steps_avg_ms": {
+          "after_get_session_db": 305.76,
+          "after_security": 1213.12,
+          "after_triage": 3456.33,
+          "before_emoji_route": 1213.42,
+          "before_llm_setup": 607.08,
+          "before_orchestrator": 7149.92,
+          "before_security": 1208.94,
+          "before_triage": 1213.43,
+          "concierge_build_payload_end": 9190.15,
+          "concierge_build_payload_start": 7288.86,
+          "concierge_resolve_intent_end": 7288.53,
+          "concierge_resolve_intent_start": 7288.46,
+          "confidence_gate_done": 6736.9,
+          "meta_triage_end": 8100.34,
+          "meta_triage_start": 6486.42,
+          "orch_enrich_end": 7559.95,
+          "orch_enrich_start": 6751.77,
+          "orch_handoff": 6737.39,
+          "orch_pre_social_intent": 6737.47,
+          "orch_route_concierge_end": 10563.7,
+          "orch_route_concierge_start": 7560.25,
+          "orch_route_end": 10563.73,
+          "parsed_message": 0.56,
+          "post_start": 0.39,
+          "safety_gate_done": 6509.39,
+          "session_db_read": 0.6
+        }
+      }
+    }
+  },
+  "results": [
+    {
+      "scenario_id": "concierge-followup-01",
+      "category": "concierge_followup",
+      "wave": "2",
+      "session_id": "1782961045158280845886",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "技術スタックは？",
+          "http_status": 200,
+          "elapsed_ms": 11582,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "技術スタックは、フロントエンドがHTML/CSS/バニラJSのレスポンシブ構成で、サーバー側はルールベースの推奨エンジンを中心に動きます。\n\n会話の振り分けはマルチエージェント構成で、内容に応じて各専門担当へハンドオフする仕組みです。\n\n市販薬の候補選定は、症状辞書・効能・年齢・副作用・相互作用などを組み合わせたルールベースのスコアリングで行われます。\n\nログはJSONL形式で、アクセス・性能・セキュリティ監視に使います。",
+          "response_full": "技術スタックは、フロントエンドがHTML/CSS/バニラJSのレスポンシブ構成で、サーバー側はルールベースの推奨エンジンを中心に動きます。\n\n会話の振り分けはマルチエージェント構成で、内容に応じて各専門担当へハンドオフする仕組みです。\n\n市販薬の候補選定は、症状辞書・効能・年齢・副作用・相互作用などを組み合わせたルールベースのスコアリングで行われます。\n\nログはJSONL形式で、アクセス・性能・セキュリティ監視に使います。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "技術面を詳しく",
+          "http_status": 200,
+          "elapsed_ms": 14311,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "中身は、画面側が HTML/CSS/バニラJS のレスポンシブ構成で、裏側は症状や質問内容を見て処理を分ける作りです。\n\n会話はまずトリアージして、一般的な案内、症状からの市販薬候補の提示、店舗案内、気持ちの相談、緊急案内などへ振り分けます。\n\n複数の専門担当が分担して返すのがマルチエージェントで、内容ごとに得意な処理へつなぐ仕組みです。\n\n市販薬の候補選定は、症状辞書・効能・年齢・副作用・相互作用を組み合わせたルールベースのスコアリングで行います。\n\nログは JSONL 形式で、アクセスや性能、セキュリティ監視に使います。\n\n技術スタックの補足としては、フロントエンドが HTML/CSS/バ",
+          "response_full": "中身は、画面側が HTML/CSS/バニラJS のレスポンシブ構成で、裏側は症状や質問内容を見て処理を分ける作りです。\n\n会話はまずトリアージして、一般的な案内、症状からの市販薬候補の提示、店舗案内、気持ちの相談、緊急案内などへ振り分けます。\n\n複数の専門担当が分担して返すのがマルチエージェントで、内容ごとに得意な処理へつなぐ仕組みです。\n\n市販薬の候補選定は、症状辞書・効能・年齢・副作用・相互作用を組み合わせたルールベースのスコアリングで行います。\n\nログは JSONL 形式で、アクセスや性能、セキュリティ監視に使います。\n\n技術スタックの補足としては、フロントエンドが HTML/CSS/バニラ JS、バックエンドは FastAPI です。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:API"
+      ],
+      "auto_failures": [],
+      "description": "architecture follow-up KPI",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "concierge-followup-02",
+      "category": "concierge_followup",
+      "wave": "2",
+      "session_id": "1782961073388630286351",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "技術スタックは？",
+          "http_status": 200,
+          "elapsed_ms": 11794,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "チャット形式の一般用医薬品相談ツールで、症状の振り分けと案内を複数の専門担当が連携して行うマルチエージェント構成です。\n\n市販薬の候補は、症状辞書・効能・年齢・副作用・相互作用などを使うルールベースのスコアリングで選びます。\n\n技術面は、フロントエンドがHTML/CSS/バニラJS、実行時にLLM_AGENT_ENABLEDが有効ならChatOrchestratorがトリアージして各担当へ振り分けます。\n\nあわせて、アクセス・性能・セキュリティ監視のためのJSONL構造化ログも使います。",
+          "response_full": "チャット形式の一般用医薬品相談ツールで、症状の振り分けと案内を複数の専門担当が連携して行うマルチエージェント構成です。\n\n市販薬の候補は、症状辞書・効能・年齢・副作用・相互作用などを使うルールベースのスコアリングで選びます。\n\n技術面は、フロントエンドがHTML/CSS/バニラJS、実行時にLLM_AGENT_ENABLEDが有効ならChatOrchestratorがトリアージして各担当へ振り分けます。\n\nあわせて、アクセス・性能・セキュリティ監視のためのJSONL構造化ログも使います。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "もっと詳しく",
+          "http_status": 200,
+          "elapsed_ms": 13635,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "もう少し具体的にいうと、まず会話内容を振り分ける入口があり、そこで「症状の相談」「使い方の質問」「店舗や落とし物の案内」「気持ちの相談」などに分かれます。\n\nそこから内容に合う担当が続き、症状の相談ではルールに沿って市販薬の候補を絞り込みます。\n\nその候補選びは、症状のキーワードだけで決めるのではなく、効能、年齢、注意したい副作用、飲み合わせ、使えない条件などを点数化して判断する仕組みです。\n\nなので、同じ症状でも年齢や併用中の薬が違うと、出てくる候補が変わることがあります。\n\n画面側はHTML、CSS、バニラJSで動き、必要に応じて会話の流れを制御する仕組みが入ります。\n\nあわせて、アクセス",
+          "response_full": "もう少し具体的にいうと、まず会話内容を振り分ける入口があり、そこで「症状の相談」「使い方の質問」「店舗や落とし物の案内」「気持ちの相談」などに分かれます。\n\nそこから内容に合う担当が続き、症状の相談ではルールに沿って市販薬の候補を絞り込みます。\n\nその候補選びは、症状のキーワードだけで決めるのではなく、効能、年齢、注意したい副作用、飲み合わせ、使えない条件などを点数化して判断する仕組みです。\n\nなので、同じ症状でも年齢や併用中の薬が違うと、出てくる候補が変わることがあります。\n\n画面側はHTML、CSS、バニラJSで動き、必要に応じて会話の流れを制御する仕組みが入ります。\n\nあわせて、アクセスや性能、セキュリティ確認のためにJSONL形式のログも残します。\n\n技術スタックの補足としては、フロントエンドが HTML/CSS/バニラ JS、バックエンドは FastAPI です。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:スタック"
+      ],
+      "auto_failures": [],
+      "description": "architecture follow-up KPI",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "concierge-followup-03",
+      "category": "concierge_followup",
+      "wave": "2",
+      "session_id": "1782961101143250306195",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "プリンシプルオブプログラミングとは？",
+          "http_status": 200,
+          "elapsed_ms": 9698,
+          "diagnosis_kind": "concierge_redirect",
+          "response_snippet": "こちらは一般用医薬品（OTC）の相談窓口です。頭痛・のどの痛み・お薬の選び方など、お困りのことがあれば具体的にお書きください。",
+          "response_full": "こちらは一般用医薬品（OTC）の相談窓口です。頭痛・のどの痛み・お薬の選び方など、お困りのことがあれば具体的にお書きください。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "具体例を教えて",
+          "http_status": 200,
+          "elapsed_ms": 8396,
+          "diagnosis_kind": "concierge_redirect",
+          "response_snippet": "「プリンシプルオブプログラミングとは？」については、こちらでは専門外のためお答えできません。具体例としては、本アプリでは症状や年齢などの条件をもとに、rule_based（ルールベース）の推奨ロジックで市販薬の候補をお選びしています。頭痛・のどの痛み・お薬の選び方など、気になる症状があれば具体的にお書きください。",
+          "response_full": "「プリンシプルオブプログラミングとは？」については、こちらでは専門外のためお答えできません。具体例としては、本アプリでは症状や年齢などの条件をもとに、rule_based（ルールベース）の推奨ロジックで市販薬の候補をお選びしています。頭痛・のどの痛み・お薬の選び方など、気になる症状があれば具体的にお書きください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:プログラミング"
+      ],
+      "auto_failures": [],
+      "description": "architecture follow-up KPI",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "concierge-followup-04",
+      "category": "concierge_followup",
+      "wave": "2",
+      "session_id": "1782961121567414745595",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "Sage Terraceとは",
+          "http_status": 200,
+          "elapsed_ms": 12045,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "Sage Terraceは、症状や相談内容に応じて複数の専門担当が連携し、必要な案内へ振り分けるチャット型の市販薬相談ツールです。\n\n質問の内容に合わせて、挨拶や案内、症状の整理、市販薬候補の提示、緊急時の誘導などを役割分担して進めます。\n\n市販薬の候補は、自由に薬名を作るのではなく、症状や条件をもとにルールベースで選ばれます。\n\n必要なら、仕組みや技術構成ももう少し詳しく説明できます。",
+          "response_full": "Sage Terraceは、症状や相談内容に応じて複数の専門担当が連携し、必要な案内へ振り分けるチャット型の市販薬相談ツールです。\n\n質問の内容に合わせて、挨拶や案内、症状の整理、市販薬候補の提示、緊急時の誘導などを役割分担して進めます。\n\n市販薬の候補は、自由に薬名を作るのではなく、症状や条件をもとにルールベースで選ばれます。\n\n必要なら、仕組みや技術構成ももう少し詳しく説明できます。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "もう少し教えて",
+          "http_status": 200,
+          "elapsed_ms": 13298,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "複数の担当が、質問の種類に応じて順番に案内を受け持つ仕組みです。\n\nたとえば、雑談や使い方の案内、症状の整理、市販薬候補の確認、緊急性の判断を、それぞれに得意な流れでつなぎます。\n\n市販薬の候補は、雰囲気で決めるのではなく、症状・年齢・注意点などをもとにルールで絞り込みます。\n\n画面側はHTML/CSS/バニラJSで作られ、やり取りや状況はJSONL形式のログで記録される設計です。\n\n必要なら次に、「どういう流れで質問が進むのか」か「技術構成をもっと具体的に」どちらかに絞って説明できます。",
+          "response_full": "複数の担当が、質問の種類に応じて順番に案内を受け持つ仕組みです。\n\nたとえば、雑談や使い方の案内、症状の整理、市販薬候補の確認、緊急性の判断を、それぞれに得意な流れでつなぎます。\n\n市販薬の候補は、雰囲気で決めるのではなく、症状・年齢・注意点などをもとにルールで絞り込みます。\n\n画面側はHTML/CSS/バニラJSで作られ、やり取りや状況はJSONL形式のログで記録される設計です。\n\n必要なら次に、「どういう流れで質問が進むのか」か「技術構成をもっと具体的に」どちらかに絞って説明できます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": false,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [
+        "missing_context_kw:Sage"
+      ],
+      "description": "architecture follow-up KPI",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "concierge-followup-05",
+      "category": "concierge_followup",
+      "wave": "2",
+      "session_id": "1782961149256044827428",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "APIの仕組みを教えて",
+          "http_status": 200,
+          "elapsed_ms": 12324,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "APIは、アプリやフロントエンドからの問い合わせを受けて、内容を判定し、必要なら専門担当へ振り分ける仕組みです。\n\nこのサービスでは、まずお話を分類する工程があり、症状相談ならルールベースで候補を選ぶ担当、雑談や案内なら別の担当、緊急性が高ければ緊急案内へつなぐ形になっています。\n\n技術面では、フロントエンドはHTML/CSS/バニラJSで作られ、サーバー側ではLLM_AGENT_ENABLEDのときにChatOrchestratorが各担当へハンドオフします。\n\nまた、アクセスや性能、セキュリティの記録はJSONL形式でログに残す構成です。",
+          "response_full": "APIは、アプリやフロントエンドからの問い合わせを受けて、内容を判定し、必要なら専門担当へ振り分ける仕組みです。\n\nこのサービスでは、まずお話を分類する工程があり、症状相談ならルールベースで候補を選ぶ担当、雑談や案内なら別の担当、緊急性が高ければ緊急案内へつなぐ形になっています。\n\n技術面では、フロントエンドはHTML/CSS/バニラJSで作られ、サーバー側ではLLM_AGENT_ENABLEDのときにChatOrchestratorが各担当へハンドオフします。\n\nまた、アクセスや性能、セキュリティの記録はJSONL形式でログに残す構成です。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "SSEについて",
+          "http_status": 200,
+          "elapsed_ms": 13316,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "SSEは、サーバーからブラウザへ“必要な更新を少しずつ送り続ける”ための仕組みです。\n\nこのサービスでは、チャットの進行状況や案内の更新を、画面側へ逐次反映する用途で使うイメージです。\n\nAPI全体としては、まず内容を判定して、症状相談ならルールベースで市販薬候補を選ぶ流れに進みます。\n\nそのうえで、雑談や案内、緊急性の確認などは別の担当に分かれて連携します。",
+          "response_full": "SSEは、サーバーからブラウザへ“必要な更新を少しずつ送り続ける”ための仕組みです。\n\nこのサービスでは、チャットの進行状況や案内の更新を、画面側へ逐次反映する用途で使うイメージです。\n\nAPI全体としては、まず内容を判定して、症状相談ならルールベースで市販薬候補を選ぶ流れに進みます。\n\nそのうえで、雑談や案内、緊急性の確認などは別の担当に分かれて連携します。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:SSE"
+      ],
+      "auto_failures": [],
+      "description": "architecture follow-up KPI",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "concierge-followup-06",
+      "category": "concierge_followup",
+      "wave": "2",
+      "session_id": "1782961177246937590788",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "インフラ構成を教えて",
+          "http_status": 200,
+          "elapsed_ms": 11885,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "このサービスのインフラ構成は、1つのチャットの中で複数の専門担当が分担して動くマルチエージェント型です。\n\nまず内容を分類して、症状相談、説明、店舗案内、雑談、緊急案内などに振り分け、必要に応じて適切な担当へつなぎます。\n\n市販薬の候補選定は、LLMが自由に決めるのではなく、症状辞書や効能、年齢、副作用、相互作用などを使ったルールベースのスコアリングで行います。\n\nフロントはHTML/CSS/バニラJS、ログはJSONL形式で記録する構成です。",
+          "response_full": "このサービスのインフラ構成は、1つのチャットの中で複数の専門担当が分担して動くマルチエージェント型です。\n\nまず内容を分類して、症状相談、説明、店舗案内、雑談、緊急案内などに振り分け、必要に応じて適切な担当へつなぎます。\n\n市販薬の候補選定は、LLMが自由に決めるのではなく、症状辞書や効能、年齢、副作用、相互作用などを使ったルールベースのスコアリングで行います。\n\nフロントはHTML/CSS/バニラJS、ログはJSONL形式で記録する構成です。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "Cloud Runは？",
+          "http_status": 200,
+          "elapsed_ms": 11454,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "Cloud Runは、このサービスを動かすためのデプロイ先の一つとして考えるとわかりやすいです。\n\nコンテナ化したアプリをクラウド上で動かし、アクセスに応じて自動で伸び縮みさせやすい仕組みです。\n\nこの構成では、チャットの処理本体や各担当への振り分けをコンテナとして載せるイメージになります。\n\nあわせて、フロントはHTML/CSS/バニラJS、記録はJSONLログという形で組み合わせます。\n\nもし「Cloud Runでどう分けて配置するのか」を知りたいなら、その流れも簡単に説明できます。",
+          "response_full": "Cloud Runは、このサービスを動かすためのデプロイ先の一つとして考えるとわかりやすいです。\n\nコンテナ化したアプリをクラウド上で動かし、アクセスに応じて自動で伸び縮みさせやすい仕組みです。\n\nこの構成では、チャットの処理本体や各担当への振り分けをコンテナとして載せるイメージになります。\n\nあわせて、フロントはHTML/CSS/バニラJS、記録はJSONLログという形で組み合わせます。\n\nもし「Cloud Runでどう分けて配置するのか」を知りたいなら、その流れも簡単に説明できます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:Cloud"
+      ],
+      "auto_failures": [],
+      "description": "architecture follow-up KPI",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "concierge-followup-07",
+      "category": "concierge_followup",
+      "wave": "2",
+      "session_id": "1782961202919885999899",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "医薬品推奨の仕組み",
+          "http_status": 200,
+          "elapsed_ms": 13501,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "この仕組みでは、最初に質問内容を分類して、症状相談・店舗案内・雑談などに応じて適切な担当に振り分けます。\n\n医薬品の候補選定は、症状辞書、効能、年齢、副作用、相互作用などを組み合わせたルールベースのスコアリングで行い、LLMが自由に薬名を作って決めることはありません。\n\n複数の専門担当が連携するマルチエージェント構成なので、案内の流れが分かれたときも役割ごとに対応しやすい設計です。\n\n開発面では、フロントエンドはHTML/CSS/バニラJS、ログはJSONL形式の構造化ログで、必要に応じてトリアージ後に各担当へ引き継ぐ形になっています。",
+          "response_full": "この仕組みでは、最初に質問内容を分類して、症状相談・店舗案内・雑談などに応じて適切な担当に振り分けます。\n\n医薬品の候補選定は、症状辞書、効能、年齢、副作用、相互作用などを組み合わせたルールベースのスコアリングで行い、LLMが自由に薬名を作って決めることはありません。\n\n複数の専門担当が連携するマルチエージェント構成なので、案内の流れが分かれたときも役割ごとに対応しやすい設計です。\n\n開発面では、フロントエンドはHTML/CSS/バニラJS、ログはJSONL形式の構造化ログで、必要に応じてトリアージ後に各担当へ引き継ぐ形になっています。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "rule_basedの詳細",
+          "http_status": 200,
+          "elapsed_ms": 13439,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "rule_based は、症状や年齢、併用薬、注意が必要な条件などの情報をもとに、あらかじめ決めたルールで候補を絞り込む仕組みです。\n\nこの方式では、症状に合う効能かどうか、副作用や相互作用の注意があるか、使ってよい年齢や条件に当てはまるかを順番に見ていきます。\n\nそのため、文章を自由に生成して薬名を決めるのではなく、登録された情報と判定ルールに沿って市販薬の候補を選びます。\n\n必要なら、次に「どんな条件があると候補が減るのか」まで具体例つきで説明できます。",
+          "response_full": "rule_based は、症状や年齢、併用薬、注意が必要な条件などの情報をもとに、あらかじめ決めたルールで候補を絞り込む仕組みです。\n\nこの方式では、症状に合う効能かどうか、副作用や相互作用の注意があるか、使ってよい年齢や条件に当てはまるかを順番に見ていきます。\n\nそのため、文章を自由に生成して薬名を決めるのではなく、登録された情報と判定ルールに沿って市販薬の候補を選びます。\n\n必要なら、次に「どんな条件があると候補が減るのか」まで具体例つきで説明できます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:rule"
+      ],
+      "auto_failures": [],
+      "description": "architecture follow-up KPI",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "concierge-followup-08",
+      "category": "concierge_followup",
+      "wave": "2",
+      "session_id": "1782961232194561245205",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "対応言語は？",
+          "http_status": 200,
+          "elapsed_ms": 11208,
+          "diagnosis_kind": "concierge_capabilities",
+          "response_snippet": "日本語、英語、中国語、韓国語に対応しています。\n\n症状の相談や市販薬の案内も、これらの言語でお手伝いできます。\n\n必要であれば、そのまま使いたい言語で話しかけてください。",
+          "response_full": "日本語、英語、中国語、韓国語に対応しています。\n\n症状の相談や市販薬の案内も、これらの言語でお手伝いできます。\n\n必要であれば、そのまま使いたい言語で話しかけてください。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "英語でも使えますか",
+          "http_status": 200,
+          "elapsed_ms": 13081,
+          "diagnosis_kind": "concierge_capabilities",
+          "response_snippet": "はい、英語でも使えます。\n\n症状の相談や市販薬の案内について、英語でそのまま話しかけていただけます。\n\n必要なら、英語で質問しやすい形に整えてお手伝いします。",
+          "response_full": "はい、英語でも使えます。\n\n症状の相談や市販薬の案内について、英語でそのまま話しかけていただけます。\n\n必要なら、英語で質問しやすい形に整えてお手伝いします。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:英語"
+      ],
+      "auto_failures": [],
+      "description": "architecture follow-up KPI",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    }
+  ]
+}
