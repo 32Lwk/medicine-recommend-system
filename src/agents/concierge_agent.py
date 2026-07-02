@@ -29,6 +29,7 @@ from src.services.concierge_templates import (
     split_dynamic_body_paragraphs,
     build_greeting_text,
     build_redirect_text,
+    build_redirect_followup_text,
     build_thanks_text,
     format_concierge_app_about_card,
     format_concierge_architecture_card,
@@ -113,6 +114,56 @@ def _extract_substantive_user_topics(
             continue
         topics.append(content[:80])
     return topics[-3:]
+
+
+_TECH_STACK_TOPIC_RE = re.compile(r"スタック", re.IGNORECASE)
+
+
+def _prior_topic_mentions_tech_stack(
+    history: Optional[List[Dict[str, str]]],
+    user_text: str,
+) -> bool:
+    """直前の実質的な話題に「スタック」への言及があったか（p3-followup-hotfix）。"""
+    prior = _prior_history_for_prompt(history, user_text)
+    topics = _extract_substantive_user_topics(prior)
+    return any(_TECH_STACK_TOPIC_RE.search(t) for t in topics)
+
+
+def _append_tech_stack_reminder(text: str) -> str:
+    """architecture フォローアップで技術スタックの話題が抜け落ちた場合の補足追記。"""
+    addendum = (
+        "技術スタックの補足としては、フロントエンドが HTML/CSS/バニラ JS、"
+        "バックエンドは FastAPI です。"
+    )
+    return f"{text}\n\n{addendum}" if text else addendum
+
+
+def _resolve_redirect_text(
+    user_text: str,
+    history: Optional[List[Dict[str, str]]],
+) -> str:
+    """redirect の同文ループ回避（p3-followup-hotfix, ROUTING_CONCIERGE_FOLLOWUP ON 限定）。
+
+    直前 bot も concierge_redirect だった場合のみ、直前の脱線トピックを踏まえた
+    具体例つきの案内に差し替える。フラグ OFF または初回の redirect は従来どおり固定文。
+    """
+    try:
+        from config.llm_flags import is_concierge_followup_routing_enabled
+
+        if not is_concierge_followup_routing_enabled():
+            return build_redirect_text()
+    except ImportError:
+        return build_redirect_text()
+
+    from src.services.concierge_agent_history import resolve_last_concierge_intent
+
+    prior = _prior_history_for_prompt(history, user_text)
+    if resolve_last_concierge_intent(prior) != "redirect":
+        return build_redirect_text()
+
+    topics = _extract_substantive_user_topics(prior)
+    prior_topic = topics[-1] if topics else ""
+    return build_redirect_followup_text(prior_topic)
 
 
 def _last_bot_reply_snippet(
@@ -335,7 +386,8 @@ def resolve_concierge_intent(
 
     from src.services.routing_context import evaluate_store_gate
 
-    if evaluate_store_gate(
+    router_dispatch = bool((triage_result or {}).get("_intent_router_dispatch"))
+    if not router_dispatch and evaluate_store_gate(
         text,
         triage_result=triage_result,
         routing_ctx=routing_ctx,
@@ -1499,6 +1551,10 @@ def generate_meta_concierge_text(
                 history=history,
             )
             if text:
+                if intent == "architecture" and _prior_topic_mentions_tech_stack(
+                    history, user_text
+                ) and not _TECH_STACK_TOPIC_RE.search(text):
+                    text = _append_tech_stack_reminder(text)
                 return text, True
             logger.warning(
                 "Concierge meta LLM empty (%s), attempt=%s",
@@ -1722,7 +1778,7 @@ def build_concierge_payload(
     if intent == "redirect":
         from src.services.status_diagnosis_builder import build_concierge_text_status
 
-        text = build_redirect_text()
+        text = _resolve_redirect_text(user_text, history)
         return {
             "content": text,
             "content_format": "text",
@@ -1803,7 +1859,7 @@ def build_concierge_payload(
         }
     from src.services.status_diagnosis_builder import build_concierge_text_status
 
-    text = build_redirect_text()
+    text = _resolve_redirect_text(user_text, history)
     return {
         "content": text,
         "content_format": "text",

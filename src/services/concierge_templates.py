@@ -58,6 +58,26 @@ def build_redirect_text() -> str:
     )
 
 
+def build_redirect_followup_text(prior_topic: str = "") -> str:
+    """redirect の同文ループ回避（p3-followup-hotfix）。
+
+    直前ターンも concierge_redirect だった場合に使う続きの案内文。
+    脱線トピックへの言及は繰り返さず、OTC の具体例（rule_based 推奨）を示して
+    同一メッセージの単純反復を避ける。
+    """
+    topic = (prior_topic or "").strip()
+    if topic:
+        intro = f"「{topic}」については、こちらでは専門外のためお答えできません。"
+    else:
+        intro = "そのご質問については、こちらでは専門外のためお答えできません。"
+    return (
+        f"{intro}"
+        "具体例としては、本アプリでは症状や年齢などの条件をもとに、"
+        "rule_based（ルールベース）の推奨ロジックで市販薬の候補をお選びしています。"
+        "頭痛・のどの痛み・お薬の選び方など、気になる症状があれば具体的にお書きください。"
+    )
+
+
 def _split_japanese_sentences(text: str) -> List[str]:
     """句点・感嘆符で文を分割（区切り文字は各文末尾に残す）。"""
     raw = (text or "").strip()

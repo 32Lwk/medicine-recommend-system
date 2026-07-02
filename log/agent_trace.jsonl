@@ -767,3 +767,10 @@
 {"ts": 1782959346.042809, "trace_id": "2f74bdfb-51f9-418d-a487-381b832bc081", "agent": "ConciergeAgent", "step": "complete", "session_id": "1782959320472869957394", "ms": 3781.55, "payload": {"handled": true}}
 {"ts": 1782959357.0702157, "trace_id": "194b5cda-e9c7-409b-a5a8-6e0765ccc61a", "agent": "ChatOrchestrator", "step": "handoff", "session_id": "1782959320472869957394", "payload": {"target": "OtherHandler", "category": "Other"}}
 {"ts": 1782959359.683764, "trace_id": "194b5cda-e9c7-409b-a5a8-6e0765ccc61a", "agent": "ConciergeAgent", "step": "complete", "session_id": "1782959320472869957394", "ms": 2597.55, "payload": {"handled": true}}
+{"ts": 1782960732.2383735, "trace_id": "t1", "agent": "ModerationAgent", "step": "complete", "session_id": "s1", "ms": 0.0, "payload": {"label": "safe"}}
+{"ts": 1782960909.8245842, "trace_id": "f7106580-8292-45fc-8f37-dd5fedcad41a", "agent": "ChatOrchestrator", "step": "handoff", "session_id": "1782960897195829581386", "payload": {"target": "OtherHandler", "category": "Other"}}
+{"ts": 1782960912.4975426, "trace_id": "f7106580-8292-45fc-8f37-dd5fedcad41a", "agent": "ConciergeAgent", "step": "complete", "session_id": "1782960897195829581386", "ms": 2654.45, "payload": {"handled": true}}
+{"ts": 1782961158.0254939, "trace_id": "add62b7a-2a31-4ad5-a5fa-090beb51c6fc", "agent": "ChatOrchestrator", "step": "handoff", "session_id": "1782961149256044827428", "payload": {"target": "OtherHandler", "category": "Other"}}
+{"ts": 1782961160.9539716, "trace_id": "add62b7a-2a31-4ad5-a5fa-090beb51c6fc", "agent": "ConciergeAgent", "step": "complete", "session_id": "1782961149256044827428", "ms": 2911.4, "payload": {"handled": true}}
+{"ts": 1782961211.0804603, "trace_id": "c528dc3b-9d08-48f7-beb6-dc6a288e0b86", "agent": "ChatOrchestrator", "step": "handoff", "session_id": "1782961202919885999899", "payload": {"target": "OtherHandler", "category": "Other"}}
+{"ts": 1782961215.804255, "trace_id": "c528dc3b-9d08-48f7-beb6-dc6a288e0b86", "agent": "ConciergeAgent", "step": "complete", "session_id": "1782961202919885999899", "ms": 3094.24, "payload": {"handled": true}}
