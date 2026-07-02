@@ -1,0 +1,141 @@
+{
+  "meta": {
+    "report_suffix": "p4a-dispatch-final",
+    "date": "2026-07-02",
+    "started_at": "2026-07-02T05:52:47.531615+00:00",
+    "elapsed_sec": 2865.1,
+    "scenario_count": 105,
+    "total_turns": 138
+  },
+  "skipped": false,
+  "sources": {
+    "shadow_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_shadow_log.jsonl",
+    "dispatch_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_dispatch_log.jsonl",
+    "gcp_log": null
+  },
+  "local": {
+    "shadow_total": 117,
+    "shadow_mismatch": 10,
+    "shadow_mismatch_rate_pct": 8.55,
+    "shadow_improvement_mismatch": 9,
+    "shadow_improvement_mismatch_rate_pct": 7.69,
+    "shadow_regression_mismatch": 1,
+    "shadow_regression_mismatch_rate_pct": 0.85,
+    "shadow_exempt": 0,
+    "shadow_exempt_rate_pct": 0.0,
+    "shadow_by_mismatch_kind": {
+      "agree": 107,
+      "gate_improvement": 9,
+      "regression": 1
+    },
+    "shadow_by_primary_route": {
+      "Physical": 44,
+      "Concierge": 34,
+      "Counseling": 22,
+      "Emergency": 8,
+      "Store": 9
+    },
+    "shadow_by_resolved_by": {
+      "gate": 71,
+      "legacy": 43,
+      "llm": 3
+    },
+    "shadow_with_fever_context_flag": 13,
+    "shadow_with_pending_cancelled_flag": 0,
+    "dispatch_with_fever_context_flag": 13,
+    "dispatch_with_pending_cancelled_flag": 0,
+    "dispatch_total": 112,
+    "dispatch_handled": 112,
+    "dispatch_unhandled": 0,
+    "dispatch_success_rate_pct": 100.0,
+    "dispatch_by_handler": {
+      "concierge_agent": 36,
+      "physical_agent": 45,
+      "counseling_processor": 21,
+      "store_inquiry": 9,
+      "emergency_agent": 1
+    },
+    "mismatch_samples": [
+      {
+        "session_id": "1782973789622525865487",
+        "user_input": "近くの薬局",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782973917916280451456",
+        "user_input": "近くの薬局を教えて",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782973931406085911208",
+        "user_input": "ドラッグストアはどこ？",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782973944286547860166",
+        "user_input": "OTCを買える店",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782973958078709834251",
+        "user_input": "処方箋なしで買える場所",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782973972138396339780",
+        "user_input": "マツキヨは近くにありますか",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782973985776412873150",
+        "user_input": "市販薬の購入先",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782974025130304889943",
+        "user_input": "マツキヨは近くにありますか",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782974034953233964996",
+        "user_input": "ドラッグストアはどこ？",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782974044763563580264",
+        "user_input": "2週間くらいです",
+        "primary_route": "Counseling",
+        "triage_category": "Ask",
+        "mismatch_kind": "regression",
+        "dialogue_flags": null
+      }
+    ]
+  }
+}

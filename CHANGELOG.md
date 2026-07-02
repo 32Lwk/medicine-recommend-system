@@ -1,6 +1,86 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月2日**（UX 品質改善計画 v2 Phase 0–3・計測基盤・レイテンシ最適化・安全ガード・ルーティング/内容精度・待機 UX）
+**最終更新日: 2026年7月3日**（Phase 4a–4b IntentRouter primary 化・dev ランタイム自動 ON・p4b-5c-dev コード反映）
+
+---
+
+## 2026年7月3日 — Phase 4（4a–4b）IntentRouter primary 化・dev 展開
+
+### 概要
+
+**ブランチ `feature/chat-pipeline-v2`** に Phase 4a（dispatch handler 追撃・shadow mismatch 分類）および Phase 4b（Router PRIMARY / orch-trim / shadow exempt / LEGACY_FALLBACK_TRIM）を実装。**`config/llm_flags.py` の `_ux_rollout_flag`** により、`APP_ENV=development` のみで v2 / PRIMARY / TRIM / Phase 2–4b UX 十二種が env 未設定でも自動 ON（`LATENCY_*` は対象外・既定 OFF のまま）。本番は env 明示 ON + ALLOWLIST 限定（カナリア 1 は **dev 24h Go 待ち**）。
+
+| 関連ドキュメント | 用途 |
+|-----------------|------|
+| [PHASE4B_ROUTER_PRIMARY_MIGRATION.md](docs/dev/PHASE4B_ROUTER_PRIMARY_MIGRATION.md) | 4b 設計・決定権マップ・Go/No-Go |
+| [PHASE4B_DEV_ROLLOUT_AND_CANARY1_INSTRUCTIONS.md](docs/dev/PHASE4B_DEV_ROLLOUT_AND_CANARY1_INSTRUCTIONS.md) | dev 一括展開・本番カナリア手順 |
+| [.cursor/plans/ux品質改善計画v2_7fab4ed6.plan.md](.cursor/plans/ux品質改善計画v2_7fab4ed6.plan.md) | Phase 4 進捗（p4-unify は pending） |
+
+### Phase 4a — dispatch handler 追撃・shadow mismatch 分類
+
+- **`src/dialogue/dispatcher.py`**: SessionOps / Concierge / Store / Physical 等の dispatch handler 拡充。`handler None` を 0 件に是正
+- **`src/dialogue/routing/shadow_mismatch.py`（新規）**: `regression` / `gate_improvement` / `exempt` 分類。counseling follow-up（`2週間くらいです` 等）の exempt 再分類
+- **`src/dialogue/routing/shadow.py` / `metrics.py`**: `mismatch_kind` 出力、`shadow_regression` / `shadow_exempt` KPI
+- **`src/utils/structured_logger.py`**: `emit_dialogue_route_shadow` に `mismatch_kind`
+- **`scripts/measure_intent_router_shadow.py` / `local_v2_chat_test_runner.py`**: IntentRouter KPI セクション、`--failed-only` / `--resume` / checkpoint
+- **`tests/dialogue/test_dispatcher_handlers.py`**, **`tests/dialogue/routing/test_shadow_mismatch.py`**, **`tests/scripts/test_local_v2_chat_test_metrics.py`**
+
+**検証**（`log/analysis/2026-07-02_local_v2_chat_test_p4a-dispatch-final`）: 自動合格 **105/105**、dispatch_success **100%**（112/112）、shadow_regression **0.85%**（1/117）、handler None **0**。
+
+### Phase 4b — Router PRIMARY / orch-trim / LEGACY_TRIM
+
+| 環境変数 | 既定（本番） | dev 自動 ON | 効果 |
+|---------|-------------|------------|------|
+| `CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY` | OFF | ✅ | IntentRouter LLM decision を triage map より優先 |
+| `CHAT_PIPELINE_V2_LEGACY_FALLBACK_TRIM` | OFF | ✅ | PRIMARY ON 時、dispatch 成功後の legacy 再実行を defensive bypass |
+| Phase 2 四種 + Phase 3 八種 | OFF | ✅ | `_ux_rollout_flag` 経由（violence guard / session_ops 等） |
+
+**主要変更**
+
+- **`config/llm_flags.py`**: `_ux_rollout_flag()` — 開発ランタイム（`APP_ENV=development`）で UX 十二種 + PRIMARY/TRIM を自動 ON。`LATENCY_*` は従来どおり明示 ON のみ
+- **`src/dialogue/routing/intent_router.py` / `intent_router_llm.py`**: PRIMARY 切替（triage map 降格）
+- **`src/handlers/chat_orchestrator.py`**: dispatch 成功 route では meta_triage / SessionAgent / Concierge / Store 再判定をスキップ（orch-trim）
+- **`src/handlers/chat/chat_post_pipeline.py`**: LEGACY_FALLBACK_TRIM 観測ログ
+- **`src/services/concierge_orchestrator.py` / `store_inquiry_handler.py` / `session_ops.py`**: `_intent_router_dispatch` 連携
+- **`scripts/verify_v2_canary_flags.py`（新規）**: dev auto-on / 本番 ALLOWLIST パターン検証
+- **`scripts/canary_sim_smoke.py`（新規）**: 固定 sid 手動スモーク
+- **`scripts/cloudrun_v2_env.example`**: 本番カナリア用 env 一覧更新
+- **`tests/config/test_ux_rollout_flags_dev.py`**, **`tests/dialogue/test_v2_primary_canary_flags.py`**, **`tests/handlers/test_orchestrator_primary_locked.py`**, **`tests/handlers/test_legacy_fallback_trim.py`**
+
+### p4b-5c-dev — dev Cloud Run コード反映
+
+- **背景**: dev は env 手動投入済み（rev `00142-ln2`）だがコードは `37da58c` 相当で Phase 4b 実装未反映
+- **`APP_ENV` タイポ `developmen` 修正**（`development` に統一）
+- 冗長 env（PRIMARY / TRIM / Phase 3 八種 / Phase 2 四種）を **削除可能**（コード自動 ON で代替）
+- 監視 t0 をコード反映時刻に **リセット**（`log/analysis/2026-07-03_dev_p4b-rollout_monitoring.json`）
+
+### 検証結果（ローカル v2 統合テスト）
+
+| レポート | PRIMARY | TRIM | 自動合格 | dispatch | 備考 |
+|---------|---------|------|---------|----------|------|
+| `p4a-dispatch-final` | OFF | OFF | **105/105** | 100% | 4a rebaseline |
+| `p4b4-primary-full` | ON | OFF | **104/105** | 100% | followup-07 rule 揺れ 1 件 |
+| `p4b5a-legacy-trim-full` | ON | ON | **104/105** | 100% | followup-04 Sage 揺れ（trim 非起因） |
+| dev sim | — | — | **FLAGS_OK** | — | `verify_v2_canary_flags.py`（APP_ENV=development のみ） |
+
+**本番カナリア 1**: 未実施（dev 24h KPI Go 待ち）。sim スモーク `p4b5b-canary-sim-smoke` は **3/3 OK**。
+
+### テスト
+
+- `tests/config/test_ux_rollout_flags_dev.py` — dev 自動 ON 十二種
+- `tests/dialogue/test_v2_primary_canary_flags.py` — 本番 ALLOWLIST パターン
+- `tests/dialogue/test_v2_flags.py` + `tests/dialogue/` + `tests/concierge/` — **351 passed**（コミット前）
+
+### ログ・分析成果物
+
+- **`log/analysis/`**: `p4a-dispatch-final` / `p4a-gate*` / `p4b2`〜`p4b5a` / `p3-followup-hotfix*` / `dev_p4b-rollout_monitoring`
+- **`log/raw/archive/2026-07-02_pre-p4a2-dispatch/`**: dispatch/shadow ログアーカイブ
+
+### 継続課題
+
+- **p4-unify**: legacy 物理削除・本番全面展開（plan 上は pending）
+- **e2e p95 < 5s**: Phase 1/1b レイテンシ（4b スコープ外）
+- **concierge-followup-04/07**: Sage / rule キーワード揺れ（既知・未対応）
 
 ---
 
@@ -8,7 +88,7 @@
 
 ### 概要
 
-**ブランチ `feature/chat-pipeline-v2`** に、[UX品質改善計画 v2](.cursor/plans/ux品質改善計画v2_7fab4ed6.plan.md) に基づく Phase 0〜3 を実装。ベースライン評価（`log/analysis/2026-07-01_local_v2_chat_test_post-quality-fix-full.md`、自動合格 **77/105**）から、計測基盤整備・レイテンシ最適化（フラグゲート）・安全トーン是正・ルーティング/内容精度改善を段階投入。**全機能フラグは既定 OFF**（明示有効化しない限り post-p0 と同一挙動）。**Phase 4**（IntentRouter 本線化・legacy 撤去）は未着手。
+**ブランチ `feature/chat-pipeline-v2`** に、[UX品質改善計画 v2](.cursor/plans/ux品質改善計画v2_7fab4ed6.plan.md) に基づく Phase 0〜3 を実装。ベースライン評価（`log/analysis/2026-07-01_local_v2_chat_test_post-quality-fix-full.md`、自動合格 **77/105**）から、計測基盤整備・レイテンシ最適化（フラグゲート）・安全トーン是正・ルーティング/内容精度改善を段階投入。**Phase 0–3 の機能フラグは本番・未設定時 OFF**（明示有効化しない限り post-p0 と同一挙動）。**Phase 4** は 7/3 エントリ参照（4a–4b 着手済み・dev では `APP_ENV=development` で自動 ON）。
 
 | Git コミット | 内容 |
 |-------------|------|
@@ -168,11 +248,11 @@
 - **`log/analysis/`**: `p1-baseline-off` / `p1-after-on` / `p1b-*` / `p2-violence-guard` / **`p3-full`**（JSON/MD/simulation_eval/session_ids）
 - **`log/log/`**: `2026-07-02-1.md`〜`2026-07-02-3.md` 日次ログ
 
-### 未着手・継続課題
+### 未着手・継続課題（7/2 時点）
 
-- **Phase 4**: IntentRouter LLM 本線化・legacy 撤去（shadow 一致率検証後）
+- **Phase 4**: → **7/3 エントリで 4a–4b 着手済み**（p4-unify / legacy 物理削除は pending）
 - **e2e p95 < 5s**: triage / NLU / 説明 / 個別アドバイス等の合成遅延。rb 内 LLM は MR-D で分離済み
-- **concierge_followup**: p3-full で 6/8（文脈キーワード 2 件要確認）
+- **concierge_followup**: p3-full で 6/8 → hotfix で -02/-03 解消（7/2 後半）
 
 ---
 

@@ -1,0 +1,41 @@
+{
+  "meta": {
+    "report_suffix": "p4b5b-canary-sim-smoke",
+    "started_at": "2026-07-02T14:54:25.361727+00:00",
+    "base_url": "http://127.0.0.1:5000/",
+    "canary_sid": "line:canary-test-01",
+    "non_canary_sid": "line:non-canary-test-99"
+  },
+  "results": [
+    {
+      "label": "canary_physical",
+      "sid": "line:canary-test-01",
+      "message": "頭が痛いです",
+      "http_status": 200,
+      "elapsed_ms": 44034.9,
+      "ok": true
+    },
+    {
+      "label": "canary_store",
+      "sid": "line:canary-test-01",
+      "message": "近くの薬局を教えて",
+      "http_status": 200,
+      "elapsed_ms": 7139.0,
+      "ok": true
+    },
+    {
+      "label": "non_canary_physical",
+      "sid": "line:non-canary-test-99",
+      "message": "頭が痛いです",
+      "http_status": 200,
+      "elapsed_ms": 35633.6,
+      "ok": true
+    }
+  ],
+  "all_ok": true,
+  "trim_log_counts": {
+    "legacy_fallback_trimmed": 0,
+    "legacy_fallback_allowed": 0,
+    "legacy_category_route_skipped": 0
+  }
+}

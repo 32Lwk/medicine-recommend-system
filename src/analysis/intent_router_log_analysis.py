@@ -4,6 +4,19 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
+from src.dialogue.routing.shadow_mismatch import infer_mismatch_kind_from_log
+
+
+def _pct(numerator: int, denominator: int) -> float:
+    if not denominator:
+        return 0.0
+    return round(numerator / denominator * 100, 2)
+
+
+def _safe_log_snippet(text: str, *, limit: int = 80) -> str:
+    snippet = (text or "")[:limit]
+    return "".join(ch if ch >= " " or ch == "\t" else " " for ch in snippet)
+
 
 def measure_intent_router_logs(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """dialogue_route_shadow / dialogue_route_dispatch JSONL 行を集計。"""
@@ -14,19 +27,28 @@ def measure_intent_router_logs(rows: list[dict[str, Any]]) -> dict[str, Any]:
     dispatch_handled = sum(1 for r in dispatch if r.get("handled"))
     dispatch_missed = sum(1 for r in dispatch if r.get("handled") is False)
 
+    shadow_kinds = [infer_mismatch_kind_from_log(r) for r in shadow]
+    improvement_count = sum(1 for k in shadow_kinds if k == "gate_improvement")
+    regression_count = sum(1 for k in shadow_kinds if k == "regression")
+    exempt_count = sum(1 for k in shadow_kinds if k == "exempt")
+
     shadow_by_route = dict(Counter(str(r.get("primary_route") or "unknown") for r in shadow))
     shadow_by_resolved = dict(Counter(str(r.get("resolved_by") or "unknown") for r in shadow))
+    shadow_by_mismatch_kind = dict(
+        Counter(k or "agree" for k in shadow_kinds)
+    )
     dispatch_by_handler = dict(Counter(str(r.get("handler") or "unknown") for r in dispatch))
 
-    mismatch_rate = (shadow_mismatch / len(shadow) * 100) if shadow else 0.0
-    dispatch_success_rate = (dispatch_handled / len(dispatch) * 100) if dispatch else 0.0
+    mismatch_rate = _pct(shadow_mismatch, len(shadow))
+    dispatch_success_rate = _pct(dispatch_handled, len(dispatch))
 
     samples_mismatch = [
         {
             "session_id": r.get("session_id"),
-            "user_input": (r.get("user_input") or "")[:80],
+            "user_input": _safe_log_snippet(str(r.get("user_input") or "")),
             "primary_route": r.get("primary_route"),
             "triage_category": r.get("triage_category"),
+            "mismatch_kind": infer_mismatch_kind_from_log(r),
             "dialogue_flags": r.get("dialogue_flags"),
         }
         for r in shadow
@@ -53,7 +75,14 @@ def measure_intent_router_logs(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "shadow_total": len(shadow),
         "shadow_mismatch": shadow_mismatch,
-        "shadow_mismatch_rate_pct": round(mismatch_rate, 2),
+        "shadow_mismatch_rate_pct": mismatch_rate,
+        "shadow_improvement_mismatch": improvement_count,
+        "shadow_improvement_mismatch_rate_pct": _pct(improvement_count, len(shadow)),
+        "shadow_regression_mismatch": regression_count,
+        "shadow_regression_mismatch_rate_pct": _pct(regression_count, len(shadow)),
+        "shadow_exempt": exempt_count,
+        "shadow_exempt_rate_pct": _pct(exempt_count, len(shadow)),
+        "shadow_by_mismatch_kind": shadow_by_mismatch_kind,
         "shadow_by_primary_route": shadow_by_route,
         "shadow_by_resolved_by": shadow_by_resolved,
         "shadow_with_fever_context_flag": shadow_with_fever_flag,
@@ -63,7 +92,7 @@ def measure_intent_router_logs(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "dispatch_total": len(dispatch),
         "dispatch_handled": dispatch_handled,
         "dispatch_unhandled": dispatch_missed,
-        "dispatch_success_rate_pct": round(dispatch_success_rate, 2),
+        "dispatch_success_rate_pct": dispatch_success_rate,
         "dispatch_by_handler": dispatch_by_handler,
         "mismatch_samples": samples_mismatch,
     }

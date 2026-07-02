@@ -154,6 +154,13 @@ def _is_medicine_consultation(text: str) -> bool:
     ):
         return False
 
+    if re.search(
+        r"(推奨|選び方|スコア).{0,12}(仕組み|方法|内部)|仕組み.{0,12}(推奨|薬|医薬)",
+        text,
+        re.I,
+    ):
+        return False
+
     if re.search(r"データ.{0,12}(保存|どこ|記憶)", text):
         return False
 

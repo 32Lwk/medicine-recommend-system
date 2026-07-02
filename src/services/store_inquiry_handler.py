@@ -239,6 +239,8 @@ def _is_ambiguous_facility_defer_only(user_text: str) -> bool:
 def is_store_route_locked(triage_result: Optional[Dict] = None) -> bool:
     """LLM トリアージで店舗案内・遺失物が確定している場合 True（Concierge redirect 禁止）。"""
     triage = triage_result or {}
+    if triage.get("_intent_router_dispatch") and triage.get("_store_dispatch_sub"):
+        return True
     if triage.get("category") != "Other":
         return False
     sub = (triage.get("subcategory") or "").lower()
@@ -573,7 +575,9 @@ def classify_inquiry_with_llm(user_text: str, client: OpenAI, triage_result: Opt
                     "reasoning": f"トリアージ LLM 結果: {subcategory}",
                 }
             # general_otherの場合は店舗案内として扱わない（カウンセリングフローに流す）
-            elif "general_other" in subcategory or subcategory == "":
+            elif ("general_other" in subcategory or subcategory == "") and not triage_result.get(
+                "_intent_router_dispatch"
+            ):
                 logger.info(f"🔍 トリアージ結果がgeneral_otherのため、店舗案内として扱わない: {subcategory}")
                 return {
                     "is_store_inquiry": False,
@@ -1416,7 +1420,8 @@ def handle_store_inquiry_with_two_stage(
         return None
     
     if should_defer_store_to_concierge(primary, triage_result) and not probable:
-        return None
+        if not (triage_result or {}).get("_intent_router_dispatch"):
+            return None
 
     if probable:
         active_text = primary

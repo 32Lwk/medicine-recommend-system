@@ -1,0 +1,2327 @@
+{
+  "meta": {
+    "date": "2026-07-02",
+    "report_suffix": "p4b2-primary-smoke",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-07-02T07:15:47.321530+00:00",
+    "elapsed_sec": 435.5,
+    "scenario_count": 32,
+    "total_turns": 32,
+    "auto_pass": 32,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "metrics": {
+    "since_unix": 1782976547.3215303,
+    "pipeline_baseline": {
+      "exit_code": 0,
+      "data": {
+        "counseling_detail_path": "D:\\Programing\\medicine-recommend\\log\\counseling_detail_log.jsonl",
+        "counseling_detail_total": 8212,
+        "with_response": 8212,
+        "response_missing": 0,
+        "response_missing_rate_pct": 0.0,
+        "intent_router": {
+          "shadow_total": 138,
+          "shadow_mismatch": 18,
+          "shadow_mismatch_rate_pct": 13.04,
+          "shadow_improvement_mismatch": 17,
+          "shadow_improvement_mismatch_rate_pct": 12.32,
+          "shadow_regression_mismatch": 1,
+          "shadow_regression_mismatch_rate_pct": 0.72,
+          "shadow_exempt": 0,
+          "shadow_exempt_rate_pct": 0.0,
+          "shadow_by_mismatch_kind": {
+            "agree": 120,
+            "gate_improvement": 17,
+            "regression": 1
+          },
+          "shadow_by_primary_route": {
+            "Physical": 45,
+            "Concierge": 46,
+            "Counseling": 22,
+            "Emergency": 8,
+            "Store": 17
+          },
+          "shadow_by_resolved_by": {
+            "gate": 81,
+            "legacy": 43,
+            "llm": 13,
+            "guard": 1
+          },
+          "shadow_with_fever_context_flag": 13,
+          "shadow_with_pending_cancelled_flag": 0,
+          "dispatch_with_fever_context_flag": 13,
+          "dispatch_with_pending_cancelled_flag": 0,
+          "dispatch_total": 135,
+          "dispatch_handled": 135,
+          "dispatch_unhandled": 0,
+          "dispatch_success_rate_pct": 100.0,
+          "dispatch_by_handler": {
+            "concierge_agent": 48,
+            "physical_agent": 47,
+            "counseling_processor": 21,
+            "store_inquiry": 17,
+            "emergency_agent": 2
+          },
+          "mismatch_samples": [
+            {
+              "session_id": "1782973789622525865487",
+              "user_input": "近くの薬局",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973917916280451456",
+              "user_input": "近くの薬局を教えて",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973931406085911208",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973944286547860166",
+              "user_input": "OTCを買える店",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973958078709834251",
+              "user_input": "処方箋なしで買える場所",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973972138396339780",
+              "user_input": "マツキヨは近くにありますか",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973985776412873150",
+              "user_input": "市販薬の購入先",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782974025130304889943",
+              "user_input": "マツキヨは近くにありますか",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782974034953233964996",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782974044763563580264",
+              "user_input": "2週間くらいです",
+              "primary_route": "Counseling",
+              "triage_category": "Ask",
+              "mismatch_kind": "regression",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976790703085148705",
+              "user_input": "近くの薬局を教えて",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976803771382313097",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976817282718313459",
+              "user_input": "OTCを買える店",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976831242466417989",
+              "user_input": "処方箋なしで買える場所",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976844060063906193",
+              "user_input": "マツキヨは近くにありますか",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976857874404248980",
+              "user_input": "市販薬の購入先",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976871542386910077",
+              "user_input": "マツキヨは近くにありますか",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976882031883795208",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            }
+          ]
+        },
+        "latency": {
+          "pipeline_perf_requests": 1023,
+          "total_ms_p50": 11416.6,
+          "total_ms_p95": 42400.53,
+          "total_ms_max": 68839.65,
+          "llm_calls_total": 2421,
+          "llm_calls_per_request_avg": 2.37,
+          "llm_by_path": {
+            "explanation_generator.batch_usage_notes": {
+              "count": 309,
+              "latency_ms_sum": 2685129.4,
+              "latency_ms_p50": 9082.24,
+              "latency_ms_p95": 14703.68
+            },
+            "missing_info_service": {
+              "count": 377,
+              "latency_ms_sum": 893043.44,
+              "latency_ms_p50": 2222.37,
+              "latency_ms_p95": 2998.43
+            },
+            "llm_triage.stage1": {
+              "count": 501,
+              "latency_ms_sum": 744371.58,
+              "latency_ms_p50": 1361.81,
+              "latency_ms_p95": 2154.78
+            },
+            "dialogue.intent_router_llm": {
+              "count": 330,
+              "latency_ms_sum": 412169.34,
+              "latency_ms_p50": 1135.81,
+              "latency_ms_p95": 1709.11
+            },
+            "chat_response_service.personalized_advice": {
+              "count": 243,
+              "latency_ms_sum": 397263.91,
+              "latency_ms_p50": 1482.31,
+              "latency_ms_p95": 2334.8
+            },
+            "concierge_agent.meta_architecture": {
+              "count": 137,
+              "latency_ms_sum": 239900.34,
+              "latency_ms_p50": 1681.36,
+              "latency_ms_p95": 2362.44
+            },
+            "counseling_followup.alt": {
+              "count": 129,
+              "latency_ms_sum": 191657.08,
+              "latency_ms_p50": 1304.02,
+              "latency_ms_p95": 2012.26
+            },
+            "counseling_generator.main": {
+              "count": 152,
+              "latency_ms_sum": 180774.62,
+              "latency_ms_p50": 1120.45,
+              "latency_ms_p95": 1723.71
+            },
+            "llm_triage.stage2": {
+              "count": 103,
+              "latency_ms_sum": 131085.79,
+              "latency_ms_p50": 1206.8,
+              "latency_ms_p95": 1797.61
+            },
+            "concierge_agent.greeting": {
+              "count": 38,
+              "latency_ms_sum": 65905.2,
+              "latency_ms_p50": 1520.43,
+              "latency_ms_p95": 2568.95
+            },
+            "llm_triage.combined": {
+              "count": 21,
+              "latency_ms_sum": 34766.56,
+              "latency_ms_p50": 1544.03,
+              "latency_ms_p95": 2305.76
+            },
+            "concierge_agent.meta_capabilities": {
+              "count": 27,
+              "latency_ms_sum": 32023.6,
+              "latency_ms_p50": 1056.93,
+              "latency_ms_p95": 1578.07
+            },
+            "concierge_agent.doc_privacy": {
+              "count": 8,
+              "latency_ms_sum": 24702.21,
+              "latency_ms_p50": 2996.27,
+              "latency_ms_p95": 3532.23
+            },
+            "explanation_generator.individual_usage": {
+              "count": 5,
+              "latency_ms_sum": 22762.64,
+              "latency_ms_p50": 4602.66,
+              "latency_ms_p95": 6168.72
+            },
+            "meta_triage.classify": {
+              "count": 15,
+              "latency_ms_sum": 14734.99,
+              "latency_ms_p50": 897.06,
+              "latency_ms_p95": 1220.22
+            },
+            "llm_medicine_service.select_symptoms": {
+              "count": 8,
+              "latency_ms_sum": 7491.59,
+              "latency_ms_p50": 888.99,
+              "latency_ms_p95": 1866.3
+            },
+            "counseling_followup": {
+              "count": 3,
+              "latency_ms_sum": 5755.9,
+              "latency_ms_p50": 1861.19,
+              "latency_ms_p95": 2117.67
+            },
+            "episode_summary_agent": {
+              "count": 2,
+              "latency_ms_sum": 4641.46,
+              "latency_ms_p50": 2320.73,
+              "latency_ms_p95": 2320.73
+            },
+            "concierge_agent.chitchat": {
+              "count": 3,
+              "latency_ms_sum": 4216.03,
+              "latency_ms_p50": 1486.3,
+              "latency_ms_p95": 1493.43
+            },
+            "moderation_agent": {
+              "count": 1,
+              "latency_ms_sum": 1236.76,
+              "latency_ms_p50": 1236.76,
+              "latency_ms_p95": 1236.76
+            },
+            "triage.stage1": {
+              "count": 9,
+              "latency_ms_sum": 1110.6,
+              "latency_ms_p50": 123.4,
+              "latency_ms_p95": 123.4
+            }
+          },
+          "breakdown_steps_avg_ms": {
+            "after_get_session_db": 391.13,
+            "after_security": 1364.36,
+            "after_triage": 4339.83,
+            "before_emoji_route": 1363.5,
+            "before_llm_setup": 700.84,
+            "before_orchestrator": 7062.52,
+            "before_security": 1327.4,
+            "before_triage": 1363.56,
+            "concierge_build_payload_end": 9939.0,
+            "concierge_build_payload_start": 7797.07,
+            "concierge_resolve_intent_end": 7796.7,
+            "concierge_resolve_intent_start": 7796.62,
+            "confidence_gate_done": 8798.14,
+            "delivery_mode": 352.85,
+            "emit_cards": 31162.43,
+            "explanation_phase_done": 31162.49,
+            "explanation_phase_start": 31162.49,
+            "first": 0.0,
+            "line_carousel_push": 31162.44,
+            "line_loading_start": 0.07,
+            "line_profile_fetch": 0.72,
+            "line_reply_done": 119.82,
+            "meta_triage_end": 9584.14,
+            "meta_triage_start": 8230.78,
+            "nlu_batch_done": 10887.22,
+            "nlu_batch_start": 7541.64,
+            "orch_enrich_end": 9393.77,
+            "orch_enrich_start": 8814.56,
+            "orch_handoff": 8799.69,
+            "orch_pre_social_intent": 8801.06,
+            "orch_route_concierge_end": 12396.73,
+            "orch_route_concierge_start": 9401.12,
+            "orch_route_end": 12320.18,
+            "parsed_message": 1.28,
+            "personalized_advice": 33643.53,
+            "post_start": 0.8,
+            "rb_explain_batch_done": 31524.12,
+            "rb_missing_info_done": 14484.85,
+            "rb_scoring_only_done": 17968.72,
+            "rule_based_scoring_only_done": 27862.38,
+            "rule_based_start": 12558.73,
+            "safety_gate_done": 6235.11,
+            "second": 0.01,
+            "session_db_read": 1.33
+          }
+        },
+        "gcp_analysis": {
+          "source_md": "log\\analysis\\2026-06-28_downloaded-logs-20260626-20260627-20260627-162735.md",
+          "counseling_detail_count_from_report": 0,
+          "turns_response_missing_from_report": 36,
+          "line_reply_fallback_push": 9,
+          "slowest_post_seconds": 49.4
+        },
+        "notes": {
+          "fast_path_ratio": "requires triage skip fields in structured logs (Wave 0 TODO)",
+          "end_guard_redirect_rate": "requires pipeline_end_guard field in session/logs"
+        }
+      },
+      "stderr": ""
+    },
+    "intent_router_shadow": {
+      "sources": {
+        "shadow_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_shadow_log.jsonl",
+        "dispatch_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_dispatch_log.jsonl",
+        "gcp_log": null
+      },
+      "local": {
+        "shadow_total": 138,
+        "shadow_mismatch": 18,
+        "shadow_mismatch_rate_pct": 13.04,
+        "shadow_improvement_mismatch": 17,
+        "shadow_improvement_mismatch_rate_pct": 12.32,
+        "shadow_regression_mismatch": 1,
+        "shadow_regression_mismatch_rate_pct": 0.72,
+        "shadow_exempt": 0,
+        "shadow_exempt_rate_pct": 0.0,
+        "shadow_by_mismatch_kind": {
+          "agree": 120,
+          "gate_improvement": 17,
+          "regression": 1
+        },
+        "shadow_by_primary_route": {
+          "Physical": 45,
+          "Concierge": 46,
+          "Counseling": 22,
+          "Emergency": 8,
+          "Store": 17
+        },
+        "shadow_by_resolved_by": {
+          "gate": 81,
+          "legacy": 43,
+          "llm": 13,
+          "guard": 1
+        },
+        "shadow_with_fever_context_flag": 13,
+        "shadow_with_pending_cancelled_flag": 0,
+        "dispatch_with_fever_context_flag": 13,
+        "dispatch_with_pending_cancelled_flag": 0,
+        "dispatch_total": 135,
+        "dispatch_handled": 135,
+        "dispatch_unhandled": 0,
+        "dispatch_success_rate_pct": 100.0,
+        "dispatch_by_handler": {
+          "concierge_agent": 48,
+          "physical_agent": 47,
+          "counseling_processor": 21,
+          "store_inquiry": 17,
+          "emergency_agent": 2
+        },
+        "mismatch_samples": [
+          {
+            "session_id": "1782973789622525865487",
+            "user_input": "近くの薬局",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973917916280451456",
+            "user_input": "近くの薬局を教えて",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973931406085911208",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973944286547860166",
+            "user_input": "OTCを買える店",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973958078709834251",
+            "user_input": "処方箋なしで買える場所",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973972138396339780",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973985776412873150",
+            "user_input": "市販薬の購入先",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782974025130304889943",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782974034953233964996",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782974044763563580264",
+            "user_input": "2週間くらいです",
+            "primary_route": "Counseling",
+            "triage_category": "Ask",
+            "mismatch_kind": "regression",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976790703085148705",
+            "user_input": "近くの薬局を教えて",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976803771382313097",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976817282718313459",
+            "user_input": "OTCを買える店",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976831242466417989",
+            "user_input": "処方箋なしで買える場所",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976844060063906193",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976857874404248980",
+            "user_input": "市販薬の購入先",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976871542386910077",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976882031883795208",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          }
+        ]
+      }
+    },
+    "intent_evaluation": {
+      "sessions_tracked": 32,
+      "counseling_rows_matched": 32,
+      "route_rows_matched": 39,
+      "per_session": {
+        "1782976608154822383601": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "保存されている情報は？",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976547349586264774": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "ステータスを教えて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976590367993893588": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "今の状態を教えて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976572592918335707": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "記憶を消して",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976844060063906193": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Store": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "マツキヨは近くにありますか",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976713399308469768": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 1,
+          "routes": {
+            "Concierge": 1
+          },
+          "intent_samples": [
+            {
+              "user_input": "プライバシーについて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976685098279400926": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Concierge": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "APIの仕組みを教えて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976566720731992859": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "履歴を教えて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976658592050462969": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Concierge": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "このサービスは何ができますか？",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976584381257132977": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "会話を削除したい",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976760109286134952": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Concierge": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "rule_basedとは",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976578518309959062": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "履歴消して",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976699695325909412": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Concierge": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "データはどこに保存されますか？",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976633046331299877": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Concierge": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "技術スタックは？",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976615140744835912": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "要約して",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976671941692428502": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Concierge": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "Sage Terraceとは",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976596233236764832": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "セッションの状態は？",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976790703085148705": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Store": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "近くの薬局を教えて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976831242466417989": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Store": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "処方箋なしで買える場所",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976871542386910077": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Store": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "マツキヨは近くにありますか",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976602154419122082": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "これまでの会話をまとめて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976774798820225179": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Concierge": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "インフラ構成を教えて",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976728434883420318": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Concierge": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "対応言語は？",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976817282718313459": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Store": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "OTCを買える店",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976857874404248980": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Store": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "市販薬の購入先",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976647410215410927": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Concierge": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "プリンシプルオブプログラミングとは？",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976742383297257598": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Concierge": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "医薬品推奨の仕組み",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976560368449760731": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "履歴を要約して",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976621264096257937": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Concierge": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "こんにちは",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976803771382313097": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Store": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "ドラッグストアはどこ？",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976554320049508374": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": [
+            {
+              "user_input": "何が記録されてる？",
+              "has_response": true
+            }
+          ]
+        },
+        "1782976882031883795208": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Store": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "ドラッグストアはどこ？",
+              "has_response": true
+            }
+          ]
+        }
+      },
+      "intent_router_metrics": {
+        "shadow_total": 20,
+        "shadow_mismatch": 8,
+        "shadow_mismatch_rate_pct": 40.0,
+        "shadow_improvement_mismatch": 8,
+        "shadow_improvement_mismatch_rate_pct": 40.0,
+        "shadow_regression_mismatch": 0,
+        "shadow_regression_mismatch_rate_pct": 0.0,
+        "shadow_exempt": 0,
+        "shadow_exempt_rate_pct": 0.0,
+        "shadow_by_mismatch_kind": {
+          "agree": 12,
+          "gate_improvement": 8
+        },
+        "shadow_by_primary_route": {
+          "Concierge": 12,
+          "Store": 8
+        },
+        "shadow_by_resolved_by": {
+          "gate": 9,
+          "llm": 10,
+          "guard": 1
+        },
+        "shadow_with_fever_context_flag": 0,
+        "shadow_with_pending_cancelled_flag": 0,
+        "dispatch_with_fever_context_flag": 0,
+        "dispatch_with_pending_cancelled_flag": 0,
+        "dispatch_total": 19,
+        "dispatch_handled": 19,
+        "dispatch_unhandled": 0,
+        "dispatch_success_rate_pct": 100.0,
+        "dispatch_by_handler": {
+          "concierge_agent": 11,
+          "store_inquiry": 8
+        },
+        "mismatch_samples": [
+          {
+            "session_id": "1782976790703085148705",
+            "user_input": "近くの薬局を教えて",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976803771382313097",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976817282718313459",
+            "user_input": "OTCを買える店",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976831242466417989",
+            "user_input": "処方箋なしで買える場所",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976844060063906193",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976857874404248980",
+            "user_input": "市販薬の購入先",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976871542386910077",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976882031883795208",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          }
+        ]
+      }
+    },
+    "counseling_detail_log.jsonl_lines_since_run": 32,
+    "dialogue_route_shadow_log.jsonl_lines_since_run": 20,
+    "dialogue_route_dispatch_log.jsonl_lines_since_run": 19,
+    "latency_this_run": {
+      "turns_measured": 32,
+      "e2e_ms_p50": 11055.0,
+      "e2e_ms_p95": 13259.0,
+      "e2e_ms_max": 15940.0,
+      "phase_breakdown": {
+        "pipeline_perf_requests": 32,
+        "total_ms_p50": 8570.06,
+        "total_ms_p95": 10789.18,
+        "total_ms_max": 13437.23,
+        "llm_calls_total": 36,
+        "llm_calls_per_request_avg": 1.12,
+        "llm_by_path": {
+          "dialogue.intent_router_llm": {
+            "count": 11,
+            "latency_ms_sum": 15680.54,
+            "latency_ms_p50": 1155.7,
+            "latency_ms_p95": 2767.6
+          },
+          "concierge_agent.meta_architecture": {
+            "count": 6,
+            "latency_ms_sum": 10731.37,
+            "latency_ms_p50": 1727.75,
+            "latency_ms_p95": 2401.16
+          },
+          "llm_triage.stage1": {
+            "count": 7,
+            "latency_ms_sum": 9984.15,
+            "latency_ms_p50": 1448.43,
+            "latency_ms_p95": 1655.73
+          },
+          "llm_triage.stage2": {
+            "count": 7,
+            "latency_ms_sum": 9534.99,
+            "latency_ms_p50": 1321.17,
+            "latency_ms_p95": 1642.03
+          },
+          "concierge_agent.chitchat": {
+            "count": 3,
+            "latency_ms_sum": 4216.03,
+            "latency_ms_p50": 1486.3,
+            "latency_ms_p95": 1493.43
+          },
+          "concierge_agent.doc_privacy": {
+            "count": 1,
+            "latency_ms_sum": 2854.54,
+            "latency_ms_p50": 2854.54,
+            "latency_ms_p95": 2854.54
+          },
+          "concierge_agent.greeting": {
+            "count": 1,
+            "latency_ms_sum": 2262.64,
+            "latency_ms_p50": 2262.64,
+            "latency_ms_p95": 2262.64
+          }
+        },
+        "breakdown_steps_avg_ms": {
+          "after_get_session_db": 373.17,
+          "after_security": 1277.68,
+          "after_triage": 4285.87,
+          "before_emoji_route": 1278.09,
+          "before_llm_setup": 662.82,
+          "before_orchestrator": 7237.18,
+          "before_security": 1263.94,
+          "before_triage": 1278.19,
+          "concierge_build_payload_end": 9215.28,
+          "concierge_build_payload_start": 6978.06,
+          "concierge_resolve_intent_end": 6977.69,
+          "concierge_resolve_intent_start": 6977.62,
+          "confidence_gate_done": 6655.89,
+          "orch_enrich_end": 6684.77,
+          "orch_enrich_start": 6684.29,
+          "orch_handoff": 6658.6,
+          "orch_pre_social_intent": 6659.61,
+          "orch_route_concierge_end": 10789.07,
+          "orch_route_concierge_start": 6685.07,
+          "orch_route_end": 10789.09,
+          "parsed_message": 0.6,
+          "post_start": 0.42,
+          "safety_gate_done": 6585.73,
+          "session_db_read": 0.67
+        }
+      }
+    },
+    "content_quality_judge": {
+      "judged": 32,
+      "overall_avg": 3.47,
+      "intent_fulfillment_avg": 2.94,
+      "tone_avg": 3.44,
+      "safety_avg": 4.81,
+      "low_overall_count": 9
+    }
+  },
+  "results": [
+    {
+      "scenario_id": "session-ops-01",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782976547349586264774",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "ステータスを教えて",
+          "http_status": 200,
+          "elapsed_ms": 5145,
+          "diagnosis_kind": "session_integrated_status",
+          "response_snippet": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "response_full": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 2.0,
+        "tone": 3.0,
+        "safety": 5.0,
+        "overall": 3.0,
+        "reason": "ボットの応答はユーザーの意図に対して具体的な情報を提供していないため、意図充足が低い。トーンは丁寧だが、もう少し共感を示すと良い。医療安全に関しては適切であるが、全体的に情報が不足している。"
+      }
+    },
+    {
+      "scenario_id": "session-ops-02",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782976554320049508374",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "何が記録されてる？",
+          "http_status": 200,
+          "elapsed_ms": 4151,
+          "diagnosis_kind": "session_recorded_items",
+          "response_snippet": "現在 0 項目の属性情報が登録されています。このセッションには 0 件のご発言があります。",
+          "response_full": "現在 0 項目の属性情報が登録されています。このセッションには 0 件のご発言があります。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 2.0,
+        "tone": 3.0,
+        "safety": 5.0,
+        "overall": 3.0,
+        "reason": "ボットの応答はユーザーの質問に対して具体的な情報を提供しているが、ユーザーの意図を完全には満たしていない。記録されている内容についての詳細や背景情報が不足しているため、意図充足は低め。トーンは丁寧だが、もう少し共感を示す表現があれば良かった。医療安全に関しては問題ない。"
+      }
+    },
+    {
+      "scenario_id": "session-ops-03",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782976560368449760731",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "履歴を要約して",
+          "http_status": 200,
+          "elapsed_ms": 4582,
+          "diagnosis_kind": "session_summary",
+          "response_snippet": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "response_full": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 1.0,
+        "tone": 2.0,
+        "safety": 5.0,
+        "overall": 2.0,
+        "reason": "ボットの応答はユーザーの意図に対してほとんど満たしていない。要約を求めているのに、履歴がないことを伝えるだけで、具体的なアクションを促す内容が不足している。トーンは少し冷たく感じられ、共感が欠けている。医療安全に関しては問題ないが、全体的にユーザーのニーズに応えられていない。"
+      }
+    },
+    {
+      "scenario_id": "session-ops-04",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782976566720731992859",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "履歴を教えて",
+          "http_status": 200,
+          "elapsed_ms": 4097,
+          "diagnosis_kind": "session_history_overview",
+          "response_snippet": "まだ会話履歴はありません。症状やお薬についてお話しいただくと、ここに履歴が表示されます。",
+          "response_full": "まだ会話履歴はありません。症状やお薬についてお話しいただくと、ここに履歴が表示されます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 3.0,
+        "tone": 4.0,
+        "safety": 5.0,
+        "overall": 4.0,
+        "reason": "ボットの応答は、ユーザーの意図である「履歴を教えて」に対して、履歴がないことを明確に伝えていますが、もう少し具体的な情報や次のステップを示すとより良いでしょう。トーンは丁寧であり、医療安全上も問題ありません。"
+      }
+    },
+    {
+      "scenario_id": "session-ops-05",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782976572592918335707",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "記憶を消して",
+          "http_status": 200,
+          "elapsed_ms": 4152,
+          "diagnosis_kind": "memory_delete_confirm",
+          "response_snippet": "このチャットの相談履歴と保存情報を削除します。よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。",
+          "response_full": "このチャットの相談履歴と保存情報を削除します。よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 3.0,
+        "tone": 4.0,
+        "safety": 5.0,
+        "overall": 4.0,
+        "reason": "ボットの応答はユーザーの意図に対して部分的に応じているが、記憶を消すという表現が具体的な行動に結びついていないため、意図充足はやや低め。トーンは丁寧であり、ユーザーに選択肢を提供しているため良好。医療安全上の適切さは高いが、ユーザーの意図に対する理解が不十分であるため、全体的には良いが改善の余地がある。"
+      }
+    },
+    {
+      "scenario_id": "session-ops-06",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782976578518309959062",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "履歴消して",
+          "http_status": 200,
+          "elapsed_ms": 4077,
+          "diagnosis_kind": "memory_delete_confirm",
+          "response_snippet": "このチャットの相談履歴と保存情報を削除します。よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。",
+          "response_full": "このチャットの相談履歴と保存情報を削除します。よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 5.0,
+        "tone": 4.0,
+        "safety": 5.0,
+        "overall": 5.0,
+        "reason": "ボットの応答はユーザーの意図を正確に理解し、履歴削除の手続きを明確に示しているため、意図充足は高い。トーンも丁寧であり、ユーザーに選択肢を提供しているため共感も感じられる。医療安全上の適切さも問題なく、全体的に非常に良い応答である。"
+      }
+    },
+    {
+      "scenario_id": "session-ops-07",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782976584381257132977",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "会話を削除したい",
+          "http_status": 200,
+          "elapsed_ms": 4085,
+          "diagnosis_kind": "memory_delete_confirm",
+          "response_snippet": "このチャットの相談履歴と保存情報を削除します。よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。",
+          "response_full": "このチャットの相談履歴と保存情報を削除します。よろしければ「削除する」、やめる場合は「キャンセル」とお送りください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 5.0,
+        "tone": 4.0,
+        "safety": 5.0,
+        "overall": 5.0,
+        "reason": "ボットの応答はユーザーの意図を正確に理解し、削除の手続きについて明確に説明しています。また、ユーザーに選択肢を提供しており、丁寧なトーンで対応しています。医療に関する情報ではないため、安全性も問題ありません。"
+      }
+    },
+    {
+      "scenario_id": "session-ops-08",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782976590367993893588",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "今の状態を教えて",
+          "http_status": 200,
+          "elapsed_ms": 4076,
+          "diagnosis_kind": "session_integrated_status",
+          "response_snippet": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "response_full": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 1.0,
+        "tone": 2.0,
+        "safety": 5.0,
+        "overall": 2.0,
+        "reason": "ユーザーの意図である「今の状態を教えて」という質問に対して、ボットの応答は具体的な情報を提供しておらず、ユーザーが求めている内容に対して不十分である。また、トーンも冷たく、共感が感じられない。医療安全に関しては適切だが、全体的な応答の質は低い。"
+      }
+    },
+    {
+      "scenario_id": "session-ops-09",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782976596233236764832",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "セッションの状態は？",
+          "http_status": 200,
+          "elapsed_ms": 4140,
+          "diagnosis_kind": "session_integrated_status",
+          "response_snippet": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "response_full": "チャット型医薬品相談ツール（β版）の利用状況です。個人を特定できる詳細は表示していません。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 3.0,
+        "tone": 3.0,
+        "safety": 5.0,
+        "overall": 4.0,
+        "reason": "ボットの応答はセッションの状態に関する情報を提供していますが、ユーザーの意図に対して具体的な状況や進行状況を示していないため、意図充足は中程度です。トーンは丁寧ですが、もう少し共感を示すと良いでしょう。医療安全に関しては適切です。総合的には良好ですが、改善の余地があります。"
+      }
+    },
+    {
+      "scenario_id": "session-ops-10",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782976602154419122082",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "これまでの会話をまとめて",
+          "http_status": 200,
+          "elapsed_ms": 4211,
+          "diagnosis_kind": "session_summary",
+          "response_snippet": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "response_full": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 1.0,
+        "tone": 2.0,
+        "safety": 5.0,
+        "overall": 2.0,
+        "reason": "ボットの応答はユーザーの意図である会話の要約を提供しておらず、期待される情報を満たしていない。トーンもやや冷たく、ユーザーの要望に対する共感が不足している。ただし、安全性に関しては問題ない。"
+      }
+    },
+    {
+      "scenario_id": "session-ops-11",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782976608154822383601",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "保存されている情報は？",
+          "http_status": 200,
+          "elapsed_ms": 5173,
+          "diagnosis_kind": "session_recorded_items",
+          "response_snippet": "現在 0 項目の属性情報が登録されています。このセッションには 0 件のご発言があります。",
+          "response_full": "現在 0 項目の属性情報が登録されています。このセッションには 0 件のご発言があります。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 5.0,
+        "tone": 4.0,
+        "safety": 5.0,
+        "overall": 5.0,
+        "reason": "ボットの応答はユーザーの意図に対して正確に情報を提供しており、文脈を適切に汲み取っています。また、トーンも丁寧であり、医療安全上の問題もないため、全体的に高評価です。"
+      }
+    },
+    {
+      "scenario_id": "session-ops-12",
+      "category": "session_ops",
+      "wave": "1a",
+      "session_id": "1782976615140744835912",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "要約して",
+          "http_status": 200,
+          "elapsed_ms": 4296,
+          "diagnosis_kind": "session_summary",
+          "response_snippet": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "response_full": "要約できる相談履歴がまだありません。症状やお薬についてお話しいただくと、ここに要約が表示されます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 2.0,
+        "tone": 3.0,
+        "safety": 5.0,
+        "overall": 3.0,
+        "reason": "ボットの応答は要約のリクエストに対して適切な情報を提供していないため、意図充足が低い。トーンは丁寧だが、もう少し共感を示すと良い。医療安全に関しては問題ないが、ユーザーの期待に応えられていないため、全体的な評価は中程度。"
+      }
+    },
+    {
+      "scenario_id": "concierge-01",
+      "category": "concierge",
+      "wave": "2",
+      "session_id": "1782976621264096257937",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "こんにちは",
+          "http_status": 200,
+          "elapsed_ms": 9997,
+          "diagnosis_kind": "concierge_greeting",
+          "response_snippet": "こんにちは！こちらは市販薬の相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話ししていただければ、適切な市販薬をご案内します。お気軽にご相談くださいね。",
+          "response_full": "こんにちは！こちらは市販薬の相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話ししていただければ、適切な市販薬をご案内します。お気軽にご相談くださいね。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 5.0,
+        "tone": 5.0,
+        "safety": 5.0,
+        "overall": 5.0,
+        "reason": "ボットの応答はユーザーの挨拶に対して適切に返答し、相談窓口としての役割を明確に示しています。また、具体的な症状についての言及があり、ユーザーが相談しやすい雰囲気を作っています。医療に関する情報提供の姿勢も安全性を考慮しており、全体的に非常に良い応答です。"
+      }
+    },
+    {
+      "scenario_id": "concierge-02",
+      "category": "concierge",
+      "wave": "2",
+      "session_id": "1782976633046331299877",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "技術スタックは？",
+          "http_status": 200,
+          "elapsed_ms": 12581,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "技術スタックは、チャット型の画面を HTML/CSS/バニラJS で作り、バックエンドは FastAPI でチャット入力を受け付ける構成です。\n\nリアルタイム配信には SSE を使って、回答の生成過程を段階的に送れます。\n\nまた、症状に応じた市販薬の候補選定は、症状辞書・効能・年齢・副作用・相互作用などを組み合わせたルールベースのスコアリングで行います。\n\n会話の振り分けはマルチエージェント構成で、内容に応じて適切な担当へ切り替える仕組みです。",
+          "response_full": "技術スタックは、チャット型の画面を HTML/CSS/バニラJS で作り、バックエンドは FastAPI でチャット入力を受け付ける構成です。\n\nリアルタイム配信には SSE を使って、回答の生成過程を段階的に送れます。\n\nまた、症状に応じた市販薬の候補選定は、症状辞書・効能・年齢・副作用・相互作用などを組み合わせたルールベースのスコアリングで行います。\n\n会話の振り分けはマルチエージェント構成で、内容に応じて適切な担当へ切り替える仕組みです。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 5.0,
+        "tone": 4.0,
+        "safety": 5.0,
+        "overall": 5.0,
+        "reason": "ボットの応答はユーザーの意図である「技術スタックは？」に対して具体的かつ詳細に回答しており、意図を完全に満たしています。また、技術的な説明が丁寧であり、専門的な内容を適切に伝えています。医療に関する情報も含まれているため、安全性も高いと評価できます。全体的に非常に良い応答です。"
+      }
+    },
+    {
+      "scenario_id": "concierge-03",
+      "category": "concierge",
+      "wave": "2",
+      "session_id": "1782976647410215410927",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "プリンシプルオブプログラミングとは？",
+          "http_status": 200,
+          "elapsed_ms": 9402,
+          "diagnosis_kind": "concierge_redirect",
+          "response_snippet": "こちらは一般用医薬品（OTC）の相談窓口です。頭痛・のどの痛み・お薬の選び方など、お困りのことがあれば具体的にお書きください。",
+          "response_full": "こちらは一般用医薬品（OTC）の相談窓口です。頭痛・のどの痛み・お薬の選び方など、お困りのことがあれば具体的にお書きください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 1.0,
+        "tone": 2.0,
+        "safety": 5.0,
+        "overall": 2.0,
+        "reason": "ボットの応答はユーザーの質問に対して全く関連性がなく、意図を満たしていない。トーンは丁寧だが、ユーザーの求めている情報に対して無関心に感じられる。医療安全に関しては問題ないが、全体的に不適切な応答である。"
+      }
+    },
+    {
+      "scenario_id": "concierge-04",
+      "category": "concierge",
+      "wave": "2",
+      "session_id": "1782976658592050462969",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "このサービスは何ができますか？",
+          "http_status": 200,
+          "elapsed_ms": 11563,
+          "diagnosis_kind": "concierge_chitchat",
+          "response_snippet": "このサービスでは、症状やお困りごとをもとに、市販薬の候補を整理したり、使う前に気をつけたい点を一緒に確認したりできます。あわせて、飲み合わせや注意が必要なケースの目安もご案内します。  \n気になる症状があれば、いつ頃からか、どんな感じかを教えてください。",
+          "response_full": "このサービスでは、症状やお困りごとをもとに、市販薬の候補を整理したり、使う前に気をつけたい点を一緒に確認したりできます。あわせて、飲み合わせや注意が必要なケースの目安もご案内します。  \n気になる症状があれば、いつ頃からか、どんな感じかを教えてください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 5.0,
+        "tone": 5.0,
+        "safety": 5.0,
+        "overall": 5.0,
+        "reason": "ボットの応答は、ユーザーの質問に対してサービスの機能を明確に説明しており、意図を完全に満たしています。また、丁寧な言葉遣いで共感を示し、ユーザーが具体的な症状を共有するよう促しています。医療に関する情報を提供する際の安全性も考慮されており、適切な内容です。総合的に非常に良い応答です。"
+      }
+    },
+    {
+      "scenario_id": "concierge-05",
+      "category": "concierge",
+      "wave": "2",
+      "session_id": "1782976671941692428502",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "Sage Terraceとは",
+          "http_status": 200,
+          "elapsed_ms": 11354,
+          "diagnosis_kind": "concierge_chitchat",
+          "response_snippet": "「Sage Terrace」は、文脈によって場所名・施設名・商品名などいくつかの意味で使われることがあります。もし見かけた場面がわかれば、もう少し近い意味で一緒に確認できます。",
+          "response_full": "「Sage Terrace」は、文脈によって場所名・施設名・商品名などいくつかの意味で使われることがあります。もし見かけた場面がわかれば、もう少し近い意味で一緒に確認できます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 3.0,
+        "tone": 4.0,
+        "safety": 5.0,
+        "overall": 4.0,
+        "reason": "ボットはユーザーの質問に対して情報を提供しようとしていますが、具体的な情報が不足しており、ユーザーの意図を完全には満たしていません。ただし、丁寧なトーンでの応答があり、医療安全に関する問題はありません。"
+      }
+    },
+    {
+      "scenario_id": "concierge-06",
+      "category": "concierge",
+      "wave": "2",
+      "session_id": "1782976685098279400926",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "APIの仕組みを教えて",
+          "http_status": 200,
+          "elapsed_ms": 12827,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "この仕組みでは、チャットの内容を受け取るAPIがあり、まず会話の種類を見分けてから、内容に合う担当へ振り分けます。\n\n必要に応じて複数の専門担当が連携するマルチエージェント方式で、たとえば症状の相談、案内、気持ちの相談などを役割分担して処理します。\n\n市販薬の候補を出す場合は、症状や年齢、注意事項などをルールベースで評価して選びます。\n\n開発環境では FastAPI で入力を受け、回答を段階的に送るために SSE を使う構成です。",
+          "response_full": "この仕組みでは、チャットの内容を受け取るAPIがあり、まず会話の種類を見分けてから、内容に合う担当へ振り分けます。\n\n必要に応じて複数の専門担当が連携するマルチエージェント方式で、たとえば症状の相談、案内、気持ちの相談などを役割分担して処理します。\n\n市販薬の候補を出す場合は、症状や年齢、注意事項などをルールベースで評価して選びます。\n\n開発環境では FastAPI で入力を受け、回答を段階的に送るために SSE を使う構成です。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 1.0,
+        "tone": 2.0,
+        "safety": 3.0,
+        "overall": 2.0,
+        "reason": "ユーザーの意図はAPIの仕組みを知りたいというものでしたが、ボットの応答は技術的な詳細に偏りすぎており、ユーザーが求めている情報を十分に満たしていません。また、専門用語が多く、一般的な理解を助ける説明が不足しています。トーンはやや冷たく、共感が感じられません。医療安全に関する情報は含まれていますが、全体的にユーザーのニーズに応じた応答ではありません。"
+      }
+    },
+    {
+      "scenario_id": "concierge-07",
+      "category": "concierge",
+      "wave": "2",
+      "session_id": "1782976699695325909412",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "データはどこに保存されますか？",
+          "http_status": 200,
+          "elapsed_ms": 11924,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "入力されたチャット内容は、バックエンドで受け取り、アクセスや処理状況はJSONL形式の構造化ログとして記録されます。\n\n開発環境ではFastAPIで処理し、回答の途中経過はSSEで段階的に配信します。\n\n保存先の細かな物理場所や運用方法は、この説明だけでは特定できませんが、技術情報としては上のような構成です。\n\n必要なら「個人情報がどう扱われるか」や「ログに何が残るか」も続けて説明できます。",
+          "response_full": "入力されたチャット内容は、バックエンドで受け取り、アクセスや処理状況はJSONL形式の構造化ログとして記録されます。\n\n開発環境ではFastAPIで処理し、回答の途中経過はSSEで段階的に配信します。\n\n保存先の細かな物理場所や運用方法は、この説明だけでは特定できませんが、技術情報としては上のような構成です。\n\n必要なら「個人情報がどう扱われるか」や「ログに何が残るか」も続けて説明できます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 3.0,
+        "tone": 3.0,
+        "safety": 4.0,
+        "overall": 3.0,
+        "reason": "ボットの応答は技術的な詳細に偏っており、ユーザーの質問に対する直接的な回答が不足している。データの保存場所についての具体的な情報がないため、意図充足は低め。トーンは丁寧だが、ユーザーの不安を和らげるような共感が不足している。医療安全上の適切さは高いが、全体的な応答の明確さとユーザーへの配慮が欠けているため、総合評価は中程度。"
+      }
+    },
+    {
+      "scenario_id": "concierge-08",
+      "category": "concierge",
+      "wave": "2",
+      "session_id": "1782976713399308469768",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "プライバシーについて",
+          "http_status": 200,
+          "elapsed_ms": 13259,
+          "diagnosis_kind": "concierge_doc_privacy",
+          "response_snippet": "・本アプリ「チャット型医薬品相談ツール」は、試験運用（βテスト）段階において、個人情報保護法および関連法令を遵守し、テスターのプライバシーを尊重するとしています。  \n・取得する情報には、症状、年齢層、性別、アレルギー、併用薬などのユーザー入力情報、利用履歴・アクセスログ・利用日時・エラー情報等、LINE 連携利用時の情報、アンケートやフィードバックフォームへの回答内容が含まれる場合があります。  \n・氏名・住所・電話番号など、個人を直接特定できる情報は、原則として収集しません。  \n・収集した情報は、本アプリの精度向上・不具合修正・機能改善、LINE 等での継続相談、Web ブラウザへの引き",
+          "response_full": "・本アプリ「チャット型医薬品相談ツール」は、試験運用（βテスト）段階において、個人情報保護法および関連法令を遵守し、テスターのプライバシーを尊重するとしています。  \n・取得する情報には、症状、年齢層、性別、アレルギー、併用薬などのユーザー入力情報、利用履歴・アクセスログ・利用日時・エラー情報等、LINE 連携利用時の情報、アンケートやフィードバックフォームへの回答内容が含まれる場合があります。  \n・氏名・住所・電話番号など、個人を直接特定できる情報は、原則として収集しません。  \n・収集した情報は、本アプリの精度向上・不具合修正・機能改善、LINE 等での継続相談、Web ブラウザへの引き継ぎ、テスト結果の分析および開発報告資料の作成、運営上必要な連絡のために限って利用します。  \n・取得情報は、法令に基づく場合または本人の明確な同意がある場合を除き、第三者に提供しません。  \n・取得情報は適切な技術的・組織的措置を講じて管理され、LINE 連携による長期記憶は一定期間保持されます。利用者はチャット上での削除依頼、または第7条の連絡先から、開示・訂正・削除を請求できます。  \n・運営者名：川嶋 宥翔（Kawashima Yuto）／不具合報告フォーム：https://forms.gle/UB8kZHd4VHenmRUN6／メールアドレス：weary-scoots.7y@icloud.com  \n・詳細は画面右上の ℹ️（情報）から各種ドキュメントの全文を確認できます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 5.0,
+        "tone": 3.0,
+        "safety": 5.0,
+        "overall": 4.0,
+        "reason": "ボットの応答はプライバシーに関する詳細な情報を提供しており、ユーザーの意図を十分に満たしています。ただし、情報が長く、ユーザーにとって理解しづらい可能性があるため、トーンはやや低めに評価しました。医療安全に関しても適切な内容であり、全体的には良好な応答です。"
+      }
+    },
+    {
+      "scenario_id": "concierge-09",
+      "category": "concierge",
+      "wave": "2",
+      "session_id": "1782976728434883420318",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "対応言語は？",
+          "http_status": 200,
+          "elapsed_ms": 12150,
+          "diagnosis_kind": "concierge_chitchat",
+          "response_snippet": "対応は日本語です。  \n必要なら、このまま日本語で市販薬の相談を続けられますし、英語での案内がよければその形にも合わせます。",
+          "response_full": "対応は日本語です。  \n必要なら、このまま日本語で市販薬の相談を続けられますし、英語での案内がよければその形にも合わせます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 5.0,
+        "tone": 5.0,
+        "safety": 5.0,
+        "overall": 5.0,
+        "reason": "ボットの応答はユーザーの意図に完全に応えており、対応言語について明確に説明しています。また、ユーザーが希望する言語に合わせる柔軟性も示しており、丁寧で共感的なトーンが保たれています。医療に関する相談においても安全性が確保されているため、全体的に非常に良い応答です。"
+      }
+    },
+    {
+      "scenario_id": "concierge-10",
+      "category": "concierge",
+      "wave": "2",
+      "session_id": "1782976742383297257598",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "医薬品推奨の仕組み",
+          "http_status": 200,
+          "elapsed_ms": 15940,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "医薬品推奨は、症状や年齢、注意が必要な併用薬・副作用などの条件をもとに、ルールベースのスコアリングで候補を絞る仕組みです。\n\n必要に応じて複数の専門担当が連携するマルチエージェント構成になっていて、内容の振り分け、候補の選定、説明、質問対応を分担します。\n\n候補の市販薬は自由に作るのではなく、あらかじめ定義された条件に沿って選ばれます。\n\n開発環境では FastAPI を使い、チャット入力をHTTPで受け、SSEで回答の途中経過を段階的に配信します。",
+          "response_full": "医薬品推奨は、症状や年齢、注意が必要な併用薬・副作用などの条件をもとに、ルールベースのスコアリングで候補を絞る仕組みです。\n\n必要に応じて複数の専門担当が連携するマルチエージェント構成になっていて、内容の振り分け、候補の選定、説明、質問対応を分担します。\n\n候補の市販薬は自由に作るのではなく、あらかじめ定義された条件に沿って選ばれます。\n\n開発環境では FastAPI を使い、チャット入力をHTTPで受け、SSEで回答の途中経過を段階的に配信します。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 2.0,
+        "tone": 3.0,
+        "safety": 4.0,
+        "overall": 3.0,
+        "reason": "ボットの応答は医薬品推奨の仕組みについて詳細に説明しているが、ユーザーの意図に対して具体的な情報提供が不足している。専門的な用語が多く、一般のユーザーには理解しづらい可能性があるため、意図充足度は低め。また、共感や丁寧さはあるが、もう少しユーザーに寄り添った表現が望ましい。医療安全に関しては適切な情報が含まれているため、評価は高い。"
+      }
+    },
+    {
+      "scenario_id": "concierge-11",
+      "category": "concierge",
+      "wave": "2",
+      "session_id": "1782976760109286134952",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "rule_basedとは",
+          "http_status": 200,
+          "elapsed_ms": 12906,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "rule_based は、あらかじめ決めたルールに従って機械的に判定する方式です。\n\nたとえば症状・年齢・併用薬などの条件をチェックして、合う候補を点数化して選びます。\n\nこの仕組みでは、AIが自由に薬名を作るのではなく、登録された条件とルールだけで市販薬候補を絞り込みます。\n\n必要なら、マルチエージェントとの違いも短く説明できます。",
+          "response_full": "rule_based は、あらかじめ決めたルールに従って機械的に判定する方式です。\n\nたとえば症状・年齢・併用薬などの条件をチェックして、合う候補を点数化して選びます。\n\nこの仕組みでは、AIが自由に薬名を作るのではなく、登録された条件とルールだけで市販薬候補を絞り込みます。\n\n必要なら、マルチエージェントとの違いも短く説明できます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 5.0,
+        "tone": 4.0,
+        "safety": 5.0,
+        "overall": 5.0,
+        "reason": "ボットの応答は、ユーザーの質問に対して明確で具体的な説明を提供しており、意図を十分に満たしています。また、丁寧な表現が使われており、共感を示しています。医療に関する内容も安全に扱われており、適切です。"
+      }
+    },
+    {
+      "scenario_id": "concierge-12",
+      "category": "concierge",
+      "wave": "2",
+      "session_id": "1782976774798820225179",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "インフラ構成を教えて",
+          "http_status": 200,
+          "elapsed_ms": 13560,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "このサービスのインフラは、チャット入力を受けるFastAPIのバックエンドと、画面側のHTML/CSS/JavaScriptで構成され、必要に応じてSSEで回答の進行を段階的に配信します。\n\nマルチエージェントは、問い合わせ内容をまず振り分けて、症状相談・案内・傾聴・緊急案内などを役割分担しながら連携する仕組みです。\n\n市販薬の候補選定は、症状や注意事項をもとにしたルールベースのスコアリングで行われます。",
+          "response_full": "このサービスのインフラは、チャット入力を受けるFastAPIのバックエンドと、画面側のHTML/CSS/JavaScriptで構成され、必要に応じてSSEで回答の進行を段階的に配信します。\n\nマルチエージェントは、問い合わせ内容をまず振り分けて、症状相談・案内・傾聴・緊急案内などを役割分担しながら連携する仕組みです。\n\n市販薬の候補選定は、症状や注意事項をもとにしたルールベースのスコアリングで行われます。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 1.0,
+        "tone": 2.0,
+        "safety": 3.0,
+        "overall": 1.0,
+        "reason": "ユーザーの意図である「インフラ構成を教えて」に対して、ボットの応答は技術的な詳細を提供しているが、ユーザーが求めている情報とは異なる内容が多く含まれているため、意図充足は低い。トーンは技術的で冷たい印象を与え、共感や丁寧さに欠ける。医療安全に関する情報は含まれているが、ユーザーの質問には直接関係しないため、全体的に不適切な応答となっている。"
+      }
+    },
+    {
+      "scenario_id": "store-01",
+      "category": "store",
+      "wave": "1b",
+      "session_id": "1782976790703085148705",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "近くの薬局を教えて",
+          "http_status": 200,
+          "elapsed_ms": 11299,
+          "diagnosis_kind": "store_locator",
+          "response_snippet": "薬局の場所についてお尋ねいただき、ありがとうございます。\n\n周辺のご案内は詳しい情報をお持ちしていないため、店内のスタッフにお尋ねください。\nお近くのスタッフまでお気軽にお声がけください。",
+          "response_full": "薬局の場所についてお尋ねいただき、ありがとうございます。\n\n周辺のご案内は詳しい情報をお持ちしていないため、店内のスタッフにお尋ねください。\nお近くのスタッフまでお気軽にお声がけください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 1.0,
+        "tone": 3.0,
+        "safety": 5.0,
+        "overall": 2.0,
+        "reason": "ユーザーの意図である「近くの薬局を教えて」というリクエストに対して、具体的な情報を提供できていないため、意図充足が低い。トーンは丁寧だが、実用的な情報が欠けているため、全体的な評価も低くなっている。医療安全に関しては問題ないが、ユーザーのニーズに応えられていない。"
+      }
+    },
+    {
+      "scenario_id": "store-02",
+      "category": "store",
+      "wave": "1b",
+      "session_id": "1782976803771382313097",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "ドラッグストアはどこ？",
+          "http_status": 200,
+          "elapsed_ms": 11744,
+          "diagnosis_kind": "store_locator",
+          "response_snippet": "「ドラッグストア」の在庫・お取り扱いについてお尋ねいただき、ありがとうございます。\n\n店内のスタッフにお尋ねいただければ、在庫状況を詳しくご案内いたします。\nお近くのスタッフまでお気軽にお声がけください。",
+          "response_full": "「ドラッグストア」の在庫・お取り扱いについてお尋ねいただき、ありがとうございます。\n\n店内のスタッフにお尋ねいただければ、在庫状況を詳しくご案内いたします。\nお近くのスタッフまでお気軽にお声がけください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 1.0,
+        "tone": 3.0,
+        "safety": 5.0,
+        "overall": 2.0,
+        "reason": "ユーザーの意図である「ドラッグストアはどこ？」に対して、具体的な場所を示すことなく、店内のスタッフに尋ねるように促しているため、意図が十分に充足されていない。トーンは丁寧だが、ユーザーの質問に対する直接的な回答が欠けている。医療安全に関しては問題ないが、全体的に不十分な応答である。"
+      }
+    },
+    {
+      "scenario_id": "store-03",
+      "category": "store",
+      "wave": "1b",
+      "session_id": "1782976817282718313459",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "OTCを買える店",
+          "http_status": 200,
+          "elapsed_ms": 12181,
+          "diagnosis_kind": "store_inventory",
+          "response_snippet": "市販薬（OTC）の購入場所についてお尋ねいただき、ありがとうございます。\n\n当店では市販薬を取り扱っております。売場の場所や在庫については、店内のスタッフにお尋ねいただければ詳しくご案内いたします。\nお近くのスタッフまでお気軽にお声がけください。",
+          "response_full": "市販薬（OTC）の購入場所についてお尋ねいただき、ありがとうございます。\n\n当店では市販薬を取り扱っております。売場の場所や在庫については、店内のスタッフにお尋ねいただければ詳しくご案内いたします。\nお近くのスタッフまでお気軽にお声がけください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 4.0,
+        "tone": 5.0,
+        "safety": 5.0,
+        "overall": 4.0,
+        "reason": "ボットの応答は、ユーザーの意図であるOTCを購入できる店についての情報を提供しており、適切な対応を示しています。ただし、具体的な店舗名や場所の情報が不足しているため、意図充足は4としました。トーンは丁寧で共感的であり、安全性も問題ありません。"
+      }
+    },
+    {
+      "scenario_id": "store-04",
+      "category": "store",
+      "wave": "1b",
+      "session_id": "1782976831242466417989",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "処方箋なしで買える場所",
+          "http_status": 200,
+          "elapsed_ms": 11055,
+          "diagnosis_kind": "store_facilities",
+          "response_snippet": "市販薬（OTC）の購入場所についてお尋ねいただき、ありがとうございます。\n\n当店では市販薬を取り扱っております。売場の場所や在庫については、店内のスタッフにお尋ねいただければ詳しくご案内いたします。\nお近くのスタッフまでお気軽にお声がけください。",
+          "response_full": "市販薬（OTC）の購入場所についてお尋ねいただき、ありがとうございます。\n\n当店では市販薬を取り扱っております。売場の場所や在庫については、店内のスタッフにお尋ねいただければ詳しくご案内いたします。\nお近くのスタッフまでお気軽にお声がけください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 4.0,
+        "tone": 5.0,
+        "safety": 5.0,
+        "overall": 4.0,
+        "reason": "ボットはユーザーの意図に対して適切に市販薬の購入場所を案内しており、丁寧なトーンで応答しています。ただし、具体的な購入場所の情報が不足しているため、意図充足は4としました。医療安全に関しては問題ありません。"
+      }
+    },
+    {
+      "scenario_id": "store-05",
+      "category": "store",
+      "wave": "1b",
+      "session_id": "1782976844060063906193",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "マツキヨは近くにありますか",
+          "http_status": 200,
+          "elapsed_ms": 12063,
+          "diagnosis_kind": "store_locator",
+          "response_snippet": "当キオスクでは近隣店舗の位置情報は提供できません。地図アプリまたは各チェーンの公式サイトでご確認ください。\n\n店内の市販薬（OTC）売場や在庫については、お近くのスタッフにお声がけください。",
+          "response_full": "当キオスクでは近隣店舗の位置情報は提供できません。地図アプリまたは各チェーンの公式サイトでご確認ください。\n\n店内の市販薬（OTC）売場や在庫については、お近くのスタッフにお声がけください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 2.0,
+        "tone": 3.0,
+        "safety": 5.0,
+        "overall": 3.0,
+        "reason": "ボットの応答はユーザーの意図である近くのマツキヨの位置情報を直接提供していないため、意図充足が低い。トーンは丁寧だが、もう少し共感を示すことができた。医療安全に関しては問題ないが、全体的にユーザーの質問に対する直接的な回答が不足している。"
+      }
+    },
+    {
+      "scenario_id": "store-06",
+      "category": "store",
+      "wave": "1b",
+      "session_id": "1782976857874404248980",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "市販薬の購入先",
+          "http_status": 200,
+          "elapsed_ms": 11914,
+          "diagnosis_kind": "store_inventory",
+          "response_snippet": "市販薬（OTC）の購入場所についてお尋ねいただき、ありがとうございます。\n\n当店では市販薬を取り扱っております。売場の場所や在庫については、店内のスタッフにお尋ねいただければ詳しくご案内いたします。\nお近くのスタッフまでお気軽にお声がけください。",
+          "response_full": "市販薬（OTC）の購入場所についてお尋ねいただき、ありがとうございます。\n\n当店では市販薬を取り扱っております。売場の場所や在庫については、店内のスタッフにお尋ねいただければ詳しくご案内いたします。\nお近くのスタッフまでお気軽にお声がけください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 5.0,
+        "tone": 5.0,
+        "safety": 5.0,
+        "overall": 5.0,
+        "reason": "ボットの応答はユーザーの意図である市販薬の購入先に対して明確に答えており、丁寧な表現で共感を示しています。また、医療安全上も適切な情報を提供しており、全体的に非常に良い応答です。"
+      }
+    },
+    {
+      "scenario_id": "store-matsukiyo-01",
+      "category": "store",
+      "wave": "1b",
+      "session_id": "1782976871542386910077",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "マツキヨは近くにありますか",
+          "http_status": 200,
+          "elapsed_ms": 8730,
+          "diagnosis_kind": "store_locator",
+          "response_snippet": "当キオスクでは近隣店舗の位置情報は提供できません。地図アプリまたは各チェーンの公式サイトでご確認ください。\n\n店内の市販薬（OTC）売場や在庫については、お近くのスタッフにお声がけください。",
+          "response_full": "当キオスクでは近隣店舗の位置情報は提供できません。地図アプリまたは各チェーンの公式サイトでご確認ください。\n\n店内の市販薬（OTC）売場や在庫については、お近くのスタッフにお声がけください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "他社チェーン locator → store_locator",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 2.0,
+        "tone": 3.0,
+        "safety": 5.0,
+        "overall": 3.0,
+        "reason": "ボットの応答は、ユーザーの意図である近くのマツキヨの位置情報を提供できないと明言しており、意図を完全には満たしていない。トーンは丁寧だが、もう少し共感を示すことができた。医療安全に関しては問題ないが、ユーザーのニーズに対する応答が不十分であるため、全体的な評価は中程度。"
+      }
+    },
+    {
+      "scenario_id": "store-drugstore-where-01",
+      "category": "store",
+      "wave": "1b",
+      "session_id": "1782976882031883795208",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "ドラッグストアはどこ？",
+          "http_status": 200,
+          "elapsed_ms": 8256,
+          "diagnosis_kind": "store_locator",
+          "response_snippet": "「ドラッグストア」の在庫・お取り扱いについてお尋ねいただき、ありがとうございます。\n\n店内のスタッフにお尋ねいただければ、在庫状況を詳しくご案内いたします。\nお近くのスタッフまでお気軽にお声がけください。",
+          "response_full": "「ドラッグストア」の在庫・お取り扱いについてお尋ねいただき、ありがとうございます。\n\n店内のスタッフにお尋ねいただければ、在庫状況を詳しくご案内いたします。\nお近くのスタッフまでお気軽にお声がけください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {
+        "intent_fulfillment": 1.0,
+        "tone": 3.0,
+        "safety": 5.0,
+        "overall": 2.0,
+        "reason": "ボットの応答はユーザーの意図である「ドラッグストアはどこ？」に対して具体的な場所を示さず、在庫についての情報に偏っているため、意図充足が低い。トーンは丁寧だが、ユーザーの質問に対する直接的な回答が欠けている。医療安全に関しては問題ないが、全体的に不十分な応答である。"
+      }
+    }
+  ]
+}

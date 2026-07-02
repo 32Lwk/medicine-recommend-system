@@ -202,6 +202,14 @@ def try_concierge_response(
         logger.info("Skipping Concierge: LLM infrastructure degraded sid=%s", sid)
         return None
 
+    router_dispatch = bool((triage_result or {}).get("_intent_router_dispatch"))
+    if router_dispatch:
+        from src.dialogue.session_ops import try_answer_pending_delete_cancel
+
+        cancel_resp = try_answer_pending_delete_cancel(session, sid, sanitized_message or user_message)
+        if cancel_resp is not None:
+            return cancel_resp
+
     routing_text = (sanitized_message or user_message or "").strip()
     llm_text = resolve_llm_user_text(user_message=user_message)
     alt_texts = [t for t in (user_message, processed_message, sanitized_message) if t]
@@ -230,7 +238,10 @@ def try_concierge_response(
     if (
         triage_result
         and triage_result.get("category") == "Other"
-        and not triage_result.get("concierge_intent")
+        and (
+            not triage_result.get("concierge_intent")
+            or triage_result.get("concierge_intent") == "general_other"
+        )
     ):
         from src.services.concierge_orchestrator import enrich_other_concierge_intent
 
