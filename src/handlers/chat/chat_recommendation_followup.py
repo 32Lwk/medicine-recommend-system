@@ -231,6 +231,17 @@ def run_recommendation_followups(
     Other かつ店舗案内でない場合の再推奨・医薬品質問フォローアップ。
     早期応答時は response を、漢方フォロー時はメッセージ差し替えを返す。
     """
+    try:
+        from src.handlers.chat.reco_dedup import try_reco_followup_short_circuit
+
+        reco_early = try_reco_followup_short_circuit(
+            session, sid, user_message, sanitized_message
+        )
+        if reco_early is not None:
+            return FollowupResult(response=reco_early)
+    except ImportError:
+        pass
+
     if _should_use_recommendation_summary_mode(session, sanitized_message):
         logger.info("推奨要約モード: 直近推奨後の曖昧入力のため再スコアリングをスキップ")
         return FollowupResult(

@@ -111,14 +111,19 @@ def _dispatch_store_incident(
     trace_id: Optional[str] = None,
     moderation_label: Optional[str] = None,
 ) -> Optional[ResponseTuple]:
-    from src.services.store_emergency_handler import handle_store_emergency
+    from src.services.store_emergency_handler import (
+        handle_store_emergency,
+        resolve_emergency_channel,
+    )
 
     user_language = resolve_session_language(session)
+    emergency_channel = resolve_emergency_channel(sid)
     emergency_result = handle_store_emergency(
         sanitized_message,
         recommendation_client,
         triage_result,
         user_language,
+        channel=emergency_channel,
     )
     if not emergency_result or not emergency_result.get("is_emergency"):
         # triage Emergency のフォールバック

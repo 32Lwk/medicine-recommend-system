@@ -13,3 +13,5 @@
 {"log_type": "medicine_question_detail", "timestamp": "2026-07-01T02:46:54.579569", "session_id": "sid1", "user_input": "風邪薬は？", "response": "ok"}
 {"log_type": "medicine_question_detail", "timestamp": "2026-07-01T02:58:17.923065", "session_id": "sid1", "user_input": "風邪薬は？", "response": "ok"}
 {"log_type": "medicine_question_detail", "timestamp": "2026-07-01T03:08:40.883996", "session_id": "sid1", "user_input": "風邪薬は？", "response": "ok"}
+{"log_type": "medicine_question_detail", "timestamp": "2026-07-02T04:15:16.289364", "session_id": "sid1", "user_input": "風邪薬は？", "response": "ok"}
+{"log_type": "medicine_question_detail", "timestamp": "2026-07-02T04:22:11.062578", "session_id": "sid1", "user_input": "風邪薬は？", "response": "ok"}

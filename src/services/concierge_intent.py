@@ -443,6 +443,25 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"(プログラミング|アルゴリズム|データ構造).{0,8}(とは|って何)"), "redirect"),
 ]
 
+# Phase 3 (p3-concierge, 前半): API/SSE/rule_based 等の技術メタ質問プローブ。
+# フラグ ROUTING_CONCIERGE_INTENT ON 時のみ probe_meta_concierge_intent から参照される
+# （既存 _META_PROBE_RULES は無変更のまま維持し、追加のみで拡張する）。
+_META_PROBE_RULES_EXTENDED: list[tuple[re.Pattern[str], ConciergeIntent]] = [
+    (re.compile(r"API.{0,16}(仕組み|何|教えて|使い方|とは)", re.I), "architecture"),
+    (re.compile(r"SSE|Server[\s-]?Sent[\s-]?Events?", re.I), "architecture"),
+    # 既存 "ルールベース|rule[\s-]?based" はハイフン/空白のみ対応でアンダースコア非対応のため追加
+    (re.compile(r"rule[_\s-]?based", re.I), "architecture"),
+]
+
+
+def _is_concierge_intent_routing_enabled() -> bool:
+    try:
+        from config.llm_flags import is_concierge_intent_routing_enabled
+
+        return is_concierge_intent_routing_enabled()
+    except ImportError:
+        return False
+
 
 def probe_session_admin_intent(user_text: str) -> Optional[str]:
     """セッション操作（削除・要約・ステータス）のキーワードプローブ。"""
@@ -465,6 +484,10 @@ def probe_meta_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
     for pattern, intent in _META_PROBE_RULES:
         if pattern.search(text):
             return intent
+    if _is_concierge_intent_routing_enabled():
+        for pattern, intent in _META_PROBE_RULES_EXTENDED:
+            if pattern.search(text):
+                return intent
     return None
 
 

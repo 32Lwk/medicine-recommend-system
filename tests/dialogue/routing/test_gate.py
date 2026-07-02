@@ -1,6 +1,8 @@
 """deterministic gate テスト。"""
 from __future__ import annotations
 
+import pytest
+
 from src.dialogue.routing.gate import run_deterministic_gate
 
 
@@ -109,6 +111,25 @@ def test_gate_concierge_architecture_follow_up():
     assert d is not None
     assert d.primary_route == "Concierge"
     assert d.sub_route == "architecture"
+
+
+def test_gate_concierge_redirect_follow_up_flag_on(monkeypatch):
+    monkeypatch.setenv("ROUTING_CONCIERGE_FOLLOWUP", "true")
+    session = {
+        "messages": [
+            {"type": "user", "content": "プリンシプルオブプログラミングとは？"},
+            {
+                "type": "bot",
+                "content": "redirect",
+                "concierge_intent": "redirect",
+            },
+        ],
+        "concierge_state": {"last_intent": "redirect"},
+    }
+    d = run_deterministic_gate("具体例を教えて", session, "web-1")
+    assert d is not None
+    assert d.primary_route == "Concierge"
+    assert d.sub_route == "redirect"
 
 
 def test_gate_correction_physical():

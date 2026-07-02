@@ -876,6 +876,8 @@ def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, req
                 "last_triage_result",
                 "_last_triage_result",
                 "pending_memory_delete",
+                "dialogue_state",
+                "clarification_text_counts",
             ):
                 if flag in session_data:
                     safe_session[flag] = session_data[flag]

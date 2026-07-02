@@ -10,6 +10,49 @@ from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
+
+def _is_violence_context_guard_enabled() -> bool:
+    """config.llm_flags への遅延 import（循環 import 回避、既存 convention に合わせる）。"""
+    try:
+        from config.llm_flags import is_violence_context_guard_enabled
+
+        return is_violence_context_guard_enabled()
+    except ImportError:
+        return False
+
+
+def _is_emergency_channel_split_enabled() -> bool:
+    try:
+        from config.llm_flags import is_emergency_channel_split_enabled
+
+        return is_emergency_channel_split_enabled()
+    except ImportError:
+        return False
+
+
+def resolve_emergency_channel(sid: Optional[str]) -> str:
+    """緊急応答の文言出し分け用チャネルを解決する（Phase 2, p2-emergency-channel）。
+
+    - "kiosk": 店頭キオスク専用デプロイ（`EMERGENCY_KIOSK_MODE=true`）。スタッフ文言を維持。
+    - "line" / "web": 通常の Web/LINE 利用者。公的窓口（119/110/受診）中心の文言に出し分け対象。
+    """
+    try:
+        from config.llm_flags import is_kiosk_deployment
+
+        if is_kiosk_deployment():
+            return "kiosk"
+    except ImportError:
+        pass
+    try:
+        from src.handlers.line.line_session import is_line_session_id
+
+        if sid and is_line_session_id(sid):
+            return "line"
+    except ImportError:
+        pass
+    return "web"
+
+
 # 緊急事案のキーワード辞書
 EMERGENCY_KEYWORDS = {
     "suspicious_person": [
@@ -242,6 +285,30 @@ MEDICAL_CONSULTATION_INDICATORS = [
     'できました', 'できています', 'できた', 'できる',
 ]
 
+# Phase 2 (p2-violence-guard): violence の曖昧語（口論〜暴力まで意味の幅が広い表現）。
+# 単体では緊急検知せず、強い暴力シグナルの共起を要求する（フラグ ON 時のみ）。
+_AMBIGUOUS_VIOLENCE_KEYWORDS = frozenset({
+    "喧嘩", "けんか", "ケンカ",
+    "喧嘩している", "けんかしている",
+    "喧嘩を", "けんかを", "ケンカを",
+    "喧嘩が", "けんかが",
+})
+
+# 曖昧語と共起した場合のみ緊急として維持するための強シグナル語彙。
+# 強シグナルが1つでもあれば、怪我・出血等の実害を示す可能性があるため安全側に倒して検知を維持する
+# （「相談です」等の言い回しがあっても上書きしない＝過検知より過小検知を避ける設計）。
+_STRONG_VIOLENCE_SIGNALS = (
+    "殴", "蹴", "暴力", "暴行", "刃物", "ナイフ", "包丁", "凶器",
+    "流血", "血が出", "怪我", "けが", "助けて", "110", "警察",
+    "殴り合い", "取っ組み合い", "刺され", "殺され",
+)
+
+
+def _is_ambiguous_violence_false_positive(user_text_lower: str) -> bool:
+    """曖昧な violence キーワード（「喧嘩」等）が強シグナルを伴わない誤検知かを判定する。"""
+    return not any(sig in user_text_lower for sig in _STRONG_VIOLENCE_SIGNALS)
+
+
 # 一般的な表現（緊急事案ではない）
 COMMON_EXPRESSIONS_TO_EXCLUDE = [
     # 時間・曜日
@@ -371,7 +438,20 @@ def detect_store_emergency(user_text: str) -> Optional[Dict]:
                             should_exclude = True
                             logger.info(f"🔍 医療相談の文脈として除外: {keyword} (相談の文脈あり)")
                         # 相談の文脈がない場合は緊急事案として扱う（should_excludeはFalseのまま）
-                
+
+                # 4. violence 曖昧語（「喧嘩」等）の文脈ガード（Phase 2, フラグ ON 時のみ）
+                # 「友人と喧嘩しました」等の心理相談文脈を誤って緊急扱いしないため、
+                # 強い暴力シグナルの共起がない場合は除外する。
+                if (
+                    not should_exclude
+                    and emergency_type == "violence"
+                    and keyword in _AMBIGUOUS_VIOLENCE_KEYWORDS
+                    and _is_violence_context_guard_enabled()
+                    and _is_ambiguous_violence_false_positive(user_text_lower)
+                ):
+                    should_exclude = True
+                    logger.info(f"🔍 violence文脈ガードにより除外: {keyword} (強シグナル共起なし)")
+
                 if should_exclude:
                     continue  # 除外する場合はスキップ
                 
@@ -398,14 +478,66 @@ def detect_store_emergency(user_text: str) -> Optional[Dict]:
     }
 
 
-def generate_emergency_response(emergency_type: str, language: str = 'ja') -> Dict[str, str]:
+# Phase 2 (p2-emergency-channel): ヘッダーが「お近くのスタッフにご連絡ください」になる被害者・当事者向け種別。
+_VICTIM_HEADER_TYPES = frozenset({"medical_emergency", "injured_person", "theft", "unknown"})
+
+# Web/LINE（公的窓口モード）用の staff_section 置き換えコンテンツ。
+_PUBLIC_CONTACT_SECTIONS = {
+    'ja': {
+        'title': '緊急連絡先',
+        'items': [
+            '緊急の場合は119番（救急・消防）または110番（警察）にご連絡ください',
+            '症状がある場合は医療機関の受診もご検討ください',
+        ],
+    },
+    'en': {
+        'title': 'Emergency Contacts',
+        'items': [
+            'In an emergency, call 119 (ambulance/fire) or 110 (police)',
+            'Please consider visiting a medical institution if you have symptoms',
+        ],
+    },
+    'ko': {
+        'title': '긴급 연락처',
+        'items': [
+            '긴급한 경우 119(구급·소방) 또는 110(경찰)에 연락하세요',
+            '증상이 있는 경우 의료기관 진료도 고려하세요',
+        ],
+    },
+    'zh': {
+        'title': '紧急联系方式',
+        'items': [
+            '紧急情况下，请拨打119（急救/消防）或110（警察）',
+            '如有症状，请考虑前往医疗机构就诊',
+        ],
+    },
+}
+
+# Web/LINE（公的窓口モード）用のヘッダー置き換え（_VICTIM_HEADER_TYPES 対象のみ）。
+_PUBLIC_HEADER_OVERRIDES = {
+    'ja': {t: '119番（救急）または110番（警察）にご連絡ください' for t in _VICTIM_HEADER_TYPES},
+    'en': {t: 'Please call 119 (ambulance) or 110 (police)' for t in _VICTIM_HEADER_TYPES},
+    'ko': {t: '119(구급) 또는 110(경찰)에 연락하세요' for t in _VICTIM_HEADER_TYPES},
+    'zh': {t: '请拨打119（急救）或110（警察）' for t in _VICTIM_HEADER_TYPES},
+}
+
+
+def generate_emergency_response(
+    emergency_type: str,
+    language: str = 'ja',
+    channel: str = 'web',
+) -> Dict[str, str]:
     """
     緊急事案応答を生成（構造化されたHTML）
-    メッセージの順序: 1. 安全確保・避難、2. スタッフへの連絡、3. 警察への連絡
+    メッセージの順序: 1. 安全確保・避難、2. スタッフへの連絡（or 緊急連絡先）、3. 警察への連絡
     
     Args:
         emergency_type: 緊急事案の種類
         language: 言語コード（'ja', 'en', 'ko', 'zh'）
+        channel: 応答先チャネル（'web' | 'line' | 'kiosk'）。
+            フラグ `SAFETY_EMERGENCY_CHANNEL_SPLIT` ON 時、'web'/'line' は
+            「店内スタッフ」文言を公的窓口（119/110/受診）文言に置き換える。
+            'kiosk' は現状のスタッフ文言を維持する。
     
     Returns:
         {
@@ -565,6 +697,21 @@ def generate_emergency_response(emergency_type: str, language: str = 'ja') -> Di
     # 緊急事案の種類に応じたヘッダーメッセージを取得
     header_messages = emergency_headers.get(language, emergency_headers['ja'])
     header_text = header_messages.get(emergency_type, header_messages['unknown'])
+
+    # Phase 2 (p2-emergency-channel): Web/LINE では「店内スタッフに連絡」系の文言を
+    # 公的窓口（119/110/受診）中心の文言に出し分ける（フラグ ON かつ非キオスクのみ）。
+    use_public_contact = _is_emergency_channel_split_enabled() and channel in ("web", "line")
+    staff_title = msg['staff_section']['title']
+    staff_base_items = msg['staff_section']['items']
+    include_type_staff_items = True
+    if use_public_contact:
+        public = _PUBLIC_CONTACT_SECTIONS.get(language, _PUBLIC_CONTACT_SECTIONS['ja'])
+        staff_title = public['title']
+        staff_base_items = public['items']
+        include_type_staff_items = False  # 「〜スタッフに伝えて」系の種別上乗せは不要
+        if emergency_type in _VICTIM_HEADER_TYPES:
+            public_header = _PUBLIC_HEADER_OVERRIDES.get(language, _PUBLIC_HEADER_OVERRIDES['ja'])
+            header_text = public_header.get(emergency_type, public_header['unknown'])
     
     # 緊急事案の種類ごとの追加メッセージ
     type_specific_messages = {
@@ -627,9 +774,9 @@ def generate_emergency_response(emergency_type: str, language: str = 'ja') -> Di
     if type_msg.get('safety'):
         safety_items.extend(type_msg['safety'])
     
-    # スタッフセクションのアイテムに追加
-    staff_items = msg['staff_section']['items'].copy()
-    if type_msg.get('staff'):
+    # スタッフセクションのアイテムに追加（Web/LINE 公的窓口モードでは種別上乗せをしない）
+    staff_items = staff_base_items.copy()
+    if include_type_staff_items and type_msg.get('staff'):
         staff_items.extend(type_msg['staff'])
     
     # 警察セクションのアイテムに追加
@@ -648,7 +795,7 @@ def generate_emergency_response(emergency_type: str, language: str = 'ja') -> Di
 【{msg['safety_section']['title']}】
 {chr(10).join(f"・{item}" for item in safety_items)}
 
-【{msg['staff_section']['title']}】
+【{staff_title}】
 {chr(10).join(f"・{item}" for item in staff_items)}
 
 【{msg['police_section']['title']}】
@@ -680,7 +827,7 @@ def generate_emergency_response(emergency_type: str, language: str = 'ja') -> Di
         <div class="emergency-card staff-card">
             <div class="card-header staff-header">
                 <span class="card-icon">👥</span>
-                <h3 class="card-title">{msg['staff_section']['title']}</h3>
+                <h3 class="card-title">{staff_title}</h3>
             </div>
             <div class="card-body">
                 <ul class="card-list">
@@ -715,7 +862,8 @@ def handle_store_emergency(
     user_text: str,
     client: Optional[OpenAI] = None,
     triage_result: Optional[Dict] = None,
-    language: str = 'ja'
+    language: str = 'ja',
+    channel: str = 'web',
 ) -> Optional[Dict]:
     """
     緊急事案を検出し、応答を生成
@@ -724,6 +872,7 @@ def handle_store_emergency(
         user_text: ユーザーの入力テキスト
         client: OpenAIクライアントインスタンス（オプション、現在は未使用）
         triage_result: LLMトリアージ結果（オプション）
+        channel: 応答先チャネル（'web' | 'line' | 'kiosk'）。generate_emergency_response 参照。
     
     Returns:
         緊急事案が検出された場合: {
@@ -752,8 +901,8 @@ def handle_store_emergency(
     # 主要な緊急事案の種類を取得
     primary_type = detection_result["primary_type"]
     
-    # 応答を生成（言語設定を使用）
-    response = generate_emergency_response(primary_type, language)
+    # 応答を生成（言語設定・チャネルを使用）
+    response = generate_emergency_response(primary_type, language, channel)
     
     logger.info(f"🚨 緊急事案検出: {primary_type}, 種類: {detection_result['emergency_types']}")
     

@@ -226,6 +226,8 @@ def _resolve_bot_kind(msg: dict[str, Any]) -> str:
         _AGENT_KIND_MAP = {
             "status": "session_integrated_status",
             "summarize": "session_summary",
+            "recorded_items": "session_recorded_items",
+            "history_overview": "session_history_overview",
             "delete_confirm": "memory_delete_confirm",
             "delete_pending": "memory_delete_pending",
             "delete_explain": "memory_delete_explain",

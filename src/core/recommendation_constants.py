@@ -300,6 +300,11 @@ ANTIDIARRHEAL_KEYWORDS = [
 MIN_SYMPTOM_MATCH_SINGLE = 0.35
 MIN_SYMPTOM_MATCH_MULTI = 0.2
 
+# Phase 3 (p3-headache-reco): 単独症状で OTC 推奨を慎重に保留する症状（変更時はテスト必須）
+CAUTION_DEFER_SINGLE_SYMPTOMS = frozenset({
+    "めまい",
+})
+
 # 特殊用途医薬品パターン（効能効果が特定の用途に限定されている）
 SPECIFIC_USE_PATTERNS = {
     "食あたり": {

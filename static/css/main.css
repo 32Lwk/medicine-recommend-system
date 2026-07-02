@@ -917,6 +917,55 @@
             color: #1e293b;
             font-style: normal;
         }
+        .processing-status-mascot-row {
+            display: flex;
+            align-items: center;
+            margin: 0 0 10px;
+        }
+        .processing-status-mascot {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 44% 44%;
+            background: linear-gradient(155deg, #8aa8b8 0%, #5a7a8a 55%, #4a6674 100%);
+            position: relative;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(90, 122, 138, 0.28);
+            animation: processing-mascot-bob 2.4s ease-in-out infinite;
+        }
+        .processing-status-mascot::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 8px;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #f6f4ee;
+            box-shadow: 10px 0 0 #f6f4ee;
+        }
+        .processing-status-mascot--symptom {
+            animation-name: processing-mascot-think;
+        }
+        .processing-status-mascot--match {
+            animation-name: processing-mascot-bob;
+        }
+        .processing-status-mascot--notes {
+            animation-name: processing-mascot-write;
+        }
+        @keyframes processing-mascot-bob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        @keyframes processing-mascot-think {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            35% { transform: translateY(-2px) rotate(-4deg); }
+            70% { transform: translateY(-2px) rotate(4deg); }
+        }
+        @keyframes processing-mascot-write {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(2px); }
+        }
         .processing-status-track {
             height: 6px;
             background: #e8f5e9;

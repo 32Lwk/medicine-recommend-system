@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 
 ResponseTuple = Tuple[dict, int]
 SessionIntent = Literal["delete", "summarize", "status", "none"]
+SessionOpsDetail = Literal[
+    "delete", "status", "recorded_items", "summarize", "history_overview", "none"
+]
 
 _DELETE_CONFIRM_YES = frozenset(
     {"はい", "削除する", "削除して", "消して", "yes", "ok", "了解", "お願いします"}
@@ -92,6 +95,19 @@ _SESSION_ADMIN_LOOSE_STATUS = (
     r"記録",
 )
 
+_RECORDED_ITEMS_HINTS = (
+    r"何が記録",
+    r"記録.*教えて",
+    r"保存されている情報",
+    r"保存されている",
+)
+
+_HISTORY_OVERVIEW_HINTS = (
+    r"履歴を教えて",
+    r"履歴を見せ",
+    r"会話履歴",
+)
+
 
 def _matches_any(text: str, patterns: tuple[str, ...]) -> bool:
     for pat in patterns:
@@ -153,6 +169,29 @@ def classify_session_intent(
     if _matches_any(t, _SESSION_ADMIN_LOOSE_SUMMARIZE):
         return "summarize"
     if _matches_any(t, _SESSION_ADMIN_LOOSE_STATUS):
+        return "status"
+    return "none"
+
+
+def classify_session_ops_detail(
+    user_text: str,
+    *,
+    triage_result: dict[str, Any] | None = None,
+) -> SessionOpsDetail:
+    """SessionOps の細分類（UX_SESSION_OPS_REAL_DATA 用）。"""
+    coarse = classify_session_intent(user_text, triage_result=triage_result)
+    if coarse == "delete":
+        return "delete"
+    t = (user_text or "").strip()
+    if not t:
+        return "none"
+    if _matches_any(t, _RECORDED_ITEMS_HINTS):
+        return "recorded_items"
+    if _matches_any(t, _HISTORY_OVERVIEW_HINTS) and not re.search(r"要約|まとめ", t):
+        return "history_overview"
+    if coarse == "summarize":
+        return "summarize"
+    if coarse == "status":
         return "status"
     return "none"
 
@@ -519,6 +558,61 @@ def _handle_summarize(
     return _ok_response(session)
 
 
+def _session_snapshot_for_ops(session: Any, owner: str | None) -> dict[str, Any]:
+    from src.services.session_manager import get_line_session_admin_snapshot
+
+    if owner:
+        snapshot = get_line_session_admin_snapshot(owner)
+        if snapshot:
+            return snapshot
+    return dict(session) if isinstance(session, dict) else {}
+
+
+def _handle_recorded_items(
+    session: Any,
+    sid: str | None,
+    user_text: str,
+    owner: str,
+) -> ResponseTuple:
+    from src.services.line_user_memory import load_line_memory
+    from src.services.status_diagnosis_builder import build_session_recorded_items_status
+    from src.utils.agent_trace import log_agent_step
+
+    profile, _ = load_line_memory(owner)
+    snapshot = _session_snapshot_for_ops(session, owner)
+    sage_diag = build_session_recorded_items_status(
+        session_snapshot=snapshot,
+        profile=profile,
+    ).to_client_dict()
+    message = str(sage_diag.get("message") or "")
+    bot = _build_bot(
+        session, sid, sage_diag=sage_diag, legacy_message=message, kind="recorded_items"
+    )
+    _persist_session_messages(session, sid, user_text, bot)
+    log_agent_step(None, "SessionAgent", "session_recorded_items", sid=owner)
+    return _ok_response(session)
+
+
+def _handle_history_overview(
+    session: Any,
+    sid: str | None,
+    user_text: str,
+    owner: str,
+) -> ResponseTuple:
+    from src.services.status_diagnosis_builder import build_session_history_overview
+    from src.utils.agent_trace import log_agent_step
+
+    snapshot = _session_snapshot_for_ops(session, owner)
+    sage_diag = build_session_history_overview(session_snapshot=snapshot).to_client_dict()
+    message = str(sage_diag.get("message") or "")
+    bot = _build_bot(
+        session, sid, sage_diag=sage_diag, legacy_message=message, kind="history_overview"
+    )
+    _persist_session_messages(session, sid, user_text, bot)
+    log_agent_step(None, "SessionAgent", "session_history_overview", sid=owner)
+    return _ok_response(session)
+
+
 def _handle_status(
     session: Any,
     sid: str | None,
@@ -590,10 +684,19 @@ def try_handle_session_request(
         return _handle_delete_confirm(session, sid, user_text, owner)
 
     intent = classify_session_intent(user_text, triage_result=triage_result)
-    if intent == "none":
+    detail: SessionOpsDetail | None = None
+    try:
+        from config.llm_flags import is_ux_session_ops_real_data_enabled
+
+        if is_ux_session_ops_real_data_enabled():
+            detail = classify_session_ops_detail(user_text, triage_result=triage_result)
+    except ImportError:
+        detail = None
+
+    if intent == "none" and (not detail or detail == "none"):
         return None
 
-    if intent == "delete":
+    if intent == "delete" or detail == "delete":
         triage_cat = str((triage_result or {}).get("category") or "")
         if triage_cat in ("Physical", "Emergency"):
             return None
@@ -602,10 +705,13 @@ def try_handle_session_request(
             return None
         return _request_delete_confirmation(session, sid, user_text, owner)
 
-    if intent == "summarize":
+    if detail == "recorded_items":
+        return _handle_recorded_items(session, sid, user_text, owner)
+    if detail == "history_overview":
+        return _handle_history_overview(session, sid, user_text, owner)
+    if intent == "summarize" or detail == "summarize":
         return _handle_summarize(session, sid, user_text, owner, client)
-
-    if intent == "status":
+    if intent == "status" or detail == "status":
         return _handle_status(session, sid, user_text, owner)
 
     return None
