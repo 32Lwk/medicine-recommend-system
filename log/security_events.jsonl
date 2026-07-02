@@ -10245,3 +10245,71 @@
 {"timestamp": "2026-07-02T11:28:56.004268", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ああ"}}
 {"timestamp": "2026-07-02T11:29:10.140018", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-02T11:29:10.141018", "event_type": "input_validation", "user_id": "ユーザー377", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ああ"}}
+{"timestamp": "2026-07-02T11:52:12.269391", "original_length": 1, "sanitized_length": 1, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:52:14.241615", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:53:10.292615", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:53:10.293618", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "技術スタックは？"}}
+{"timestamp": "2026-07-02T11:53:22.787652", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:53:22.788654", "event_type": "input_validation", "user_id": "ユーザー379", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "技術面を詳しく"}}
+{"timestamp": "2026-07-02T11:53:38.778188", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:53:38.779272", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "技術スタックは？"}}
+{"timestamp": "2026-07-02T11:53:50.917383", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:53:50.918384", "event_type": "input_validation", "user_id": "ユーザー380", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "もっと詳しく"}}
+{"timestamp": "2026-07-02T11:54:06.711472", "original_length": 18, "sanitized_length": 18, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:54:06.711472", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 18, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "プリンシプルオブプログラミングとは？"}}
+{"timestamp": "2026-07-02T11:54:16.813617", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:54:16.814615", "event_type": "input_validation", "user_id": "ユーザー381", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "具体例を教えて"}}
+{"timestamp": "2026-07-02T11:54:32.842590", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:54:32.843593", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "Sage Terraceとは"}}
+{"timestamp": "2026-07-02T11:54:45.078507", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:54:45.079507", "event_type": "input_validation", "user_id": "ユーザー382", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "もう少し教えて"}}
+{"timestamp": "2026-07-02T11:55:00.150137", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:55:00.151145", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "APIの仕組みを教えて"}}
+{"timestamp": "2026-07-02T11:55:17.033894", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:55:17.034899", "event_type": "input_validation", "user_id": "ユーザー383", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "SSEについて"}}
+{"timestamp": "2026-07-02T11:55:31.866926", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:55:31.867926", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "インフラ構成を教えて"}}
+{"timestamp": "2026-07-02T11:55:45.008302", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:55:45.009302", "event_type": "input_validation", "user_id": "ユーザー384", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "Cloud Runは？"}}
+{"timestamp": "2026-07-02T11:55:57.392302", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:55:57.392302", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "医薬品推奨の仕組み"}}
+{"timestamp": "2026-07-02T11:56:14.098438", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:56:14.099434", "event_type": "input_validation", "user_id": "ユーザー385", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "rule_basedの詳細"}}
+{"timestamp": "2026-07-02T11:56:16.759436", "event_type": "input_validation", "user_id": "ユーザー385", "input_length": 13, "risk_score": 82, "is_safe": false, "action": "blocked", "warnings": ["llm_security_audit:システム/内部のルールや詳細の開示を求めており、プロンプト開示要求に該当します。"], "details": {"sanitized_text": "rule_basedの詳細"}}
+{"timestamp": "2026-07-02T11:56:29.244386", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:56:29.245385", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "対応言語は？"}}
+{"timestamp": "2026-07-02T11:56:41.367469", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:56:41.368467", "event_type": "input_validation", "user_id": "ユーザー386", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "英語でも使えますか"}}
+{"timestamp": "2026-07-02T11:57:28.120780", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:57:28.121780", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "技術スタックは？"}}
+{"timestamp": "2026-07-02T11:57:40.601722", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:57:40.602720", "event_type": "input_validation", "user_id": "ユーザー387", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "技術面を詳しく"}}
+{"timestamp": "2026-07-02T11:57:56.384454", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:57:56.385453", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "技術スタックは？"}}
+{"timestamp": "2026-07-02T11:58:08.994186", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:58:08.995184", "event_type": "input_validation", "user_id": "ユーザー388", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "もっと詳しく"}}
+{"timestamp": "2026-07-02T11:58:24.100446", "original_length": 18, "sanitized_length": 18, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:58:24.101447", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 18, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "プリンシプルオブプログラミングとは？"}}
+{"timestamp": "2026-07-02T11:58:34.654048", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:58:34.655050", "event_type": "input_validation", "user_id": "ユーザー389", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "具体例を教えて"}}
+{"timestamp": "2026-07-02T11:58:44.553139", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:58:44.554138", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "Sage Terraceとは"}}
+{"timestamp": "2026-07-02T11:58:57.454779", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:58:57.454779", "event_type": "input_validation", "user_id": "ユーザー390", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "もう少し教えて"}}
+{"timestamp": "2026-07-02T11:59:12.228692", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:59:12.229691", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "APIの仕組みを教えて"}}
+{"timestamp": "2026-07-02T11:59:25.473612", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:59:25.474612", "event_type": "input_validation", "user_id": "ユーザー391", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "SSEについて"}}
+{"timestamp": "2026-07-02T11:59:40.267065", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:59:40.267065", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "インフラ構成を教えて"}}
+{"timestamp": "2026-07-02T11:59:52.979439", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T11:59:52.979439", "event_type": "input_validation", "user_id": "ユーザー392", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "Cloud Runは？"}}
+{"timestamp": "2026-07-02T12:00:05.831103", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T12:00:05.831103", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "医薬品推奨の仕組み"}}
+{"timestamp": "2026-07-02T12:00:20.257099", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T12:00:20.257099", "event_type": "input_validation", "user_id": "ユーザー393", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "rule_basedの詳細"}}
+{"timestamp": "2026-07-02T12:00:22.792086", "event_type": "input_validation", "user_id": "ユーザー393", "input_length": 13, "risk_score": 82, "is_safe": false, "action": "blocked", "warnings": ["llm_security_audit:内部のルールや詳細の開示を求めており、秘密の指示・プロンプト開示要求に該当するため"], "details": {"sanitized_text": "rule_basedの詳細"}}
+{"timestamp": "2026-07-02T12:00:35.175408", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T12:00:35.176410", "event_type": "input_validation", "user_id": "ユーザー378", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "対応言語は？"}}
+{"timestamp": "2026-07-02T12:00:47.228903", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-02T12:00:47.229907", "event_type": "input_validation", "user_id": "ユーザー394", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "英語でも使えますか"}}

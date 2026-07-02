@@ -1,6 +1,178 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月1日**（UX 品質改善 Wave A–B・v2 ローカル統合テスト基盤・IntentRouter gate 拡張・LLM 障害耐性・SessionOps Web delete・推奨重複抑制）
+**最終更新日: 2026年7月2日**（UX 品質改善計画 v2 Phase 0–3・計測基盤・レイテンシ最適化・安全ガード・ルーティング/内容精度・待機 UX）
+
+---
+
+## 2026年7月2日 — UX 品質改善計画 v2（Phase 0–3）
+
+### 概要
+
+**ブランチ `feature/chat-pipeline-v2`** に、[UX品質改善計画 v2](.cursor/plans/ux品質改善計画v2_7fab4ed6.plan.md) に基づく Phase 0〜3 を実装。ベースライン評価（`log/analysis/2026-07-01_local_v2_chat_test_post-quality-fix-full.md`、自動合格 **77/105**）から、計測基盤整備・レイテンシ最適化（フラグゲート）・安全トーン是正・ルーティング/内容精度改善を段階投入。**全機能フラグは既定 OFF**（明示有効化しない限り post-p0 と同一挙動）。**Phase 4**（IntentRouter 本線化・legacy 撤去）は未着手。
+
+| Git コミット | 内容 |
+|-------------|------|
+| `b424bef` | Phase 0: 計測基盤・`_kind_route` 是正・LLM-as-judge |
+| `f44ec32` | Phase 1: LLM 層レイテンシ最適化フラグ・p1 A/B レポート |
+| `e4c5519` | Phase 1b–3: rb 計測分離・安全・ルーティング/内容・待機 UX |
+
+| 関連ドキュメント | 用途 |
+|-----------------|------|
+| [.cursor/plans/ux品質改善計画v2_7fab4ed6.plan.md](.cursor/plans/ux品質改善計画v2_7fab4ed6.plan.md) | Phase 0–4 計画・KPI・検証結果 |
+| [CHAT_PIPELINE_V2.md](docs/dev/CHAT_PIPELINE_V2.md) | v2 技術仕様 |
+| [.cursor/skills/local-v2-chat-test/SKILL.md](.cursor/skills/local-v2-chat-test/SKILL.md) | ローカル v2 テスト手順 |
+
+### Phase 0 — 計測基盤・テスト評価是正
+
+- **`src/utils/structured_logger.py`**: `emit_pipeline_perf()` — `log/pipeline_perf_log.jsonl` へ構造化永続化（`total_ms` / `breakdown` / `llm.llm_calls` path 別 latency）
+- **`src/services/pipeline_perf.py`**: `log_pipeline_perf()` から JSONL sink を呼び出し（app.log の `PIPELINE_PERF` と併用）
+- **`scripts/measure_pipeline_baseline.py`**: `measure_pipeline_perf()` — total p50/p95/max、LLM path 別呼び出し回数・latency 内訳、`breakdown_steps_avg_ms`
+- **`scripts/local_v2_chat_test_runner.py`**:
+  - `_kind_route()` を **kind 優先判定**に是正（本文「市販薬」ヒューリスティックによる Concierge/Security/Store 誤判定を解消）
+  - レポートに **レイテンシ KPI**（e2e p50/p95、pipeline phase 内訳）セクション追加
+  - **`--judge`**: LLM-as-judge による内容品質スコア（意図充足・トーン・安全・総合 0–5）
+- **`tests/scripts/test_local_v2_kind_route.py`（新規）**: kind 優先・回帰テスト
+
+**効果（オフライン再採点）**: 前回フルスイート JSON を新 `_kind_route` で再評価 → 自動合格 **77→97**（+20、退行 0）。残 REVIEW 8 件は実アプリ側課題（Phase 3 対象）。
+
+### Phase 1 — LLM 層レイテンシ最適化（フラグゲート、既定 OFF）
+
+**`config/llm_flags.py` / `config/llm_config.py`** に Phase 1 フラグ 4 種を追加:
+
+| 環境変数 | 既定 | 効果 |
+|---------|------|------|
+| `LATENCY_TRIAGE_SINGLE_CALL` | OFF | トリアージ stage1+2 を 1 回 structured call に統合 |
+| `LATENCY_EXPLAIN_FAST_LOWRISK` | OFF | 低リスク症状の説明生成を高速モデルへ |
+| `LATENCY_EXPLAIN_CACHE` | OFF | 使用上の注意 batch の結果キャッシュ |
+| `LATENCY_RECO_PARALLEL` | OFF | 使用上の注意 / 個別アドバイス LLM の並列化 |
+
+- **`src/services/llm_triage.py`**: `LATENCY_TRIAGE_SINGLE_CALL` 時の単一 structured call 経路
+- **`src/core/explanation_generator.py`**: 高速モデル切替・キャッシュキー（リスク属性込み）
+- **`src/handlers/chat/chat_recommendation_flow.py`**: 並列化フック・翻訳スキップ連携
+- **`tests/services/test_p1_latency.py`（新規）**: フラグ OFF/ON の分岐テスト
+
+**A/B 結果**（`log/analysis/2026-07-02_local_v2_chat_test_p1-baseline-off` / `p1-after-on`）: 説明生成 p50 **9,174→3,388ms（-63%）**、Other 系トリアージ **2→1 呼び出し（-44%）**、ルーティング正当性維持（physical 18/18、concierge 12/12）。**e2e p95 は 43,873→40,123ms で KPI <5s 未達**。
+
+### Phase 1b — rule_based 区間計測分離・LLM 境界・スコア並列化
+
+**`config/llm_flags.py`** に Phase 1b フラグ 3 種（既定 OFF）:
+
+| 環境変数 | 既定 | 効果 |
+|---------|------|------|
+| `LATENCY_EXPLAIN_BATCH_STABILIZE` | OFF | 説明 batch の empty completion 対策（max_tokens 増・リトライ） |
+| `LATENCY_RB_LLM_EXTERNAL` | OFF | missing_info / 説明生成 LLM を rb 外（chat flow）へ移動 |
+| `LATENCY_SCORE_PARALLEL` | OFF | quick / detailed スコアリングの ThreadPool 並列化 |
+
+- **`src/core/rule_based_recommendation.py`**: `_mark_rb_pipeline_step()` — `rb_missing_info_done` / `rb_scoring_only_done` / `rb_explain_batch_done` のサブステップ計測。`defer_explanation_llm`・並列スコアリング
+- **`src/core/explanation_generator.py`**: batch 安定化（MR-C）
+- **`src/handlers/chat/chat_recommendation_flow.py`**: MR-D `_apply_external_rb_llm_layers()`、花粉症併用注意マージ、戻り値インターフェース維持
+- **`tests/config/test_phase1b_llm_flags.py`（新規）**
+
+**A/B 結果**（physical 18 セッション × 3 ラン、`log/analysis/2026-07-02_local_v2_chat_test_p1b-*`）: 自動合格 **18/18・退行 0**。`rule_based_start`→`rule_based_scoring_only_done` p50 **20,944→2,640ms（-87%、MR-D）**。説明 batch p50 **8,825→3,218ms**。**e2e p95 は 40,932〜57,719ms で KPI <5s 未達**（Phase 1/1b 継続課題）。
+
+### Phase 1 — 待機 UX（部分回答なし）
+
+- **`src/handlers/chat/chat_recommendation_flow.py`**: `mark_processing_step` — `symptom_check` / `candidate_match` 段階通知
+- **`static/js/processing_status.js`**: 段階ラベル追加、Sage Terrace トーンの控えめ CSS マスコット（`--symptom` / `--match` / `--notes`）
+- **`static/css/main.css`**: bob アニメーション（医療信頼感を損なわない範囲）
+
+### Phase 2 — 安全・トーン事故の是正（フラグゲート、既定 OFF）
+
+**`config/llm_flags.py`** に Phase 2 フラグ 5 種:
+
+| 環境変数 | 既定 | 効果 |
+|---------|------|------|
+| `SAFETY_VIOLENCE_CONTEXT_GUARD` | OFF | 「喧嘩」等曖昧語の文脈ガード（心理相談→緊急誤検知を抑制） |
+| `SAFETY_EMERGENCY_CHANNEL_SPLIT` | OFF | Web/LINE=公的窓口、キオスク=スタッフ文言の出し分け |
+| `EMERGENCY_KIOSK_MODE` | OFF | 店頭キオスクデプロイ判定 |
+| `UX_COUNSELING_CONTEXT_MAINTAIN` | OFF | counseling モード中の期間/状況フォローアップ維持 |
+| `UX_COUNSELING_TONE_VARIETY` | OFF | 定型句反復抑制・応答バリエーション |
+
+- **`src/services/store_emergency_handler.py`**: violence 文脈ガード（`_violence_ambiguous_terms` / `_violence_strong_signals` / `_is_counseling_violence_context`）
+- **`src/handlers/chat/emergency_dispatch.py`**: チャネル別緊急メッセージ組み立て
+- **`src/handlers/chat/chat_counseling_flow.py` / `chat_other_counseling_route.py`**: counseling 文脈維持フック
+- **`src/services/counseling/counseling_generator.py` / `counseling_prompts.py` / `counseling_processor.py`**: トーン多様化
+- **`tests/services/test_store_emergency_violence_guard.py`（新規）**
+- **`tests/services/test_store_emergency_channel_split.py`（新規）**
+- **`tests/services/test_counseling_context_maintain.py`（新規）**
+- **`tests/services/test_counseling_tone_variety.py`（新規）**
+
+**検証**（`log/analysis/2026-07-02_local_v2_chat_test_p2-violence-guard`）: counseling_context **13/13** 自動合格（「友人と喧嘩」→暴力緊急の誤検知なし）。
+
+### Phase 3 — ルーティング・内容精度（フラグ 8 種、すべて既定 OFF）
+
+| 環境変数 | 既定 | 効果 |
+|---------|------|------|
+| `ROUTING_CONCIERGE_INTENT` | OFF | API/SSE/rule_based 等の技術系 meta 意図プローブ拡張（dev のみ技術詳細開示） |
+| `ROUTING_CONCIERGE_FOLLOWUP` | OFF | Concierge フォローアップ文脈継承（gate / orchestrator） |
+| `ROUTING_STORE_PROCUREMENT` | OFF | 「OTCを買える店」「市販薬の購入先」等の Store ルーティング補完 |
+| `RECO_LOW_RISK_HEADACHE` | OFF | 頻出・低リスク単独頭痛の OTC 解熱鎮痛薬提示（めまい等は保留維持） |
+| `UX_CORRECTION_DELETE_CANCEL` | OFF | 削除確認待ちからのキャンセル→`memory_delete_cancelled` 明示応答 |
+| `UX_SESSION_OPS_REAL_DATA` | OFF | SessionOps 質問種別ごとの実データ応答（status/記録/要約の出し分け） |
+| `UX_PROGRESSIVE_CLARIFICATION` | OFF | 曖昧入力連続時の段階的 clarification 文案 |
+| `UX_RECO_DEDUP` | OFF | マルチターン同一推奨抑制＋終了意図検出 |
+
+**ルーティング・Concierge**
+
+- **`src/services/concierge_intent.py`**: 技術系 `_META_PROBE_RULES` 拡張、`APP_ENV` ゲート付き技術詳細開示
+- **`src/content/concierge_knowledge.ja.json` / `concierge_knowledge.py`**: `technical_details` セクション（dev + フラグ ON 時のみ参照）
+- **`src/services/concierge_agent_history.py` / `concierge_orchestrator.py` / `concierge_agent.py`**: フォローアップ intent 継承
+- **`src/dialogue/routing/gate.py`**: Store 購入先・Concierge follow-up の gate 補完
+- **`src/services/counseling_triage.py` / `store_inquiry_handler.py`**: `_PROCUREMENT_HINTS`・OTC 購入先 fast-path
+
+**内容精度・SessionOps・訂正**
+
+- **`src/core/recommendation/low_risk_symptoms.py`（新規）**: 低リスク頭痛の判定ヘルパ
+- **`src/core/rule_based_recommendation.py` / `recommendation_finalizer.py` / `recommendation_constants.py`**: 頭痛 no_recommendation 是正
+- **`src/dialogue/session_ops.py` / `status_diagnosis_builder.py` / `session_agent.py`**: SessionOps 実データ化（status / records / summary / history）
+- **`main.py`**: `dialogue_state`・`clarification_text_counts` のセッション引き継ぎ
+- **`src/handlers/chat/llm_pipeline_guard.py` / `confidence_gate.py`**: progressive clarification 連携
+- **`src/handlers/chat/reco_dedup.py`（新規）**: 推奨重複抑制・終了意図検出
+- **`src/handlers/chat/chat_recommendation_followup.py`**: reco dedup フック
+
+### Phase 3 — テスト（新規）
+
+| テスト | 内容 |
+|--------|------|
+| `tests/services/test_concierge_intent_technical.py` | 技術系 meta 意図・dev 開示ゲート |
+| `tests/services/test_concierge_followup_routing.py` | Concierge フォローアップ文脈 |
+| `tests/services/test_store_procurement_routing.py` | Store 購入先ルーティング |
+| `tests/core/test_low_risk_headache_reco.py` | 低リスク頭痛推奨 |
+| `tests/dialogue/test_correction_delete_cancel_4a.py` | 削除キャンセル明示応答 |
+| `tests/dialogue/test_session_ops_real_data_4b.py` | SessionOps 実データ |
+| `tests/handlers/test_progressive_clarification_4c.py` | 段階的 clarification |
+| `tests/handlers/test_reco_dedup_4d.py` | 推奨重複抑制 |
+| `tests/services/test_session_ops_status_builders.py` | status ビルダー |
+| `tests/dialogue/routing/test_gate.py` | gate 拡張（Store/Concierge follow-up） |
+
+### 検証結果（ローカル v2 統合テスト）
+
+| レポート | シナリオ | 自動合格 | 備考 |
+|---------|---------|---------|------|
+| `2026-07-01_..._post-quality-fix-full` | 105 | **77/105** | Phase 0 前ベースライン |
+| `2026-07-02_..._p1-baseline-off` / `p1-after-on` | physical+concierge 等 | 18/18, 12/12 | LLM 層 A/B |
+| `2026-07-02_..._p1b-baseline-off` / `p1b-after-all-on` | physical 18 | **18/18** | rb 区間分離 A/B |
+| `2026-07-02_..._p2-violence-guard` | counseling 13 | **13/13** | 暴力誤検知ガード |
+| **`2026-07-02_..._p3-full`** | **105** | **103/105** | Phase 3 フルスイート（要確認 2: concierge_followup 6/8） |
+
+**KPI サマリ**
+
+- 自動合格: 77/105 → **103/105**（p3-full）
+- concierge: 2/12 → **12/12**、store: 3/8 → **8/8**、correction: 8/10 → **10/10**
+- **e2e p95**: p3-full で **46,532ms**（目標 <5s **未達** — Phase 1/1b レイテンシ継続課題）
+- 内容品質（`--judge`）: レポートに overall / 意図充足 / トーン / 安全スコアを記録
+
+### ログ・分析成果物（2026-07-02）
+
+- **`log/pipeline_perf_log.jsonl`**: 構造化パイプライン計測（rb サブステップ・LLM path 内訳）
+- **`log/analysis/`**: `p1-baseline-off` / `p1-after-on` / `p1b-*` / `p2-violence-guard` / **`p3-full`**（JSON/MD/simulation_eval/session_ids）
+- **`log/log/`**: `2026-07-02-1.md`〜`2026-07-02-3.md` 日次ログ
+
+### 未着手・継続課題
+
+- **Phase 4**: IntentRouter LLM 本線化・legacy 撤去（shadow 一致率検証後）
+- **e2e p95 < 5s**: triage / NLU / 説明 / 個別アドバイス等の合成遅延。rb 内 LLM は MR-D で分離済み
+- **concierge_followup**: p3-full で 6/8（文脈キーワード 2 件要確認）
 
 ---
 
