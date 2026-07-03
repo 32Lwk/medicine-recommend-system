@@ -822,6 +822,36 @@ def normalize_session_messages(messages):
     return out
 
 
+BLOCKED_USER_PLACEHOLDER = "（この入力はブロックされました）"
+
+
+def is_admin_only_blocked_user_message(msg) -> bool:
+    """セキュリティブロック用 user プレースホルダ（管理者画面専用）。"""
+    if not isinstance(msg, dict) or msg.get("type") != "user":
+        return False
+    if msg.get("admin_only") or msg.get("blocked_input"):
+        return True
+    return (msg.get("content") or "").strip() == BLOCKED_USER_PLACEHOLDER
+
+
+def filter_messages_for_user_api(messages):
+    """ユーザー向け API: ブロック user はプレースホルダ表示を維持し、管理者専用フィールドのみ除去。"""
+    out = []
+    for msg in messages or []:
+        if not isinstance(msg, dict):
+            out.append(msg)
+            continue
+        if not is_admin_only_blocked_user_message(msg):
+            out.append(msg)
+            continue
+        sanitized = dict(msg)
+        sanitized.pop("original_content", None)
+        sanitized.pop("admin_only", None)
+        sanitized.pop("blocked_input", None)
+        out.append(sanitized)
+    return out
+
+
 def merge_session_messages(server_messages, client_messages):
     """サーバー・クライアント双方のメッセージを uuid 等で重複排除しつつマージする。"""
     server = list(server_messages or [])

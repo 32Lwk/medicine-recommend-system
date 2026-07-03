@@ -19,6 +19,16 @@ load_env()
 logger = logging.getLogger(__name__)
 
 
+def _prepare_local_database() -> None:
+    """ローカル開発: Docker Postgres の起動と接続待ち。"""
+    try:
+        from src.utils.local_docker_db import ensure_local_docker_postgres
+
+        ensure_local_docker_postgres()
+    except Exception as exc:
+        logger.warning("ローカル DB 準備をスキップしました: %s", exc)
+
+
 def _resolve_port() -> int:
     from src.utils.port_utils import find_free_port, is_port_in_use
 
@@ -66,6 +76,7 @@ if __name__ == '__main__':
         )
         raise
 
+    _prepare_local_database()
     port = _resolve_port()
     # 既定は reload OFF（Windows でチャット中に再起動すると全 API がハングするため）
     reload = os.getenv('UVICORN_RELOAD', '').strip().lower() in ('1', 'true', 'yes')

@@ -36,6 +36,9 @@ def test_known_attack_immediate_response_in_validator():
     bot_msgs = [m for m in session["messages"] if m.get("type") == "bot"]
     assert len(user_msgs) == 1
     assert user_msgs[0]["content"] == "（この入力はブロックされました）"
+    assert user_msgs[0].get("admin_only") is True
+    assert user_msgs[0].get("blocked_input") is True
+    assert user_msgs[0].get("original_content") == msg
     assert bot_msgs
     assert (bot_msgs[0].get("diagnosis") or {}).get("kind") == "known_attack"
 

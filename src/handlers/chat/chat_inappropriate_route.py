@@ -38,17 +38,18 @@ def handle_inappropriate_message_if_detected(
     """攻撃的入力検出時は境界案内を返して早期 return。未検出は None。"""
     del recommendation_client
     try:
-        from src.security.aggressive_input import (
-            AGGRESSIVE_INPUT_NOTICE_MESSAGE,
-            is_non_absolute_aggressive_expression,
-        )
+        from src.security.input_block_responses import match_input_block
         from src.services.sage_bot_response import build_notice_bot
 
-        aggressive, reason = is_non_absolute_aggressive_expression(sanitized_message)
-        if not aggressive:
+        block_notice = match_input_block(sanitized_message)
+        if not block_notice:
             return None
 
-        logger.warning("⚠️ 攻撃的な入力を検出: %s", reason)
+        logger.warning(
+            "⚠️ 不適切入力を検出: category=%s reason=%s",
+            block_notice.category,
+            block_notice.reason,
+        )
 
         session.setdefault("messages", [])
         user_msg = {
@@ -86,10 +87,10 @@ def handle_inappropriate_message_if_detected(
         bot_response = build_notice_bot(
             session,
             sid,
-            AGGRESSIVE_INPUT_NOTICE_MESSAGE,
-            title="入力について",
-            variant="security",
-            kind="aggressive_input",
+            block_notice.message,
+            title=block_notice.title,
+            variant=block_notice.variant,
+            kind=block_notice.kind,
             uuid=str(uuid.uuid4()),
         )
         session["messages"].append(bot_response)
@@ -115,7 +116,7 @@ def handle_inappropriate_message_if_detected(
             {
                 "status": "ok",
                 "message_count": message_count,
-                "response": AGGRESSIVE_INPUT_NOTICE_MESSAGE,
+                "response": block_notice.message,
             },
             200,
         )

@@ -215,6 +215,10 @@ def should_offer_line_feedback(bot_message: dict[str, Any] | None) -> bool:
             "security_block",
             "security_warn",
             "aggressive_input",
+            "inappropriate_sexual",
+            "inappropriate_solicitation",
+            "inappropriate_illegal",
+            "system_abuse",
         ):
             return False
     return True

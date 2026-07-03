@@ -34,15 +34,33 @@ def _uses_pooler(url: str) -> bool:
     return "-pooler" in host or host.startswith("pooler.")
 
 
+def _is_local_database_host(url: str) -> bool:
+    """localhost / 127.0.0.1 の Postgres（Docker 含む）か。"""
+    from urllib.parse import urlparse
+
+    host = (urlparse(url).hostname or "").lower()
+    return host in ("localhost", "127.0.0.1", "::1")
+
+
+def _default_sslmode_for_url(url: str) -> str:
+    """DATABASE_SSLMODE 未設定時の sslmode。ローカル Docker は disable、リモートは require。"""
+    explicit = (os.getenv("DATABASE_SSLMODE") or "").strip()
+    if explicit:
+        return explicit
+    if _is_local_database_host(url):
+        return "disable"
+    return "require"
+
+
 def _parse_sslmode_from_url(url: str) -> str:
     from urllib.parse import parse_qs, urlparse
 
     if not url:
-        return os.getenv("DATABASE_SSLMODE", "require")
+        return _default_sslmode_for_url("")
     modes = parse_qs(urlparse(url).query).get("sslmode")
     if modes:
         return modes[0]
-    return os.getenv("DATABASE_SSLMODE", "require")
+    return _default_sslmode_for_url(url)
 
 
 def _parse_channel_binding_from_url(url: str) -> Optional[str]:
@@ -56,26 +74,33 @@ def _parse_channel_binding_from_url(url: str) -> Optional[str]:
 
 def _normalize_database_url(url: str) -> str:
     """
-    psycopg2 が channel_binding=require で失敗することがあるため除去する。
-    sslmode=require があれば TLS は維持される。
+    psycopg2 互換の URL 正規化:
+    - channel_binding=require を除去
+    - sslmode 未指定時はローカル host なら disable、それ以外は require
     """
     from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
     parsed = urlparse(url)
-    if not parsed.query:
-        return url
-    qs = parse_qs(parsed.query, keep_blank_values=True)
+    qs = parse_qs(parsed.query, keep_blank_values=True) if parsed.query else {}
+    changed = False
+
     binding = (qs.get("channel_binding") or [None])[0]
-    if binding != "require":
+    if binding == "require":
+        del qs["channel_binding"]
+        changed = True
+        logger.info(
+            "DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+        )
+
+    if not (qs.get("sslmode") or [None])[0]:
+        qs["sslmode"] = [_default_sslmode_for_url(url)]
+        changed = True
+
+    if not changed and parsed.query:
         return url
-    del qs["channel_binding"]
+
     flat = {k: v[0] for k, v in qs.items() if v}
-    new_query = urlencode(flat)
-    normalized = urlunparse(parsed._replace(query=new_query))
-    logger.info(
-        "DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
-    )
-    return normalized
+    return urlunparse(parsed._replace(query=urlencode(flat)))
 
 
 def validate_database_url_config() -> list[str]:
@@ -85,7 +110,7 @@ def validate_database_url_config() -> list[str]:
     raw_url = (os.getenv("DATABASE_URL") or "").strip()
     if not url:
         return warnings
-    if not _uses_pooler(url):
+    if not _uses_pooler(url) and not _is_local_database_host(url):
         warnings.append(
             "DATABASE_URL に Neon pooler ホストがありません。"
             " Cloud Run では -pooler 接続を推奨します。"
@@ -131,7 +156,9 @@ def resolve_database_url() -> Optional[str]:
     if not (host and user and dbname):
         return None
     password_part = f":{quote_plus(password)}" if password else ''
-    sslmode = os.getenv('DATABASE_SSLMODE', 'require')
+    sslmode = _default_sslmode_for_url(
+        f"postgresql://{host}:{port}/{dbname}"
+    )
     return (
         f"postgresql://{quote_plus(user)}{password_part}@"
         f"{host}:{port}/{quote_plus(dbname)}?sslmode={sslmode}"
@@ -205,8 +232,7 @@ class DatabaseManager:
             
             # 接続プールを作成
             try:
-                # SSLモードを環境変数から取得（デフォルトはrequire）
-                sslmode = os.getenv('DATABASE_SSLMODE', 'require')
+                sslmode = _default_sslmode_for_url(self.database_url or "")
                 
                 # 接続パラメータを構築
                 connect_kwargs = {
@@ -252,7 +278,7 @@ class DatabaseManager:
                 err_msg = str(pool_error)
                 logger.warning(f"⚠️ Connection pool creation failed, using single connection: {err_msg}")
                 # フォールバック: 単一接続
-                sslmode = os.getenv('DATABASE_SSLMODE', 'require')
+                sslmode = _default_sslmode_for_url(self.database_url or "")
                 connect_kwargs = {
                     'connect_timeout': 5,  # 10秒から5秒に短縮
                     'application_name': "medicine-recommend-system"

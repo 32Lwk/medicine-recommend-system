@@ -20,6 +20,8 @@ from src.services.session_manager import (
 
 logger = logging.getLogger(__name__)
 
+BLOCKED_USER_PLACEHOLDER = '（この入力はブロックされました）'
+
 
 def _persist_block_messages_to_db(session, client, sid):
     """ブロック時にFlask sessionへ追加したメッセージをDB（またはメモリ）に保存する。"""
@@ -43,20 +45,23 @@ def _persist_block_messages_to_db(session, client, sid):
     save_session_to_db(sid, session_data)
 
 
-def _append_blocked_user_message(session) -> None:
+def _append_blocked_user_message(session, original_content: str = '') -> None:
     if 'messages' not in session:
         session['messages'] = []
     from src.utils.jst_datetime import now_jst_iso
 
     session['messages'].append({
         'type': 'user',
-        'content': '（この入力はブロックされました）',
+        'content': BLOCKED_USER_PLACEHOLDER,
+        'original_content': (original_content or '').strip() or None,
+        'admin_only': True,
+        'blocked_input': True,
         'timestamp': now_jst_iso(),
         'uuid': str(uuid.uuid4())
     })
 
 
-def _append_security_block_bot(session, sid, message: str, *, kind: str, variant: str = "caution") -> None:
+def _append_security_block_bot(session, sid, message: str, *, kind: str, variant: str = "caution", title: str = "入力について") -> None:
     from src.services.sage_bot_response import build_notice_bot
 
     session['messages'].append(
@@ -64,7 +69,7 @@ def _append_security_block_bot(session, sid, message: str, *, kind: str, variant
             session,
             sid,
             message,
-            title="入力について",
+            title=title,
             variant=variant,
             kind=kind,
             uuid=str(uuid.uuid4()),
@@ -79,18 +84,24 @@ def validate_and_block_input(session, client, user_message, sid):
         (sanitized_message, error_response) - error_response が (dict, status) なら return する。
     """
     try:
-        from src.security.aggressive_input import (
-            AGGRESSIVE_INPUT_NOTICE_MESSAGE,
-            is_aggressive_expression,
-        )
+        from src.security.input_block_responses import match_input_block
 
-        aggressive, reason = is_aggressive_expression(user_message)
-        if aggressive:
-            logger.warning("🚫 攻撃的入力により拒否されました: reason=%s", reason)
-            block_message = AGGRESSIVE_INPUT_NOTICE_MESSAGE
-            _append_blocked_user_message(session)
+        block_notice = match_input_block(user_message)
+        if block_notice:
+            logger.warning(
+                "🚫 入力ブロック: category=%s reason=%s",
+                block_notice.category,
+                block_notice.reason,
+            )
+            block_message = block_notice.message
+            _append_blocked_user_message(session, user_message)
             _append_security_block_bot(
-                session, sid, block_message, kind="aggressive_input", variant="security"
+                session,
+                sid,
+                block_message,
+                kind=block_notice.kind,
+                variant=block_notice.variant,
+                title=block_notice.title,
             )
             if hasattr(session, "modified"):
                 session.modified = True
@@ -133,7 +144,7 @@ def validate_and_block_input(session, client, user_message, sid):
                 warnings=[f"known_attack:{rule_id}"],
                 sanitized_text=user_message,
             )
-            _append_blocked_user_message(session)
+            _append_blocked_user_message(session, user_message)
             _append_security_block_bot(
                 session,
                 sid,
@@ -183,7 +194,7 @@ def validate_and_block_input(session, client, user_message, sid):
         if should_block_input(risk_score):
             logger.warning(f"⚠️ 入力がブロックされました: リスクスコア {risk_score}")
             block_message = '入力内容に問題が検出されました。症状や質問を自然な文章で入力してください。'
-            _append_blocked_user_message(session)
+            _append_blocked_user_message(session, user_message)
             _append_security_block_bot(session, sid, block_message, kind="security_block")
             session.modified = True
             _persist_block_messages_to_db(session, client, sid)
@@ -195,7 +206,7 @@ def validate_and_block_input(session, client, user_message, sid):
         if risk_score >= 80:
             logger.warning(f"⚠️ 高リスク入力検出: リスクスコア {risk_score}")
             warn_message = '入力内容に不審なパターンが検出されました。症状や質問を自然な文章で入力してください。'
-            _append_blocked_user_message(session)
+            _append_blocked_user_message(session, user_message)
             _append_security_block_bot(session, sid, warn_message, kind="security_warn", variant="caution")
             session.modified = True
             _persist_block_messages_to_db(session, client, sid)

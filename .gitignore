@@ -13,6 +13,7 @@ __pycache__/
 *.sqlite
 *.db
 node_modules/
+tmp_db_migration/
 dist/
 build/
 *.egg-info/

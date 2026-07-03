@@ -421,11 +421,16 @@ def detect_turn_issues(
         "store_facilities",
         "store_inventory",
         "store_locator",
-        "aggressive_input",
-        "known_attack",
     ):
         looks_greeting_response = False
-    if any(m in plain for m in _SECURITY_RESPONSE_MARKERS):
+    if any(m in plain for m in _SECURITY_RESPONSE_MARKERS) or route_kind in (
+        "aggressive_input",
+        "inappropriate_sexual",
+        "inappropriate_solicitation",
+        "inappropriate_illegal",
+        "system_abuse",
+        "known_attack",
+    ):
         looks_greeting_response = False
 
     if not is_greeting_input and looks_greeting_response:
