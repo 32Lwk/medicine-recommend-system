@@ -23,6 +23,7 @@ _VALID_CONCIERGE_INTENTS = frozenset({
     "doc_operator",
     "doc_consultation",
     "doc_app_overview",
+    "doc_changelog",
     "chitchat",
     "greeting",
     "redirect",

@@ -29,6 +29,7 @@ _VALID_INTENTS = frozenset({
     "doc_operator",
     "doc_consultation",
     "doc_app_overview",
+    "doc_changelog",
     "chitchat",
     "greeting",
     "redirect",
@@ -51,6 +52,7 @@ _META_PROMPT = """ユーザーの発言がこの医薬品相談チャットア�
 - doc_operator: お問い合わせ・試験運用・連絡先・不具合報告（例: 「運営者は誰？」「連絡先は？」「メールは？」「不具合の報告方法は？」）。氏名・所属・大学の回答は求められていても doc_operator（ドキュメントに無い事項は開示しない）
 - doc_consultation: 公的機関の相談窓口・PMDA・厚労省・#7119 など（例: 「相談先を教えて」「PMDAのリンクは？」）
 - doc_app_overview: アプリ概要.md の内容（開発背景・β版の目的・技術構成・対象者の詳細）（例: 「アプリの概要」「開発背景は？」「β版の対象者は？」）
+- doc_changelog: 最近の更新・アップデート・変更内容・CHANGELOG・更新日誌（例: 「最近何が変わった？」「更新内容を教えて」「最新の変更は？」）。開発履歴の要約を答える
 - chitchat: 雑談・天気・暇つぶし・話題の続き（挨拶ではない会話）
 - greeting: 挨拶・一声のみ（質問形式ではない短い呼びかけ）
 - session_ops: 相談履歴の削除・要約・ステータス確認（例: 「履歴消して」「履歴を要約して」「ステータスを教えて」「記憶を消して」「状態は？」）
@@ -72,7 +74,7 @@ _META_PROMPT = """ユーザーの発言がこの医薬品相談チャットア�
 市販薬（OTC）の候補選定はルールベースアルゴリズムのみで行い、LLM が自由に薬名を創作して決めることはありません。
 
 JSON形式:
-{{"intent": "capabilities|architecture|app_about|doc_privacy|doc_terms|doc_operator|doc_consultation|doc_app_overview|chitchat|greeting|session_ops|redirect|none", "confidence": 0.0-1.0}}
+{{"intent": "capabilities|architecture|app_about|doc_privacy|doc_terms|doc_operator|doc_consultation|doc_app_overview|doc_changelog|chitchat|greeting|session_ops|redirect|none", "confidence": 0.0-1.0}}
 """
 
 

@@ -1,6 +1,52 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月3日**（Phase 4a–4b・ローカル Docker DB 分離・入力ブロックカテゴリ化・店舗案内改善・管理画面 Sage Terrace 刷新）
+**最終更新日: 2026年7月3日**（CHANGELOG Concierge・app_about ガード・処理中表示マスコット刷新・オンボーディング文言・シーズン装飾固定）
+
+---
+
+## 2026年7月3日 — CHANGELOG Concierge・app_about ガード・UI 改善
+
+### 概要
+
+**ブランチ `main`** に、CHANGELOG 要約を Concierge で回答する `doc_changelog` intent、IntentRouter の `app_about` 誤ルーティング補正、処理中ステータスマスコットの段階別アニメーション、チャットビューポートとシーズン装飾のレイヤー修正、オンボーディングスライドの文言刷新を実装。
+
+### CHANGELOG 要約と doc_changelog Concierge
+
+- **`src/content/changelog_digest.py`（新規）**: `CHANGELOG.md` から直近リリースの概要・ハイライトを抽出。`static/build-meta.json` のデプロイ反映情報と結合して LLM プロンプト用参照ブロックを生成
+- **`src/agents/concierge_agent.py`**: `doc_changelog` intent で CHANGELOG 要約を参照回答（推測・補完禁止の専用プロンプト）
+- **`src/content/concierge_docs.py`**: `doc_changelog` を doc intent 集合に追加
+- **`src/services/concierge_intent.py`**: `doc_changelog` intent とキーワードプローブ（「最近の更新」「CHANGELOG」等）
+- **`src/services/meta_triage.py`**: meta triage プロンプトに `doc_changelog` を追加
+- **`src/agents/emergency_classifier.py` / `src/handlers/line/line_delivery.py`**: 非緊急・遅延 Concierge intent リストに `doc_changelog` を追加
+- **`tests/content/test_changelog_digest.py`（新規）**
+
+### IntentRouter app_about ガード
+
+- **`src/dialogue/routing/intent_router_llm.py`**: プロンプトに `app_about` / `doc_changelog` の判定ガイドを追加。legacy triage の `concierge_intent` をヒントに含める。`maybe_correct_concierge_app_about_route()` — LLM が本サービスの自己紹介依頼を `chitchat` 等に誤判定した場合のみ `app_about` へ補正
+- **`src/dialogue/routing/intent_router.py`**: route 決定後に app_about ガードを適用
+- **`src/services/concierge_intent.py`**: `probe_service_app_about_request()` / `is_excluded_service_app_about_request()` — ユーザー自身の自己紹介・他アプリ紹介依頼を除外
+- **`tests/dialogue/routing/test_intent_router_llm.py`**: app_about 補正・除外ケースのテスト追加
+- **`tests/concierge/test_concierge_intent_extended.py`**: app_about 除外・doc_changelog プローブのテスト追加
+
+### 処理中ステータス — マスコット段階別アニメーション
+
+- **`static/js/processing_status.js`**: パイプライン step / detail_code からマスコット mood を細分化（`idle` / `peek` / `think` / `scan` / `focus` / `spark` / `alert` / `compose` / `calm`）
+- **`static/css/main.css`**: 目のみのマスコット + 頭上バブル（`?` `!` `…`）の段階別 CSS アニメーション。`prefers-reduced-motion` 対応
+
+### チャットビューポート・シーズン装飾
+
+- **`templates/index.html`**: `.chat-messages-viewport` ラッパーを追加。シーズン装飾をビューポート下端に固定（メッセージスクロールと独立）
+- **`static/css/main.css` / `static/css/sage_terrace.css`**: 背景を viewport に移し `.chat-messages` は透明化。装飾レイヤの z-index・パディング調整
+
+### オンボーディング文言刷新
+
+- **`static/js/main.js`**: 全言語（ja / en / ko / zh）のオンボーディングスライドを「完了した改善」と「開発中・今後の予定」に分割。GitLab 一時移行の説明を dev スライドの footnote に移動。チェックリスト項目を現状に合わせて更新
+- **`static/css/main.css`**: `.onboarding-footnote`（`<details>` 折りたたみ）スタイル追加
+
+### テスト
+
+- `tests/content/test_changelog_digest.py`（新規）
+- `tests/dialogue/routing/test_intent_router_llm.py` / `tests/concierge/test_concierge_intent_extended.py` 更新
 
 ---
 

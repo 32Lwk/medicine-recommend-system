@@ -39,7 +39,7 @@ _INTENT_ROUTER_PROMPT = """あなたは医薬品相談チャットの IntentRout
 【sub_route 例（任意）】
 - Physical: rule_based_recommend, fever_flow
 - SessionOps: delete, summarize, status
-- Concierge: greeting, architecture, redirect, chitchat
+- Concierge: greeting, app_about, architecture, redirect, chitchat, doc_changelog
 - Emergency: emergency_dispatch
 - Security: aggressive_input, known_attack
 - Store: store_locator
@@ -50,6 +50,14 @@ _INTENT_ROUTER_PROMPT = """あなたは医薬品相談チャットの IntentRout
 - 履歴操作キーワードは SessionOps
 - 医薬品相談アプリ外の一般知識は Concierge/redirect
 - 症状が曖昧で判断不能なら Unknown（confidence 低め）
+
+【Concierge / app_about（本サービスの自己紹介・説明）】
+- sub_route=app_about: 本チャット・本ツール・あなた（bot）への自己紹介や説明の依頼
+  例: 「自己紹介して」「あなたについて」「このアプリとは」「このチャットは何？」
+- app_about にしない（chitchat または redirect）:
+  - ユーザー自身の自己紹介（「私の自己紹介するね」「僕のプロフィールを見て」）
+  - 他のアプリ・ゲーム・サービスの紹介（「ポケモンのアプリを紹介して」「あのアプリ教えて」）
+- legacy triage に concierge_intent=app_about がある場合は app_about を優先（chitchat にしない）
 
 JSON のみ返してください:
 {{"primary_route":"...", "sub_route":"..."|null, "confidence":0.0-1.0, "reasoning":"..."}}
@@ -97,10 +105,55 @@ def _format_triage_hint(triage_result: dict[str, Any] | None) -> str:
     triage = triage_result or {}
     if not triage.get("category"):
         return ""
-    return (
+    parts = [
         f"\n【参考: legacy triage】 category={triage.get('category')} "
         f"subcategory={triage.get('subcategory')} "
-        f"confidence={triage.get('confidence')}\n"
+        f"confidence={triage.get('confidence')}",
+    ]
+    concierge_intent = triage.get("concierge_intent")
+    if concierge_intent:
+        parts.append(f" concierge_intent={concierge_intent}")
+    intent_source = triage.get("concierge_intent_source")
+    if intent_source:
+        parts.append(f" source={intent_source}")
+    parts.append("\n")
+    return "".join(parts)
+
+
+_APP_ABOUT_MISROUTE_SUBS = frozenset({"chitchat", "greeting", "general_other", None, ""})
+
+
+def maybe_correct_concierge_app_about_route(
+    decision: RouteDecision | None,
+    user_text: str,
+) -> RouteDecision | None:
+    """
+    LLM が本サービスの自己紹介依頼を chitchat 等に誤判定した場合のみ app_about へ補正。
+    ユーザー自身・他アプリの紹介は対象外。
+    """
+    if decision is None or decision.primary_route != "Concierge":
+        return decision
+    if decision.sub_route == "app_about":
+        return decision
+    if decision.sub_route not in _APP_ABOUT_MISROUTE_SUBS:
+        return decision
+
+    from src.services.concierge_intent import probe_service_app_about_request
+
+    if not probe_service_app_about_request(user_text):
+        return decision
+
+    logger.info(
+        "intent_router_llm: app_about guard corrected sub_route %s -> app_about",
+        decision.sub_route,
+    )
+    return RouteDecision(
+        primary_route="Concierge",
+        sub_route="app_about",
+        confidence=max(decision.confidence, 0.92),
+        resolved_by=decision.resolved_by,
+        source=decision.source,
+        meta={**(decision.meta or {}), "app_about_guard": True},
     )
 
 

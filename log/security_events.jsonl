@@ -11938,3 +11938,27 @@
 {"timestamp": "2026-07-03T03:26:36.887478", "event_type": "input_validation", "user_id": "ユーザー994", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "やあ"}}
 {"timestamp": "2026-07-03T03:26:43.091369", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-03T03:26:43.092023", "event_type": "input_validation", "user_id": "ユーザー995", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "やあ"}}
+{"timestamp": "2026-07-03T11:24:16.817350", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T11:24:16.818481", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "yaa"}}
+{"timestamp": "2026-07-03T11:27:54.589026", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T11:27:54.590585", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近のあなたの更新内容を教えて"}}
+{"timestamp": "2026-07-03T11:28:14.778775", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T11:28:14.779982", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "詳細には"}}
+{"timestamp": "2026-07-03T11:32:56.133047", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T11:32:56.133903", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "もっと詳しく"}}
+{"timestamp": "2026-07-03T11:33:15.890664", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T11:33:15.891559", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "どゆこと？"}}
+{"timestamp": "2026-07-03T11:35:30.180469", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T11:35:30.183003", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "やあ"}}
+{"timestamp": "2026-07-03T11:37:19.325553", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T11:37:19.327566", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "自己紹介して"}}
+{"timestamp": "2026-07-03T11:41:54.254360", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T11:41:54.255423", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-03T11:43:00.337622", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T11:43:00.338724", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "やあ"}}
+{"timestamp": "2026-07-03T11:46:47.022014", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T11:46:47.022837", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-03T11:47:08.265757", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T11:47:08.266481", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "自己紹介して"}}
+{"timestamp": "2026-07-03T11:47:26.576846", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T11:47:26.580767", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近のあなたの更新内容を教えて"}}

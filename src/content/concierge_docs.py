@@ -21,9 +21,12 @@ DOC_INTENT_TITLES: Dict[str, str] = {
     "doc_operator": "お問い合わせ・試験運用について",
     "doc_consultation": "医薬品・健康相談窓口（公的情報）",
     "doc_app_overview": "アプリ概要（β版・限定公開）",
+    "doc_changelog": "更新履歴・最近の変更（CHANGELOG 要約）",
 }
 
-DOC_CONCIERGE_INTENTS: FrozenSet[str] = frozenset(DOC_INTENT_TO_FILENAME)
+DOC_CONCIERGE_INTENTS: FrozenSet[str] = frozenset(DOC_INTENT_TO_FILENAME) | frozenset(
+    {"doc_changelog"}
+)
 
 
 def is_doc_concierge_intent(intent: str) -> bool:

@@ -66,8 +66,12 @@ body[data-ui-variant="sage"] {
   display: none !important;
 }
 
-[data-ui-variant="sage"] .chat-messages {
+[data-ui-variant="sage"] .chat-messages-viewport {
   background: var(--ui-bg-chat);
+}
+
+[data-ui-variant="sage"] .chat-messages {
+  background: transparent;
 }
 
 [data-ui-variant="sage"] .message.user .message-content {

@@ -63,22 +63,24 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            background: rgba(192, 192, 192, 1);
         }
         .chat-messages { 
             flex: 1;
             overflow-y: auto; 
             padding: 20px;
             padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-            background: rgba(192, 192, 192, 1);
+            background: transparent;
             text-align: left;
             min-height: 0;
             position: relative;
+            z-index: 2;
             overflow-x: hidden; /* 横スクロールを防止 */
             display: flex;
             flex-direction: column;
         }
-        /* シーズン装飾（表示領域下端に固定・メッセージより下のレイヤ） */
-        .chat-messages > .season-decoration-layer {
+        /* シーズン装飾（ビューポート下端に固定・スクロールしない） */
+        .chat-messages-viewport > .season-decoration-layer {
             position: absolute;
             left: 0;
             right: 0;
@@ -86,6 +88,8 @@
             z-index: 1;
             height: 0;
             width: 100%;
+            padding: 0 20px;
+            box-sizing: border-box;
             overflow: visible;
             pointer-events: none;
         }
@@ -181,7 +185,7 @@
             .chat-messages {
                 padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
             }
-            .chat-messages > .season-decoration-layer {
+            .chat-messages-viewport > .season-decoration-layer {
                 bottom: calc(var(--season-decoration-gap, 12px) + env(safe-area-inset-bottom, 0px));
             }
             .season-decoration-layer .season-decoration.position-right {
@@ -194,8 +198,9 @@
             }
         }
         @media (max-width: 480px) {
-            .chat-messages > .season-decoration-layer {
+            .chat-messages-viewport > .season-decoration-layer {
                 bottom: calc(var(--season-decoration-gap, 10px) + env(safe-area-inset-bottom, 0px));
+                padding: 0 8px;
             }
             .season-decoration-layer .season-decoration.position-right {
                 width: 60px;
@@ -310,15 +315,6 @@
         <div class="chat-messages" id="chatMessages">
         <!-- 冬仕様の装飾 -->
         <div class="snow-container" id="snowContainer" aria-hidden="true"></div>
-        {% if decoration_images %}
-        <div class="season-decoration-layer" aria-hidden="true">
-            {% for image in decoration_images %}
-            <img src="{{ url_for('static', filename=image.path) }}?v={{ image_version }}"
-                 alt=""
-                 class="season-decoration {{ image.position_class }}">
-            {% endfor %}
-        </div>
-        {% endif %}
         
         <div class="message bot" data-initial-message="true">
             <div class="message-content">
@@ -477,6 +473,15 @@
         {% endif %}
         
     </div>
+        {% if decoration_images %}
+        <div class="season-decoration-layer" aria-hidden="true">
+            {% for image in decoration_images %}
+            <img src="{{ url_for('static', filename=image.path) }}?v={{ image_version }}"
+                 alt=""
+                 class="season-decoration {{ image.position_class }}">
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
     
     <!-- モーダル -->

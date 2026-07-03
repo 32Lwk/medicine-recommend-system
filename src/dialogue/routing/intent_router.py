@@ -85,9 +85,12 @@ def run_intent_router_llm(
         client=client,
     )
     primary = is_intent_router_primary_enabled(sid)
-    return pick_best_route_decision(
+    picked = pick_best_route_decision(
         legacy,
         gate_decision,
         llm,
         primary_llm_over_legacy=primary,
     )
+    from src.dialogue.routing.intent_router_llm import maybe_correct_concierge_app_about_route
+
+    return maybe_correct_concierge_app_about_route(picked, user_text)

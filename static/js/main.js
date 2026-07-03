@@ -113,23 +113,35 @@
                         ],
                         details: [
                             {
-                                summary: "現在開発中の主な内容",
-                                description: "GitHub アカウントが利用停止となったため、2026年6月から開発リポジトリを GitLab に一時移行しています。本サービスの機能や内容に影響はなく、これまで通りご利用いただけます。",
+                                summary: "完了した主な改善",
+                                description: "β版として、会話の分かりやすさ・安全性の向上を続けています。サーバー基盤とAIルーティングの大規模刷新は完了済みです。",
                                 itemsChecklist: true,
                                 items: [
-                                    { text: "Flask→Fast APIへの大規模移行", defaultChecked: true },
-                                    { text: "GPT-5系モデル（トリアージ・NLU・説明等）", defaultChecked: true },
-                                    { text: "マルチエージェント振り分け（ChatOrchestrator）", defaultChecked: true },
-                                    "潜在空間によるスコアリングの大規模改修",
-                                    { text: "UI・導線の最適化", defaultChecked: true },
-                                    { text: "カルーセル型UIの導入", defaultChecked: true },
-                                    { text: "LINE連携（Messaging API）", defaultChecked: true },
-                                    { text: "LINE→Web引き継ぎ", defaultChecked: true },
-                                    { text: "画像の導入", defaultChecked: true },
-                                    { text: "セキュリティ向上", defaultChecked: true },
-                                    "音声入力の向上",
-                                    "体調推定の実装（計画中）",
-                                    "パーソナライズ機能の実装（計画中）"
+                                    { text: "Flask → FastAPI への移行", defaultChecked: true },
+                                    { text: "GPT-5 系モデル（トリアージ・NLU・説明）", defaultChecked: true },
+                                    { text: "マルチエージェント振り分け", defaultChecked: true },
+                                    { text: "潜在空間ベースの推薦スコアリング改修", defaultChecked: true },
+                                    { text: "Sage Terrace UI・導線の最適化", defaultChecked: true },
+                                    { text: "カルーセル型の医薬品表示", defaultChecked: true },
+                                    { text: "LINE 連携（Messaging API）", defaultChecked: true },
+                                    { text: "LINE → Web 引き継ぎ", defaultChecked: true },
+                                    { text: "画像入力への対応", defaultChecked: true },
+                                    { text: "入力ガード・セキュリティ強化", defaultChecked: true },
+                                    { text: "店舗・施設案内の精度向上", defaultChecked: true },
+                                    { text: "Concierge 文脈ルーティング", defaultChecked: true }
+                                ]
+                            },
+                            {
+                                summary: "開発中・今後の予定",
+                                description: "新しい会話パイプライン（Chat Pipeline v2）の本番展開を準備中です。開発環境で先行検証しています。",
+                                itemsChecklist: true,
+                                items: [
+                                    { text: "Chat Pipeline v2（IntentRouter・会話基盤の刷新）" },
+                                    { text: "本番カナリア展開（段階的ロールアウト）" },
+                                    { text: "応答速度の最適化" },
+                                    { text: "音声入力の改善" },
+                                    { text: "体調推定（計画中）" },
+                                    { text: "パーソナライズ機能（計画中）" }
                                 ]
                             }
                         ],
@@ -159,26 +171,37 @@
                         ],
                         details: [
                             {
-                                summary: "現在開発中の主な内容",
-                                description: "GitHub アカウントが利用停止となったため、2026年6月から開発リポジトリを GitLab に一時移行しています。本サービスの機能や内容に影響はなく、これまで通りご利用いただけます。",
+                                summary: "改善・開発の進捗",
+                                description: "本番に反映済みの改善と、この dev 環境で検証中の項目です。Chat Pipeline v2 が有効なため、応答や表示が変わる場合があります。",
                                 itemsChecklist: true,
                                 items: [
-                                    { text: "Flask→Fast APIへの大規模移行", defaultChecked: true },
-                                    { text: "GPT-5系モデル（トリアージ・NLU・説明等）", defaultChecked: true },
-                                    { text: "マルチエージェント振り分け（ChatOrchestrator）", defaultChecked: true },
-                                    "潜在空間によるスコアリングの大規模改修",
-                                    { text: "UI・導線の最適化", defaultChecked: true },
-                                    { text: "カルーセル型UIの導入", defaultChecked: true },
-                                    { text: "LINE連携（Messaging API）", defaultChecked: true },
-                                    { text: "LINE→Web引き継ぎ", defaultChecked: true },
-                                    { text: "画像の導入", defaultChecked: true },
-                                    { text: "セキュリティ向上", defaultChecked: true },
-                                    "音声入力の向上",
-                                    "体調推定の実装（計画中）",
-                                    "パーソナライズ機能の実装（計画中）"
+                                    { text: "Flask → FastAPI への移行", defaultChecked: true },
+                                    { text: "GPT-5 系モデル（トリアージ・NLU・説明）", defaultChecked: true },
+                                    { text: "マルチエージェント振り分け", defaultChecked: true },
+                                    { text: "潜在空間ベースの推薦スコアリング改修", defaultChecked: true },
+                                    { text: "Sage Terrace UI・導線の最適化", defaultChecked: true },
+                                    { text: "カルーセル型の医薬品表示", defaultChecked: true },
+                                    { text: "LINE 連携（Messaging API）", defaultChecked: true },
+                                    { text: "LINE → Web 引き継ぎ", defaultChecked: true },
+                                    { text: "画像入力への対応", defaultChecked: true },
+                                    { text: "入力ガード・セキュリティ強化", defaultChecked: true },
+                                    { text: "店舗・施設案内の精度向上", defaultChecked: true },
+                                    { text: "Concierge 文脈ルーティング", defaultChecked: true },
+                                    { text: "Chat Pipeline v2（IntentRouter PRIMARY・dispatch 最適化）" },
+                                    { text: "入力ブロックのカテゴリ別応答" },
+                                    { text: "管理画面（admin）Sage Terrace UI 刷新" },
+                                    { text: "本番カナリア展開の準備" },
+                                    { text: "応答速度の最適化" },
+                                    { text: "音声入力の改善" },
+                                    { text: "体調推定（計画中）" },
+                                    { text: "パーソナライズ機能（計画中）" }
                                 ]
                             }
                         ],
+                        footnote: {
+                            summary: "開発リポジトリは GitLab に一時移行中",
+                            body: "GitHub アカウント停止に伴い、2026年6月から開発リポジトリを GitLab に一時移行しています。サービスの機能や内容への影響はありません。"
+                        },
                         links: [
                             {
                                 text: "🌐 本番環境(安定版)を開く",
@@ -411,23 +434,35 @@
                         ],
                         details: [
                             {
-                                summary: "What we are currently working on",
-                                description: "Due to a GitHub account suspension, we have temporarily moved the development repository to GitLab since June 2026. The service features and content are unchanged—you can continue using the app as usual.",
+                                summary: "Completed improvements",
+                                description: "As a beta release, we keep improving clarity and safety. Major server and AI routing upgrades are already in place.",
                                 itemsChecklist: true,
                                 items: [
-                                    { text: "Large-scale migration from Flask to FastAPI", defaultChecked: true },
-                                    { text: "GPT-5 class models (triage, NLU, explanations, etc.)", defaultChecked: true },
-                                    { text: "Multi-agent routing (ChatOrchestrator)", defaultChecked: true },
-                                    "Major scoring revamp using latent space",
-                                    { text: "UI and user-flow optimization", defaultChecked: true },
-                                    { text: "Carousel-style UI", defaultChecked: true },
+                                    { text: "Migration from Flask to FastAPI", defaultChecked: true },
+                                    { text: "GPT-5 class models (triage, NLU, explanations)", defaultChecked: true },
+                                    { text: "Multi-agent routing", defaultChecked: true },
+                                    { text: "Latent-space recommendation scoring revamp", defaultChecked: true },
+                                    { text: "Sage Terrace UI and flow optimization", defaultChecked: true },
+                                    { text: "Carousel-style medicine display", defaultChecked: true },
                                     { text: "LINE integration (Messaging API)", defaultChecked: true },
                                     { text: "LINE→Web handoff", defaultChecked: true },
-                                    { text: "Image support", defaultChecked: true },
-                                    { text: "Security improvements", defaultChecked: true },
-                                    "Better voice input",
-                                    "Health state estimation (planned)",
-                                    "Personalization features (planned)"
+                                    { text: "Image input support", defaultChecked: true },
+                                    { text: "Input guards and security hardening", defaultChecked: true },
+                                    { text: "Store and facility guidance improvements", defaultChecked: true },
+                                    { text: "Concierge context routing", defaultChecked: true }
+                                ]
+                            },
+                            {
+                                summary: "In progress and planned",
+                                description: "We are preparing the production rollout of Chat Pipeline v2 (new conversation foundation), currently validated in the dev environment.",
+                                itemsChecklist: true,
+                                items: [
+                                    { text: "Chat Pipeline v2 (IntentRouter and conversation foundation)" },
+                                    { text: "Production canary rollout (phased)" },
+                                    { text: "Response latency optimization" },
+                                    { text: "Better voice input" },
+                                    { text: "Health state estimation (planned)" },
+                                    { text: "Personalization features (planned)" }
                                 ]
                             }
                         ],
@@ -457,26 +492,37 @@
                         ],
                         details: [
                             {
-                                summary: "What we are currently working on",
-                                description: "Due to a GitHub account suspension, we have temporarily moved the development repository to GitLab since June 2026. The service features and content are unchanged—you can continue using the app as usual.",
+                                summary: "Improvements & progress",
+                                description: "Shipped improvements and items validated in this dev environment. Chat Pipeline v2 is enabled here, so responses and UI may differ.",
                                 itemsChecklist: true,
                                 items: [
-                                    { text: "Large-scale migration from Flask to FastAPI", defaultChecked: true },
-                                    { text: "GPT-5 class models (triage, NLU, explanations, etc.)", defaultChecked: true },
-                                    { text: "Multi-agent routing (ChatOrchestrator)", defaultChecked: true },
-                                    "Major scoring revamp using latent space",
-                                    { text: "UI and user-flow optimization", defaultChecked: true },
-                                    { text: "Carousel-style UI", defaultChecked: true },
+                                    { text: "Migration from Flask to FastAPI", defaultChecked: true },
+                                    { text: "GPT-5 class models (triage, NLU, explanations)", defaultChecked: true },
+                                    { text: "Multi-agent routing", defaultChecked: true },
+                                    { text: "Latent-space recommendation scoring revamp", defaultChecked: true },
+                                    { text: "Sage Terrace UI and flow optimization", defaultChecked: true },
+                                    { text: "Carousel-style medicine display", defaultChecked: true },
                                     { text: "LINE integration (Messaging API)", defaultChecked: true },
                                     { text: "LINE→Web handoff", defaultChecked: true },
-                                    { text: "Image support", defaultChecked: true },
-                                    { text: "Security improvements", defaultChecked: true },
-                                    "Better voice input",
-                                    "Health state estimation (planned)",
-                                    "Personalization features (planned)"
+                                    { text: "Image input support", defaultChecked: true },
+                                    { text: "Input guards and security hardening", defaultChecked: true },
+                                    { text: "Store and facility guidance improvements", defaultChecked: true },
+                                    { text: "Concierge context routing", defaultChecked: true },
+                                    { text: "Chat Pipeline v2 (IntentRouter PRIMARY, dispatch optimization)" },
+                                    { text: "Categorized input-block responses" },
+                                    { text: "Admin Sage Terrace UI refresh" },
+                                    { text: "Production canary preparation" },
+                                    { text: "Response latency optimization" },
+                                    { text: "Better voice input" },
+                                    { text: "Health state estimation (planned)" },
+                                    { text: "Personalization features (planned)" }
                                 ]
                             }
                         ],
+                        footnote: {
+                            summary: "Dev repo temporarily on GitLab",
+                            body: "Since June 2026, our repository has temporarily moved to GitLab due to a GitHub account suspension. Service features and content are unaffected."
+                        },
                         links: [
                             {
                                 text: "🌐 Open production (stable)",
@@ -721,23 +767,35 @@
                         ],
                         details: [
                             {
-                                summary: "현재 개발 중인 주요 내용",
-                                description: "GitHub 계정 이용 정지로 2026년 6월부터 개발 리포지토리를 GitLab으로 일시 이전했습니다. 서비스 기능과 내용은 변함없으며, 이전과 같이 이용하실 수 있습니다.",
+                                summary: "완료된 주요 개선",
+                                description: "베타로서 대화의 이해하기 쉬움과 안전성 향상을 계속합니다. 서버 기반과 AI 라우팅의 대규모 개편은 완료되었습니다.",
                                 itemsChecklist: true,
                                 items: [
-                                    { text: "Flask에서 FastAPI로의 대규모 이전", defaultChecked: true },
-                                    "잠재 공간 기반 스코어링 대규모 개편",
-                                    { text: "GPT-5 계열 모델(트리아지·NLU·설명 등)", defaultChecked: true },
-                                    { text: "멀티 에이전트 라우팅(ChatOrchestrator)", defaultChecked: true },
-                                    { text: "UI·사용자 동선 최적화", defaultChecked: true },
-                                    { text: "캐러셀형 UI 도입", defaultChecked: true },
+                                    { text: "Flask에서 FastAPI로 이전", defaultChecked: true },
+                                    { text: "GPT-5 계열 모델(트리아지·NLU·설명)", defaultChecked: true },
+                                    { text: "멀티 에이전트 라우팅", defaultChecked: true },
+                                    { text: "잠재 공간 기반 추천 스코어링 개편", defaultChecked: true },
+                                    { text: "Sage Terrace UI·사용자 동선 최적화", defaultChecked: true },
+                                    { text: "캐러셀형 의약품 표시", defaultChecked: true },
                                     { text: "LINE 연동(Messaging API)", defaultChecked: true },
                                     { text: "LINE→Web 연속(Handoff)", defaultChecked: true },
-                                    { text: "이미지 도입", defaultChecked: true },
-                                    { text: "보안 강화", defaultChecked: true },
-                                    "음성 입력 개선",
-                                    "컨디션 추정 구현(계획)",
-                                    "개인화 기능 구현(계획)"
+                                    { text: "이미지 입력 지원", defaultChecked: true },
+                                    { text: "입력 가드·보안 강화", defaultChecked: true },
+                                    { text: "매장·시설 안내 정확도 향상", defaultChecked: true },
+                                    { text: "Concierge 문맥 라우팅", defaultChecked: true }
+                                ]
+                            },
+                            {
+                                summary: "개발 중·향후 예정",
+                                description: "새 대화 파이프라인(Chat Pipeline v2)의 운영 반영을 준비 중이며, 개발 환경에서 선행 검증하고 있습니다.",
+                                itemsChecklist: true,
+                                items: [
+                                    { text: "Chat Pipeline v2(IntentRouter·대화 기반 개편)" },
+                                    { text: "운영 카나리아 단계적 롤아웃" },
+                                    { text: "응답 속도 최적화" },
+                                    { text: "음성 입력 개선" },
+                                    { text: "컨디션 추정(계획)" },
+                                    { text: "개인화 기능(계획)" }
                                 ]
                             }
                         ],
@@ -767,26 +825,37 @@
                         ],
                         details: [
                             {
-                                summary: "현재 개발 중인 주요 내용",
-                                description: "GitHub 계정 이용 정지로 2026년 6월부터 개발 리포지토리를 GitLab으로 일시 이전했습니다. 서비스 기능과 내용은 변함없으며, 이전과 같이 이용하실 수 있습니다.",
+                                summary: "개선·개발 진행",
+                                description: "운영에 반영된 개선과 이 dev 환경에서 검증 중인 항목입니다. Chat Pipeline v2가 활성화되어 있어 응답·표시가 달라질 수 있습니다.",
                                 itemsChecklist: true,
                                 items: [
-                                    { text: "Flask에서 FastAPI로의 대규모 이전", defaultChecked: true },
-                                    "잠재 공간 기반 스코어링 대규모 개편",
-                                    { text: "GPT-5 계열 모델(트리아지·NLU·설명 등)", defaultChecked: true },
-                                    { text: "멀티 에이전트 라우팅(ChatOrchestrator)", defaultChecked: true },
-                                    { text: "UI·사용자 동선 최적화", defaultChecked: true },
-                                    { text: "캐러셀형 UI 도입", defaultChecked: true },
+                                    { text: "Flask에서 FastAPI로 이전", defaultChecked: true },
+                                    { text: "GPT-5 계열 모델(트리아지·NLU·설명)", defaultChecked: true },
+                                    { text: "멀티 에이전트 라우팅", defaultChecked: true },
+                                    { text: "잠재 공간 기반 추천 스코어링 개편", defaultChecked: true },
+                                    { text: "Sage Terrace UI·사용자 동선 최적화", defaultChecked: true },
+                                    { text: "캐러셀형 의약품 표시", defaultChecked: true },
                                     { text: "LINE 연동(Messaging API)", defaultChecked: true },
                                     { text: "LINE→Web 연속(Handoff)", defaultChecked: true },
-                                    { text: "이미지 도입", defaultChecked: true },
-                                    { text: "보안 강화", defaultChecked: true },
-                                    "음성 입력 개선",
-                                    "컨디션 추정 구현(계획)",
-                                    "개인화 기능 구현(계획)"
+                                    { text: "이미지 입력 지원", defaultChecked: true },
+                                    { text: "입력 가드·보안 강화", defaultChecked: true },
+                                    { text: "매장·시설 안내 정확도 향상", defaultChecked: true },
+                                    { text: "Concierge 문맥 라우팅", defaultChecked: true },
+                                    { text: "Chat Pipeline v2(IntentRouter PRIMARY·dispatch 최적화)" },
+                                    { text: "입력 차단 카테고리별 응답" },
+                                    { text: "관리 화면(admin) Sage Terrace UI 개편" },
+                                    { text: "운영 카나리아 준비" },
+                                    { text: "응답 속도 최적화" },
+                                    { text: "음성 입력 개선" },
+                                    { text: "컨디션 추정(계획)" },
+                                    { text: "개인화 기능(계획)" }
                                 ]
                             }
                         ],
+                        footnote: {
+                            summary: "개발 리포지토리는 GitLab으로 일시 이전 중",
+                            body: "GitHub 계정 정지에 따라 2026년 6월부터 개발 리포지토리를 GitLab으로 일시 이전했습니다. 서비스 기능·내용에는 영향이 없습니다."
+                        },
                         links: [
                             {
                                 text: "🌐 운영 환경(안정판) 열기",
@@ -1019,23 +1088,35 @@
                         ],
                         details: [
                             {
-                                summary: "当前开发中的主要内容",
-                                description: "因 GitHub 账号被停用，自 2026 年 6 月起开发仓库已暂时迁至 GitLab。服务功能与内容不变，您可照常使用。",
+                                summary: "已完成的主要改进",
+                                description: "作为测试版，我们持续改进对话的清晰度与安全性。服务器基础与 AI 路由的大规模升级已完成。",
                                 itemsChecklist: true,
                                 items: [
-                                    { text: "从 Flask 到 FastAPI 的大规模迁移", defaultChecked: true },
-                                    "基于潜在空间的大规模评分改造",
-                                    { text: "GPT-5 系列模型（分流、NLU、说明等）", defaultChecked: true },
-                                    { text: "多智能体路由（ChatOrchestrator）", defaultChecked: true },
-                                    { text: "UI 与流程优化", defaultChecked: true },
-                                    { text: "引入轮播式 UI", defaultChecked: true },
+                                    { text: "从 Flask 迁移至 FastAPI", defaultChecked: true },
+                                    { text: "GPT-5 系列模型（分流、NLU、说明）", defaultChecked: true },
+                                    { text: "多智能体路由", defaultChecked: true },
+                                    { text: "基于潜在空间的推荐评分改造", defaultChecked: true },
+                                    { text: "Sage Terrace UI 与流程优化", defaultChecked: true },
+                                    { text: "轮播式药品展示", defaultChecked: true },
                                     { text: "LINE 对接（Messaging API）", defaultChecked: true },
                                     { text: "LINE→Web 接续", defaultChecked: true },
-                                    { text: "引入图片能力", defaultChecked: true },
-                                    { text: "安全加固", defaultChecked: true },
-                                    "语音输入改进",
-                                    "身体状况推断（规划中）",
-                                    "个性化功能（规划中）"
+                                    { text: "图片输入支持", defaultChecked: true },
+                                    { text: "输入拦截与安全加固", defaultChecked: true },
+                                    { text: "门店与设施指引精度提升", defaultChecked: true },
+                                    { text: "Concierge 上下文路由", defaultChecked: true }
+                                ]
+                            },
+                            {
+                                summary: "进行中与计划中",
+                                description: "正在准备 Chat Pipeline v2（新对话基础）的生产环境逐步上线，目前在开发环境先行验证。",
+                                itemsChecklist: true,
+                                items: [
+                                    { text: "Chat Pipeline v2（IntentRouter 与对话基础刷新）" },
+                                    { text: "生产环境金丝雀分阶段上线" },
+                                    { text: "响应速度优化" },
+                                    { text: "语音输入改进" },
+                                    { text: "身体状况推断（规划中）" },
+                                    { text: "个性化功能（规划中）" }
                                 ]
                             }
                         ],
@@ -1065,26 +1146,37 @@
                         ],
                         details: [
                             {
-                                summary: "当前开发中的主要内容",
-                                description: "因 GitHub 账号被停用，自 2026 年 6 月起开发仓库已暂时迁至 GitLab。服务功能与内容不变，您可照常使用。",
+                                summary: "改进与开发进度",
+                                description: "已上线改进与本 dev 环境验证中的项目。已启用 Chat Pipeline v2，回复与界面可能有所变化。",
                                 itemsChecklist: true,
                                 items: [
-                                    { text: "从 Flask 到 FastAPI 的大规模迁移", defaultChecked: true },
-                                    "基于潜在空间的大规模评分改造",
-                                    { text: "GPT-5 系列模型（分流、NLU、说明等）", defaultChecked: true },
-                                    { text: "多智能体路由（ChatOrchestrator）", defaultChecked: true },
-                                    { text: "UI 与流程优化", defaultChecked: true },
-                                    { text: "引入轮播式 UI", defaultChecked: true },
+                                    { text: "从 Flask 迁移至 FastAPI", defaultChecked: true },
+                                    { text: "GPT-5 系列模型（分流、NLU、说明）", defaultChecked: true },
+                                    { text: "多智能体路由", defaultChecked: true },
+                                    { text: "基于潜在空间的推荐评分改造", defaultChecked: true },
+                                    { text: "Sage Terrace UI 与流程优化", defaultChecked: true },
+                                    { text: "轮播式药品展示", defaultChecked: true },
                                     { text: "LINE 对接（Messaging API）", defaultChecked: true },
                                     { text: "LINE→Web 接续", defaultChecked: true },
-                                    { text: "引入图片能力", defaultChecked: true },
-                                    { text: "安全加固", defaultChecked: true },
-                                    "语音输入改进",
-                                    "身体状况推断（规划中）",
-                                    "个性化功能（规划中）"
+                                    { text: "图片输入支持", defaultChecked: true },
+                                    { text: "输入拦截与安全加固", defaultChecked: true },
+                                    { text: "门店与设施指引精度提升", defaultChecked: true },
+                                    { text: "Concierge 上下文路由", defaultChecked: true },
+                                    { text: "Chat Pipeline v2（IntentRouter PRIMARY、dispatch 优化）" },
+                                    { text: "输入拦截分类响应" },
+                                    { text: "管理后台 Sage Terrace UI 刷新" },
+                                    { text: "生产金丝雀上线准备" },
+                                    { text: "响应速度优化" },
+                                    { text: "语音输入改进" },
+                                    { text: "身体状况推断（规划中）" },
+                                    { text: "个性化功能（规划中）" }
                                 ]
                             }
                         ],
+                        footnote: {
+                            summary: "开发仓库已暂时迁至 GitLab",
+                            body: "因 GitHub 账号停用，自 2026 年 6 月起开发仓库已暂时迁至 GitLab。服务功能与内容不受影响。"
+                        },
                         links: [
                             {
                                 text: "🌐 打开生产环境（稳定版）",
@@ -2317,6 +2409,22 @@
         }).join('');
     }
 
+    function createOnboardingFootnoteMarkup(slide) {
+        const footnote = slide && slide.footnote;
+        if (!footnote || !footnote.summary) {
+            return '';
+        }
+        const bodyHtml = footnote.body
+            ? '<span class="onboarding-footnote-body">' + escapeHtml(footnote.body) + '</span>'
+            : '';
+        return (
+            '<details class="onboarding-footnote">' +
+            '<summary>' + escapeHtml(footnote.summary) + '</summary>' +
+            bodyHtml +
+            '</details>'
+        );
+    }
+
     function createOnboardingFinalActions(slide) {
         if (!slide || !slide.startButtonText) {
             return '';
@@ -2371,7 +2479,8 @@
                     ? `<ul>${slide.bullets.map(item => `<li>${item}</li>`).join('')}</ul>`
                     : '';
                 const detailsHtml = createOnboardingDetailsMarkup(slide);
-                
+                const footnoteHtml = createOnboardingFootnoteMarkup(slide);
+
                 // カスタムHTMLがある場合はそれを使用
                 const customHtml = slide.customHtml || '';
                 
@@ -2404,6 +2513,7 @@
                             </div>
                             ${lastUpdatedHtml}
                             ${detailsHtml}
+                            ${footnoteHtml}
                             ${linksHtml}
                         </div>
                         <div class="onboarding-slide-footer">
