@@ -79,6 +79,7 @@ _DOC_FOLLOW_UP_INTENTS = frozenset({
     "doc_operator",
     "doc_consultation",
     "doc_app_overview",
+    "doc_changelog",
 })
 
 _META_FOLLOW_UP_PRIOR_INTENTS = frozenset({

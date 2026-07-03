@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 from src.dialogue.routing.intent_router import run_intent_router_llm
 from src.dialogue.routing.intent_router_llm import (
     call_intent_router_llm,
+    maybe_correct_concierge_app_about_route,
     parse_llm_route_response,
     pick_best_route_decision,
 )
@@ -182,3 +183,66 @@ def test_run_intent_router_llm_falls_back_to_triage(_mock_llm):
     d = run_intent_router_llm("頭痛い", {}, "line:U1", triage_result=triage)
     assert d is not None
     assert d.primary_route == "Physical"
+
+
+def test_maybe_correct_concierge_app_about_route_fixes_chitchat_misroute():
+    wrong = RouteDecision(
+        primary_route="Concierge",
+        sub_route="chitchat",
+        confidence=0.98,
+        resolved_by="llm",
+        source="intent_router_llm",
+    )
+    fixed = maybe_correct_concierge_app_about_route(wrong, "自己紹介して")
+    assert fixed is not None
+    assert fixed.sub_route == "app_about"
+    assert fixed.meta.get("app_about_guard") is True
+
+
+def test_maybe_correct_concierge_app_about_route_skips_user_self_intro():
+    wrong = RouteDecision(
+        primary_route="Concierge",
+        sub_route="chitchat",
+        confidence=0.98,
+        resolved_by="llm",
+    )
+    assert (
+        maybe_correct_concierge_app_about_route(wrong, "私の自己紹介するね").sub_route
+        == "chitchat"
+    )
+
+
+def test_maybe_correct_concierge_app_about_route_skips_third_party_app():
+    wrong = RouteDecision(
+        primary_route="Concierge",
+        sub_route="chitchat",
+        confidence=0.98,
+        resolved_by="llm",
+    )
+    assert (
+        maybe_correct_concierge_app_about_route(
+            wrong, "このポケモンのアプリの紹介して"
+        ).sub_route
+        == "chitchat"
+    )
+
+
+@patch("config.llm_flags.is_intent_router_primary_enabled", return_value=True)
+@patch("src.dialogue.routing.intent_router_llm.call_intent_router_llm")
+def test_run_intent_router_llm_corrects_app_about_over_llm_chitchat(mock_llm, _primary):
+    mock_llm.return_value = RouteDecision(
+        primary_route="Concierge",
+        sub_route="chitchat",
+        confidence=0.98,
+        resolved_by="llm",
+        source="intent_router_llm",
+    )
+    triage = {
+        "category": "Other",
+        "confidence": 1.0,
+        "concierge_intent": "app_about",
+        "concierge_intent_source": "keyword_probe",
+    }
+    d = run_intent_router_llm("自己紹介して", {}, "web:U1", triage_result=triage)
+    assert d is not None
+    assert d.sub_route == "app_about"

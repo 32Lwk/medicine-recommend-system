@@ -44,7 +44,7 @@ ResponsePayload = Dict[str, Any]
 
 # 参照ドキュメントの要約のみ返す intent（末尾の相談促し・免責定型文は付けない）
 _DOC_REFERENCE_ONLY_INTENTS = frozenset(
-    {"doc_privacy", "doc_terms", "doc_consultation", "doc_app_overview"}
+    {"doc_privacy", "doc_terms", "doc_consultation", "doc_app_overview", "doc_changelog"}
 )
 
 _CONCIERGE_PROMPT_HISTORY_LIMIT = 10
@@ -465,8 +465,17 @@ def generate_doc_answer_text(
     session_id: Optional[str] = None,
     history: Optional[List[Dict[str, str]]] = None,
 ) -> str:
-    """公式 docs/*.md を参照し、Concierge LLM で正確に回答する。"""
-    title, doc_body = load_concierge_doc(intent)
+    """公式 docs/*.md または CHANGELOG 要約を参照し、Concierge LLM で正確に回答する。"""
+    if intent == "doc_changelog":
+        from src.content.changelog_digest import (
+            changelog_doc_title,
+            format_changelog_reference_for_llm,
+        )
+
+        title = changelog_doc_title()
+        doc_body = format_changelog_reference_for_llm()
+    else:
+        title, doc_body = load_concierge_doc(intent)
     hist = ""
     if history:
         lines = []
@@ -493,6 +502,16 @@ def generate_doc_answer_text(
 - 連絡先・URL・禁止事項などはドキュメントの表記を変えず正確に伝える
 - 詳細は画面右上の ℹ️（情報）から各種ドキュメントの全文を確認できる旨を最後に1文で案内する
 - ドキュメント本文に無い免責・診断不可・相談促しなどの定型文は付けない{legal_extra}
+"""
+    elif intent == "doc_changelog":
+        requirements = """【要件】
+- 上記の CHANGELOG 要約とデプロイ反映情報のみに基づいて回答する（推測・補完しない）
+- 「最近の更新」「何が変わったか」には直近のリリース見出しと概要・主な変更を優先する
+- デプロイ反映日・コミットを聞かれた場合は【デプロイ反映情報】を答える。CHANGELOG の最終更新日と区別してよい
+- 記載にない機能・日付・バージョンは創作しない
+- 回答は3〜6項目の箇条書き（「・」1行1項目）または短い段落。全文の写し出しはしない
+- より古い履歴の詳細はリポジトリの CHANGELOG.md にある旨を1文で案内する
+- 症状やお薬の相談を促す締めは付けない
 """
     elif intent == "doc_operator":
         requirements = f"""{get_policy_snippet()}
@@ -1294,6 +1313,7 @@ _META_CARD_TITLES: dict[str, str] = {
     "architecture": "仕組み・技術",
     "app_about": "このツールについて",
     "doc_app_overview": "アプリ概要",
+    "doc_changelog": "更新履歴",
     "doc_privacy": "プライバシー",
     "doc_terms": "利用規約・免責",
     "doc_consultation": "相談先・窓口",
@@ -1305,6 +1325,7 @@ _META_CARD_HINTS: dict[str, list[str]] = {
     "architecture": [],
     "app_about": [],
     "doc_app_overview": [],
+    "doc_changelog": [],
     "doc_privacy": [],
     "doc_terms": [],
     "doc_consultation": [],

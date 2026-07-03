@@ -25,6 +25,7 @@ ConciergeIntent = Literal[
     "doc_operator",
     "doc_consultation",
     "doc_app_overview",
+    "doc_changelog",
     "chitchat",
     "redirect",
     "medical_handoff",
@@ -108,6 +109,7 @@ CONCIERGE_META_INTENTS = frozenset({
     "doc_operator",
     "doc_consultation",
     "doc_app_overview",
+    "doc_changelog",
 })
 
 _LEGAL_COMPLIANCE_META_RE = re.compile(
@@ -420,6 +422,7 @@ _PRE_TRIAGE_META_INTENTS = frozenset({
     "doc_operator",
     "doc_consultation",
     "doc_app_overview",
+    "doc_changelog",
 })
 
 _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
@@ -446,6 +449,9 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"(運営者|連絡先|お問い合わせ|不具合.{0,4}報告)"), "doc_operator"),
     (re.compile(r"(PMDA|厚労省|#7119|相談先|相談窓口)"), "doc_consultation"),
     (re.compile(r"(アプリの概要|開発背景|β版|ベータ版)"), "doc_app_overview"),
+    (re.compile(r"(最近|最新).{0,16}(更新|変更|アップデート)"), "doc_changelog"),
+    (re.compile(r"(更新|変更)(内容|履歴|日誌|点)"), "doc_changelog"),
+    (re.compile(r"CHANGELOG", re.I), "doc_changelog"),
     (re.compile(r"プリンシプルオブプログラミング|オブジェクト指向とは|デザインパターンとは"), "redirect"),
     (re.compile(r"(プログラミング|アルゴリズム|データ構造).{0,8}(とは|って何)"), "redirect"),
 ]
@@ -470,6 +476,41 @@ def _is_concierge_intent_routing_enabled() -> bool:
         return False
 
 
+# 本サービス app_about から除外: ユーザー自身の自己紹介
+_USER_SELF_INTRO_RE = re.compile(
+    r"(?:私|僕|ぼく|俺|おれ|わたし|わたくし|自分|ボク|アタシ|あたし)(?:の|は|が)?.{0,12}自己紹介",
+)
+# 他アプリ・他サービスの紹介依頼（「このツール/アプリ/チャット/サービス/ボット」は対象外）
+_THIRD_PARTY_APP_INTRO_RE = re.compile(
+    r"(?:"
+    r"(?:ポケモン|ゲーム|あの|その|例の|隣の|友達の|彼の|彼女の).{0,24}(?:アプリ|アプリケーション|ツール|サービス)"
+    r"|"
+    r"この(?!ツール|アプリ|チャット|サービス|ボット).{0,20}(?:アプリ|アプリケーション)"
+    r")"
+    r".{0,16}(?:紹介|教えて|説明|とは)",
+)
+
+
+def is_excluded_service_app_about_request(text: str) -> bool:
+    """ユーザー自身の自己紹介、または他アプリ／サービスの紹介依頼。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    if _USER_SELF_INTRO_RE.search(t):
+        return True
+    return bool(_THIRD_PARTY_APP_INTRO_RE.search(t))
+
+
+def probe_service_app_about_request(text: str) -> bool:
+    """
+    本チャット／本サービス向けの自己紹介・説明要求のみ True。
+    IntentRouter の app_about 補正ガード専用（他意図には使わない）。
+    """
+    if is_excluded_service_app_about_request(text):
+        return False
+    return probe_meta_concierge_intent(text) == "app_about"
+
+
 def probe_session_admin_intent(user_text: str) -> Optional[str]:
     """セッション操作（削除・要約・ステータス）のキーワードプローブ。"""
     from src.agents.session_agent import probe_session_admin_intent as _probe
@@ -490,6 +531,8 @@ def probe_meta_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
         return None
     for pattern, intent in _META_PROBE_RULES:
         if pattern.search(text):
+            if intent == "app_about" and is_excluded_service_app_about_request(text):
+                continue
             return intent
     if _is_concierge_intent_routing_enabled():
         for pattern, intent in _META_PROBE_RULES_EXTENDED:

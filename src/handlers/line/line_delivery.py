@@ -24,6 +24,7 @@ _SLOW_CONCIERGE_INTENTS = frozenset(
         "doc_terms",
         "doc_consultation",
         "doc_app_overview",
+        "doc_changelog",
         "capabilities",
         "architecture",
         "app_about",

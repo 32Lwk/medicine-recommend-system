@@ -6,7 +6,9 @@ import pytest
 from src.agents.concierge_agent import resolve_concierge_intent, should_concierge_handle
 from src.services.concierge_intent import (
     classify_concierge_intent,
+    is_excluded_service_app_about_request,
     probe_meta_concierge_intent,
+    probe_service_app_about_request,
     resolve_pre_triage_concierge_intent,
     should_reset_off_topic,
 )
@@ -141,6 +143,35 @@ def test_none_for_empty():
 )
 def test_probe_meta_concierge_intent(text, expected):
     assert probe_meta_concierge_intent(text) == expected
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "私の自己紹介するね",
+        "僕の自己紹介を聞いて",
+        "このポケモンのアプリの紹介して",
+        "あのアプリを紹介して",
+    ],
+)
+def test_probe_meta_skips_excluded_app_about(text):
+    assert probe_meta_concierge_intent(text) is None
+    assert is_excluded_service_app_about_request(text)
+    assert not probe_service_app_about_request(text)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "自己紹介して",
+        "自己紹介してください",
+        "あなたについて教えて",
+        "このアプリについて",
+    ],
+)
+def test_probe_service_app_about_request_positive(text):
+    assert probe_service_app_about_request(text)
+    assert not is_excluded_service_app_about_request(text)
 
 
 def test_probe_skips_medicine_consultation():

@@ -635,18 +635,43 @@
         }
         var stepId = data.step_id || '';
         var detailCode = data.detail_code || '';
-        if (stepId === 'symptom_analysis' || detailCode === 'symptom_check') {
-            return 'symptom';
+
+        if (stepId === 'emergency' || stepId === 'safety') {
+            return 'alert';
         }
-        if (stepId === 'medicine_select' && (
-            detailCode === 'candidate_match' ||
-            detailCode === 'rule_match' ||
-            detailCode === 'scoring'
-        )) {
-            return 'match';
+        if (stepId === 'symptom_analysis') {
+            if (detailCode === 'llm_classify' || detailCode === 'symptom_extract') {
+                return 'scan';
+            }
+            return 'think';
         }
-        if (stepId === 'usage_notes') {
-            return 'notes';
+        if (detailCode === 'symptom_check') {
+            return 'think';
+        }
+        if (stepId === 'attributes' || stepId === 'counseling' || stepId === 'medicine_qa') {
+            return 'think';
+        }
+        if (stepId === 'medicine_select') {
+            if (
+                detailCode === 'rule_match' ||
+                detailCode === 'candidate_match' ||
+                detailCode === 'ranking'
+            ) {
+                return 'spark';
+            }
+            if (detailCode === 'explanation') {
+                return 'compose';
+            }
+            return 'focus';
+        }
+        if (stepId === 'usage_notes' || stepId === 'finalize') {
+            return 'compose';
+        }
+        if (stepId === 'triage' || stepId === 'diagnosis') {
+            return 'peek';
+        }
+        if (stepId === 'concierge' || stepId === 'store' || stepId === 'translate') {
+            return 'calm';
         }
         return 'idle';
     }
@@ -827,9 +852,10 @@
         if (pillEl) {
             pillEl.textContent = step + ' / ' + total;
         }
-        var mascotEl = wrapper.querySelector('.processing-status-mascot');
-        if (mascotEl && meta.mascotState) {
-            mascotEl.className = 'processing-status-mascot processing-status-mascot--' + meta.mascotState;
+        var mascotEl = root.querySelector('.processing-status-mascot');
+        if (mascotEl) {
+            var mascotState = resolveMascotState(localized);
+            mascotEl.className = 'processing-status-mascot processing-status-mascot--' + mascotState;
         }
         if (fillEl) {
             fillEl.style.width = percent + '%';
