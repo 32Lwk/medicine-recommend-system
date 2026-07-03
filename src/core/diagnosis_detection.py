@@ -8,6 +8,11 @@ import re
 import unicodedata
 import logging
 
+from src.core.diagnosis_display import (
+    format_diagnosis_user_label_quoted,
+    join_diagnosis_user_labels,
+)
+
 logger = logging.getLogger(__name__)
 
 # 診断名のみでも OTC 相談フローへ進めてよい疾患（ユーザーが相談入口として使うことが多い）
@@ -134,6 +139,63 @@ def has_side_effect_mention(text: str) -> bool:
     return any(kw in text for kw in SIDE_EFFECT_KEYWORDS)
 
 
+_SHORT_ASCII_ABBREV_PATTERN = re.compile(r"^[A-Z0-9]{2,6}$")
+
+# 2文字略称が日常語・IT用語と衝突する場合の除外（単語境界マッチ後に適用）
+_NON_MEDICAL_ABBREV_CONTEXT: dict[str, tuple[re.Pattern[str], ...]] = {
+    "IC": (re.compile(r"IC\s*カード", re.I),),
+    "MS": (
+        re.compile(r"MS\s+Office", re.I),
+        re.compile(r"Microsoft", re.I),
+    ),
+    "FD": (re.compile(r"FD\s*口座", re.I),),
+    "UC": (re.compile(r"UC\s+[Bb]rowser", re.I),),
+    "PE": (re.compile(r"PE\s+ratio", re.I),),
+}
+
+
+def _abbrev_blocked_by_non_medical_context(
+    diagnosis: str,
+    text: str,
+    start: int,
+    end: int,
+) -> bool:
+    patterns = _NON_MEDICAL_ABBREV_CONTEXT.get(diagnosis)
+    if not patterns:
+        return False
+    window = text[start : min(len(text), end + 16)]
+    return any(p.search(window) for p in patterns)
+
+
+def diagnosis_requires_ascii_word_boundary(diagnosis: str) -> bool:
+    """英字略称は英数字列の部分一致（例: CHANGELOG 内の AN）を避ける。"""
+    return bool(_SHORT_ASCII_ABBREV_PATTERN.match((diagnosis or "").strip()))
+
+
+def find_diagnosis_match_span(diagnosis: str, text: str) -> tuple[int, int] | None:
+    """診断名の最初の出現位置。略称は ASCII 英数字の単語境界でのみ一致。"""
+    term = (diagnosis or "").strip()
+    if not term or not text:
+        return None
+    if diagnosis_requires_ascii_word_boundary(term):
+        pattern = re.compile(
+            r"(?<![A-Za-z0-9])" + re.escape(term) + r"(?![A-Za-z0-9])",
+        )
+        pos = 0
+        while True:
+            match = pattern.search(text, pos)
+            if not match:
+                return None
+            start, end = match.start(), match.end()
+            if not _abbrev_blocked_by_non_medical_context(term, text, start, end):
+                return start, end
+            pos = end
+    idx = text.find(term)
+    if idx == -1:
+        return None
+    return idx, idx + len(term)
+
+
 def is_diagnosis_term(text):
     """
     テキストが診断名（疾患名）かどうかを判定
@@ -249,17 +311,16 @@ def is_diagnosis_term(text):
     # 文脈を考慮した診断名検出関数
     def check_diagnosis_with_context(diagnosis, text, exclusion_words):
         """診断名が検出対象かどうかを文脈を考慮して判定"""
-        if diagnosis not in text:
+        span = find_diagnosis_match_span(diagnosis, text)
+        if span is None:
             return False
-        
-        # 診断名の位置を特定（最初の出現位置を検出）
-        index = text.find(diagnosis)
-        if index == -1:
-            return False
+
+        index, diagnosis_end = span
+        diagnosis_len = diagnosis_end - index
         
         # 診断名の前後15文字を抽出（主体・時間軸の除外判定を最適化）
         start = max(0, index - 15)
-        end = min(len(text), index + len(diagnosis) + 15)
+        end = min(len(text), diagnosis_end + 15)
         context = text[start:end]
         
         # 逆接表現の定義
@@ -316,7 +377,6 @@ def is_diagnosis_term(text):
         has_medical_history_keyword = any(keyword in before_diagnosis for keyword in medical_history_keywords)
         
         # 診断名の後の部分を確認（逆接表現と症状の有無をチェック）
-        diagnosis_end = index + len(diagnosis)
         after_diagnosis = text[diagnosis_end:]
         # 逆接表現の後に症状があるかチェック（最大100文字まで）
         after_diagnosis_check = after_diagnosis[:100] if len(after_diagnosis) > 100 else after_diagnosis
@@ -421,7 +481,7 @@ def is_diagnosis_term(text):
         for pattern in medical_history_patterns:
             # 診断名の前後15文字以内でパターンを検索（最適化）
             pattern_start = max(0, index - 15)
-            pattern_end = min(len(text), index + len(diagnosis) + 15)
+            pattern_end = min(len(text), diagnosis_end + 15)
             pattern_context = text[pattern_start:pattern_end]
             
             if re.search(pattern, pattern_context):
@@ -738,7 +798,10 @@ def is_diagnosis_term(text):
     # メッセージ生成（高リスクコンテキストの場合は専用メッセージ）
     try:
         if has_high_risk_context:
-            message = f'「{selected_diagnosis}」について検査中や疑いの状態であることをお知らせいただき、ありがとうございます。\n\n'
+            message = (
+                f'{format_diagnosis_user_label_quoted(selected_diagnosis)}について'
+                "検査中や疑いの状態であることをお知らせいただき、ありがとうございます。\n\n"
+            )
             message += f'検査結果待ちや疑いの状態の場合、診断が確定していない状態での市販薬の使用は避けるべきです。\n'
             message += f'必ず医師の診断を受けてから、適切な治療を開始してください。\n\n'
             message += f'検査結果が出るまでの間は、自己判断で市販薬を使用せず、医師の指示に従ってください。'
@@ -765,10 +828,10 @@ def is_diagnosis_term(text):
             
             # 複数診断名の場合はマージ
             if len(all_diagnosis_names) > 1:
-                diagnosis_list = '、'.join(all_diagnosis_names[:-1]) + '、' + all_diagnosis_names[-1]
+                diagnosis_list = join_diagnosis_user_labels(all_diagnosis_names)
                 message_prefix = f'{diagnosis_list}などの持病をお持ちの方で、'
             else:
-                message_prefix = f'「{selected_diagnosis}」をお持ちの方で、'
+                message_prefix = f'{format_diagnosis_user_label_quoted(selected_diagnosis)}をお持ちの方で、'
             
             return (True, selected_type, {
             'message': message_prefix + side_effect_message,
@@ -790,10 +853,13 @@ def is_diagnosis_term(text):
         if diagnosis_only:
             # 複数診断名の場合はマージ
             if len(all_diagnosis_names) > 1:
-                diagnosis_list = '、'.join(all_diagnosis_names[:-1]) + '、' + all_diagnosis_names[-1]
+                diagnosis_list = join_diagnosis_user_labels(all_diagnosis_names)
                 message_prefix = f'{diagnosis_list}などの持病をお持ちの方へ：\n\n'
             else:
-                message_prefix = f'「{selected_diagnosis}」は診断名であり、具体的な症状ではありません。\n\n'
+                message_prefix = (
+                    f'{format_diagnosis_user_label_quoted(selected_diagnosis)}は'
+                    "診断名であり、具体的な症状ではありません。\n\n"
+                )
             
             if selected_type == 'serious':
                 message = message_prefix + '悪性腫瘍の治療は医師の診断と処方薬が必須です。\n市販薬での対応は困難ですので、必ずかかりつけの医師や専門医にご相談ください。\n\n現在の症状について教えていただけますと、より適切なご案内ができます。'
@@ -823,10 +889,10 @@ def is_diagnosis_term(text):
         # 診断名+症状の場合
         # 複数診断名の場合はマージ
         if len(all_diagnosis_names) > 1:
-            diagnosis_list = '、'.join(all_diagnosis_names[:-1]) + '、' + all_diagnosis_names[-1]
+            diagnosis_list = join_diagnosis_user_labels(all_diagnosis_names)
             message_prefix = f'{diagnosis_list}などの持病をお持ちの方へ：\n\n'
         else:
-            message_prefix = f'「{selected_diagnosis}」をお持ちの方へ：\n\n'
+            message_prefix = f'{format_diagnosis_user_label_quoted(selected_diagnosis)}をお持ちの方へ：\n\n'
         
         if selected_type == 'serious':
             message = message_prefix + '体調変化が主疾患に関連している可能性があります。\n悪性腫瘍の治療は医師の診断と処方薬が必須です。\n市販薬での対応は困難ですので、必ずかかりつけの医師や専門医にご相談ください。'
@@ -855,7 +921,10 @@ def is_diagnosis_term(text):
     except Exception as e:
         logger.error(f"診断名メッセージ生成でエラー: {e}")
         return (True, selected_type, {
-            'message': f'「{selected_diagnosis}」についてご相談いただきありがとうございます。医師や薬剤師にご相談ください。',
+            'message': (
+                f'{format_diagnosis_user_label_quoted(selected_diagnosis)}について'
+                "ご相談いただきありがとうございます。医師や薬剤師にご相談ください。"
+            ),
             'escalation_required': True,
             'escalation_reason': 'エラーが発生しました。',
             'has_symptom': has_symptom,

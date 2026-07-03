@@ -423,6 +423,11 @@ def wants_changelog_detail(
     return False
 
 
+def _release_date_key(heading: str) -> str:
+    m = _RELEASE_DATE_RE.search(heading or "")
+    return m.group(1) if m else ""
+
+
 def build_changelog_ui_sections(
     releases: Tuple[ChangelogRelease, ...],
     *,
@@ -434,9 +439,9 @@ def build_changelog_ui_sections(
     if detailed:
         max_releases = min(max(max_releases, 4), 6)
         max_items_per_release = min(max(max_items_per_release, 4), 6)
-    sections: List[dict[str, Any]] = []
-    seen_titles: set[str] = set()
     deploy_commit = str(load_build_meta().get("gitCommitShort") or "").strip()[:7]
+
+    grouped: List[dict[str, Any]] = []
     for idx, release in enumerate(releases[:max_releases]):
         items = overview_to_user_bullets(
             release.overview,
@@ -444,14 +449,38 @@ def build_changelog_ui_sections(
         )
         if not items:
             continue
-        title = release_user_section_title(release.heading)
-        if title in seen_titles:
-            title = f"{title} ②"
-        seen_titles.add(title)
-        section: dict[str, Any] = {"title": title, "items": items}
-        if idx == 0 and deploy_commit:
-            section["commit"] = deploy_commit
-        sections.append(section)
+        date_key = _release_date_key(release.heading)
+        if grouped and grouped[-1].get("_date_key") == date_key and date_key:
+            bucket = grouped[-1]
+            bucket["_sources"] = int(bucket.get("_sources") or 1) + 1
+            bucket["title"] = date_key
+        else:
+            bucket = {
+                "_date_key": date_key,
+                "_sources": 1,
+                "title": release_user_section_title(release.heading),
+                "items": [],
+            }
+            if idx == 0 and deploy_commit:
+                bucket["commit"] = deploy_commit
+            grouped.append(bucket)
+
+        cap = max_items_per_release * int(bucket.get("_sources") or 1)
+        seen = set(bucket["items"])
+        for item in items:
+            if item in seen:
+                continue
+            if len(bucket["items"]) >= cap:
+                break
+            bucket["items"].append(item)
+            seen.add(item)
+
+    sections: List[dict[str, Any]] = []
+    for bucket in grouped:
+        bucket.pop("_date_key", None)
+        bucket.pop("_sources", None)
+        if bucket.get("items"):
+            sections.append(bucket)
     return sections
 
 

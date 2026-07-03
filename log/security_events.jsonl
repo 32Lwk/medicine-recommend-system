@@ -11980,3 +11980,5 @@
 {"timestamp": "2026-07-03T14:32:42.439556", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "どうこと？"}}
 {"timestamp": "2026-07-03T14:32:57.089800", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-03T14:32:57.093605", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ちんこ"}}
+{"timestamp": "2026-07-03T15:24:14.561395", "original_length": 22, "sanitized_length": 22, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T15:24:14.562011", "event_type": "input_validation", "user_id": "ユーザー994", "input_length": 22, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "CHANGELOG digest ってなに？"}}
