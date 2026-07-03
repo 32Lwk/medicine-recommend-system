@@ -453,6 +453,7 @@ def build_notice_status(
     message: str,
     *,
     title: str = "お知らせ",
+    subtitle: str = "",
     variant: str = "notice",
     hints: list[str] | None = None,
     sections: list[StatusSection] | None = None,
@@ -467,6 +468,7 @@ def build_notice_status(
         render="sage_status",
         variant=variant,  # type: ignore[arg-type]
         title=title,
+        subtitle=subtitle,
         message=clean_message,
         hints=hints or [],
         sections=sections or [],

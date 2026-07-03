@@ -1344,6 +1344,13 @@ body:has(#app > .ui-app) #app {
   font-weight: 700;
   color: var(--ui-text);
   line-height: 1.4;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ui-overlap-card__commit {
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 
 .ui-overlap-card__body {

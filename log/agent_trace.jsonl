@@ -829,3 +829,5 @@
 {"ts": 1783016786.5140674, "trace_id": "11ce6f5f-263f-4c5d-b9bd-b8561c942166", "agent": "StoreInquiryAgent", "step": "complete", "session_id": "1783016749009952752279", "ms": 1000.68, "payload": {"handled": false}}
 {"ts": 1783045699.1707149, "trace_id": "a73608a0-0e40-4201-9cc1-8db890186f43", "agent": "ChatOrchestrator", "step": "handoff", "session_id": "1783044856195560534657", "payload": {"target": "OtherHandler", "category": "Other"}}
 {"ts": 1783045701.437429, "trace_id": "a73608a0-0e40-4201-9cc1-8db890186f43", "agent": "ConciergeAgent", "step": "complete", "session_id": "1783044856195560534657", "ms": 2225.03, "payload": {"handled": true}}
+{"ts": 1783056783.432812, "trace_id": "d7a4f567-5495-4b4b-9067-698b6fa44acd", "agent": "ChatOrchestrator", "step": "handoff", "session_id": "1783055443036358740307", "payload": {"target": "OtherHandler", "category": "Other"}}
+{"ts": 1783056784.655064, "trace_id": "d7a4f567-5495-4b4b-9067-698b6fa44acd", "agent": "StoreInquiryAgent", "step": "complete", "session_id": "1783055443036358740307", "ms": 1180.78, "payload": {"handled": false}}

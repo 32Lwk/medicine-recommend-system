@@ -59,6 +59,15 @@ _INTENT_ROUTER_PROMPT = """あなたは医薬品相談チャットの IntentRout
   - 他のアプリ・ゲーム・サービスの紹介（「ポケモンのアプリを紹介して」「あのアプリ教えて」）
 - legacy triage に concierge_intent=app_about がある場合は app_about を優先（chitchat にしない）
 
+【Concierge / doc_changelog（本ツールのリリース履歴のみ）】
+- sub_route=doc_changelog: **この市販薬相談チャット／本アプリ／本サービス**の最近の更新・新機能・改善点
+  例: 「アプリの更新内容を教えて」「更新教えて」「このチャット最近どう変わった？」
+- doc_changelog にしない（chitchat または redirect）:
+  - ポケモン・ゲーム・他社アプリなど**別製品**の更新（文脈で明らかな場合）
+  - ユーザー自身の「人間として更新」等の比喩
+  - OS・スマホのバージョンアップ
+- 「更新教えて」など対象省略の短い発話も、本チャット中であれば doc_changelog
+
 JSON のみ返してください:
 {{"primary_route":"...", "sub_route":"..."|null, "confidence":0.0-1.0, "reasoning":"..."}}
 """

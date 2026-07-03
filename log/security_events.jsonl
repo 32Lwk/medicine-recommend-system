@@ -11962,3 +11962,21 @@
 {"timestamp": "2026-07-03T11:47:08.266481", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "自己紹介して"}}
 {"timestamp": "2026-07-03T11:47:26.576846", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-03T11:47:26.580767", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近のあなたの更新内容を教えて"}}
+{"timestamp": "2026-07-03T13:27:01.404011", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T13:27:01.407163", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "自己紹介して"}}
+{"timestamp": "2026-07-03T13:28:05.339398", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T13:28:05.340720", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "自己紹介して"}}
+{"timestamp": "2026-07-03T13:28:55.675207", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T13:28:55.680615", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えて"}}
+{"timestamp": "2026-07-03T14:10:56.288774", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T14:10:56.289740", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "更新教えて"}}
+{"timestamp": "2026-07-03T14:12:06.926009", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T14:12:06.927376", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ポケモンの最近の更新教えて"}}
+{"timestamp": "2026-07-03T14:31:15.118296", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T14:31:15.119313", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新を教えて"}}
+{"timestamp": "2026-07-03T14:32:22.173769", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T14:32:22.174458", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "詳細には？"}}
+{"timestamp": "2026-07-03T14:32:42.438895", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T14:32:42.439556", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "どうこと？"}}
+{"timestamp": "2026-07-03T14:32:57.089800", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T14:32:57.093605", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ちんこ"}}

@@ -196,7 +196,84 @@
     return 'ui-alert--info';
   }
 
-  function sectionBadgeLabel(variant, title) {
+  function getRuntimeClientConfig() {
+    try {
+      var cfgEl = typeof document !== 'undefined' ? document.getElementById('app-runtime-config') : null;
+      if (cfgEl && cfgEl.textContent) {
+        return JSON.parse(cfgEl.textContent.trim());
+      }
+    } catch (e) {
+      // fall through
+    }
+    return null;
+  }
+
+  function buildGitCommitBrowseUrl(repoUrl, commit) {
+    if (!repoUrl || !commit) return null;
+    var base = String(repoUrl).trim().replace(/\/+$/, '');
+    try {
+      var host = new URL(base).hostname.toLowerCase();
+      if (host === 'gitlab.com' || host.endsWith('.gitlab.com')) {
+        return base + '/-/commit/' + commit;
+      }
+    } catch (e) {
+      // fall through
+    }
+    return base + '/commit/' + commit;
+  }
+
+  function resolveCommitBrowseUrl(commit) {
+    if (!commit) return null;
+    var cfg = getRuntimeClientConfig() || {};
+    var direct = typeof cfg.gitCommitUrl === 'string' ? cfg.gitCommitUrl.trim() : '';
+    if (direct && /gitlab\.com/i.test(direct)) return direct;
+    var repo = typeof cfg.gitRepoUrl === 'string' ? cfg.gitRepoUrl.trim() : '';
+    if (repo) return buildGitCommitBrowseUrl(repo, commit);
+    return buildGitCommitBrowseUrl('https://gitlab.com/blank2703726/medicine-recommend', commit);
+  }
+
+  function sectionCommitHtml(commit) {
+    var hash = String(commit || '').trim().slice(0, 7);
+    if (!/^[0-9a-f]{7}$/i.test(hash)) return '';
+    var commitLabel = t('onboardingCommitLabel') || 'Commit';
+    var commitUrl = resolveCommitBrowseUrl(hash);
+    if (commitUrl) {
+      return (
+        '<a href="' + esc(commitUrl) + '" class="ui-overlap-card__commit onboarding-last-updated-commit" target="_blank" rel="noopener noreferrer" aria-label="' + esc(commitLabel) + ' ' + esc(hash) + '">' +
+          '<code class="onboarding-commit-hash">' + esc(hash) + '</code>' +
+        '</a>'
+      );
+    }
+    return (
+      '<span class="ui-overlap-card__commit onboarding-last-updated-commit" aria-label="' + esc(commitLabel) + ' ' + esc(hash) + '">' +
+        '<code class="onboarding-commit-hash">' + esc(hash) + '</code>' +
+      '</span>'
+    );
+  }
+
+  function changelogDeployMetaHtml(subtitle) {
+    var raw = cleanStatusText(subtitle || '');
+    if (!raw) return '';
+    var datePart = '';
+    var dateMatch = raw.match(/最終更新日\s+(.+)/);
+    if (dateMatch) {
+      datePart = String(dateMatch[1] || '').trim();
+    }
+    if (!datePart) return '';
+    var label = t('onboardingLastUpdatedLabel') || '最終更新日';
+    return (
+      '<p class="ui-status-last-updated onboarding-last-updated">' +
+        '<span class="onboarding-last-updated-main">' +
+          '<span class="onboarding-last-updated-label">' + esc(label) + '</span> ' +
+          esc(datePart) +
+        '</span>' +
+      '</p>'
+    );
+  }
+
+  function sectionBadgeLabel(variant, title, kind) {
+    if (kind === 'concierge_doc_changelog') return t('statusBadgeUpdate') || '更新';
+    if (/^\d{4}年\d{1,2}月\d{1,2}日/.test(title || '')) return t('statusBadgeUpdate') || '更新';
     if (/医師|受診|相談/.test(title || '')) return t('statusBadgeConsult') || '受診';
     if (/詳細|案内/.test(title || '')) return t('statusBadgeInfo') || '案内';
     if (variant === 'critical' || variant === 'error') return t('statusBadgeImportant') || '重要';
@@ -218,7 +295,7 @@
     return '<li>' + esc(text) + '</li>';
   }
 
-  function sectionsHtml(sections, variant) {
+  function sectionsHtml(sections, variant, kind) {
     if (!sections || !sections.length) return '';
     var sev = variantOverlapSeverity(variant || 'notice');
     return (
@@ -240,8 +317,9 @@
           return (
             '<div class="ui-overlap-card ui-overlap-card--' + esc(sev) + ' ui-status-section-card">' +
               '<div class="ui-overlap-card__head">' +
-                '<span class="ui-overlap-card__badge">' + esc(sectionBadgeLabel(variant, title)) + '</span>' +
+                '<span class="ui-overlap-card__badge">' + esc(sectionBadgeLabel(variant, title, kind)) + '</span>' +
                 '<span class="ui-overlap-card__title">' + esc(title) + '</span>' +
+                (kind === 'concierge_doc_changelog' ? sectionCommitHtml(sec.commit) : '') +
               '</div>' +
               '<div class="ui-overlap-card__body">' + body + '</div>' +
             '</div>'
@@ -338,13 +416,11 @@
     if (isAbsoluteBlockStatus(diag)) {
       return statusMessagePlainHtml(diag);
     }
+    var isChangelog = diag && diag.kind === 'concierge_doc_changelog';
     var subtitle = cleanStatusText(diag.subtitle || '');
     var message = cleanStatusText(diag.message || '');
     if (!subtitle && !message) return '';
     var bodyParts = [];
-    if (subtitle) {
-      bodyParts.push('<p class="ui-status-advice__lead">' + esc(subtitle) + '</p>');
-    }
     if (message) {
       var paras = message.split(/\n\n+/).filter(function (p) { return p.trim(); });
       if (!paras.length) {
@@ -357,6 +433,11 @@
           '</p>'
         );
       });
+    }
+    if (isChangelog && subtitle) {
+      bodyParts.push(changelogDeployMetaHtml(subtitle));
+    } else if (subtitle) {
+      bodyParts.unshift('<p class="ui-status-advice__lead">' + esc(subtitle) + '</p>');
     }
     return bodyParts.join('');
   }
@@ -372,7 +453,7 @@
       '<div class="ui-status-block ui-status-block--pro ui-status-block--' + esc(variant) + '">' +
         statusIntroHtml(diag, variant, render) +
         statusAdviceHtml(diag) +
-        sectionsHtml(diag.sections, variant) +
+        sectionsHtml(diag.sections, variant, diag.kind) +
         hintsHtml(diag.hints, variant) +
         actionsHtml(diag.actions) +
         feedbackHtml(diag) +

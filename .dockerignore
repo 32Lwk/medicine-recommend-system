@@ -32,6 +32,7 @@ test_report.html
 # scripts は開発用が大半のため除外。Docker ビルドメタ生成のみ許可
 scripts/*
 !scripts/write_build_meta.py
+!scripts/write_changelog_digest.py
 
 # ドキュメント（Concierge 用の public/ と concierge/ のみ Dockerfile で COPY）
 docs/**
@@ -43,7 +44,8 @@ docs/**
 # デプロイ設定（コンテナ内不要）
 render.yaml
 README.md
-CHANGELOG.md
+# CHANGELOG.md はビルド時に digest 化するためコンテキストには含める（ランタイム COPY は digest のみ）
+!CHANGELOG.md
 Makefile
 git-sync.ps1
 
