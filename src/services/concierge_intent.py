@@ -422,7 +422,6 @@ _PRE_TRIAGE_META_INTENTS = frozenset({
     "doc_operator",
     "doc_consultation",
     "doc_app_overview",
-    "doc_changelog",
 })
 
 _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
@@ -449,9 +448,6 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"(運営者|連絡先|お問い合わせ|不具合.{0,4}報告)"), "doc_operator"),
     (re.compile(r"(PMDA|厚労省|#7119|相談先|相談窓口)"), "doc_consultation"),
     (re.compile(r"(アプリの概要|開発背景|β版|ベータ版)"), "doc_app_overview"),
-    (re.compile(r"(最近|最新).{0,16}(更新|変更|アップデート)"), "doc_changelog"),
-    (re.compile(r"(更新|変更)(内容|履歴|日誌|点)"), "doc_changelog"),
-    (re.compile(r"CHANGELOG", re.I), "doc_changelog"),
     (re.compile(r"プリンシプルオブプログラミング|オブジェクト指向とは|デザインパターンとは"), "redirect"),
     (re.compile(r"(プログラミング|アルゴリズム|データ構造).{0,8}(とは|って何)"), "redirect"),
 ]

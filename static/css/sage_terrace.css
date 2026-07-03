@@ -1856,6 +1856,17 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
   color: var(--ui-text);
 }
 
+.ui-bubble--status .ui-status-last-updated,
+.ui-bubble--qa .ui-status-last-updated {
+  margin: 10px 2px 4px;
+  padding: 0;
+}
+
+[data-ui-variant="sage"] .ui-bubble--status .ui-status-last-updated,
+[data-ui-variant="sage"] .ui-bubble--qa .ui-status-last-updated {
+  color: var(--ui-text-muted, #757575);
+}
+
 .ui-status-message--plain {
   margin: 0;
   padding: 0 2px;

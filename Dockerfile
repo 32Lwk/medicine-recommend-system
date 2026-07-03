@@ -17,9 +17,11 @@ COPY src/ src/
 COPY templates/ templates/
 COPY static/ static/
 COPY scripts/write_build_meta.py scripts/
+COPY scripts/write_changelog_digest.py scripts/
 COPY data/ data/
 COPY docs/public/ docs/public/
 COPY docs/concierge/ docs/concierge/
+COPY CHANGELOG.md ./
 
 # Cloud Run 等 .git なし環境向け: ビルド引数から Git メタを ENV と static/build-meta.json に焼き込む
 # リポジトリ同梱の static/build-meta.json がある場合は COPY 済み。未設定時のみビルド引数で上書き。
@@ -28,7 +30,8 @@ ARG GIT_COMMIT_DATE=
 ARG COMMIT_SHA=
 ENV GIT_COMMIT=${GIT_COMMIT:-${COMMIT_SHA}} \
     GIT_COMMIT_DATE=${GIT_COMMIT_DATE}
-RUN python3 scripts/write_build_meta.py
+RUN python3 scripts/write_build_meta.py \
+ && python3 scripts/write_changelog_digest.py
 
 # Cloud Run のデフォルトポート（環境変数 PORT が渡される）
 # FastAPI は ASGI のため sync ワーカー不可（未設定時のフォールバック）

@@ -6,7 +6,6 @@ from src.content.changelog_digest import (
     load_build_meta,
     parse_changelog_releases,
 )
-from src.services.concierge_intent import probe_meta_concierge_intent
 
 
 SAMPLE_CHANGELOG = """# 開発履歴・更新日誌
@@ -61,7 +60,13 @@ def test_load_build_meta_reads_json():
     assert isinstance(meta, dict)
 
 
-def test_probe_meta_changelog_intent():
-    assert probe_meta_concierge_intent("最近のあなたの更新内容を教えて") == "doc_changelog"
-    assert probe_meta_concierge_intent("CHANGELOGを見せて") == "doc_changelog"
-    assert probe_meta_concierge_intent("頭痛がします") is None
+def test_load_baked_digest_from_static_json():
+    from src.content.changelog_digest import _load_baked_digest
+
+    _load_baked_digest.cache_clear()
+    baked = _load_baked_digest()
+    assert baked is not None
+    header, releases = baked
+    assert releases
+    assert header
+

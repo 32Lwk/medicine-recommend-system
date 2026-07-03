@@ -10,6 +10,7 @@ class StatusSection(BaseModel):
     title: str
     items: list[str] = Field(default_factory=list)
     html: str | None = None
+    commit: str = ""
 
 
 class StatusAction(BaseModel):

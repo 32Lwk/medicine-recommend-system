@@ -1,0 +1,118 @@
+{
+  "source": "CHANGELOG.md",
+  "header_date": "2026年7月3日（CHANGELOG Concierge・app_about ガード・処理中表示マスコット刷新・オンボーディング文言・シーズン装飾固定）",
+  "releases": [
+    {
+      "heading": "2026年7月3日 — CHANGELOG Concierge・app_about ガード・UI 改善",
+      "overview": "ブランチ main に、CHANGELOG 要約を Concierge で回答する doc_changelog intent、IntentRouter の app_about 誤ルーティング補正、処理中ステータスマスコットの段階別アニメーション、チャットビューポートとシーズン装飾のレイヤー修正、オンボーディングスライドの文言刷新を実装。",
+      "highlights": [
+        "src/content/changelog_digest.py（新規）: CHANGELOG.md から直近リリースの概要・ハイライトを抽出。static/build-meta.json のデプロイ反映情報と結合して LLM プロンプト用参照ブロックを生成",
+        "src/agents/concierge_agent.py: doc_changelog intent で CHANGELOG 要約を参照回答（推測・補完禁止の専用プロンプト）",
+        "src/content/concierge_docs.py: doc_changelog を doc intent 集合に追加",
+        "src/services/concierge_intent.py: doc_changelog intent とキーワードプローブ（「最近の更新」「CHANGELOG」等）",
+        "src/services/meta_triage.py: meta triage プロンプトに doc_changelog を追加",
+        "src/agents/emergency_classifier.py / src/handlers/line/line_delivery.py: 非緊急・遅延 Concierge intent リストに doc_changelog を追加",
+        "src/dialogue/routing/intent_router_llm.py: プロンプトに app_about / doc_changelog の判定ガイドを追加。legacy triage の concierge_intent をヒントに含める。maybe_corre…",
+        "src/dialogue/routing/intent_router.py: route 決定後に app_about ガードを適用"
+      ]
+    },
+    {
+      "heading": "2026年7月3日 — ローカル DB 分離・セキュリティ入力ブロック・店舗案内・管理画面刷新",
+      "overview": "ブランチ feature/chat-pipeline-v2 に、ローカル開発用 Docker Postgres の自動起動、Neon dev との DB 分離、入力ブロックのカテゴリ別応答、店舗・施設案内の精度改善、管理画面（admin_chat）の Sage Terrace UI 刷新を実装。",
+      "highlights": [
+        "docker-compose.yml（新規）: Postgres 16、medicine_recommend DB、healthcheck、永続ボリューム",
+        "src/utils/local_docker_db.py（新規）: DATABASE_URL が localhost のとき docker compose up -d と接続待ち（LOCAL_DOCKER_DB_AUTO=1 既定、LOCAL_DOCKER_DB_WAIT_SE…",
+        "app.py: 起動前に _prepare_local_database() を呼び出し",
+        "src/services/database.py: ローカル host 向け sslmode=disable 自動付与、channel_binding=require 除去、pooler 警告を localhost では抑制",
+        "scripts/migrate_dev_neon_selective.py（新規）: v2 テストセッション除外のうえ line:* 実データ + feedback 等を Neon dev へ選別移行",
+        ".env.example: ローカル Docker / Neon dev 接続例、LOCAL_DOCKER_DB_* 変数",
+        ".gitignore: tmp_db_migration/ を追加",
+        "src/security/input_block_responses.py（新規）: threat_abuse / sexual_content / solicitation / illegal_drugs / system_abuse のカテゴリ分類と応答文言。性被害相談キー…"
+      ]
+    },
+    {
+      "heading": "2026年7月3日 — Phase 4（4a–4b）IntentRouter primary 化・dev 展開",
+      "overview": "ブランチ feature/chat-pipeline-v2 に Phase 4a（dispatch handler 追撃・shadow mismatch 分類）および Phase 4b（Router PRIMARY / orch-trim / shadow exempt / LEGACY_FALLBACK_TRIM）を実装。config/llm_flags.py の _ux_rollout_flag により、APP_ENV=development のみで v2 / PRIMARY / TRIM / Phase 2–4b UX 十二種が env 未設定でも自動 ON（LATENCY_* は対象外・既定 OFF のまま）。本番は env 明示 ON + ALLOWLIST 限定（カナリア 1 は dev 24h Go 待ち）。",
+      "highlights": [
+        "src/dialogue/dispatcher.py: SessionOps / Concierge / Store / Physical 等の dispatch handler 拡充。handler None を 0 件に是正",
+        "src/dialogue/routing/shadow_mismatch.py（新規）: regression / gate_improvement / exempt 分類。counseling follow-up（2週間くらいです 等）の exempt 再分類",
+        "src/dialogue/routing/shadow.py / metrics.py: mismatch_kind 出力、shadow_regression / shadow_exempt KPI",
+        "src/utils/structured_logger.py: emit_dialogue_route_shadow に mismatch_kind",
+        "scripts/measure_intent_router_shadow.py / local_v2_chat_test_runner.py: IntentRouter KPI セクション、--failed-only / --resume / checkpoint",
+        "config/llm_flags.py: _ux_rollout_flag() — 開発ランタイム（APP_ENV=development）で UX 十二種 + PRIMARY/TRIM を自動 ON。LATENCY_* は従来どおり明示 ON のみ",
+        "src/dialogue/routing/intent_router.py / intent_router_llm.py: PRIMARY 切替（triage map 降格）",
+        "src/handlers/chat_orchestrator.py: dispatch 成功 route では meta_triage / SessionAgent / Concierge / Store 再判定をスキップ（orch-trim）"
+      ]
+    },
+    {
+      "heading": "2026年7月2日 — UX 品質改善計画 v2（Phase 0–3）",
+      "overview": "ブランチ feature/chat-pipeline-v2 に、UX品質改善計画 v2 に基づく Phase 0〜3 を実装。ベースライン評価（log/analysis/2026-07-01_local_v2_chat_test_post-quality-fix-full.md、自動合格 77/105）から、計測基盤整備・レイテンシ最適化（フラグゲート）・安全トーン是正・ルーティング/内容精度改善を段階投入。Phase 0–3 の機能フラグは本番・未設定時 OFF（明示有効化しない限り post-p0 と同一挙動）。Phase 4 は 7/3 エントリ参照（4a–4b 着手済み・dev では APP_ENV=development で自動 ON）。",
+      "highlights": [
+        "src/utils/structured_logger.py: emit_pipeline_perf() — log/pipeline_perf_log.jsonl へ構造化永続化（total_ms / breakdown / llm.llm_calls path 別 late…",
+        "src/services/pipeline_perf.py: log_pipeline_perf() から JSONL sink を呼び出し（app.log の PIPELINE_PERF と併用）",
+        "scripts/measure_pipeline_baseline.py: measure_pipeline_perf() — total p50/p95/max、LLM path 別呼び出し回数・latency 内訳、breakdown_steps_avg_ms",
+        "scripts/local_v2_chat_test_runner.py:",
+        "_kind_route() を kind 優先判定に是正（本文「市販薬」ヒューリスティックによる Concierge/Security/Store 誤判定を解消）",
+        "レポートに レイテンシ KPI（e2e p50/p95、pipeline phase 内訳）セクション追加",
+        "--judge: LLM-as-judge による内容品質スコア（意図充足・トーン・安全・総合 0–5）",
+        "src/services/llm_triage.py: LATENCY_TRIAGE_SINGLE_CALL 時の単一 structured call 経路"
+      ]
+    },
+    {
+      "heading": "2026年7月1日 — UX 品質改善・v2 統合テスト基盤・ルーティング強化",
+      "overview": "ブランチ feature/chat-pipeline-v2 に、会話品質評価（log/analysis/2026-07-01_local_v2_chat_test_post-quality-fix-full.md）で判明した Concierge 意図分類・Store 購入先・SessionOps・推奨フォローアップの弱点を修正。あわせて ローカル v2 統合テストランナー（100 YAML シナリオ + GPT ペルソナ）と Admin v2 テストセッション分離 を整備。",
+      "highlights": [
+        "src/dialogue/routing/gate.py: Stage A 決定論ゲートを大幅拡張",
+        "医療緊急・感情カウンセリング・薬局位置意図のキーワードヒント",
+        "_resolve_concierge_follow_up — Concierge 技術質問のフォローアップ文脈継続",
+        "_resolve_correction_route — 訂正意図の gate 即決",
+        "_has_pharmacy_location_intent — OTC 購入先・薬局案内の補完判定",
+        "カウンセリング/Physical ライフスタイルのフォローアップ回答検出",
+        "src/services/concierge_intent.py: _META_PROBE_RULES に rule_based・データ保存・Sage Terrace 等を追加。医薬品相談誤分類の除外ルール強化",
+        "src/content/concierge_knowledge.ja.json: アーキテクチャ・rule_based・データ保存のナレッジ補完"
+      ]
+    },
+    {
+      "heading": "2026年6月28日 — Chat Pipeline v2（Wave 0–4 コード実装）",
+      "overview": "ブランチ feature/chat-pipeline-v2 に Web / LINE 共通チャット基盤 v2 を実装。決定権分散（SessionAgent 多重呼び出し・legacy fallback 競合）と履歴注入の散在を src/dialogue/ へ集約。OTC 推奨本体は rule_based 維持。本番は OFF、dev（APP_ENV=development）は v2 全機能が一括 ON。 実装計画: docs/planning/CHAT_PIPELINE_V2_PLAN.md（49/54 todo 完了、残 5 件は人手ゲート）",
+      "highlights": [
+        "session_agent.py: delete 強制上書き削除、pending_memory_delete 中 Physical/Emergency 自動キャンセル、status 語彙拡張、Quick Reply 削除/キャンセル統一、is_pending_delete_ca…",
+        "chat_pipeline_end_guard.py: fail-loud（response_missing 時 redirect 補完しない）",
+        "gate.py: pending delete キャンセル → SessionOps/pending_clear 即決",
+        "counseling_triage.py / LINE ルート: 発熱→店舗禁止ゲート、aggressive_input 監査、フィードバック期限切れ B+D",
+        "docs/ops/PRE_P0_LINE_QA_10.md（新規）: 10 項目 QA チェックリスト",
+        "docs/dev/ROUTE_SPEC.md: 決定権マトリクス・期待 route 表",
+        "docs/dev/CHAT_PIPELINE_V2.md（新規）: v2 技術仕様・パッケージ境界・ベースライン数値",
+        "docs/schemas/dialogue_state_v1.json（新規）: DialogueContext JSON Schema v1"
+      ]
+    },
+    {
+      "heading": "2026年6月27日（後半） — 管理 API 認証・LINE 二重配信防止・医薬品購入先ルーティング・レッドチーム",
+      "overview": "ローカルレッドチーム（148 ケース）で判明した 管理 JSON API 無認証露出 を admin_json_auth Depends により一括修正。LINE Webhook 重複による二重 Push を DB 去重・reply token 失効検知・progressive 配信ロジックで抑止。 医薬品購入先・入手要求（「処方箋なしの購入先」「処方箋の購入先」等）を店舗案内 fast-path へ振り分け、Concierge structural greeting 誤分類と不適切カウンセリング経路を回避。scripts/local_red_team_runner.py でオフライン／HTTP 混在のセキュリティ回帰を自動化。",
+      "highlights": [
+        "main.py: admin_json_auth Depends を新設し、管理系 JSON エンドポイント（/admin/*・/api/status・/api/performance・フィードバック CRUD 等）に一括適用",
+        "static/js/admin_chat.js: 監視・LLM 設定・フィードバック・手動返信等の fetch を adminFetchOptions() 経由に統一",
+        "database.py: line_webhook_dedup テーブルと try_claim_line_webhook_event（Cloud Run 複数インスタンス向け TTL claim）",
+        "line_dedup.py: DB claim をファイル去重の前段に追加",
+        "line_reply.py: reply token 400 失効時に reply_token_unavailable を設定",
+        "line_delivery.py: reply token 不可時は Push フォールバックをスキップ（二重配信防止）",
+        "line_progressive_delivery.py: carousel Push 済み時は full bundle 再送を抑止。未送信時は reply_token 付き一括配信",
+        "line_message_handler.py: pipeline 後 redirect を deliver_line_messages 経由に統一"
+      ]
+    },
+    {
+      "heading": "2026年6月27日 — SessionAgent・LINE QA（P0–P2）・Concierge 文脈ルーティング・GCP ログ分析強化",
+      "overview": "GCP ログ分析（2026-06-25〜26）と開発 QA に基づき、SessionAgent でセッション統合・管理画面ルーティング・メモリ削除を集約し、LINE 改善計画 P0–P2（ルーティング修正・counseling_detail 全経路・攻撃入力・フィードバック期限・トリアージ短絡・pipeline_perf 警告）を実装した。 続けて Concierge 文脈ルーティング（CCR-P0〜P2） により、architecture / doc_* / session_ops 等のメタ会話で「詳しく」「もっと」等のフォローアップが greeting 誤分類 されないよう、prior intent 推定・structural greeting ガード・meta LLM スキップ条件を強化。concierge_state の DB 同期と concierge_intent_source の counseling_detai…",
+      "highlights": [
+        "session_agent.py（新規）: セッション状態・削除・要約・統合ステータスを SessionAgent に集約。Concierge / 管理画面 / LINE から classify_session_intent 経由でルーティング",
+        "memory_delete_agent.py: SessionAgent 連携にリファクタ",
+        "status_diagnosis_builder.py: 統合セッション診断・Concierge カード向け表示を拡張",
+        "sage_message_plain.py（新規）: Flex / HTML 応答のプレーンテキスト化（ログ・分析用）",
+        "chat_pipeline_end_guard.py / chat_post_pipeline.py: 全経路で counseling_detail 非同期出力のカバレッジ拡大",
+        "chat_input_validator.py / known_attack_rules.py: 攻撃・挑発入力のパイプライン到達抑止を追加",
+        "line_feedback.py: フィードバック postback の期限切れ処理",
+        "line_flex_messages.py / line_menu_actions.py / line_quick_actions.py: Sage マーカー・メニュー整合"
+      ]
+    }
+  ]
+}

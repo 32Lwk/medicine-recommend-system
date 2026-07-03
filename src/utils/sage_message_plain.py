@@ -31,6 +31,39 @@ def strip_internal_llm_prefix(text: str) -> str:
     return result
 
 
+_PROMPT_LEAK_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"提供された[「『].*?[」』]"),
+    re.compile(r"CHANGELOG\s*要約"),
+    re.compile(r"CHANGELOG\.md"),
+    re.compile(r"直近\s*0\s*件"),
+    re.compile(r"記載にない変更は推測"),
+    re.compile(r"推測で補わない"),
+    re.compile(r"指定されています"),
+    re.compile(r"参照ドキュメント"),
+    re.compile(r"【要件】"),
+    re.compile(r"【開発履歴サマリー"),
+    re.compile(r"doc_changelog"),
+    re.compile(r"\bintent\b", re.I),
+    re.compile(r"ドキュメントに記載がありません"),
+)
+
+
+def strip_concierge_prompt_leakage(text: str) -> str:
+    """プロンプト・参照データのメタ説明がユーザー向け出力に混入した場合に除去・短縮する。"""
+    result = strip_internal_llm_prefix((text or "").strip())
+    if not result:
+        return result
+    paragraphs = [p.strip() for p in re.split(r"\n\s*\n+", result) if p.strip()]
+    kept: list[str] = []
+    for para in paragraphs:
+        if any(p.search(para) for p in _PROMPT_LEAK_PATTERNS):
+            continue
+        kept.append(para)
+    if kept:
+        return "\n\n".join(kept)
+    return ""
+
+
 def diagnosis_plain_message(diagnosis: dict[str, Any]) -> str:
     """diagnosis v1 からユーザー向け本文を取り出す（内部プレフィックス除去済み）。"""
     message = strip_internal_llm_prefix(str(diagnosis.get("message") or ""))

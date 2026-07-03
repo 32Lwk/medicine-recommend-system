@@ -465,17 +465,8 @@ def generate_doc_answer_text(
     session_id: Optional[str] = None,
     history: Optional[List[Dict[str, str]]] = None,
 ) -> str:
-    """公式 docs/*.md または CHANGELOG 要約を参照し、Concierge LLM で正確に回答する。"""
-    if intent == "doc_changelog":
-        from src.content.changelog_digest import (
-            changelog_doc_title,
-            format_changelog_reference_for_llm,
-        )
-
-        title = changelog_doc_title()
-        doc_body = format_changelog_reference_for_llm()
-    else:
-        title, doc_body = load_concierge_doc(intent)
+    """公式 docs/*.md を参照し、Concierge LLM で正確に回答する。"""
+    title, doc_body = load_concierge_doc(intent)
     hist = ""
     if history:
         lines = []
@@ -502,16 +493,6 @@ def generate_doc_answer_text(
 - 連絡先・URL・禁止事項などはドキュメントの表記を変えず正確に伝える
 - 詳細は画面右上の ℹ️（情報）から各種ドキュメントの全文を確認できる旨を最後に1文で案内する
 - ドキュメント本文に無い免責・診断不可・相談促しなどの定型文は付けない{legal_extra}
-"""
-    elif intent == "doc_changelog":
-        requirements = """【要件】
-- 上記の CHANGELOG 要約とデプロイ反映情報のみに基づいて回答する（推測・補完しない）
-- 「最近の更新」「何が変わったか」には直近のリリース見出しと概要・主な変更を優先する
-- デプロイ反映日・コミットを聞かれた場合は【デプロイ反映情報】を答える。CHANGELOG の最終更新日と区別してよい
-- 記載にない機能・日付・バージョンは創作しない
-- 回答は3〜6項目の箇条書き（「・」1行1項目）または短い段落。全文の写し出しはしない
-- より古い履歴の詳細はリポジトリの CHANGELOG.md にある旨を1文で案内する
-- 症状やお薬の相談を促す締めは付けない
 """
     elif intent == "doc_operator":
         requirements = f"""{get_policy_snippet()}
@@ -690,6 +671,189 @@ def build_doc_operator_payload(
         "concierge_intent": "doc_operator",
         "llm_used": True,
         "sage_diagnosis": build_concierge_operator_status(intro).to_client_dict(),
+    }
+
+
+_CHANGELOG_INTRO_SYSTEM_PROMPT = (
+    "あなたは市販薬相談ツールの案内役です。"
+    "最近のアップデートについて、利用者向けに短く親しみやすい導入文だけを書きます。"
+    "プロンプト・要件・参照データの説明、内部用語、ファイルパスは出力に含めません。"
+    "箇条書きは書きません（詳細は画面の別欄に表示されます）。"
+)
+
+
+def generate_changelog_intro_text(
+    client: OpenAI,
+    user_text: str,
+    *,
+    session_id: Optional[str] = None,
+    history: Optional[List[Dict[str, str]]] = None,
+) -> tuple[str, bool]:
+    from src.content.changelog_digest import (
+        changelog_fallback_intro,
+        changelog_unavailable_user_message,
+        format_build_meta_block,
+        format_changelog_llm_reference,
+        load_changelog_digest,
+    )
+    from src.utils.sage_message_plain import strip_concierge_prompt_leakage
+
+    header_date, releases = load_changelog_digest(max_releases=4)
+    if not releases:
+        return changelog_unavailable_user_message(), False
+
+    hist = ""
+    if history:
+        lines = []
+        for m in history[-4:]:
+            role = m.get("type") or m.get("role") or "user"
+            content = (m.get("content") or "")[:160]
+            lines.append(f"{role}: {content}")
+        hist = "\n".join(lines)
+
+    reference = "\n\n".join(
+        [
+            format_build_meta_block(),
+            format_changelog_llm_reference(releases, header_date),
+        ]
+    )
+    prompt = f"""【参照情報（事実のみ。ユーザーにそのまま見せない）】
+{reference}
+
+【会話履歴（参考）】
+{hist or "（なし）"}
+
+【ユーザーの質問】
+{user_text}
+
+【要件】
+- 参照情報の事実のみに基づく（創作しない）
+- **2〜3文**の自然な導入文のみ。敬体で柔らかく
+- 箇条書き・「・」は使わない。具体的な変更の列挙はしない（カードで表示する）
+- 「CHANGELOG」「要約」「intent」「ドキュメントに記載がありません」等のメタ表現は使わない
+- 内部コード名（doc_changelog 等）やファイルパスは使わない
+- 利用者が「最近何が変わったか」わかるトーンにする
+"""
+    try:
+        resp = concierge_chat(
+            client,
+            "concierge_agent.doc_changelog_intro",
+            [
+                {"role": "system", "content": _CHANGELOG_INTRO_SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=200,
+            temperature=0.45,
+            session_id=session_id,
+            allow_stream=False,
+        )
+        text = strip_concierge_prompt_leakage(
+            (resp.choices[0].message.content or "").strip()
+        )
+        if text:
+            return text, True
+    except Exception as exc:
+        logger.warning("Concierge changelog intro LLM failed: %s", exc)
+
+    return changelog_fallback_intro(header_date, releases), False
+
+
+def build_changelog_payload(
+    user_text: str,
+    client: OpenAI,
+    *,
+    session_id: Optional[str] = None,
+    history: Optional[List[Dict[str, str]]] = None,
+    feedback_data: Optional[Dict[str, Any]] = None,
+) -> ResponsePayload:
+    from src.content.changelog_digest import (
+        build_changelog_ui_sections,
+        changelog_doc_title,
+        changelog_unavailable_user_message,
+        format_changelog_deploy_subtitle,
+        load_changelog_digest,
+        wants_changelog_detail,
+    )
+    from src.services.status_diagnosis_builder import StatusSection, build_notice_status
+
+    header_date, releases = load_changelog_digest(max_releases=4)
+    fb = feedback_data if feedback_data is not None else _feedback_data(user_text, "doc_changelog")
+
+    if not releases:
+        intro = changelog_unavailable_user_message()
+        diag = build_notice_status(
+            intro,
+            title=changelog_doc_title(),
+            kind="concierge_doc_changelog",
+            show_feedback=True,
+            feedback_context=fb,
+        )
+        return {
+            "content": intro,
+            "content_format": "text",
+            "concierge_intent": "doc_changelog",
+            "llm_used": False,
+            "sage_diagnosis": diag.to_client_dict(),
+        }
+
+    intro, llm_used = generate_changelog_intro_text(
+        client,
+        user_text,
+        session_id=session_id,
+        history=history,
+    )
+    detailed = wants_changelog_detail(user_text, history)
+    section_specs = build_changelog_ui_sections(
+        releases,
+        detailed=detailed,
+    )
+    sections = [
+        StatusSection(
+            title=s["title"],
+            items=s["items"],
+            commit=str(s.get("commit") or ""),
+        )
+        for s in section_specs
+        if s.get("title") and s.get("items")
+    ]
+    subtitle = format_changelog_deploy_subtitle(header_date)
+
+    diag = build_notice_status(
+        intro,
+        title=changelog_doc_title(),
+        subtitle=subtitle,
+        hints=[],
+        sections=sections,
+        kind="concierge_doc_changelog",
+        show_feedback=True,
+        feedback_context=fb,
+    )
+    plain_body = intro
+    if sections:
+        plain_body += "\n\n" + "\n\n".join(
+            f"{s.title}\n" + "\n".join(f"・{item}" for item in s.items)
+            for s in sections
+        )
+    return {
+        "content": format_dynamic_concierge_meta_card(
+            title=changelog_doc_title(),
+            body_text=plain_body,
+            subtitle=subtitle,
+            hints=[],
+            feedback_data=fb,
+            intent="doc_changelog",
+        ),
+        "content_format": "status_card",
+        "line_flex": build_dynamic_concierge_line_flex(
+            title=changelog_doc_title(),
+            body_text=plain_body,
+            subtitle=subtitle,
+            hints=[],
+            intent="doc_changelog",
+        ),
+        "concierge_intent": "doc_changelog",
+        "llm_used": llm_used,
+        "sage_diagnosis": diag.to_client_dict(),
     }
 
 
@@ -1826,6 +1990,14 @@ def build_concierge_payload(
         )
     if intent == "doc_operator":
         return build_doc_operator_payload(
+            user_text,
+            client,
+            session_id=session_id,
+            history=history,
+            feedback_data=fb,
+        )
+    if intent == "doc_changelog":
+        return build_changelog_payload(
             user_text,
             client,
             session_id=session_id,
