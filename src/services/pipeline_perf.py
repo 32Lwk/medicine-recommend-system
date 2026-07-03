@@ -178,6 +178,34 @@ def _pop_bucket(sid: str | None) -> _PerfBucket | None:
         return _buckets.pop(sid, None)
 
 
+def capture_pipeline_perf_investigation_snapshot(sid: str | None = None) -> dict[str, Any] | None:
+    """進行中パイプラインの調査用スナップショット（バケットは消費しない）。"""
+    bucket = _bucket_for(sid)
+    if bucket is not None:
+        payload: dict[str, Any] = {
+            "channel": bucket.channel,
+            "elapsed_ms": _elapsed_ms(bucket.started),
+            "breakdown": dict(bucket.steps),
+            "llm": _llm_summary_from_bucket(bucket),
+        }
+        if bucket.extra:
+            payload["extra"] = dict(bucket.extra)
+        return payload
+    steps = _steps.get()
+    started = _started.get()
+    if steps is not None and started is not None:
+        payload = {
+            "channel": _channel.get(),
+            "elapsed_ms": _elapsed_ms(started),
+            "breakdown": dict(steps),
+        }
+        extra = _extra.get()
+        if extra:
+            payload["extra"] = dict(extra)
+        return payload
+    return None
+
+
 def log_pipeline_perf(*, sid: str | None = None, extra: dict[str, Any] | None = None) -> None:
     bucket = _pop_bucket(sid) if sid else None
     if bucket is None:

@@ -821,3 +821,9 @@
 {"ts": 1783003830.3736126, "trace_id": "t3", "agent": "ChatOrchestrator", "step": "handoff", "session_id": "web:primary-lock", "payload": {"target": "OtherHandler", "category": "Other"}}
 {"ts": 1783004122.2958949, "trace_id": "46b409f5-99f1-46c2-ba07-d0f39143638a", "agent": "ChatOrchestrator", "step": "handoff", "session_id": "line:non-canary-test-99", "payload": {"target": "PhysicalOrchestrator", "category": "Physical"}}
 {"ts": 1783004151.4999924, "trace_id": "46b409f5-99f1-46c2-ba07-d0f39143638a", "agent": "PhysicalOrchestrator", "step": "complete", "session_id": "line:non-canary-test-99", "ms": 29150.02}
+{"ts": 1783012213.9665837, "trace_id": "404e7e1a-b35c-4736-883d-9454c4717d2b", "agent": "ChatOrchestrator", "step": "handoff", "session_id": "1782889731238405259023", "payload": {"target": "OtherHandler", "category": "Other"}}
+{"ts": 1783012214.599641, "trace_id": "404e7e1a-b35c-4736-883d-9454c4717d2b", "agent": "StoreInquiryAgent", "step": "complete", "session_id": "1782889731238405259023", "ms": 622.61, "payload": {"handled": true}}
+{"ts": 1783016771.7994041, "trace_id": "0173a67a-850d-4d21-b545-100760be8684", "agent": "ChatOrchestrator", "step": "handoff", "session_id": "1783016749009952752279", "payload": {"target": "OtherHandler", "category": "Other"}}
+{"ts": 1783016772.7448535, "trace_id": "0173a67a-850d-4d21-b545-100760be8684", "agent": "StoreInquiryAgent", "step": "complete", "session_id": "1783016749009952752279", "ms": 862.37, "payload": {"handled": false}}
+{"ts": 1783016785.4997454, "trace_id": "11ce6f5f-263f-4c5d-b9bd-b8561c942166", "agent": "ChatOrchestrator", "step": "handoff", "session_id": "1783016749009952752279", "payload": {"target": "OtherHandler", "category": "Other"}}
+{"ts": 1783016786.5140674, "trace_id": "11ce6f5f-263f-4c5d-b9bd-b8561c942166", "agent": "StoreInquiryAgent", "step": "complete", "session_id": "1783016749009952752279", "ms": 1000.68, "payload": {"handled": false}}

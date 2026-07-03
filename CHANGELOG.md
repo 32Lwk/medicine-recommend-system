@@ -1,6 +1,71 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月3日**（Phase 4a–4b IntentRouter primary 化・dev ランタイム自動 ON・p4b-5c-dev コード反映）
+**最終更新日: 2026年7月3日**（Phase 4a–4b・ローカル Docker DB 分離・入力ブロックカテゴリ化・店舗案内改善・管理画面 Sage Terrace 刷新）
+
+---
+
+## 2026年7月3日 — ローカル DB 分離・セキュリティ入力ブロック・店舗案内・管理画面刷新
+
+### 概要
+
+**ブランチ `feature/chat-pipeline-v2`** に、ローカル開発用 Docker Postgres の自動起動、Neon dev との DB 分離、入力ブロックのカテゴリ別応答、店舗・施設案内の精度改善、管理画面（admin_chat）の Sage Terrace UI 刷新を実装。
+
+| 関連ドキュメント | 用途 |
+|-----------------|------|
+| [LOCAL_DOCKER_DB.md](docs/dev/LOCAL_DOCKER_DB.md) | ローカル Docker Postgres / Neon dev 分離手順 |
+| [SCROLLBAR_STYLE.md](docs/ui/SCROLLBAR_STYLE.md) | 管理画面スクロール領域（`app-scrollbar`） |
+
+### ローカル Docker Postgres / Neon dev 分離
+
+- **`docker-compose.yml`（新規）**: Postgres 16、`medicine_recommend` DB、healthcheck、永続ボリューム
+- **`src/utils/local_docker_db.py`（新規）**: `DATABASE_URL` が localhost のとき `docker compose up -d` と接続待ち（`LOCAL_DOCKER_DB_AUTO=1` 既定、`LOCAL_DOCKER_DB_WAIT_SEC=60`）
+- **`app.py`**: 起動前に `_prepare_local_database()` を呼び出し
+- **`src/services/database.py`**: ローカル host 向け `sslmode=disable` 自動付与、`channel_binding=require` 除去、pooler 警告を localhost では抑制
+- **`scripts/migrate_dev_neon_selective.py`（新規）**: v2 テストセッション除外のうえ `line:*` 実データ + feedback 等を Neon dev へ選別移行
+- **`.env.example`**: ローカル Docker / Neon dev 接続例、`LOCAL_DOCKER_DB_*` 変数
+- **`.gitignore`**: `tmp_db_migration/` を追加
+- **`tests/utils/test_local_docker_db.py`（新規）**
+
+### 入力ブロック — カテゴリ別応答とカウンセリング bypass
+
+- **`src/security/input_block_responses.py`（新規）**: `threat_abuse` / `sexual_content` / `solicitation` / `illegal_drugs` / `system_abuse` のカテゴリ分類と応答文言。性被害相談キーワードはカウンセリングへ bypass
+- **`src/security/aggressive_input.py`**: 判定ロジックを `input_block_responses.match_input_block` に委譲
+- **`src/handlers/chat/chat_input_validator.py` / `chat_inappropriate_route.py`**: カテゴリ別 title / variant / kind でブロック応答。ブロック user メッセージに `original_content` / `admin_only` / `blocked_input` を付与
+- **`src/services/session_manager.py`**: `filter_messages_for_user_api()` — ユーザー API では `original_content` 等を除去しプレースホルダのみ返却
+- **`main.py`**: `api_sessions_get` / `api_sessions_restore` で user API フィルタ適用
+- **`src/handlers/line/line_web_handoff.py`**: handoff 正規化後も user API フィルタ
+- **`static/js/main.js`**: 新 kind（`inappropriate_sexual` 等）を SECURITY_NOTICE に追加。user メッセージ畳み込みを uuid / message_id / pending_turn_id キーに変更
+- **`src/handlers/line/line_feedback.py`**: 不適切入力 kind ではフィードバック UI を非表示
+- **`src/analysis/session_conversation_analysis.py`**: セキュリティ応答 route_kind を挨拶誤判定から除外
+- **`tests/security/test_input_block_responses.py`（新規）**、既存 aggressive / inappropriate / llm_security テスト更新
+
+### 店舗・施設問い合わせ改善
+
+- **`src/services/store_facility_index.py`（新規）**: `store_inquiry_keyword_catalog.json` から施設・外部チェーン・小売チェーンの正規化インデックス。商品照合から施設名を分離
+- **`data/store_inquiry_keyword_catalog.json`**: `external_retail_chains` / `retail_store_chains` セクション追加（マツキヨ・ドンキ・百貨店・家電量販等）
+- **`src/services/store_inquiry_handler.py`**: 店内外デュアル案内（`_compose_dual_location_guidance`）、施設名ラベル解決、一般「薬局＋近く」問い合わせの external_chain 検出拡張
+- **`src/services/store_product_index.py`**: 施設トークン除外で商品誤マッチ防止
+- **`data/store_products.json`**: カテゴリに空 `brands: []` フィールドを正規化追加
+- **`tests/services/test_store_facility_index.py`（新規）**、store inquiry routing テスト更新
+
+### 管理画面（admin_chat）Sage Terrace UI 刷新
+
+- **`templates/admin_chat.html`**: `sage_terrace.css` 適用、`data-ui-variant="sage"`。ヘッダーをアイコンボタン群に再構成。セッション管理モーダル・ログクリア確認モーダル追加。チャットメッセージ複数選択削除 UI
+- **`static/css/admin_chat.css`**: Sage Terrace トークン準拠の全面スタイル刷新（レイアウト・モーダル・セッションカード・チャットバブル）
+- **`static/css/scrollbar.css`**: `#session-management-list` 等の新スクロール領域を `app-scrollbar` グループに追加
+- **`static/js/admin_chat.js`**: セッション管理（`openSessionManagement`）、ログクリアモーダル、ブロック入力の `original_content` を管理者向け表示、メッセージ選択削除、UI 操作の aria 改善
+
+### 運用・調査まわり
+
+- **`src/services/pipeline_perf.py`**: `capture_pipeline_perf_investigation_snapshot()` — 遅延調査用に進行中パイプライン計測を非破壊取得
+- **`src/services/slow_request_notify.py`**: セッション調査スナップショット + pipeline perf を Resend 通知に同梱
+- **`main.py` `api_slow_request_notify`**: 上記スナップショットを渡すよう拡張
+- **`main.py` `/clear_logs`**: **全セッション DB 削除を廃止**（network_logs + recommendation_log.jsonl のみクリア）
+- **`tests/api/test_session_message_merge.py`**: user API フィルタ・ブロックメッセージのテスト追加
+
+### テスト
+
+- 新規・更新テスト **31+ passed**（`test_input_block_responses` / `test_local_docker_db` / `test_store_facility_index` / `test_session_message_merge`）
 
 ---
 
