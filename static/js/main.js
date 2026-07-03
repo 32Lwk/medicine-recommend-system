@@ -5875,6 +5875,8 @@
     /** 直近 POST の応答反映が完了したら true（ポーリング抑制用） */
     let postResponseResolved = false;
     const SUBMIT_WATCHDOG_MS = 120000;
+    /** 処理中バブル内「時間がかかっています」ボタン表示までの待機（通常パイプラインより長め） */
+    const SLOW_REQUEST_BTN_DELAY_MS = 20000;
     let processingBubbleWatchToken = null;
     /** 送信開始〜応答 DOM 反映まで処理バブルを維持する明示ロック */
     let processingBubbleLocked = false;
@@ -10379,7 +10381,7 @@
                 if (slot) slot.classList.add('is-visible');
                 scrollToBottom();
             }
-        }, 8000);
+        }, SLOW_REQUEST_BTN_DELAY_MS);
     }
 
     function notifySlowRequest(event) {

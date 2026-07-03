@@ -27,7 +27,23 @@ def test_build_changelog_ui_sections_first_has_commit(monkeypatch):
     _, releases = load_changelog_digest(max_releases=2)
     sections = build_changelog_ui_sections(releases, max_releases=2)
     assert sections[0].get("commit") == "c1fe06a"
-    assert not sections[1].get("commit")
+    assert not any(s.get("commit") for s in sections[1:])
+
+
+def test_build_changelog_ui_sections_merges_same_date(monkeypatch):
+    monkeypatch.setattr(
+        "src.content.changelog_digest.load_build_meta",
+        lambda: {"gitCommitShort": "85f4ecd"},
+    )
+    _, releases = load_changelog_digest(max_releases=3)
+    sections = build_changelog_ui_sections(releases, max_releases=3)
+    first_two_dates = {r.heading.split(" — ", 1)[0] for r in releases[:2]}
+    if len(first_two_dates) == 1:
+        assert len(sections) <= 2
+        assert sections[0]["title"] == releases[0].heading.split(" — ", 1)[0]
+        assert len(sections[0]["items"]) >= 4
+        assert "案内と画面" not in sections[0]["title"]
+        assert "安定性と入力ブロック" not in sections[0]["title"]
 
 
 def test_wants_changelog_detail_after_changelog_card():
