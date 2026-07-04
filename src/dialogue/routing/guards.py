@@ -69,7 +69,6 @@ def apply_post_route_guards(
 
     if decision.primary_route == "Physical" and decision.sub_route in (
         "rule_based_recommend",
-        "fever_flow",
         None,
     ):
         from src.services.medicine_context_routing import (

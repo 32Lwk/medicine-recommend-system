@@ -54,6 +54,7 @@
 - **`tests/routing/test_medicine_context_routing_matrix.py`**: ルーティングマトリクスを更新
 - **Live 統合**: `scripts/test_medicine_context_live.py` で 10/10 PASS。`cold_start_cold_swim` は `render=sage_reco`
 - **レポート**: `log/analysis/2026-07-04T021159Z_medicine_context_live.json`
+- **CI 修正**: `medicine_context` gate を発熱・緊急判定の後へ移動し、`guards` が `fever_flow` を上書きしないよう修正（IntentRouter contract / gate テスト）
 
 ---
 
