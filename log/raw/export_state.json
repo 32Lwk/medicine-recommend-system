@@ -1,12 +1,12 @@
 {
   "by_service": {
     "medicine-recommend-dev": {
-      "last_start": "2026-06-26T07:39:51Z",
-      "last_end": "2026-06-27T16:27:35Z",
-      "source_path": "D:\\Programing\\medicine-recommend\\log\\raw\\downloaded-logs-20260626-20260627-20260627-162735.json",
+      "last_start": "2026-07-04T07:00:00Z",
+      "last_end": "2026-07-04T08:00:00Z",
+      "source_path": "D:\\Programing\\medicine-recommend\\log\\raw\\downloaded-logs-20260704-20260704-20260704-110443.json",
       "source_kind": "export",
-      "entry_count": 90877,
-      "exported_at": "2026-06-27T16:32:05Z"
+      "entry_count": 22982,
+      "exported_at": "2026-07-04T11:05:41Z"
     }
   }
 }

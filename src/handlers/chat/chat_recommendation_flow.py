@@ -3098,6 +3098,12 @@ def run_recommendation_flow(
                 break
                     
         if not is_duplicate:
+            # end_guard / LINE 配信は同一リクエスト内のインメモリ messages を参照する
+            if 'messages' not in session:
+                session['messages'] = []
+            session['messages'].append(bot_response)
+            session.modified = True
+
             # DBに保存
             if sid:
                 session_data = get_session_from_db(sid)
@@ -3128,15 +3134,18 @@ def run_recommendation_flow(
                 save_session_to_db(sid, session_data)
                 logger.info(f"💾 メッセージ保存完了: {len(session_data.get('messages', []))} messages")
                             
-                # セッションCookie肥大化を防ぐためFlaskセッションからmessagesを削除
-                if 'messages' in session:
-                    del session['messages']
-                    session.modified = True
+                # Web: Cookie 肥大化防止。LINE は配信・end_guard がメモリ messages を参照するため保持
+                from src.handlers.line.line_session import is_line_session_id
+
+                if not is_line_session_id(sid):
+                    if 'messages' in session:
+                        del session['messages']
+                        session.modified = True
                                 
-                    # 医薬品相談回答処理の終了時にフラグをクリア
-                    if session.get('is_medicine_consultation', False):
-                        session['is_medicine_consultation'] = False
-                        logger.info("💊 推奨フロー処理終了 - フラグクリア完了")
+                # 医薬品相談回答処理の終了時にフラグをクリア
+                if session.get('is_medicine_consultation', False):
+                    session['is_medicine_consultation'] = False
+                    logger.info("💊 推奨フロー処理終了 - フラグクリア完了")
         else:
             logger.info(f"⏭️ 重複メッセージのため追加をスキップしました")
     else:

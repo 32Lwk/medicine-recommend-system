@@ -1,0 +1,407 @@
+{
+  "count": 108,
+  "top_patterns": [
+    {
+      "message": "2026-07-04 07:08:58,882 - WARNING - ?? Connection validation failed: SSL connection has been closed ",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:08:58,884 - WARNING - ?? Connection validation failed: SSL connection has been closed ",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:09:00,449 - INFO - ? PostgreSQL connection pool created (min: 2, max: 10)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:09:00,457 - INFO - ? PostgreSQL connection pool created (min: 2, max: 10)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:09:00,665 - INFO - ? Reconnection successful (attempt 1)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:09:00,680 - INFO - ? Reconnection successful (attempt 1)",
+      "count": 1
+    },
+    {
+      "message": "   - Timeout: 300s",
+      "count": 1
+    },
+    {
+      "message": "   - Graceful Timeout: 60s",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:18:11,878 - INFO - ? PostgreSQL connection pool created (min: 2, max: 10)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:18:12,196 - INFO - ? PostgreSQL connection pool created (min: 2, max: 10)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:18:13,698 - INFO - ? Database tables initialized successfully",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:18:13,927 - INFO - ? Database tables initialized successfully",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:18:14,584 - INFO - ? Database initialized successfully.",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:18:14,755 - INFO - ? Database initialized successfully.",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:30:02,773 - WARNING - ?? Connection validation failed: SSL connection has been closed ",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:30:04,707 - INFO - ? PostgreSQL connection pool created (min: 2, max: 10)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:30:04,927 - INFO - ? Reconnection successful (attempt 1)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:30:05,952 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:30:05,963 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c1f78",
+      "count": 1
+    },
+    {
+      "message": "2026-07-04 07:30:07,444 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 't",
+      "count": 1
+    }
+  ],
+  "samples": [
+    {
+      "timestamp": "2026-07-04T07:08:58.881620Z",
+      "message": "2026-07-04 07:08:58,882 - WARNING - ?? Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-04T07:08:58.882694Z",
+      "message": "2026-07-04 07:08:58,884 - WARNING - ?? Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-04T07:09:00.448095Z",
+      "message": "2026-07-04 07:09:00,449 - INFO - ? PostgreSQL connection pool created (min: 2, max: 10)"
+    },
+    {
+      "timestamp": "2026-07-04T07:09:00.456361Z",
+      "message": "2026-07-04 07:09:00,457 - INFO - ? PostgreSQL connection pool created (min: 2, max: 10)"
+    },
+    {
+      "timestamp": "2026-07-04T07:09:00.664553Z",
+      "message": "2026-07-04 07:09:00,665 - INFO - ? Reconnection successful (attempt 1)"
+    },
+    {
+      "timestamp": "2026-07-04T07:09:00.678976Z",
+      "message": "2026-07-04 07:09:00,680 - INFO - ? Reconnection successful (attempt 1)"
+    },
+    {
+      "timestamp": "2026-07-04T07:18:02.194257Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-04T07:18:02.194261Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-04T07:18:11.877641Z",
+      "message": "2026-07-04 07:18:11,878 - INFO - ? PostgreSQL connection pool created (min: 2, max: 10)"
+    },
+    {
+      "timestamp": "2026-07-04T07:18:12.195156Z",
+      "message": "2026-07-04 07:18:12,196 - INFO - ? PostgreSQL connection pool created (min: 2, max: 10)"
+    },
+    {
+      "timestamp": "2026-07-04T07:18:13.697377Z",
+      "message": "2026-07-04 07:18:13,698 - INFO - ? Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-04T07:18:13.926817Z",
+      "message": "2026-07-04 07:18:13,927 - INFO - ? Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-04T07:18:14.584079Z",
+      "message": "2026-07-04 07:18:14,584 - INFO - ? Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-04T07:18:14.755124Z",
+      "message": "2026-07-04 07:18:14,755 - INFO - ? Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-04T07:30:02.772617Z",
+      "message": "2026-07-04 07:30:02,773 - WARNING - ?? Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:04.707362Z",
+      "message": "2026-07-04 07:30:04,707 - INFO - ? PostgreSQL connection pool created (min: 2, max: 10)"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:04.926851Z",
+      "message": "2026-07-04 07:30:04,927 - INFO - ? Reconnection successful (attempt 1)"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:05.952286Z",
+      "message": "2026-07-04 07:30:05,952 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:05.962724Z",
+      "message": "2026-07-04 07:30:05,963 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c1f780830> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:07.447708Z",
+      "message": "2026-07-04 07:30:07,444 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': '??????????????????????????????????'}, {'role': 'user', 'content': '\\n?????????????????????5????????????????\\n\\n??????\\n1. Physical???????: ???????????????????????\\n2. Emotional???????????: ????????????????????????"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:07.457133Z",
+      "message": "2026-07-04 07:30:07,457 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=8.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:07.464585Z",
+      "message": "2026-07-04 07:30:07,465 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c21163e30> server_hostname='api.openai.com' timeout=8.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:07.677884Z",
+      "message": "2026-07-04 07:30:07,678 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 30.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON??????????'}, {'role': 'user', 'content': '?????????????????????????????\\n???????? jailbreak / ??????????????????????????????\\n?????????????????????????????????????????????????????\\n????????????????? is_jailb"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:07.678622Z",
+      "message": "2026-07-04 07:30:07,679 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=30.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:07.682572Z",
+      "message": "2026-07-04 07:30:07,683 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c21163e30> server_hostname='api.openai.com' timeout=30.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:09.585005Z",
+      "message": "2026-07-04 07:30:09,585 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 04 Jul 2026 07:30:09 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a15c6c3e1c3f1ed0-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'cloudflare'), (b'Strict-Transport-Security', b'max-ag"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:09.587360Z",
+      "message": "2026-07-04 07:30:09,588 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Sat, 04 Jul 2026 07:30:09 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a15c6c3e1c3f1ed0-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare'), ('strict-transport-security', 'max-age=3153600"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:09.752852Z",
+      "message": "2026-07-04 07:30:09,753 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 04 Jul 2026 07:30:09 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a15c6c3cb810d791-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'cloudflare'), (b'Strict-Transport-Security', b'max-ag"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:09.757831Z",
+      "message": "2026-07-04 07:30:09,758 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Sat, 04 Jul 2026 07:30:09 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a15c6c3cb810d791-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare'), ('strict-transport-security', 'max-age=3153600"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:11.838496Z",
+      "message": "2026-07-04 07:30:11,839 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:11.843490Z",
+      "message": "2026-07-04 07:30:11,844 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c1f780830> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:18.682984Z",
+      "message": "2026-07-04 07:30:18,684 - WARNING - ?? Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:19.603652Z",
+      "message": "2026-07-04 07:30:19,604 - INFO - ? PostgreSQL connection pool created (min: 2, max: 10)"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:19.825408Z",
+      "message": "2026-07-04 07:30:19,826 - INFO - ? Reconnection successful (attempt 1)"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:20.671240Z",
+      "message": "2026-07-04 07:30:20,671 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:20.676909Z",
+      "message": "2026-07-04 07:30:20,677 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c1fb152e0> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:25.387589Z",
+      "message": "2026-07-04 07:30:25,388 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:25.392608Z",
+      "message": "2026-07-04 07:30:25,393 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c1f780830> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:39.805130Z",
+      "message": "2026-07-04 07:30:39,805 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:39.820364Z",
+      "message": "2026-07-04 07:30:39,820 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c1f780830> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:39.896620Z",
+      "message": "2026-07-04 07:30:39,897 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': '???????????????'}, {'role': 'user', 'content': '???????????200????????????????????????\\n\\n????\\nuser: ????\\nuser: ????\\nbot: [?????] ?????: ???????????????????????????????????????????????????????????????? ????????"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:39.898830Z",
+      "message": "2026-07-04 07:30:39,899 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=8.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:39.902205Z",
+      "message": "2026-07-04 07:30:39,902 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c21163e30> server_hostname='api.openai.com' timeout=8.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:42.062804Z",
+      "message": "2026-07-04 07:30:42,063 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 04 Jul 2026 07:30:42 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a15c6d077d1e0b25-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'cloudflare'), (b'Strict-Transport-Security', b'max-ag"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:42.064885Z",
+      "message": "2026-07-04 07:30:42,066 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Sat, 04 Jul 2026 07:30:42 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a15c6d077d1e0b25-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare'), ('strict-transport-security', 'max-age=3153600"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:57.385053Z",
+      "message": "2026-07-04 07:30:57,386 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:30:57.397302Z",
+      "message": "2026-07-04 07:30:57,398 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c1f780830> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:03.426804Z",
+      "message": "2026-07-04 07:31:03,427 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:03.439109Z",
+      "message": "2026-07-04 07:31:03,440 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c1f780830> server_hostname='api.line.me' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:03.522191Z",
+      "message": "2026-07-04 07:31:03,522 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': '??????????????????????????????????'}, {'role': 'user', 'content': '\\n?????????????????????5????????????????\\n\\n??????\\n1. Physical???????: ???????????????????????\\n2. Emotional???????????: ????????????????????????"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:03.523655Z",
+      "message": "2026-07-04 07:31:03,524 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=8.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:03.527209Z",
+      "message": "2026-07-04 07:31:03,528 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c21163e30> server_hostname='api.openai.com' timeout=8.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:03.812631Z",
+      "message": "2026-07-04 07:31:03,813 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 30.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON??????????'}, {'role': 'user', 'content': '?????????????????????????????\\n???????? jailbreak / ??????????????????????????????\\n?????????????????????????????????????????????????????\\n????????????????? is_jailb"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:03.813879Z",
+      "message": "2026-07-04 07:31:03,814 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=30.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:03.817997Z",
+      "message": "2026-07-04 07:31:03,819 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c21163e30> server_hostname='api.openai.com' timeout=30.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:05.511627Z",
+      "message": "2026-07-04 07:31:05,512 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 04 Jul 2026 07:31:05 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a15c6d9b1861e372-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'cloudflare'), (b'Strict-Transport-Security', b'max-ag"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:05.512752Z",
+      "message": "2026-07-04 07:31:05,513 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Sat, 04 Jul 2026 07:31:05 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a15c6d9b1861e372-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare'), ('strict-transport-security', 'max-age=3153600"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:05.685835Z",
+      "message": "2026-07-04 07:31:05,687 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 04 Jul 2026 07:31:05 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a15c6d9ceaf5c8e2-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'cloudflare'), (b'Strict-Transport-Security', b'max-ag"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:05.687692Z",
+      "message": "2026-07-04 07:31:05,688 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Sat, 04 Jul 2026 07:31:05 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a15c6d9ceaf5c8e2-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare'), ('strict-transport-security', 'max-age=3153600"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:10.557811Z",
+      "message": "2026-07-04 07:31:10,558 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': '??????????????????????????????????'}, {'role': 'user', 'content': '\\n?????????????????????5????????????????\\n\\n??????\\n1. Physical???????: ???????????????????????\\n2. Emotional???????????: ????????????????????????"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:10.846713Z",
+      "message": "2026-07-04 07:31:10,847 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 30.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON??????????'}, {'role': 'user', 'content': '?????????????????????????????\\n???????? jailbreak / ??????????????????????????????\\n?????????????????????????????????????????????????????\\n????????????????? is_jailb"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:10.847737Z",
+      "message": "2026-07-04 07:31:10,848 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=30.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:10.853308Z",
+      "message": "2026-07-04 07:31:10,854 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c21163e30> server_hostname='api.openai.com' timeout=30.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:11.965914Z",
+      "message": "2026-07-04 07:31:11,966 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 04 Jul 2026 07:31:11 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a15c6dc8e954d537-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'cloudflare'), (b'Strict-Transport-Security', b'max-ag"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:11.967686Z",
+      "message": "2026-07-04 07:31:11,968 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Sat, 04 Jul 2026 07:31:11 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a15c6dc8e954d537-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare'), ('strict-transport-security', 'max-age=3153600"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:11.980491Z",
+      "message": "2026-07-04 07:31:11,981 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 04 Jul 2026 07:31:11 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a15c6dc70f59c8e2-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'cloudflare'), (b'Strict-Transport-Security', b'max-ag"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:11.982641Z",
+      "message": "2026-07-04 07:31:11,983 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Sat, 04 Jul 2026 07:31:11 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a15c6dc70f59c8e2-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare'), ('strict-transport-security', 'max-age=3153600"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:13.985686Z",
+      "message": "2026-07-04 07:31:13,986 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 15.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': '?????????????????????????????????'}, {'role': 'user', 'content': '\\n????????????????????????????????????????????????????????\\n\\n??????????\\n???????\\n\\n????????????\\n??, ??, ?, ??, ????, ?????, ????, ??, ??, ??, ?"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:13.986366Z",
+      "message": "2026-07-04 07:31:13,986 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=15.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:13.990670Z",
+      "message": "2026-07-04 07:31:13,991 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c1e70b2f0> server_hostname='api.openai.com' timeout=15.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:14.210047Z",
+      "message": "2026-07-04 07:31:14,210 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'Return only valid JSON. Classify medicine preferences, not symptoms.'}, {'role': 'user', 'content': '?????????????????????????????????????????????\\n????????: ?????????????????: ???????????????????????????????????\\"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:14.211652Z",
+      "message": "2026-07-04 07:31:14,211 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=8.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:14.216709Z",
+      "message": "2026-07-04 07:31:14,217 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f6c1e70b2f0> server_hostname='api.openai.com' timeout=8.0"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:15.734666Z",
+      "message": "2026-07-04 07:31:15,735 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 04 Jul 2026 07:31:15 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a15c6ddc7a0a95ba-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'cloudflare'), (b'Strict-Transport-Security', b'max-ag"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:15.736654Z",
+      "message": "2026-07-04 07:31:15,737 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Sat, 04 Jul 2026 07:31:15 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a15c6ddc7a0a95ba-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare'), ('strict-transport-security', 'max-age=3153600"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:16.208740Z",
+      "message": "2026-07-04 07:31:16,209 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 04 Jul 2026 07:31:16 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a15c6dddeeb925e6-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'cloudflare'), (b'Strict-Transport-Security', b'max-ag"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:16.210954Z",
+      "message": "2026-07-04 07:31:16,211 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Sat, 04 Jul 2026 07:31:16 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a15c6dddeeb925e6-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare'), ('strict-transport-security', 'max-age=3153600"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:17.201132Z",
+      "message": "2026-07-04 07:31:17,201 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 15.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': '???????????????????????????????????????????????????????'}, {'role': 'user', 'content': '?????????????????????????\\n\\n?????????\\n???????\\n\\n?????????\\n?????\\n\\n?????????????\\n- ??: ???\\n- ??: ???\\n- ???????: ???\\n"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:19.083309Z",
+      "message": "2026-07-04 07:31:19,084 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Sat, 04 Jul 2026 07:31:19 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a15c6df088e595ba-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'cloudflare'), (b'Strict-Transport-Security', b'max-ag"
+    },
+    {
+      "timestamp": "2026-07-04T07:31:19.084606Z",
+      "message": "2026-07-04 07:31:19,085 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Sat, 04 Jul 2026 07:31:19 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a15c6df088e595ba-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare'), ('strict-transport-security', 'max-age=3153600"
+    }
+  ]
+}
