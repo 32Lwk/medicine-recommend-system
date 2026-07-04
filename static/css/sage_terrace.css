@@ -1920,6 +1920,53 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
   margin: 0;
 }
 
+.ui-status-hints-card--chips {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 0 4px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(90, 184, 168, 0.1) 0%, rgba(250, 248, 243, 0.95) 100%);
+  border: 1px solid rgba(90, 184, 168, 0.28);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+}
+
+.ui-status-hints-card--chips .ui-status-hints-card__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(90, 184, 168, 0.16);
+  color: var(--ui-primary, #5ab8a8);
+}
+
+.ui-status-hints-card__lead {
+  margin: 0 0 8px;
+  font-size: 0.95em;
+  font-weight: 700;
+  color: var(--ui-text);
+  line-height: 1.45;
+}
+
+.ui-status-hints-card__tips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ui-status-hints-card__tip {
+  font-size: 0.9em;
+  color: var(--ui-text-muted, #5f6b7a);
+  line-height: 1.5;
+}
+
 .ui-status-hints-card strong {
   display: block;
   margin-bottom: 6px;
@@ -1939,12 +1986,48 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
   margin-top: 12px;
 }
 
+.ui-status-actions--multi {
+  margin-top: 12px;
+}
+
+.ui-status-actions__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.ui-status-chip.ui-status-multi-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .ui-status-chip {
   border-radius: 999px;
   padding: 6px 14px;
   font-size: 0.92em;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: background 0.15s, transform 0.1s, border-color 0.15s, color 0.15s;
+}
+
+.ui-status-chip.ui-status-multi-submit {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.92em;
+  font-weight: 600;
+  min-height: 0;
+}
+
+.ui-status-chip.is-selected {
+  background: var(--ui-primary, #5ab8a8);
+  border-color: var(--ui-primary, #5ab8a8);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(90, 184, 168, 0.28);
+}
+
+.ui-status-chip.is-selected:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
 }
 
 .ui-status-chip:hover {

@@ -12371,3 +12371,12 @@
 {"timestamp": "2026-07-04T11:11:37.463253", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
 {"timestamp": "2026-07-04T11:11:57.539910", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-04T11:11:57.540532", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-04T13:57:57.409418", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T13:57:57.409981", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪です。"}}
+{"timestamp": "2026-07-04T14:45:12.985891", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T14:45:12.986424", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪です"}}
+{"timestamp": "2026-07-04T14:53:58.197795", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T14:53:58.198411", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪です"}}
+{"timestamp": "2026-07-04T14:54:04.100820", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T14:54:04.101264", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです"}}
+{"timestamp": "2026-07-04T14:54:05.871998", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}

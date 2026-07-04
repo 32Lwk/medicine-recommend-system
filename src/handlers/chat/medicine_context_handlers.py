@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-import uuid
 from datetime import datetime
 from typing import Any, Optional, Tuple
 
@@ -17,20 +16,23 @@ def _mark_session_modified(session: Any) -> None:
 
 
 def _append_user_message(session: Any, sid: Optional[str], user_message: str) -> None:
-    user_msg = {
-        "type": "user",
-        "content": user_message,
-        "timestamp": datetime.now().isoformat(),
-        "uuid": str(uuid.uuid4()),
-    }
-    session.setdefault("messages", []).append(user_msg)
+    """ユーザーメッセージ追記（chat_post_pipeline 等で既に追記済みならスキップ）。"""
+    from src.services.session_manager import (
+        append_user_message,
+        get_session_from_db,
+        save_session_to_db,
+        should_skip_append_user_message,
+    )
+
+    if should_skip_append_user_message(session, user_message):
+        return
+    user_msg = append_user_message(session, user_message)
     _mark_session_modified(session)
     if not sid:
         return
-    from src.services.session_manager import get_session_from_db, save_session_to_db
-
     sd = get_session_from_db(sid) or {"session_id": sid, "messages": []}
-    sd.setdefault("messages", []).append(user_msg)
+    if not should_skip_append_user_message(sd, user_message):
+        sd.setdefault("messages", []).append(user_msg)
     sd["last_activity"] = datetime.now()
     save_session_to_db(sid, sd)
 
@@ -121,7 +123,7 @@ def handle_cold_symptom_chip_prompt(
         variant="notice",
         title="風邪の症状を教えてください",
         message=message,
-        hints=["複数選んでも構いません", "例：「発熱と咳があります」"],
+        hints=["複数選んでも構いません"],
         actions=actions,
         suggested_symptoms=[
             {
