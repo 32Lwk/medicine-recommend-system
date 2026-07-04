@@ -9315,3 +9315,4 @@
 {"timestamp": "2026-07-04T14:45:15.809050", "session_id": "1783143907104730589464", "response_type": "cold_symptom_chip_prompt", "response_content": "どのような症状がありますか。当てはまるものを選ぶか、テキストで具体的に教えてください。", "response_length": 43}
 {"timestamp": "2026-07-04T14:53:58.285757", "session_id": "1783144431480060807689", "response_type": "cold_symptom_chip_prompt", "response_content": "どのような症状がありますか。当てはまるものを選ぶか、テキストで具体的に教えてください。", "response_length": 43}
 {"timestamp": "2026-07-04T14:54:44.515478", "session_id": "1783144431480060807689", "response_type": "bot_reply", "response_content": "sage_reco", "response_length": 9}
+{"timestamp": "2026-07-04T20:25:51.788031", "session_id": "line:Utest", "response_type": "bot_reply", "response_content": "sage_reco", "response_length": 9}
