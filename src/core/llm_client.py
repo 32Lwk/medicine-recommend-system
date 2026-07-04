@@ -30,6 +30,7 @@ _COST_PER_1K: Dict[str, float] = {
     "gpt-4o": 0.15,
     "gpt-4": 0.15,
     "gpt-5.4-mini": 0.03,
+    "gpt-5.4": 0.12,
     "gpt-5.5": 0.20,
 }
 

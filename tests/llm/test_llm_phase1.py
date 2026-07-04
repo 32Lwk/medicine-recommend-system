@@ -57,8 +57,8 @@ def test_prepare_chat_completion_kwargs_gpt5():
     assert out["max_completion_tokens"] == 300
     assert "temperature" not in out
 
-    out55 = _prepare_chat_completion_kwargs("gpt-5.5", {"temperature": 0.3})
-    assert "temperature" not in out55
+    out54 = _prepare_chat_completion_kwargs("gpt-5.4", {"temperature": 0.3})
+    assert "temperature" not in out54
 
     out_reason = _prepare_chat_completion_kwargs(
         "gpt-5.4-mini",
