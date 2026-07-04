@@ -6413,11 +6413,65 @@
     } else {
     const chatMessagesEl = document.getElementById('chatMessages');
     if (chatMessagesEl) {
+        function updateColdSymptomMultiSubmit(container) {
+            if (!container) {
+                return;
+            }
+            const selected = container.querySelectorAll('.ui-status-chip.is-selected');
+            const submitBtn = container.querySelector('.ui-status-multi-submit');
+            if (submitBtn) {
+                submitBtn.disabled = selected.length === 0;
+            }
+        }
+
+        function buildMultiSymptomMessage(container) {
+            const selected = container.querySelectorAll('.ui-status-chip.is-selected');
+            if (!selected.length) {
+                return '';
+            }
+            if (selected.length === 1) {
+                const chip = selected[0];
+                return chip.getAttribute('data-postback-text')
+                    || ((chip.getAttribute('data-chip-label') || chip.textContent || '').trim() + 'があります');
+            }
+            const labels = Array.from(selected).map(function (chip) {
+                return (chip.getAttribute('data-chip-label') || chip.textContent || '').trim();
+            }).filter(Boolean);
+            return labels.join('と') + 'があります';
+        }
+
         chatMessagesEl.addEventListener('click', function (e) {
+            const multiSubmitBtn = e.target && e.target.closest
+                ? e.target.closest('.ui-status-multi-submit')
+                : null;
+            if (multiSubmitBtn && !multiSubmitBtn.disabled) {
+                const multiContainer = multiSubmitBtn.closest('[data-symptom-multi-select="true"]');
+                const postbackText = multiContainer ? buildMultiSymptomMessage(multiContainer) : '';
+                const inputEl = document.getElementById('messageInput');
+                if (!postbackText || !inputEl || !chatFormEl) {
+                    return;
+                }
+                e.preventDefault();
+                inputEl.value = postbackText;
+                resizeMessageInput(inputEl);
+                chatFormEl.requestSubmit();
+                return;
+            }
             const chipBtn = e.target && e.target.closest
                 ? e.target.closest('[data-postback-text]')
                 : null;
             if (!chipBtn || chipBtn.disabled) {
+                return;
+            }
+            const multiContainer = chipBtn.closest('[data-symptom-multi-select="true"]');
+            if (multiContainer) {
+                e.preventDefault();
+                chipBtn.classList.toggle('is-selected');
+                chipBtn.setAttribute(
+                    'aria-pressed',
+                    chipBtn.classList.contains('is-selected') ? 'true' : 'false'
+                );
+                updateColdSymptomMultiSubmit(multiContainer);
                 return;
             }
             const postbackText = chipBtn.getAttribute('data-postback-text');

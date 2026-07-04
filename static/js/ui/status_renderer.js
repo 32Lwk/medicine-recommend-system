@@ -329,9 +329,40 @@
     );
   }
 
-  function hintsHtml(hints, variant) {
+  function hintsHtml(hints, variant, diag) {
     if (!hints || !hints.length) return '';
     var alertClass = variantAlertClass(variant || 'notice');
+    if (diag && diag.kind === 'cold_symptom_chip_prompt') {
+      var coldHints = hints.filter(function (h) {
+        var text = String(h || '');
+        return text.indexOf('例') !== 0 && text.indexOf('例：') !== 0;
+      });
+      var tipsHtml = coldHints.length
+        ? (
+          '<ul class="ui-status-hints-card__tips">' +
+            coldHints.map(function (h) {
+              return '<li class="ui-status-hints-card__tip">' + esc(h) + '</li>';
+            }).join('') +
+          '</ul>'
+        )
+        : '';
+      return (
+        '<div class="ui-alert ' + alertClass + ' ui-status-hints-card ui-status-hints-card--chips" role="note">' +
+          '<div class="ui-status-hints-card__icon" aria-hidden="true">' +
+            '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">' +
+              '<circle cx="12" cy="12" r="9"/>' +
+              '<path d="M12 8v4M12 16h.01"/>' +
+            '</svg>' +
+          '</div>' +
+          '<div class="ui-status-hints-card__body">' +
+            '<p class="ui-status-hints-card__lead">' +
+              esc(t('coldSymptomHintsLead') || '当てはまる症状をタップして選べます') +
+            '</p>' +
+            tipsHtml +
+          '</div>' +
+        '</div>'
+      );
+    }
     return (
       '<div class="ui-alert ' + alertClass + ' ui-status-hints-card" role="note">' +
         '<strong>' + esc(t('statusHintsTitle') || '次に試すこと') + '</strong>' +
@@ -342,24 +373,38 @@
     );
   }
 
-  function actionsHtml(actions) {
+  function actionsHtml(actions, diag) {
     if (!actions || !actions.length) return '';
+    var multiSelect = !!(diag && diag.kind === 'cold_symptom_chip_prompt');
+    var chipsHtml = actions.map(function (act) {
+      if (act.postback_text) {
+        return (
+          '<button type="button" class="ui-btn ui-btn--secondary ui-status-chip"' +
+            ' data-postback-text="' + esc(act.postback_text) + '"' +
+            ' data-chip-label="' + esc(act.label) + '"' +
+            ' data-status-action="' + esc(act.id) + '"' +
+            (multiSelect ? ' aria-pressed="false"' : '') +
+            '>' + esc(act.label) + '</button>'
+        );
+      }
+      var onclick = act.action ? ' onclick="' + esc(act.action) + '"' : '';
+      return (
+        '<button type="button" class="ui-btn ui-btn--primary"' + onclick +
+          ' data-status-action="' + esc(act.id) + '">' + esc(act.label) + '</button>'
+      );
+    }).join('');
+    if (!multiSelect) {
+      return '<div class="ui-status-actions">' + chipsHtml + '</div>';
+    }
     return (
-      '<div class="ui-status-actions">' +
-        actions.map(function (act) {
-          if (act.postback_text) {
-            return (
-              '<button type="button" class="ui-btn ui-btn--secondary ui-status-chip"' +
-                ' data-postback-text="' + esc(act.postback_text) + '"' +
-                ' data-status-action="' + esc(act.id) + '">' + esc(act.label) + '</button>'
-            );
-          }
-          var onclick = act.action ? ' onclick="' + esc(act.action) + '"' : '';
-          return (
-            '<button type="button" class="ui-btn ui-btn--primary"' + onclick +
-              ' data-status-action="' + esc(act.id) + '">' + esc(act.label) + '</button>'
-          );
-        }).join('') +
+      '<div class="ui-status-actions ui-status-actions--multi" data-symptom-multi-select="true">' +
+        '<div class="ui-status-actions__chips">' +
+          chipsHtml +
+          '<button type="button" class="ui-btn ui-btn--primary ui-status-chip ui-status-multi-submit" disabled' +
+            ' aria-label="' + esc(t('coldSymptomMultiSubmitAria') || '選択した症状を送る') + '">' +
+            esc(t('coldSymptomMultiSubmit') || '送る') +
+          '</button>' +
+        '</div>' +
       '</div>'
     );
   }
@@ -461,8 +506,8 @@
         statusIntroHtml(diag, variant, render) +
         statusAdviceHtml(diag) +
         sectionsHtml(diag.sections, variant, diag.kind) +
-        hintsHtml(diag.hints, variant) +
-        actionsHtml(diag.actions) +
+        hintsHtml(diag.hints, variant, diag) +
+        actionsHtml(diag.actions, diag) +
         feedbackHtml(diag) +
       '</div>'
     );
