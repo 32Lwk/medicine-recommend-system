@@ -95,8 +95,8 @@ def detect_influenza_risk(nlu_result: Dict, user_text: str = "") -> Tuple[bool, 
     if fever_symptom and len(detected_cold_symptoms) >= 3:
         systemic_symptoms = ["頭痛", "関節痛", "筋肉痛", "悪寒"]
         has_systemic = any(s.get("name") in systemic_symptoms for s in detected_cold_symptoms)
-        if has_systemic:
+        if has_systemic and has_high_fever:
             symptom_names = [s.get("name") for s in detected_cold_symptoms]
-            return True, f"発熱と全身症状（{', '.join(symptom_names)}）が確認されました"
+            return True, f"高熱（38.5度以上の可能性）と全身症状（{', '.join(symptom_names)}）が確認されました"
 
     return False, ""

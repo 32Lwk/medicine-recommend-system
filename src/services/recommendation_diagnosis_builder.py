@@ -39,6 +39,16 @@ def _symptom_names(symptoms: list[Any] | None) -> list[str]:
     return out[:8]
 
 
+def _build_age_unknown_warnings(
+    medicines: list[dict[str, Any]],
+    user_info: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    """12歳以上 age_restriction を持つ医薬品があれば警告 dict を返す（RECO_AGE_POLICY_V2）。"""
+    from src.core.recommendation.age_policy import build_age_unknown_warnings
+
+    return build_age_unknown_warnings(medicines, user_info)
+
+
 def build_reco_error(error_type: str, error_details: dict[str, Any] | None = None) -> RecoError:
     details = error_details or {}
     mapped_type, default_severity = _ERROR_TYPE_MAP.get(
@@ -249,6 +259,31 @@ def build_diagnosis_v1(
             recommendations=list(ERROR_MESSAGES["no_candidates"]["recommendations"]),
         )
 
+    age_policy_notice = recommendation_result.get("age_policy_notice") or ""
+    restricted_medicines: list[str] = list(
+        recommendation_result.get("restricted_medicines") or []
+    )
+    if not age_policy_notice and medicines:
+        try:
+            from config.llm_flags import is_reco_age_policy_v2_enabled
+
+            if is_reco_age_policy_v2_enabled():
+                warnings = _build_age_unknown_warnings(
+                    medicines,
+                    recommendation_result.get("user_info"),
+                )
+                if warnings:
+                    age_policy_notice = warnings.get("age_policy_notice") or ""
+                    restricted_medicines = list(
+                        warnings.get("restricted_medicines") or []
+                    )
+        except ImportError:
+            pass
+
+    admin = build_admin_block(recommendation_result, session_id=session_id)
+    if restricted_medicines:
+        admin["restricted_medicines"] = restricted_medicines
+
     return DiagnosisV1(
         render="sage_reco",
         symptoms=symptoms,
@@ -265,10 +300,11 @@ def build_diagnosis_v1(
         missing_priority=recommendation_result.get("missing_priority"),
         influenza_risk=bool(recommendation_result.get("influenza_risk")),
         influenza_reason=recommendation_result.get("influenza_reason") or "",
+        age_policy_notice=age_policy_notice,
         severity_escalation=recommendation_result.get("severity_escalation") or "",
         error=error,
         algorithm=recommendation_result.get("algorithm"),
-        admin=build_admin_block(recommendation_result, session_id=session_id),
+        admin=admin,
     )
 
 

@@ -52,5 +52,6 @@ def resolve_route(
         decision,
         user_text,
         session,
+        sid=sid,
         triage_result=triage_result,
     )

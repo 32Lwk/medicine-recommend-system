@@ -1932,6 +1932,25 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
   margin: 0;
 }
 
+.ui-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ui-status-chip {
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.92em;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.ui-status-chip:hover {
+  transform: translateY(-1px);
+}
+
 .ui-status-block--critical .ui-status-intro__icon,
 .ui-status-block--error .ui-status-intro__icon,
 .ui-status-block--security .ui-status-intro__icon {

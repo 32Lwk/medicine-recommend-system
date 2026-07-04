@@ -1,0 +1,204 @@
+# 競技・推奨文脈ルーティング — ルール判定マトリクス（ユニットテスト用）
+# session_profile: empty | with_reco | with_reco_and_greeting | with_qa_only
+# expected_route: followup_qa | cold_start_recommend | symptom_prompt | none
+
+routing_cases:
+  # --- 推奨後フォローアップ（followup_qa）---
+  - id: post_reco_which_one_track
+    session_profile: with_reco
+    message: "陸上競技大会の前に使えるのはどれ？"
+    expected_route: followup_qa
+
+  - id: post_reco_track_short
+    session_profile: with_reco
+    message: "陸上競技で使える？"
+    expected_route: followup_qa
+
+  - id: post_reco_doping_ok
+    session_profile: with_reco
+    message: "カロナールはドーピング大丈夫ですか？"
+    expected_route: followup_qa
+
+  - id: post_reco_before_race
+    session_profile: with_reco
+    message: "レース前に飲んでもいい？"
+    expected_route: followup_qa
+
+  - id: post_reco_marathon
+    session_profile: with_reco
+    message: "マラソン大会で使えますか？"
+    expected_route: followup_qa
+
+  - id: post_reco_swim_meet
+    session_profile: with_reco
+    message: "水泳の試合前に服用しても大丈夫？"
+    expected_route: followup_qa
+
+  - id: post_reco_antidoping
+    session_profile: with_reco
+    message: "アンチドーピングで陽性になりますか？"
+    expected_route: followup_qa
+
+  - id: post_reco_which_of_three
+    session_profile: with_reco
+    message: "3つ案内されたうちどれがいい？"
+    expected_route: followup_qa
+
+  - id: post_reco_saki_hodo
+    session_profile: with_reco
+    message: "さっきの薬は競技で使える？"
+    expected_route: followup_qa
+
+  - id: post_reco_side_effect_question
+    session_profile: with_reco
+    message: "副作用はありますか？"
+    expected_route: followup_qa
+
+  - id: post_reco_usage
+    session_profile: with_reco
+    message: "先ほどのタイレノールの飲み方は？"
+    expected_route: followup_qa
+
+  - id: post_reco_sports_cold_discovery
+    session_profile: with_reco
+    message: "陸上競技でも使える風邪薬を教えてください。"
+    expected_route: followup_qa
+
+  - id: post_reco_sports_no_symptom_usage
+    session_profile: with_reco
+    message: "明日の大会前に使えるのはどれですか？"
+    expected_route: followup_qa
+
+  - id: post_reco_ibuprofen_sports
+    session_profile: with_reco
+    message: "イブプロフェン入りの薬は競技前に使えますか？"
+    expected_route: followup_qa
+
+  - id: post_reco_track_and_field_en
+    session_profile: with_reco
+    message: "track meet tomorrow, which one is OK?"
+    expected_route: none
+
+  # --- 初回・症状確認（symptom_prompt）---
+  - id: cold_sports_only_question
+    session_profile: empty
+    message: "陸上競技前に使える薬は？"
+    expected_route: symptom_prompt
+
+  - id: cold_marathon_medicine
+    session_profile: empty
+    message: "マラソン大会前に飲める市販薬はありますか？"
+    expected_route: symptom_prompt
+
+  - id: cold_doping_general
+    session_profile: empty
+    message: "ドーピングに引っかからない薬を教えて"
+    expected_route: symptom_prompt
+
+  - id: cold_race_only
+    session_profile: empty
+    message: "明日レースなんですが使える薬は？"
+    expected_route: symptom_prompt
+
+  - id: cold_swim_competition
+    session_profile: empty
+    message: "水泳の競技会前に使える薬を知りたい"
+    expected_route: symptom_prompt
+
+  - id: cold_trial_meet
+    session_profile: empty
+    message: "試合前に使える市販薬は？"
+    expected_route: symptom_prompt
+
+  - id: cold_sports_otc
+    session_profile: empty
+    message: "スポーツの大会前に使えるOTCは？"
+    expected_route: symptom_prompt
+
+  # --- 初回・症状あり推奨（cold_start_recommend）---
+  - id: cold_vague_only
+    session_profile: empty
+    message: "風邪です"
+    expected_route: cold_symptom_chip_prompt
+    requires_reco_cold_nlu_v2: true
+
+  - id: cold_cold_swim_meet
+    session_profile: empty
+    message: "風邪ですが、明日水泳の大会なので使える薬を教えて"
+    expected_route: cold_start_recommend
+
+  - id: cold_headache_track
+    session_profile: empty
+    message: "頭痛がします。陸上競技大会前に使える薬は？"
+    expected_route: cold_start_recommend
+
+  - id: cold_sports_cold_medicine
+    session_profile: empty
+    message: "陸上競技でも使える風邪薬を教えてください。"
+    expected_route: cold_start_recommend
+
+  - id: cold_fever_race
+    session_profile: empty
+    message: "発熱があります。レース前に飲める薬を教えて"
+    expected_route: cold_start_recommend
+
+  - id: cold_throat_competition
+    session_profile: empty
+    message: "のどが痛い。競技会までに治したい。市販薬は？"
+    expected_route: cold_start_recommend
+
+  - id: cold_headache_only_discovery
+    session_profile: empty
+    message: "頭痛におすすめの市販薬を教えて"
+    expected_route: cold_start_recommend
+
+  - id: cold_runny_nose_sports
+    session_profile: empty
+    message: "鼻水とくしゃみ。マラソン前に使える風邪薬は？"
+    expected_route: cold_start_recommend
+
+  # --- 通常ルーティング（none）---
+  - id: pure_headache
+    session_profile: empty
+    message: "頭が痛いです"
+    expected_route: cold_start_recommend
+
+  - id: pure_greeting
+    session_profile: empty
+    message: "こんにちは"
+    expected_route: none
+
+  - id: post_reco_thanks
+    session_profile: with_reco
+    message: "ありがとうございます"
+    expected_route: none
+
+  - id: post_reco_new_headache
+    session_profile: with_reco
+    message: "頭が痛いです"
+    expected_route: none
+
+  - id: empty_message
+    session_profile: empty
+    message: ""
+    expected_route: none
+
+  - id: chitchat_after_reco
+    session_profile: with_reco
+    message: "やあ"
+    expected_route: none
+
+  - id: store_inquiry
+    session_profile: empty
+    message: "近くの薬局を教えて"
+    expected_route: none
+
+  - id: informational_side_effect_only
+    session_profile: with_reco
+    message: "この薬の副作用だけ教えて"
+    expected_route: followup_qa
+
+  - id: after_greeting_sports_cold
+    session_profile: with_reco_and_greeting
+    message: "陸上競技大会の前に使えるのはどれ？"
+    expected_route: followup_qa

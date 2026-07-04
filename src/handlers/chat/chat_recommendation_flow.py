@@ -70,12 +70,17 @@ def _filter_medicines_when_age_unknown(
     if user_info.get("age") is not None or not medicines:
         return medicines
     try:
-        from config.llm_flags import is_low_risk_headache_reco_enabled
+        from config.llm_flags import (
+            is_low_risk_headache_reco_enabled,
+            is_reco_age_policy_v2_enabled,
+        )
         from src.core.recommendation.low_risk_symptoms import (
             filter_headache_analgesics_for_unknown_age,
             is_low_risk_headache_only,
         )
 
+        if is_reco_age_policy_v2_enabled():
+            return medicines
         if is_low_risk_headache_reco_enabled() and is_low_risk_headache_only(
             nlu_result, user_text=user_text, user_info=user_info
         ):
@@ -267,11 +272,45 @@ def run_recommendation_flow(
 ):
     if user_message is None:
         user_message = processed_message or sanitized_message or ""
+    if session.pop("_awaiting_cold_symptoms", False) or session.pop(
+        "_pending_cold_symptoms", False
+    ):
+        _chip_reply = (user_message or "").strip()
+        if _chip_reply and "風邪" not in _chip_reply:
+            user_message = f"風邪で{_chip_reply}"
+            if processed_message is not None:
+                processed_message = user_message
+            elif sanitized_message and sanitized_message.strip() == _chip_reply:
+                sanitized_message = user_message
     llm_text = resolve_llm_user_text(user_message=user_message)
     from src.services.processing_status import mark_processing_step
 
     try:
         from src.handlers.chat.reco_dedup import try_reco_flow_entry_short_circuit
+        from src.services.medicine_context_routing import resolve_medicine_context_route
+
+        ctx_route = resolve_medicine_context_route(
+            session,
+            sid,
+            user_message,
+            client=recommendation_client,
+            triage_result=triage_result,
+        )
+        if ctx_route == "followup_qa":
+            from src.handlers.chat.medicine_context_handlers import handle_medicine_followup_qa
+
+            mark_processing_step(sid, "finalize")
+            return handle_medicine_followup_qa(session, client, sid, user_message)
+        if ctx_route == "symptom_prompt":
+            from src.handlers.chat.medicine_context_handlers import handle_sports_symptom_prompt
+
+            mark_processing_step(sid, "finalize")
+            return handle_sports_symptom_prompt(session, sid, user_message)
+        if ctx_route == "cold_symptom_chip_prompt":
+            from src.handlers.chat.medicine_context_handlers import handle_cold_symptom_chip_prompt
+
+            mark_processing_step(sid, "finalize")
+            return handle_cold_symptom_chip_prompt(session, sid, user_message)
 
         reco_early = try_reco_flow_entry_short_circuit(session, sid, user_message)
         if reco_early is not None:
@@ -1159,9 +1198,37 @@ def run_recommendation_flow(
             # 医薬品種類が判定できない場合（Noneまたは「その他」）の処理
             if not medicine_type or medicine_type == 'その他':
                 logger.warning(f"⚠️ 医薬品種類が判定できませんでした: {medicine_type}")
+                try:
+                    from src.core.recommendation.medicine_type_resolver import (
+                        resolve_medicine_type_from_hints,
+                    )
+
+                    resolved = resolve_medicine_type_from_hints(
+                        user_message or "",
+                        analysis_result,
+                        nlu_result,
+                    )
+                    if resolved:
+                        medicine_type = resolved
+                        if medicine_type == "風邪薬" and not symptoms:
+                            symptoms = ["風邪"]
+                        logger.info(
+                            "medicine_type hint resolved: %s user=%r",
+                            medicine_type,
+                            (user_message or "")[:80],
+                        )
+                except ImportError:
+                    if "風邪薬" in (user_message or ""):
+                        medicine_type = "風邪薬"
+                        if not symptoms:
+                            symptoms = ["風邪"]
+                        logger.info(
+                            "風邪薬探索キーワードから medicine_type=風邪薬 を設定: %s",
+                            user_message[:80],
+                        )
                             
                 # 「その他」の場合でも、NLU解析結果から症状を取得し、適切なmedicine_typeを推測
-                if nlu_symptoms:
+                if (not medicine_type or medicine_type == 'その他') and nlu_symptoms:
                     from src.core.rule_based_recommendation import SYMPTOM_DICTIONARY
                     from src.utils.symptom_helpers import normalize_symptom_names
 
@@ -1486,6 +1553,12 @@ def run_recommendation_flow(
                 logger.info(f"🔍 Rule-based result: {recommendation_result.get('status', 'unknown')}")
                 logger.info(f"🔍 Rule-based medicines count: {len(recommendation_result.get('recommended_medicines', []))}")
                 _rb_meds = recommendation_result.get("recommended_medicines", [])
+                try:
+                    from config.llm_flags import is_reco_age_policy_v2_enabled
+
+                    _age_policy_v2 = is_reco_age_policy_v2_enabled()
+                except ImportError:
+                    _age_policy_v2 = False
                 _filtered_meds = _filter_medicines_when_age_unknown(
                     _rb_meds,
                     user_info,
@@ -1495,21 +1568,30 @@ def run_recommendation_flow(
                 if len(_filtered_meds) != len(_rb_meds):
                     recommendation_result["recommended_medicines"] = _filtered_meds
                     logger.info(
-                        "🔒 age unknown: filtered age-restricted medicines %s -> %s",
+                        "🔒 age unknown: filtered age-restricted medicines %s -> %s "
+                        "(reco_age_policy_v2=%s)",
                         len(_rb_meds),
                         len(_filtered_meds),
+                        _age_policy_v2,
                     )
+                    try:
+                        from src.services.pipeline_perf import log_pipeline_perf
 
-                if (
-                    not recommendation_result.get("recommended_medicines")
-                    and not recommendation_result.get("error")
-                    and not recommendation_result.get("escalation")
-                ):
-                    return _build_empty_recommendation_fallback(
-                        session,
-                        sid,
-                        recommendation_result,
-                        sanitized_message,
+                        log_pipeline_perf(
+                            sid=sid,
+                            extra={
+                                "reco_age_filter": True,
+                                "reco_age_policy_v2": _age_policy_v2,
+                                "pre_age_filter_count": len(_rb_meds),
+                                "post_age_filter_count": len(_filtered_meds),
+                            },
+                        )
+                    except Exception:
+                        pass
+                elif _age_policy_v2 and user_info.get("age") is None and _rb_meds:
+                    logger.info(
+                        "🔓 age unknown: age filter skipped reco_age_policy_v2=true pre_count=%s",
+                        len(_rb_meds),
                     )
 
                 session["physical_consultation_active"] = True
@@ -1728,7 +1810,28 @@ def run_recommendation_flow(
                     critical_questions = recommendation_result.get('critical_questions', [])
                     influenza_risk = recommendation_result.get('influenza_risk', False)
                     influenza_reason = recommendation_result.get('influenza_reason', '')
-                                
+
+                    _age_policy_payload = {
+                        "recommended_medicines": recommended_medicines,
+                        "usage_notes": usage_notes,
+                    }
+                    try:
+                        from src.core.recommendation.age_policy import (
+                            apply_age_unknown_policy_to_result,
+                        )
+
+                        apply_age_unknown_policy_to_result(_age_policy_payload, user_info)
+                        usage_notes = _age_policy_payload.get("usage_notes", usage_notes)
+                    except ImportError:
+                        _age_policy_payload = {}
+
+                    severity_escalation = recommendation_result.get("severity_escalation") or ""
+                    if influenza_risk and not severity_escalation:
+                        severity_escalation = (
+                            f"インフルエンザの可能性があります（{influenza_reason}）。"
+                            "アスピリン含有医薬品の使用を避け、早めに医療機関を受診してください。"
+                        )
+
                     recommendation_result = {
                         'symptoms': symptoms,
                         'medicine_type': medicine_type,
@@ -1736,9 +1839,11 @@ def run_recommendation_flow(
                         'usage_notes': usage_notes,
                         'doctor_consultation': doctor_consultation,
                         'additional_questions': additional_questions,
-                        'critical_questions': critical_questions,  # 新規追加
-                        'influenza_risk': influenza_risk,  # 新規追加
-                        'influenza_reason': influenza_reason,  # 新規追加
+                        'critical_questions': critical_questions,
+                        'influenza_risk': influenza_risk,
+                        'influenza_reason': influenza_reason,
+                        'severity_escalation': severity_escalation,
+                        'age_policy_notice': _age_policy_payload.get("age_policy_notice") or "",
                         'algorithm': 'rule_based'
                     }
                 elif recommendation_result.get('status') == 'escalation_required':
@@ -1800,6 +1905,49 @@ def run_recommendation_flow(
                         'status': status,
                         'technical_details': f"ステータス: {status}, 症状: {symptoms}, 医薬品の種類: {medicine_type}"
                     }
+
+                if (
+                    not recommendation_result.get("recommended_medicines")
+                    and not recommendation_result.get("error")
+                    and not recommendation_result.get("escalation")
+                ):
+                    _empty_trigger = (
+                        "age_filter"
+                        if len(_rb_meds) > len(_filtered_meds)
+                        else "post_status_empty"
+                    )
+                    logger.info(
+                        "Empty recommendation fallback sid=%s trigger=%s "
+                        "reco_age_policy_v2=%s status=%s pre_filter=%s post_filter=%s",
+                        sid,
+                        _empty_trigger,
+                        _age_policy_v2,
+                        recommendation_result.get("status"),
+                        len(_rb_meds),
+                        len(_filtered_meds),
+                    )
+                    try:
+                        from src.services.pipeline_perf import log_pipeline_perf
+
+                        log_pipeline_perf(
+                            sid=sid,
+                            extra={
+                                "reco_empty_fallback": True,
+                                "empty_fallback_trigger": _empty_trigger,
+                                "reco_age_policy_v2": _age_policy_v2,
+                                "pre_age_filter_count": len(_rb_meds),
+                                "post_age_filter_count": len(_filtered_meds),
+                                "rb_status": recommendation_result.get("status"),
+                            },
+                        )
+                    except Exception:
+                        pass
+                    return _build_empty_recommendation_fallback(
+                        session,
+                        sid,
+                        recommendation_result,
+                        sanitized_message,
+                    )
             else:
                 from config.llm_flags import is_gpt_recommend_fallback_enabled
                 from src.services.budget_guard import get_admin_message
@@ -1924,6 +2072,14 @@ def run_recommendation_flow(
             recommended_medicines = recommendation_result.get('recommended_medicines', [])
             usage_notes = recommendation_result.get('usage_notes', '')
             doctor_consultation = recommendation_result.get('doctor_consultation', '')
+
+            try:
+                from src.core.recommendation.age_policy import apply_age_unknown_policy_to_result
+
+                apply_age_unknown_policy_to_result(recommendation_result, user_info)
+                usage_notes = recommendation_result.get('usage_notes', usage_notes)
+            except ImportError:
+                pass
 
             try:
                 from src.handlers.chat.reco_dedup import try_skip_duplicate_medicine_list

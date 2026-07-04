@@ -911,7 +911,7 @@ def _try_sage_diagnosis_status_flex(
         return None
     message = _diagnosis_plain_message(diagnosis)
     hints = _diagnosis_hints_with_sections(diagnosis)
-    return _status_flex_message(
+    messages = _status_flex_message(
         _normalize_variant(str(diagnosis.get("variant") or "info")),
         title=title,
         alt_text=title,
@@ -921,6 +921,31 @@ def _try_sage_diagnosis_status_flex(
         footer_note=footer,
         ui=ui,
     )
+    if diagnosis.get("kind") == "cold_symptom_chip_prompt" and messages:
+        actions = diagnosis.get("actions") or []
+        qr_items: list[dict[str, Any]] = []
+        for act in actions:
+            if not isinstance(act, dict):
+                continue
+            label = str(act.get("label") or "").strip()
+            postback = str(act.get("postback_text") or label).strip()
+            if not label or not postback:
+                continue
+            qr_items.append(
+                {
+                    "type": "action",
+                    "action": {
+                        "type": "message",
+                        "label": label[:20],
+                        "text": postback,
+                    },
+                }
+            )
+            if len(qr_items) >= 13:
+                break
+        if qr_items:
+            messages[0]["quickReply"] = {"items": qr_items}
+    return messages
 
 
 def _plain_text_line_messages(bot_message: dict) -> list[dict[str, Any]] | None:

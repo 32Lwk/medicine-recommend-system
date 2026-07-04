@@ -1,0 +1,248 @@
+{
+  "timestamp": "2026-07-03T152958Z",
+  "scenarios": [
+    {
+      "id": "headache_then_track_which_one",
+      "description": "頭痛推奨後の競技追質問は Q&A（エラーにならない）",
+      "passed": false,
+      "turns": [
+        {
+          "user": "頭が痛いです",
+          "passed": true,
+          "http_status": 200,
+          "elapsed_ms": 22135,
+          "render": "sage_reco",
+          "kind": "",
+          "bot_text": "頭が痛いんですね、つらいですね。まずは安静と水分補給を心がけてください。痛みをやわらげる薬としては、頭痛に使いやすいトキワイブプロエースA、カロナールA、タイレノールAが候補です。空腹時は避け、用法用量を守ってください。発熱や強いだるさがあれば、インフルエンザの可能性もあるので受診をおすすめします】【。\nトキワイブプロエースＡ\nカロナールＡ\nタイレノールＡ",
+          "errors": []
+        },
+        {
+          "user": "陸上競技大会の前に使えるのはどれ？",
+          "passed": false,
+          "http_status": 200,
+          "elapsed_ms": 2885,
+          "render": "sage_status",
+          "kind": "medicine_type_unrecognized",
+          "bot_text": "医薬品種類が判定できませんでした。症状をより具体的に記述していただくか、医師にご相談ください。\n症状から医薬品を選べませんでした\n入力内容を変えるか、薬剤師にご相談ください。",
+          "errors": [
+            "render expected 'sage_qa' got 'sage_status'",
+            "forbidden kind 'medicine_type_unrecognized'",
+            "text must not contain '医薬品種類が判定できませんでした'",
+            "text must not contain '症状から医薬品を選べませんでした'"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "headache_then_track_short",
+      "description": "短い競技追質問",
+      "passed": false,
+      "turns": [
+        {
+          "user": "頭が痛いです",
+          "passed": true,
+          "http_status": 200,
+          "elapsed_ms": 23065,
+          "render": "sage_reco",
+          "kind": "",
+          "bot_text": "頭が痛いんですね、つらいですね。まずは安静にして水分をとり、光や音を少し避けてください。トキワイブプロエースAは頭痛に使いやすく、カロナールA・タイレノールAは胃への負担が比較的少ないので、体質に合わせて選びやすいです。発熱や関節痛もあればインフルエンザの可能性もあるので、無理せず受診も考えてください。\nトキワイブプロエースＡ\nカロナールＡ\nタイレノールＡ",
+          "errors": []
+        },
+        {
+          "user": "陸上競技で使える？",
+          "passed": false,
+          "http_status": 200,
+          "elapsed_ms": 3032,
+          "render": "sage_status",
+          "kind": "recommendation_summary",
+          "bot_text": "先ほどのご相談（頭痛）では、トキワイブプロエースＡ、カロナールＡ、タイレノールＡ などをご案内しました。用法用量や飲み合わせについて、ほかに知りたいことはありますか？\n推奨の確認",
+          "errors": [
+            "render expected 'sage_qa' got 'sage_status'"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "headache_then_doping",
+      "description": "推奨後ドーピング質問",
+      "passed": false,
+      "turns": [
+        {
+          "user": "頭痛がします",
+          "passed": true,
+          "http_status": 200,
+          "elapsed_ms": 22308,
+          "render": "sage_reco",
+          "kind": "",
+          "bot_text": "頭痛がしますね。まずは安静にして、水分をとり、空腹や寝不足がないか確認してください。発熱やのどの痛みもあれば、トキワイブプロエースAが合うことがあります。胃が弱い方、妊娠中の方はカロナールA・タイレノールAが使いやすいです。激しい痛みや繰り返す頭痛は受診を。\nトキワイブプロエースＡ\nカロナールＡ\nタイレノールＡ",
+          "errors": []
+        },
+        {
+          "user": "ドーピング検査で問題ないのはどれですか？",
+          "passed": false,
+          "http_status": 200,
+          "elapsed_ms": 2766,
+          "render": "sage_status",
+          "kind": "medicine_type_unrecognized",
+          "bot_text": "医薬品種類が判定できませんでした。症状をより具体的に記述していただくか、医師にご相談ください。\n症状から医薬品を選べませんでした\n入力内容を変えるか、薬剤師にご相談ください。",
+          "errors": [
+            "render expected 'sage_qa' got 'sage_status'",
+            "forbidden kind 'medicine_type_unrecognized'",
+            "text should contain one of ['ドーピング'] snippet='医薬品種類が判定できませんでした。症状をより具体的に記述していただくか、医師にご相談ください。\\n症状から医薬品を選べませんでした\\n入力内容を変えるか、薬剤師にご相談ください。'"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cold_start_sports_only",
+      "description": "初回・競技のみは症状確認",
+      "passed": false,
+      "turns": [
+        {
+          "user": "陸上競技前に使える薬は？",
+          "passed": false,
+          "http_status": 200,
+          "elapsed_ms": 3164,
+          "render": "sage_status",
+          "kind": "medicine_type_unrecognized",
+          "bot_text": "医薬品種類が判定できませんでした。症状をより具体的に記述していただくか、医師にご相談ください。\n症状から医薬品を選べませんでした\n入力内容を変えるか、薬剤師にご相談ください。",
+          "errors": [
+            "kind expected 'sports_symptom_prompt' got 'medicine_type_unrecognized'"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cold_start_cold_swim",
+      "description": "初回・風邪＋水泳大会は推奨",
+      "passed": true,
+      "turns": [
+        {
+          "user": "風邪ですが、明日水泳の大会なので使える薬を教えて",
+          "passed": true,
+          "http_status": 200,
+          "elapsed_ms": 41702,
+          "render": "sage_reco",
+          "kind": "",
+          "bot_text": "明日大会とのこと、つらいですね。今回は鼻水・のどの痛み・咳が中心なので、のどを直接しずめる「スカイブブロンのどスプレー」が使いやすいです。発熱やだるさもあるため、インフルエンザの可能性もあります。アスピリン入りは避け、無理せず早めの受診も考えてください。\nスカイブブロンのどスプレー",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "cold_start_sports_cold_discovery",
+      "description": "初回・陸上競技＋風邪薬探索",
+      "passed": true,
+      "turns": [
+        {
+          "user": "陸上競技でも使える風邪薬を教えてください。",
+          "passed": true,
+          "http_status": 200,
+          "elapsed_ms": 37482,
+          "render": "sage_reco",
+          "kind": "",
+          "bot_text": "陸上競技でも使える風邪薬をお探しなんですね。発熱・咳・鼻水・のどの痛みがあるため、まずはのどの炎症を和らげる「スカイブブロン のどスプレー」をおすすめします。会場で使いやすいのも利点です。発熱と全身症状からインフルエンザも疑われるので、アスピリン入りは避け、早めに受診してください。\nスカイブブロンのどスプレー",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "post_reco_side_effect",
+      "description": "推奨後の副作用質問",
+      "passed": false,
+      "turns": [
+        {
+          "user": "頭が痛いです",
+          "passed": true,
+          "http_status": 200,
+          "elapsed_ms": 22541,
+          "render": "sage_reco",
+          "kind": "",
+          "bot_text": "頭が痛いのですね、つらいですね。まずは安静にして水分をとり、まぶしい光や音を避けてください。トキワイブプロエースＡは頭痛の痛みをしっかり和らげやすく、カロナールＡ・タイレノールＡは胃への負担が比較的少ないのが特長です。発熱やのどの痛みもある、インフルエンザが心配な時は受診も考えてください。\nトキワイブプロエースＡ\nカロナールＡ\nタイレノールＡ",
+          "errors": []
+        },
+        {
+          "user": "副作用はありますか？",
+          "passed": false,
+          "http_status": 200,
+          "elapsed_ms": 2694,
+          "render": "sage_status",
+          "kind": "medicine_type_unrecognized",
+          "bot_text": "医薬品種類が判定できませんでした。症状をより具体的に記述していただくか、医師にご相談ください。\n症状から医薬品を選べませんでした\n入力内容を変えるか、薬剤師にご相談ください。",
+          "errors": [
+            "render expected 'sage_qa' got 'sage_status'",
+            "forbidden kind 'medicine_type_unrecognized'"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "post_reco_new_cold_discovery_qa",
+      "description": "推奨後の別症状探索は Q&A（新規推奨しない）",
+      "passed": false,
+      "turns": [
+        {
+          "user": "頭が痛いです",
+          "passed": true,
+          "http_status": 200,
+          "elapsed_ms": 21249,
+          "render": "sage_reco",
+          "kind": "",
+          "bot_text": "頭が痛いのはつらいですね。まずは安静にして、水分をとり、暗めの静かな場所で休んでください。トキワイブプロエースＡは痛みをしっかり和らげ、カロナールＡ・タイレノールＡは胃への負担が比較的少なく使いやすいお薬です。発熱やだるさがあればインフルエンザの可能性もあるので、無理せず受診もご検討ください。\nトキワイブプロエースＡ\nカロナールＡ\nタイレノールＡ",
+          "errors": []
+        },
+        {
+          "user": "陸上競技でも使える風邪薬を教えてください。",
+          "passed": false,
+          "http_status": 200,
+          "elapsed_ms": 39170,
+          "render": "sage_reco",
+          "kind": "",
+          "bot_text": "陸上競技でも使える風邪薬をお探しなんですね。今回はのどの痛みや鼻水、発熱に合わせて、のどに直接使える**スカイブブロンのどスプレー**を案内します。競技中は成分表示を確認し、眠気や禁止成分に注意してください。発熱と全身症状があるので、インフルエンザの可能性もあり、無理せず早めに受診をおすすめします。\nスカイブブロンのどスプレー",
+          "errors": [
+            "render expected 'sage_qa' got 'sage_reco'"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pure_headache_recommend",
+      "description": "単独頭痛は推奨",
+      "passed": true,
+      "turns": [
+        {
+          "user": "頭が痛いです",
+          "passed": true,
+          "http_status": 200,
+          "elapsed_ms": 24808,
+          "render": "sage_reco",
+          "kind": "",
+          "bot_text": "頭が痛いのですね、つらいですよね。まずは安静にして水分をとり、必要なら痛みをやわらげる**カロナールA・タイレノールA**などの頭痛薬が合います。胃への負担が少なめです。**発熱やのどの痛み、関節痛**があればインフルエンザの可能性もあるので、無理せず受診してください。\nトキワイブプロエースＡ\nカロナールＡ\nタイレノールＡ",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "greeting_only",
+      "description": "挨拶のみ",
+      "passed": true,
+      "turns": [
+        {
+          "user": "こんにちは",
+          "passed": true,
+          "http_status": 200,
+          "elapsed_ms": 1816,
+          "render": "sage_status",
+          "kind": "concierge_greeting",
+          "bot_text": "こんにちは！こちらは市販薬の相談窓口です。例えば、頭痛やのどの痛みなどの症状について、適した市販薬をご案内できます。何かお困りのことがあれば、ぜひお知らせください。\nご挨拶",
+          "errors": []
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "passed": 4,
+    "failed": 6
+  }
+}

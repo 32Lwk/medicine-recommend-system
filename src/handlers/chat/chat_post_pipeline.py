@@ -445,6 +445,53 @@ def run_chat_post_pipeline(
 
     _run_moderation_if_needed(ctx)
 
+    try:
+        from src.services.medicine_context_routing import resolve_medicine_context_route
+
+        med_ctx_route = resolve_medicine_context_route(
+            session,
+            sid,
+            ctx.sanitized_message or ctx.user_message,
+            client=ctx.recommendation_client,
+            triage_result=ctx.triage_result,
+        )
+        if med_ctx_route == "followup_qa":
+            from src.handlers.chat.medicine_context_handlers import handle_medicine_followup_qa
+
+            logger.info("🏃 medicine_context early: followup_qa")
+            return _guard_return(
+                handle_medicine_followup_qa(
+                    session,
+                    client_info,
+                    sid,
+                    ctx.original_user_message or ctx.user_message,
+                )
+            )
+        if med_ctx_route == "symptom_prompt":
+            from src.handlers.chat.medicine_context_handlers import handle_sports_symptom_prompt
+
+            logger.info("🏃 medicine_context early: symptom_prompt")
+            return _guard_return(
+                handle_sports_symptom_prompt(
+                    session,
+                    sid,
+                    ctx.original_user_message or ctx.user_message,
+                )
+            )
+        if med_ctx_route == "cold_symptom_chip_prompt":
+            from src.handlers.chat.medicine_context_handlers import handle_cold_symptom_chip_prompt
+
+            logger.info("🤧 medicine_context early: cold_symptom_chip_prompt")
+            return _guard_return(
+                handle_cold_symptom_chip_prompt(
+                    session,
+                    sid,
+                    ctx.original_user_message or ctx.user_message,
+                )
+            )
+    except Exception:
+        logger.debug("medicine_context early route skipped", exc_info=True)
+
     if is_agent_enabled():
         mark_pipeline_step("before_orchestrator")
         try:

@@ -32,6 +32,49 @@ _BATCH_NOTES_TTL_SEC = 24 * 3600
 _BATCH_NOTES_MAX = 200
 
 
+def _apply_age_policy_to_usage_result(
+    result: Dict,
+    recommended_medicines: List[Dict],
+    user_info: Dict | None,
+) -> Dict:
+    """P1-6: GPT 生成 usage_notes へ年齢未確認警告を前置。"""
+    try:
+        from config.llm_flags import is_reco_age_policy_v2_enabled
+        from src.core.recommendation.age_policy import (
+            build_age_unknown_notice,
+            prepend_age_notice_to_usage_notes,
+        )
+
+        if not is_reco_age_policy_v2_enabled() or (user_info or {}).get("age") is not None:
+            return result
+        notice = build_age_unknown_notice(recommended_medicines)
+        if not notice:
+            return result
+        result = dict(result)
+        result["usage_notes"] = prepend_age_notice_to_usage_notes(
+            result.get("usage_notes") or "",
+            notice,
+        )
+    except ImportError:
+        pass
+    return result
+
+
+def _sports_context_instruction(user_text: str = "") -> str:
+    try:
+        from config.llm_flags import is_reco_sports_doping_filter_enabled
+        from src.services.medicine_discovery_routing import has_sports_medicine_context
+
+        if is_reco_sports_doping_filter_enabled() and has_sports_medicine_context(user_text or ""):
+            return (
+                "\n【競技文脈】ユーザーは競技・大会前後の使用可否に関心があります。"
+                "ドーピング規定への配慮と、競技前後の使用上の注意を必ず含めてください。\n"
+            )
+    except ImportError:
+        pass
+    return ""
+
+
 def _batch_notes_cache_key(
     recommended_medicines: List[Dict],
     nlu_result: Dict | None,
@@ -546,7 +589,9 @@ def generate_usage_notes_and_consultation_with_gpt(
             hit = _batch_notes_cache.get(cache_key)
             if hit and (time.time() - hit[0]) <= _BATCH_NOTES_TTL_SEC:
                 logger.info("📋 バッチ使用上の注意をキャッシュから取得")
-                return dict(hit[1])
+                return _apply_age_policy_to_usage_result(
+                    dict(hit[1]), recommended_medicines, user_info
+                )
     except Exception:
         cache_key = None
 
@@ -583,6 +628,12 @@ def generate_usage_notes_and_consultation_with_gpt(
         prompt += "\n"
 
     prompt += f"{symptoms_context}"
+    user_text = str(
+        (user_info or {}).get("user_text")
+        or (user_info or {}).get("user_message")
+        or ""
+    )
+    prompt += _sports_context_instruction(user_text)
     prompt += """JSON形式で出力:
 {
   "medicines": [
@@ -839,7 +890,7 @@ def generate_usage_notes_and_consultation_with_gpt(
             _batch_notes_cache.pop(oldest, None)
         _batch_notes_cache[cache_key] = (time.time(), dict(result))
 
-    return result
+    return _apply_age_policy_to_usage_result(result, recommended_medicines, user_info)
 
 
 def generate_default_usage_notes_and_consultation(recommended_medicines: List[Dict], user_info: Dict, nlu_result: Dict = None) -> Dict:
@@ -948,10 +999,14 @@ def generate_default_usage_notes_and_consultation(recommended_medicines: List[Di
         ]
         usage_notes_parts = treatment_warning_header + usage_notes_parts
 
-    return {
-        "usage_notes": '\n'.join(usage_notes_parts),
-        "doctor_consultation": '\n'.join(doctor_consultation_parts),
-        "treatment_warning": treatment_mention
-    }
+    return _apply_age_policy_to_usage_result(
+        {
+            "usage_notes": '\n'.join(usage_notes_parts),
+            "doctor_consultation": '\n'.join(doctor_consultation_parts),
+            "treatment_warning": treatment_mention
+        },
+        recommended_medicines,
+        user_info,
+    )
 
 

@@ -142,6 +142,33 @@ def run_symptom_recommendation(
         _mark_session_modified(session)
         return ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)
 
+    from src.services.medicine_context_routing import resolve_medicine_context_route
+
+    ctx_route = resolve_medicine_context_route(
+        session,
+        sid,
+        sanitized_message or user_message,
+        client=recommendation_client,
+        triage_result=triage_result,
+    )
+    if ctx_route == "followup_qa":
+        from src.handlers.chat.medicine_context_handlers import handle_medicine_followup_qa
+
+        logger.info("🏃 競技・推奨追質問 → medicine_followup_qa")
+        return handle_medicine_followup_qa(
+            session, client_info, sid, user_message
+        )
+    if ctx_route == "symptom_prompt":
+        from src.handlers.chat.medicine_context_handlers import handle_sports_symptom_prompt
+
+        logger.info("🏃 競技文脈・症状不明 → symptom_prompt")
+        return handle_sports_symptom_prompt(session, sid, user_message)
+    if ctx_route == "cold_symptom_chip_prompt":
+        from src.handlers.chat.medicine_context_handlers import handle_cold_symptom_chip_prompt
+
+        logger.info("🤧 風邪症状曖昧 → cold_symptom_chip_prompt")
+        return handle_cold_symptom_chip_prompt(session, sid, user_message)
+
     if is_otc_flow_blocked(session):
         from src.services.medical_emergency_templates import build_medical_emergency_html
         from src.services.sage_bot_response import build_bot_response
