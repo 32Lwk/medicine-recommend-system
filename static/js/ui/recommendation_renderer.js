@@ -1208,9 +1208,23 @@
 
       parts.push(
 
-        '<div class="ui-alert ui-alert--warn"><strong>⚠️ ' + esc(t('influenzaTitle')) + '</strong><br>' +
+        '<div class="ui-alert ui-alert--warn ui-alert--strong"><strong>⚠️ ' + esc(t('influenzaTitle') || 'インフルエンザの可能性') + '</strong><br>' +
 
-          esc(diag.influenza_reason) + '</div>'
+          esc(diag.influenza_reason) + '<br>' +
+
+          esc(t('influenzaConsultHint') || 'アスピリン含有医薬品の使用を避け、早めに医療機関を受診してください。') + '</div>'
+
+      );
+
+    }
+
+    if (diag.age_policy_notice) {
+
+      parts.push(
+
+        '<div class="ui-alert ui-alert--warn"><strong>⚠️ ' + esc(t('agePolicyTitle') || '年齢未確認') + '</strong><br>' +
+
+          esc(diag.age_policy_notice).replace(/\n/g, '<br>') + '</div>'
 
       );
 

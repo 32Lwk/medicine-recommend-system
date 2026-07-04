@@ -3,7 +3,8 @@ LLM 機能フラグ（環境変数）
 
 開発ランタイム（APP_ENV=development 等）では Chat Pipeline v2 および
 UX品質改善 Phase 2–4b の大半が env 未設定でも自動 ON。
-本番は env 明示 + ALLOWLIST カナリア。pytest 中は未設定時 OFF。
+本番は env 明示 + ALLOWLIST カナリアが基本。RECO_* 改善は一括展開のため本番も未設定時 ON。
+pytest 中は未設定時 OFF。
 """
 from __future__ import annotations
 
@@ -96,6 +97,22 @@ def _ux_rollout_flag(name: str) -> bool:
     from config.app_config import is_development_runtime
 
     return is_development_runtime()
+
+
+def _reco_rollout_flag(name: str) -> bool:
+    """
+    OTC 推奨改善 RECO_* の本番一括展開フラグ。
+
+    - 明示 env → その値（false で即時ロールバック）
+    - pytest 実行中は未設定時 False（既存テストの OFF 前提を維持）
+    - それ以外は本番・dev とも未設定時 True（カナリア env 不要）
+    """
+    val = os.getenv(name)
+    if val is not None:
+        return val.strip().lower() in ("1", "true", "yes", "on")
+    if _is_pytest_running():
+        return False
+    return True
 
 
 def _primary_master_enabled() -> bool:
@@ -336,6 +353,25 @@ def is_low_risk_headache_reco_enabled() -> bool:
     で全除外しない（小児文脈・赤旗頭痛は除外）。めまい等 CAUTION_DEFER 症状は変更しない。
     """
     return _ux_rollout_flag("RECO_LOW_RISK_HEADACHE")
+
+
+def is_reco_age_policy_v2_enabled() -> bool:
+    """年齢未入力時の chat 側フィルタ廃止 + 制限薬表示＋警告（RECO_AGE_POLICY_V2）。
+
+    ON 時、`_filter_medicines_when_age_unknown` は 12 歳以上表記薬を除外せず、
+    sage_reco に年齢未確認の注意を表示する。小児文脈ブロック（pediatric_age_required）は別経路。
+    """
+    return _reco_rollout_flag("RECO_AGE_POLICY_V2")
+
+
+def is_reco_cold_nlu_v2_enabled() -> bool:
+    """風邪 NLU 展開・症状チップ・スコアボーナス（RECO_COLD_NLU_V2）。"""
+    return _reco_rollout_flag("RECO_COLD_NLU_V2")
+
+
+def is_reco_sports_doping_filter_enabled() -> bool:
+    """競技文脈でのドーピング禁止物質候補除外（RECO_SPORTS_DOPING_FILTER）。"""
+    return _reco_rollout_flag("RECO_SPORTS_DOPING_FILTER")
 
 
 def is_ux_correction_delete_cancel_enabled() -> bool:

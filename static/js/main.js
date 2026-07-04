@@ -6411,6 +6411,29 @@
     if (!chatFormEl) {
         console.error('chatForm element not found — message submit disabled');
     } else {
+    const chatMessagesEl = document.getElementById('chatMessages');
+    if (chatMessagesEl) {
+        chatMessagesEl.addEventListener('click', function (e) {
+            const chipBtn = e.target && e.target.closest
+                ? e.target.closest('[data-postback-text]')
+                : null;
+            if (!chipBtn || chipBtn.disabled) {
+                return;
+            }
+            const postbackText = chipBtn.getAttribute('data-postback-text');
+            if (!postbackText) {
+                return;
+            }
+            const inputEl = document.getElementById('messageInput');
+            if (!inputEl || !chatFormEl) {
+                return;
+            }
+            e.preventDefault();
+            inputEl.value = postbackText;
+            resizeMessageInput(inputEl);
+            chatFormEl.requestSubmit();
+        });
+    }
     chatFormEl.addEventListener('submit', function(e) {
         try {
             e.preventDefault();

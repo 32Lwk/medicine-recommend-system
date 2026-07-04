@@ -663,6 +663,15 @@ def rule_based_recommendation(
             logger.info(f"推奨は続行しますが、追加質問も表示します")
     
     # ステップ2: インフルエンザリスク検出
+    try:
+        from config.llm_flags import is_reco_cold_nlu_v2_enabled
+        from src.core.recommendation.cold_symptom_expansion import merge_cold_symptoms
+
+        if is_reco_cold_nlu_v2_enabled():
+            nlu_result = merge_cold_symptoms(nlu_result, user_text)
+    except ImportError:
+        pass
+
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ2: インフルエンザリスク検出 ---")
     influenza_risk, influenza_reason = detect_influenza_risk(nlu_result, user_text)
@@ -764,6 +773,29 @@ def rule_based_recommendation(
     except Exception as pref_filter_err:
         logger.warning("嗜好候補フィルタでエラー: %s", pref_filter_err)
 
+    try:
+        from config.llm_flags import is_reco_sports_doping_filter_enabled
+        from src.services.medicine_discovery_routing import has_sports_medicine_context
+
+        if (
+            is_reco_sports_doping_filter_enabled()
+            and has_sports_medicine_context(user_text)
+        ):
+            _pre_doping = len(candidates)
+            candidates = [
+                c
+                for c in candidates
+                if str(c.get("doping_prohibited") or "").strip() != "禁止物質あり"
+            ]
+            if len(candidates) != _pre_doping:
+                logger.info(
+                    "🏃 sports doping filter: candidates %s -> %s",
+                    _pre_doping,
+                    len(candidates),
+                )
+    except ImportError:
+        pass
+
     # 初期候補数を記録
     initial_candidate_count = len(candidates)
     
@@ -811,6 +843,31 @@ def rule_based_recommendation(
     if not candidates:
         logger.warning("該当する候補医薬品が見つかりませんでした")
         symptom_names = [s.get("name", "") for s in nlu_result.get("symptoms", [])]
+        try:
+            from config.llm_flags import is_reco_sports_doping_filter_enabled
+            from src.services.medicine_discovery_routing import has_sports_medicine_context
+
+            if (
+                is_reco_sports_doping_filter_enabled()
+                and has_sports_medicine_context(user_text)
+            ):
+                esc_reason = (
+                    "競技前に使用可能な市販薬（ドーピング禁止物質を含まないもの）が"
+                    "見つかりませんでした。アンチドーピング規定を確認のうえ、"
+                    "薬剤師または医師にご相談ください。"
+                )
+                return {
+                    "status": "escalation_required",
+                    "reason": esc_reason,
+                    "warnings": safety_result["warnings"],
+                    "recommended_medicines": [],
+                    "nlu_result": nlu_result,
+                    "influenza_risk": influenza_risk,
+                    "influenza_reason": influenza_reason,
+                    "timestamp": datetime.now().isoformat(),
+                }
+        except ImportError:
+            pass
         return {
             "status": "no_candidates",
             "reason": "該当する医薬品が見つかりませんでした",

@@ -39,6 +39,12 @@ APP_ENV=production
 # UX_PROGRESSIVE_CLARIFICATION=true
 # UX_RECO_DEDUP=true
 
+# 風邪水泳推奨改善 Phase 1–3: 本番・dev とも未設定で ON（一括デプロイ）。
+# 問題時のみ個別ロールバックとして false を明示する。
+# RECO_AGE_POLICY_V2=false
+# RECO_COLD_NLU_V2=false
+# RECO_SPORTS_DOPING_FILTER=false
+
 # Phase 2 安全・counseling: dev は未設定で ON。本番カナリア時のみ明示 true 推奨。
 # SAFETY_VIOLENCE_CONTEXT_GUARD=true
 # SAFETY_EMERGENCY_CHANNEL_SPLIT=true

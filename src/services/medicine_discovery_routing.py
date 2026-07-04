@@ -19,7 +19,10 @@ _SPORTS_CONTEXT_KEYWORDS = (
     "レース",
     "試合",
     "アンチドーピング",
-    "スポーツ",
+    "水泳",
+    "泳ぐ",
+    "プール",
+    "競泳",
 )
 _DISCOVERY_KEYWORDS = (
     "教えて",
@@ -50,22 +53,21 @@ _INFORMATIONAL_ONLY_KEYWORDS = (
 
 def session_has_recommended_medicines(session: Any, sid: Optional[str]) -> bool:
     """bot メッセージの diagnosis.recommended_medicines のみを見る（雑談・挨拶は無視）。"""
-    for source in (session.get("messages") or [],):
-        for msg in reversed(source):
+
+    def _scan(messages: list) -> bool:
+        for msg in reversed(messages or []):
             if msg.get("type") != "bot":
                 continue
             diag = msg.get("diagnosis") or {}
             if diag.get("recommended_medicines"):
                 return True
+        return False
+
     if sid:
         db_messages = (get_session_from_db(sid) or {}).get("messages") or []
-        for msg in reversed(db_messages):
-            if msg.get("type") != "bot":
-                continue
-            diag = msg.get("diagnosis") or {}
-            if diag.get("recommended_medicines"):
-                return True
-    return False
+        if _scan(db_messages):
+            return True
+    return _scan(session.get("messages") or [])
 
 
 def session_has_medicine_qa_context(session: Any, sid: Optional[str]) -> bool:

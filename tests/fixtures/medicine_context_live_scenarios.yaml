@@ -1,0 +1,100 @@
+# localhost 統合テスト — 競技・推奨文脈（意図整合）
+# expect_render: sage_reco | sage_qa | sage_status | any
+# expect_kind: optional diagnosis.kind
+# must_not_kind: failure if last bot has this kind
+# text_should_contain: substrings in bot visible text (any match if list)
+# text_must_not_contain: all must be absent
+
+live_scenarios:
+  - id: headache_then_track_which_one
+    description: "頭痛推奨後の競技追質問は Q&A（エラーにならない）"
+    turns:
+      - user: "頭が痛いです"
+        expect_render: sage_reco
+        timeout_s: 180
+      - user: "陸上競技大会の前に使えるのはどれ？"
+        expect_render: sage_qa
+        must_not_kind: medicine_type_unrecognized
+        text_must_not_contain:
+          - "医薬品種類が判定できませんでした"
+          - "症状から医薬品を選べませんでした"
+
+  - id: headache_then_track_short
+    description: "短い競技追質問"
+    turns:
+      - user: "頭が痛いです"
+        expect_render: sage_reco
+        timeout_s: 180
+      - user: "陸上競技で使える？"
+        expect_render: sage_qa
+        must_not_kind: medicine_type_unrecognized
+
+  - id: headache_then_doping
+    description: "推奨後ドーピング質問"
+    turns:
+      - user: "頭痛がします"
+        expect_render: sage_reco
+        timeout_s: 180
+      - user: "ドーピング検査で問題ないのはどれですか？"
+        expect_render: sage_qa
+        must_not_kind: medicine_type_unrecognized
+        text_should_contain:
+          - "ドーピング"
+
+  - id: cold_start_sports_only
+    description: "初回・競技のみは症状確認"
+    turns:
+      - user: "陸上競技前に使える薬は？"
+        expect_render: sage_status
+        expect_kind: sports_symptom_prompt
+        text_should_contain:
+          - "症状"
+
+  - id: cold_start_cold_swim
+    description: "初回・風邪＋水泳大会は推奨"
+    turns:
+      - user: "風邪ですが、明日水泳の大会なので使える薬を教えて"
+        expect_render: sage_reco
+        timeout_s: 180
+        must_not_kind: medicine_type_unrecognized
+
+  - id: cold_start_sports_cold_discovery
+    description: "初回・陸上競技＋風邪薬探索"
+    turns:
+      - user: "陸上競技でも使える風邪薬を教えてください。"
+        expect_render: sage_reco
+        timeout_s: 180
+        must_not_kind: medicine_type_unrecognized
+
+  - id: post_reco_side_effect
+    description: "推奨後の副作用質問"
+    turns:
+      - user: "頭が痛いです"
+        expect_render: sage_reco
+        timeout_s: 180
+      - user: "副作用はありますか？"
+        expect_render: sage_qa
+        must_not_kind: medicine_type_unrecognized
+
+  - id: post_reco_new_cold_discovery_qa
+    description: "推奨後の別症状探索は Q&A（新規推奨しない）"
+    turns:
+      - user: "頭が痛いです"
+        expect_render: sage_reco
+        timeout_s: 180
+      - user: "陸上競技でも使える風邪薬を教えてください。"
+        expect_render: sage_qa
+        must_not_kind: medicine_type_unrecognized
+
+  - id: pure_headache_recommend
+    description: "単独頭痛は推奨"
+    turns:
+      - user: "頭が痛いです"
+        expect_render: sage_reco
+        timeout_s: 180
+
+  - id: greeting_only
+    description: "挨拶のみ"
+    turns:
+      - user: "こんにちは"
+        expect_render: sage_status

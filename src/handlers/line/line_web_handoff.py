@@ -48,6 +48,8 @@ _RECO_RESULT_KEYS = frozenset(
 
         "influenza_risk",
 
+        "age_policy_notice",
+
         "missing_priority",
 
         "error_type",

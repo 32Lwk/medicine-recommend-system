@@ -1704,6 +1704,47 @@ body:has(#app > .ui-app) #app {
   color: #1e293b;
 }
 
+.ui-bubble--processing-host .processing-status-mascot-row .processing-status-label {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.ui-bubble--processing-host .processing-status-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  margin: 0 0 6px;
+  padding-left: 36px;
+}
+
+.ui-bubble--processing-host .processing-status-slow-hint {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.ui-bubble--processing-host .processing-status-agent-user {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: #94a3b8;
+}
+
+.ui-bubble--processing-host .processing-status-agent-user__tag,
+.ui-bubble--processing-host .processing-status-agent-user__name {
+  font-weight: 400;
+  color: inherit;
+}
+
+.ui-bubble--processing-host .processing-status-agent-user__tag::after {
+  content: ':';
+  margin: 0 2px 0 1px;
+}
+
 .ui-bubble--processing-host .processing-status-track {
   height: 5px;
   background: #e8f5e9;

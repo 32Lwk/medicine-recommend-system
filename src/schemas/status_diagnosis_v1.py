@@ -18,6 +18,7 @@ class StatusAction(BaseModel):
     label: str
     kind: Literal["button", "link"] = "button"
     action: str | None = None
+    postback_text: str | None = None
 
 
 class StatusDiagnosisV1(BaseModel):
@@ -31,6 +32,7 @@ class StatusDiagnosisV1(BaseModel):
     hints: list[str] = Field(default_factory=list)
     sections: list[StatusSection] = Field(default_factory=list)
     actions: list[StatusAction] = Field(default_factory=list)
+    suggested_symptoms: list[dict[str, Any]] = Field(default_factory=list)
     show_feedback: bool = True
     show_bug_report: bool = False
     feedback_context: dict[str, Any] | None = None

@@ -12,6 +12,7 @@ def apply_post_route_guards(
     user_text: str,
     session: Any,
     *,
+    sid: str | None = None,
     triage_result: dict[str, Any] | None = None,
 ) -> RouteDecision:
     """発熱コンテキスト中の store 禁止、低 confidence 時の clarification 等。"""
@@ -65,5 +66,47 @@ def apply_post_route_guards(
             source="low_confidence_clarification",
             meta={**decision.meta, "original_sub_route": decision.sub_route},
         )
+
+    if decision.primary_route == "Physical" and decision.sub_route in (
+        "rule_based_recommend",
+        "fever_flow",
+        None,
+    ):
+        from src.services.medicine_context_routing import (
+            resolve_medicine_context_route_rule,
+        )
+
+        ctx_route = resolve_medicine_context_route_rule(
+            session if session is not None else {},
+            sid,
+            user_text,
+        )
+        if ctx_route == "cold_start_recommend":
+            return RouteDecision(
+                primary_route="Physical",
+                sub_route="rule_based_recommend",
+                confidence=max(decision.confidence, 0.9),
+                resolved_by="guard",
+                source="medicine_context_cold_start_guard",
+                meta={**decision.meta, "overridden_from": decision.sub_route},
+            )
+        if ctx_route == "followup_qa":
+            return RouteDecision(
+                primary_route="Physical",
+                sub_route="medicine_followup_qa",
+                confidence=max(decision.confidence, 0.9),
+                resolved_by="guard",
+                source="medicine_context_followup_guard",
+                meta={**decision.meta, "overridden_from": decision.sub_route},
+            )
+        if ctx_route == "symptom_prompt":
+            return RouteDecision(
+                primary_route="Physical",
+                sub_route="symptom_prompt_sports",
+                confidence=max(decision.confidence, 0.88),
+                resolved_by="guard",
+                source="medicine_context_symptom_prompt_guard",
+                meta={**decision.meta, "overridden_from": decision.sub_route},
+            )
 
     return decision

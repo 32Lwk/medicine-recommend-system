@@ -11982,3 +11982,392 @@
 {"timestamp": "2026-07-03T14:32:57.093605", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ちんこ"}}
 {"timestamp": "2026-07-03T15:24:14.561395", "original_length": 22, "sanitized_length": 22, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-03T15:24:14.562011", "event_type": "input_validation", "user_id": "ユーザー994", "input_length": 22, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "CHANGELOG digest ってなに？"}}
+{"timestamp": "2026-07-03T23:19:24.131836", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:19:24.132348", "event_type": "input_validation", "user_id": "ユーザー994", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-03T23:19:27.485783", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:31:26.601800", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:31:26.602606", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技大会の前に使えるのはどれ？"}}
+{"timestamp": "2026-07-03T23:31:30.612623", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:31:30.615271", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:31:30.618099", "event_type": "input_validation", "user_id": "unknown", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技大会の前に使えるのはどれ？"}}
+{"timestamp": "2026-07-03T23:31:59.995367", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:31:59.995997", "event_type": "input_validation", "user_id": "ユーザー994", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "やあ"}}
+{"timestamp": "2026-07-03T23:32:21.306891", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:32:21.307343", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛が痛いです"}}
+{"timestamp": "2026-07-03T23:32:44.132053", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:32:44.132518", "event_type": "input_validation", "user_id": "ユーザー994", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技で使える？"}}
+{"timestamp": "2026-07-03T23:32:47.858450", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:32:47.862235", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:32:47.862942", "event_type": "input_validation", "user_id": "unknown", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技で使える？"}}
+{"timestamp": "2026-07-03T23:40:16.566029", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:40:16.566446", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ちゃあああああああああああああ"}}
+{"timestamp": "2026-07-03T23:40:46.222184", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:40:46.222793", "event_type": "input_validation", "user_id": "ユーザー994", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "コンパクトに"}}
+{"timestamp": "2026-07-03T23:50:04.082576", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:50:04.082995", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "おーい"}}
+{"timestamp": "2026-07-03T23:52:47.163619", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-03T23:52:47.164443", "event_type": "input_validation", "user_id": "ユーザー994", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "あああ"}}
+{"timestamp": "2026-07-04T00:17:19.165370", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:17:19.165979", "event_type": "input_validation", "user_id": "ユーザー995", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:17:44.383179", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:17:44.383868", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技大会の前に使えるのはどれ？"}}
+{"timestamp": "2026-07-04T00:17:49.549754", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:17:49.550204", "event_type": "input_validation", "user_id": "ユーザー995", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:18:14.887969", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:18:14.888657", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技で使える？"}}
+{"timestamp": "2026-07-04T00:18:21.531368", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:18:21.531938", "event_type": "input_validation", "user_id": "ユーザー995", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛がします"}}
+{"timestamp": "2026-07-04T00:18:23.010907", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:18:35.321304", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:18:35.321956", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:18:48.554143", "original_length": 20, "sanitized_length": 20, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:18:48.554865", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 20, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ドーピング検査で問題ないのはどれですか？"}}
+{"timestamp": "2026-07-04T00:18:52.142087", "original_length": 20, "sanitized_length": 20, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:18:52.145696", "original_length": 20, "sanitized_length": 20, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:18:52.146221", "event_type": "input_validation", "user_id": "unknown", "input_length": 20, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ドーピング検査で問題ないのはどれですか？"}}
+{"timestamp": "2026-07-04T00:18:55.109457", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:18:55.110022", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技前に使える薬は？"}}
+{"timestamp": "2026-07-04T00:18:57.978696", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:18:57.982009", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:18:57.982641", "event_type": "input_validation", "user_id": "unknown", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技前に使える薬は？"}}
+{"timestamp": "2026-07-04T00:19:00.856885", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:19:00.857347", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T00:19:02.867728", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:19:02.868168", "event_type": "input_validation", "user_id": "ユーザー995", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技大会の前に使えるのはどれ？"}}
+{"timestamp": "2026-07-04T00:19:06.222884", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:19:06.223356", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:19:07.913706", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:19:07.917606", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:19:07.919840", "event_type": "input_validation", "user_id": "unknown", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T00:19:31.119567", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:19:31.120627", "event_type": "input_validation", "user_id": "ユーザー995", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技で使える？"}}
+{"timestamp": "2026-07-04T00:19:36.209866", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:19:36.210361", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛がします"}}
+{"timestamp": "2026-07-04T00:19:48.563100", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:19:48.563776", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:19:52.508315", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:19:52.512108", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:19:52.512759", "event_type": "input_validation", "user_id": "unknown", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:20:00.733299", "original_length": 20, "sanitized_length": 20, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:20:00.734193", "event_type": "input_validation", "user_id": "ユーザー995", "input_length": 20, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ドーピング検査で問題ないのはどれですか？"}}
+{"timestamp": "2026-07-04T00:20:03.993355", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:20:03.994154", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技前に使える薬は？"}}
+{"timestamp": "2026-07-04T00:20:07.799017", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:20:07.801585", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T00:20:37.995374", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:20:37.996009", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:20:52.692338", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:20:52.693283", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:21:01.576147", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:21:01.576958", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "副作用はありますか？"}}
+{"timestamp": "2026-07-04T00:21:04.913996", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:21:04.924312", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:21:04.925654", "event_type": "input_validation", "user_id": "unknown", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "副作用はありますか？"}}
+{"timestamp": "2026-07-04T00:21:08.815929", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:21:08.817620", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:21:37.986519", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:21:37.987130", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:21:38.881942", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:21:38.882528", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:22:03.754721", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:22:03.755702", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "副作用はありますか？"}}
+{"timestamp": "2026-07-04T00:22:09.013357", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:22:09.013877", "event_type": "input_validation", "user_id": "ユーザー995", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:22:20.245169", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:22:20.245861", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:22:33.151551", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:22:33.152276", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:22:43.742100", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:22:43.742916", "event_type": "input_validation", "user_id": "ユーザー996", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-04T00:23:10.956720", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:23:10.957484", "event_type": "input_validation", "user_id": "ユーザー995", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:23:34.519650", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:23:34.520306", "event_type": "input_validation", "user_id": "ユーザー995", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-04T00:25:18.650950", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:25:18.651365", "event_type": "input_validation", "user_id": "ユーザー997", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:25:41.418611", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:25:41.419286", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技大会の前に使えるのはどれ？"}}
+{"timestamp": "2026-07-04T00:25:44.831264", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:25:44.831687", "event_type": "input_validation", "user_id": "ユーザー997", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:26:08.438528", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:26:08.439293", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技で使える？"}}
+{"timestamp": "2026-07-04T00:26:11.986038", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:26:11.986445", "event_type": "input_validation", "user_id": "ユーザー997", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛がします"}}
+{"timestamp": "2026-07-04T00:26:34.909416", "original_length": 20, "sanitized_length": 20, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:26:34.910075", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 20, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ドーピング検査で問題ないのはどれですか？"}}
+{"timestamp": "2026-07-04T00:26:38.180586", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:26:38.181077", "event_type": "input_validation", "user_id": "ユーザー997", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技前に使える薬は？"}}
+{"timestamp": "2026-07-04T00:26:42.004079", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:26:42.004675", "event_type": "input_validation", "user_id": "ユーザー997", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T00:27:24.397050", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:27:24.397763", "event_type": "input_validation", "user_id": "ユーザー997", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:28:02.482079", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:28:02.483295", "event_type": "input_validation", "user_id": "ユーザー997", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:28:25.541304", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:28:25.541957", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "副作用はありますか？"}}
+{"timestamp": "2026-07-04T00:28:28.759191", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:28:28.759779", "event_type": "input_validation", "user_id": "ユーザー997", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:28:50.641516", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:28:50.642218", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:29:30.431104", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:29:30.431792", "event_type": "input_validation", "user_id": "ユーザー997", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:29:55.835128", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:29:55.835786", "event_type": "input_validation", "user_id": "ユーザー997", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-04T00:30:42.608038", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:30:42.608545", "event_type": "input_validation", "user_id": "ユーザー998", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛い"}}
+{"timestamp": "2026-07-04T00:30:43.921616", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:31:10.975102", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:31:10.975833", "event_type": "input_validation", "user_id": "ユーザー61", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技大会の前に使えるのはどれ？"}}
+{"timestamp": "2026-07-04T00:31:28.618854", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:31:28.619269", "event_type": "input_validation", "user_id": "ユーザー999", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛い"}}
+{"timestamp": "2026-07-04T00:32:16.169180", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:32:16.170006", "event_type": "input_validation", "user_id": "ユーザー1000", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛い"}}
+{"timestamp": "2026-07-04T00:34:11.035802", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:34:11.036447", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛い"}}
+{"timestamp": "2026-07-04T00:34:13.789469", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:34:40.963931", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:34:40.964491", "event_type": "input_validation", "user_id": "ユーザー998", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技大会の前に使えるのはどれ？"}}
+{"timestamp": "2026-07-04T00:35:10.041221", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:35:10.041696", "event_type": "input_validation", "user_id": "ユーザー1002", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:35:11.840800", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:35:39.387590", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:35:39.388475", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技大会の前に使えるのはどれ？"}}
+{"timestamp": "2026-07-04T00:35:56.652315", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:35:56.652741", "event_type": "input_validation", "user_id": "ユーザー1002", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:36:18.713948", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:36:18.714566", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技で使える？"}}
+{"timestamp": "2026-07-04T00:36:34.979277", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:36:34.979645", "event_type": "input_validation", "user_id": "ユーザー1002", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛がします"}}
+{"timestamp": "2026-07-04T00:36:36.705675", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:36:57.690530", "original_length": 20, "sanitized_length": 20, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:36:57.691091", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 20, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ドーピング検査で問題ないのはどれですか？"}}
+{"timestamp": "2026-07-04T00:37:13.999269", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:37:13.999630", "event_type": "input_validation", "user_id": "ユーザー1002", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技前に使える薬は？"}}
+{"timestamp": "2026-07-04T00:37:16.430631", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:37:16.431001", "event_type": "input_validation", "user_id": "ユーザー1002", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T00:37:19.399320", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:37:19.403078", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:37:19.403734", "event_type": "input_validation", "user_id": "unknown", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T00:37:39.634189", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:37:39.634789", "event_type": "input_validation", "user_id": "ユーザー1002", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:37:42.519546", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:37:42.520693", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:37:42.521115", "event_type": "input_validation", "user_id": "unknown", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:38:24.790216", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:38:24.790787", "event_type": "input_validation", "user_id": "ユーザー1002", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:38:48.938576", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:38:48.939266", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "副作用はありますか？"}}
+{"timestamp": "2026-07-04T00:39:06.090698", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:39:06.091152", "event_type": "input_validation", "user_id": "ユーザー1002", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:39:30.322557", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:39:30.323072", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:39:47.166532", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:39:47.166879", "event_type": "input_validation", "user_id": "ユーザー1002", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:40:16.042254", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:40:16.042774", "event_type": "input_validation", "user_id": "ユーザー1002", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-04T00:43:36.762113", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:43:36.762727", "event_type": "input_validation", "user_id": "ユーザー1003", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:43:38.736228", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:43:59.861740", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:43:59.862321", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技大会の前に使えるのはどれ？"}}
+{"timestamp": "2026-07-04T00:44:16.337608", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:44:16.338102", "event_type": "input_validation", "user_id": "ユーザー1003", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:44:38.680618", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:44:38.681284", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技で使える？"}}
+{"timestamp": "2026-07-04T00:44:55.614165", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:44:55.614637", "event_type": "input_validation", "user_id": "ユーザー1003", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛がします"}}
+{"timestamp": "2026-07-04T00:44:57.130823", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:45:19.975072", "original_length": 20, "sanitized_length": 20, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:45:19.975715", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 20, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ドーピング検査で問題ないのはどれですか？"}}
+{"timestamp": "2026-07-04T00:45:36.315863", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:45:36.316287", "event_type": "input_validation", "user_id": "ユーザー1003", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技前に使える薬は？"}}
+{"timestamp": "2026-07-04T00:45:42.822388", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:45:42.822848", "event_type": "input_validation", "user_id": "ユーザー1003", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T00:45:44.447265", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:45:44.451611", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:45:44.452089", "event_type": "input_validation", "user_id": "unknown", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T00:46:08.160122", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:46:08.160743", "event_type": "input_validation", "user_id": "ユーザー1003", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:46:09.929789", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:46:09.933072", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:46:09.933648", "event_type": "input_validation", "user_id": "unknown", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:46:12.620308", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:46:12.620764", "event_type": "input_validation", "user_id": "ユーザー1003", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:46:33.111284", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:46:33.111888", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "副作用はありますか？"}}
+{"timestamp": "2026-07-04T00:46:48.421375", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:46:48.421896", "event_type": "input_validation", "user_id": "ユーザー1003", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:47:11.355125", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:47:11.355759", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:47:29.624951", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:47:29.625353", "event_type": "input_validation", "user_id": "ユーザー1003", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:47:52.219601", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:47:52.220286", "event_type": "input_validation", "user_id": "ユーザー1003", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-04T00:49:03.945992", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:49:03.946494", "event_type": "input_validation", "user_id": "ユーザー1004", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:49:06.469570", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:49:29.765673", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:49:29.766351", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技大会の前に使えるのはどれ？"}}
+{"timestamp": "2026-07-04T00:49:45.272384", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:49:45.272860", "event_type": "input_validation", "user_id": "ユーザー1004", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:50:08.911368", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:50:08.912006", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技で使える？"}}
+{"timestamp": "2026-07-04T00:50:25.203216", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:50:25.203810", "event_type": "input_validation", "user_id": "ユーザー1004", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛がします"}}
+{"timestamp": "2026-07-04T00:50:27.146824", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:50:50.572645", "original_length": 20, "sanitized_length": 20, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:50:50.573259", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 20, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ドーピング検査で問題ないのはどれですか？"}}
+{"timestamp": "2026-07-04T00:51:07.919554", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:51:07.920007", "event_type": "input_validation", "user_id": "ユーザー1004", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技前に使える薬は？"}}
+{"timestamp": "2026-07-04T00:51:10.401521", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:51:10.401954", "event_type": "input_validation", "user_id": "ユーザー1004", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T00:51:12.051353", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:51:12.054757", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:51:12.055265", "event_type": "input_validation", "user_id": "unknown", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T00:51:36.408329", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:51:36.408962", "event_type": "input_validation", "user_id": "ユーザー1004", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:51:38.415222", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:51:38.417645", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:51:38.420077", "event_type": "input_validation", "user_id": "unknown", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:52:12.072535", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:52:12.073158", "event_type": "input_validation", "user_id": "ユーザー1004", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:52:33.543644", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:52:33.544303", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "副作用はありますか？"}}
+{"timestamp": "2026-07-04T00:52:49.700794", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:52:49.701243", "event_type": "input_validation", "user_id": "ユーザー1004", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:53:13.364742", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:53:13.365324", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T00:53:29.807464", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:53:29.807889", "event_type": "input_validation", "user_id": "ユーザー1004", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T00:53:54.030840", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:53:54.031536", "event_type": "input_validation", "user_id": "ユーザー1004", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-04T00:54:17.406343", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:54:17.406839", "event_type": "input_validation", "user_id": "ユーザー1005", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T00:54:19.275354", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:54:19.290878", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:54:19.291214", "event_type": "input_validation", "user_id": "unknown", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T00:54:43.086267", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T00:54:43.086878", "event_type": "input_validation", "user_id": "ユーザー1006", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T01:37:47.520183", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T01:37:47.547444", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T01:37:47.547753", "event_type": "input_validation", "user_id": "unknown", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T01:39:30.752964", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T01:39:30.776376", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T01:39:30.776642", "event_type": "input_validation", "user_id": "unknown", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T01:41:05.898693", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T01:41:05.920073", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T01:41:05.921023", "event_type": "input_validation", "user_id": "unknown", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T01:41:41.636614", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T01:41:41.657786", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T01:41:41.658070", "event_type": "input_validation", "user_id": "unknown", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T01:49:14.711499", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T01:49:14.711992", "event_type": "input_validation", "user_id": "ユーザー1007", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T01:49:16.452784", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T01:49:16.466665", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T01:49:16.467106", "event_type": "input_validation", "user_id": "unknown", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T02:45:41.895567", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T02:45:41.915576", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T02:45:41.915823", "event_type": "input_validation", "user_id": "unknown", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T04:13:57.781157", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:14:00.270882", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:14:10.708596", "original_length": 27, "sanitized_length": 27, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:14:10.737966", "original_length": 36, "sanitized_length": 36, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:14:10.738261", "event_type": "input_validation", "user_id": "unknown", "input_length": 36, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "runny nose and sneezing for two days"}}
+{"timestamp": "2026-07-04T04:16:00.950568", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:16:00.951007", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T04:16:04.155265", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:16:34.432868", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:16:34.433535", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技大会の前に使えるのはどれ？"}}
+{"timestamp": "2026-07-04T04:16:49.656843", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:16:49.657340", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T04:17:12.350656", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:17:12.351215", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技で使える？"}}
+{"timestamp": "2026-07-04T04:17:28.838553", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:17:28.839016", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛がします"}}
+{"timestamp": "2026-07-04T04:17:30.470670", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:17:54.336436", "original_length": 20, "sanitized_length": 20, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:17:54.336981", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 20, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ドーピング検査で問題ないのはどれですか？"}}
+{"timestamp": "2026-07-04T04:18:10.640776", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:18:10.641230", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技前に使える薬は？"}}
+{"timestamp": "2026-07-04T04:18:12.851438", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:18:12.851826", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T04:18:16.497951", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:18:16.499293", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:18:16.500652", "event_type": "input_validation", "user_id": "unknown", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T04:18:55.955176", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:18:55.955747", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T04:18:57.607048", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:18:57.608362", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:18:57.610270", "event_type": "input_validation", "user_id": "unknown", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T04:19:38.738490", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:19:38.739129", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T04:20:01.452871", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:20:01.453457", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "副作用はありますか？"}}
+{"timestamp": "2026-07-04T04:20:17.046964", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:20:17.047375", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T04:20:40.048492", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:20:40.049102", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T04:20:54.402548", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:20:54.403144", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T04:21:23.443027", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:21:23.443596", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-04T04:26:26.111165", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:26:26.111625", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T04:26:48.016633", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:26:48.017389", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技大会の前に使えるのはどれ？"}}
+{"timestamp": "2026-07-04T04:27:01.516293", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:27:01.516815", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T04:27:24.503541", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:27:24.504166", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技で使える？"}}
+{"timestamp": "2026-07-04T04:27:38.596509", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:27:38.596944", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛がします"}}
+{"timestamp": "2026-07-04T04:27:59.173409", "original_length": 20, "sanitized_length": 20, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:27:59.174024", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 20, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ドーピング検査で問題ないのはどれですか？"}}
+{"timestamp": "2026-07-04T04:28:14.067588", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:28:14.068101", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技前に使える薬は？"}}
+{"timestamp": "2026-07-04T04:28:14.583173", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:28:14.583663", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T04:28:53.792177", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:28:53.792912", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T04:29:30.439845", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:29:30.440401", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T04:29:52.413091", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:29:52.413867", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "副作用はありますか？"}}
+{"timestamp": "2026-07-04T04:30:06.024399", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:30:06.024744", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T04:30:26.391237", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:30:26.391816", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T04:30:41.494187", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:30:41.494682", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T04:31:06.417840", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T04:31:06.418661", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-04T11:07:31.622717", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:07:31.623072", "event_type": "input_validation", "user_id": "ユーザー5", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T11:07:54.798983", "original_length": 17, "sanitized_length": 17, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:07:54.799474", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 17, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技大会の前に使えるのはどれ？"}}
+{"timestamp": "2026-07-04T11:08:07.618511", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:08:07.618985", "event_type": "input_validation", "user_id": "ユーザー5", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T11:08:28.837708", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:08:28.838250", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 9, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技で使える？"}}
+{"timestamp": "2026-07-04T11:08:41.610706", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:08:41.611186", "event_type": "input_validation", "user_id": "ユーザー5", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛がします"}}
+{"timestamp": "2026-07-04T11:09:04.310796", "original_length": 20, "sanitized_length": 20, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:09:04.311289", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 20, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ドーピング検査で問題ないのはどれですか？"}}
+{"timestamp": "2026-07-04T11:09:17.025679", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:09:17.026052", "event_type": "input_validation", "user_id": "ユーザー5", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技前に使える薬は？"}}
+{"timestamp": "2026-07-04T11:09:17.540803", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:09:17.541223", "event_type": "input_validation", "user_id": "ユーザー5", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪ですが、明日水泳の大会なので使える薬を教えて"}}
+{"timestamp": "2026-07-04T11:09:53.645217", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:09:53.645742", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T11:10:30.078452", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:10:30.078931", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T11:10:49.594360", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:10:49.594845", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "副作用はありますか？"}}
+{"timestamp": "2026-07-04T11:11:03.679491", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:11:03.679944", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T11:11:24.207546", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:11:24.208228", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技でも使える風邪薬を教えてください。"}}
+{"timestamp": "2026-07-04T11:11:37.462486", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:11:37.463253", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-04T11:11:57.539910", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-04T11:11:57.540532", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}

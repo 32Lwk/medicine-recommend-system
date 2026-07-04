@@ -140,6 +140,28 @@ def run_medicine_question_qa(
         latest_recommended_medicines,
         session_id=sid,
     )
+    if latest_recommended_medicines and not str(chat_response.get("answer") or "").strip():
+        from src.core.medicine.medicine_response_builder import (
+            _build_structured_qa_from_stream,
+        )
+
+        fallback = _build_structured_qa_from_stream(
+            user_message,
+            latest_recommended_medicines,
+            "",
+        )
+        for key in (
+            "answer",
+            "medicine_details",
+            "interactions",
+            "doping_check",
+            "side_effects",
+            "consultation_advice",
+        ):
+            if not str(chat_response.get(key) or "").strip() and str(
+                fallback.get(key) or ""
+            ).strip():
+                chat_response[key] = fallback[key]
     try:
         log_medicine_question_detail(
             session_id=sid,

@@ -10,6 +10,9 @@ from config.llm_flags import (
     is_counseling_tone_variety_enabled,
     is_emergency_channel_split_enabled,
     is_low_risk_headache_reco_enabled,
+    is_reco_age_policy_v2_enabled,
+    is_reco_cold_nlu_v2_enabled,
+    is_reco_sports_doping_filter_enabled,
     is_store_procurement_routing_enabled,
     is_ux_correction_delete_cancel_enabled,
     is_ux_progressive_clarification_enabled,
@@ -27,6 +30,9 @@ UX_FLAG_ENV_NAMES = (
     "ROUTING_CONCIERGE_FOLLOWUP",
     "ROUTING_STORE_PROCUREMENT",
     "RECO_LOW_RISK_HEADACHE",
+    "RECO_AGE_POLICY_V2",
+    "RECO_COLD_NLU_V2",
+    "RECO_SPORTS_DOPING_FILTER",
     "UX_CORRECTION_DELETE_CANCEL",
     "UX_SESSION_OPS_REAL_DATA",
     "UX_PROGRESSIVE_CLARIFICATION",
@@ -48,6 +54,12 @@ UX_FLAGS = (
     is_ux_reco_dedup_enabled,
 )
 
+RECO_FLAGS = (
+    is_reco_age_policy_v2_enabled,
+    is_reco_cold_nlu_v2_enabled,
+    is_reco_sports_doping_filter_enabled,
+)
+
 
 @pytest.fixture(autouse=True)
 def _clear_ux_flag_env(monkeypatch):
@@ -62,11 +74,25 @@ def test_ux_flags_auto_on_in_development(monkeypatch, checker):
     assert checker() is True
 
 
+@pytest.mark.parametrize("checker", RECO_FLAGS, ids=[f.__name__ for f in RECO_FLAGS])
+def test_reco_flags_auto_on_in_development(monkeypatch, checker):
+    monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.setattr("config.llm_flags._is_pytest_running", lambda: False)
+    assert checker() is True
+
+
 @pytest.mark.parametrize("checker", UX_FLAGS, ids=[f.__name__ for f in UX_FLAGS])
 def test_ux_flags_off_in_production_without_env(monkeypatch, checker):
     monkeypatch.setenv("APP_ENV", "production")
     monkeypatch.setattr("config.llm_flags._is_pytest_running", lambda: False)
     assert checker() is False
+
+
+@pytest.mark.parametrize("checker", RECO_FLAGS, ids=[f.__name__ for f in RECO_FLAGS])
+def test_reco_flags_on_in_production_without_env(monkeypatch, checker):
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setattr("config.llm_flags._is_pytest_running", lambda: False)
+    assert checker() is True
 
 
 def test_ux_flags_explicit_false_in_development(monkeypatch):

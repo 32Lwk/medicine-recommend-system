@@ -95,6 +95,8 @@ def _apply_decision_to_context(ctx: Any, decision: RouteDecision) -> None:
     elif primary == "Physical":
         if sub == "fever_flow":
             triage["subcategory"] = "fever"
+        elif sub in ("medicine_followup_qa", "symptom_prompt_sports"):
+            triage["subcategory"] = sub
         elif sub and sub != "rule_based_recommend":
             triage["subcategory"] = sub
     elif primary == "Emergency" and sub:
@@ -142,6 +144,49 @@ def _log_dispatch(ctx: Any, decision: RouteDecision, *, handled: bool) -> None:
 
 
 def _dispatch_physical(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
+    from src.services.medicine_context_routing import resolve_medicine_context_route
+
+    sub = (ctx.session.get("_intent_router_dispatch") or {}).get("sub_route")
+    ctx_route = resolve_medicine_context_route(
+        ctx.session,
+        ctx.sid,
+        ctx.sanitized_message or ctx.user_message,
+        client=ctx.recommendation_client,
+        triage_result=ctx.triage_result,
+    )
+    effective_sub = sub or ""
+    from src.services.medicine_discovery_routing import session_has_recommended_medicines
+
+    followup_ok = ctx_route == "followup_qa" or (
+        effective_sub in ("medicine_followup_qa",)
+        and session_has_recommended_medicines(ctx.session, ctx.sid)
+    )
+    if followup_ok:
+        from src.handlers.chat.medicine_context_handlers import handle_medicine_followup_qa
+
+        return handle_medicine_followup_qa(
+            ctx.session,
+            ctx.client_info,
+            ctx.sid,
+            ctx.original_user_message or ctx.user_message,
+        )
+    if effective_sub in ("symptom_prompt_sports",) or ctx_route == "symptom_prompt":
+        from src.handlers.chat.medicine_context_handlers import handle_sports_symptom_prompt
+
+        return handle_sports_symptom_prompt(
+            ctx.session,
+            ctx.sid,
+            ctx.original_user_message or ctx.user_message,
+        )
+    if ctx_route == "cold_symptom_chip_prompt":
+        from src.handlers.chat.medicine_context_handlers import handle_cold_symptom_chip_prompt
+
+        return handle_cold_symptom_chip_prompt(
+            ctx.session,
+            ctx.sid,
+            ctx.original_user_message or ctx.user_message,
+        )
+
     from src.handlers.chat.chat_symptom_route import run_symptom_recommendation
     from src.services.llm_metrics import merge_into_user_info
 

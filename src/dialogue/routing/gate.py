@@ -253,6 +253,42 @@ def _resolve_correction_route(
     return None
 
 
+def _resolve_medicine_context_gate(
+    text: str,
+    session: Any,
+    sid: str | None,
+) -> RouteDecision | None:
+    """推奨後の競技追質問・初回症状確認を Physical sub_route で即決。"""
+    from src.services.medicine_context_routing import resolve_medicine_context_route_rule
+
+    route = resolve_medicine_context_route_rule(session, sid, text)
+    if route == "followup_qa":
+        return RouteDecision(
+            primary_route="Physical",
+            sub_route="medicine_followup_qa",
+            confidence=0.95,
+            resolved_by="gate",
+            source="medicine_context_followup",
+        )
+    if route == "symptom_prompt":
+        return RouteDecision(
+            primary_route="Physical",
+            sub_route="symptom_prompt_sports",
+            confidence=0.93,
+            resolved_by="gate",
+            source="medicine_context_symptom_prompt",
+        )
+    if route == "cold_start_recommend":
+        return RouteDecision(
+            primary_route="Physical",
+            sub_route="rule_based_recommend",
+            confidence=0.94,
+            resolved_by="gate",
+            source="medicine_context_cold_start",
+        )
+    return None
+
+
 def run_deterministic_gate(
     user_text: str,
     session: Any,
@@ -276,6 +312,10 @@ def run_deterministic_gate(
     correction = _resolve_correction_route(text, session, triage_result=triage)
     if correction is not None:
         return correction
+
+    medicine_ctx = _resolve_medicine_context_gate(text, session, sid)
+    if medicine_ctx is not None:
+        return medicine_ctx
 
     if (
         session is not None

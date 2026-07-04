@@ -50,6 +50,7 @@ class DiagnosisV1(BaseModel):
     missing_priority: str | None = None
     influenza_risk: bool = False
     influenza_reason: str = ""
+    age_policy_notice: str = ""
     severity_escalation: str = ""
     error: RecoError | None = None
     feedback_context: dict[str, Any] | None = None

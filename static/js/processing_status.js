@@ -676,6 +676,109 @@
         return 'idle';
     }
 
+    function ensureProcessingMetaSection(card) {
+        if (!card) {
+            return null;
+        }
+        var meta = card.querySelector('.processing-status-meta');
+        if (meta) {
+            return meta;
+        }
+        meta = document.createElement('div');
+        meta.className = 'processing-status-meta';
+        var track = card.querySelector('.processing-status-track');
+        if (track) {
+            card.insertBefore(meta, track);
+        } else {
+            card.appendChild(meta);
+        }
+        return meta;
+    }
+
+    function setAgentUserDisplay(el, text) {
+        if (!el) {
+            return;
+        }
+        el.textContent = '';
+        var raw = String(text || '').trim();
+        if (!raw) {
+            return;
+        }
+        var sep = raw.indexOf(': ');
+        if (sep > 0) {
+            var tagEl = document.createElement('span');
+            tagEl.className = 'processing-status-agent-user__tag';
+            tagEl.textContent = raw.slice(0, sep);
+            var nameEl = document.createElement('span');
+            nameEl.className = 'processing-status-agent-user__name';
+            nameEl.textContent = raw.slice(sep + 2);
+            el.appendChild(tagEl);
+            el.appendChild(nameEl);
+            return;
+        }
+        el.textContent = raw;
+    }
+
+    function createAgentUserElement(text) {
+        var agentUserEl = document.createElement('div');
+        agentUserEl.className = 'processing-status-agent-user';
+        setAgentUserDisplay(agentUserEl, text);
+        return agentUserEl;
+    }
+
+    function createSlowHintElement(text) {
+        var slowHintEl = document.createElement('p');
+        slowHintEl.className = 'processing-status-slow-hint';
+        slowHintEl.textContent = text;
+        return slowHintEl;
+    }
+
+    function mountProcessingMeta(card, slowHint, agentDisplay) {
+        if (!card) {
+            return;
+        }
+        var metaSection = ensureProcessingMetaSection(card);
+        var slowHintEl = card.querySelector('.processing-status-slow-hint');
+        var agentUserEl = card.querySelector('.processing-status-agent-user');
+        if (slowHintEl && slowHintEl.parentNode !== metaSection) {
+            metaSection.appendChild(slowHintEl);
+        }
+        if (agentUserEl && agentUserEl.parentNode !== metaSection) {
+            metaSection.appendChild(agentUserEl);
+        }
+        if (slowHint) {
+            if (!slowHintEl) {
+                slowHintEl = createSlowHintElement(slowHint);
+                metaSection.appendChild(slowHintEl);
+            } else {
+                slowHintEl.textContent = slowHint;
+            }
+        } else if (slowHintEl) {
+            slowHintEl.remove();
+            slowHintEl = null;
+        }
+        if (agentDisplay) {
+            if (!agentUserEl || agentUserEl.tagName === 'P') {
+                if (agentUserEl) {
+                    agentUserEl.remove();
+                }
+                agentUserEl = createAgentUserElement(agentDisplay);
+                metaSection.appendChild(agentUserEl);
+            } else {
+                setAgentUserDisplay(agentUserEl, agentDisplay);
+            }
+        } else if (agentUserEl) {
+            agentUserEl.remove();
+            agentUserEl = null;
+        }
+        if (slowHintEl && agentUserEl) {
+            metaSection.insertBefore(slowHintEl, agentUserEl);
+        }
+        if (!metaSection.childNodes.length) {
+            metaSection.remove();
+        }
+    }
+
     function buildProcessingCardElement(label, step, total, percent, badge, progressAria, detailLabel, meta) {
         meta = meta || {};
         var locale = meta.locale || getLocale(getCurrentLang(null));
@@ -699,8 +802,9 @@
         header.appendChild(badgeEl);
         header.appendChild(pillEl);
 
+        var mascotRow = null;
         if (!showTechnical) {
-            var mascotRow = document.createElement('div');
+            mascotRow = document.createElement('div');
             mascotRow.className = 'processing-status-mascot-row';
             var mascotEl = document.createElement('span');
             mascotEl.className = 'processing-status-mascot processing-status-mascot--' + (meta.mascotState || 'idle');
@@ -729,20 +833,13 @@
         fill.style.width = safePercent + '%';
 
         track.appendChild(fill);
-        card.appendChild(labelEl);
-        if (!showTechnical && meta.slow_hint) {
-            var slowHintEl = document.createElement('p');
-            slowHintEl.className = 'processing-status-slow-hint';
-            slowHintEl.style.cssText = 'margin: 4px 0 0; font-size: 0.78em; color: #666;';
-            slowHintEl.textContent = meta.slow_hint;
-            card.appendChild(slowHintEl);
+        if (mascotRow) {
+            mascotRow.appendChild(labelEl);
+        } else {
+            card.appendChild(labelEl);
         }
-        if (!showTechnical && meta.agent_display) {
-            var agentUserEl = document.createElement('p');
-            agentUserEl.className = 'processing-status-agent-user';
-            agentUserEl.style.cssText = 'margin: 4px 0 0; font-size: 0.78em; color: #2e7d32;';
-            agentUserEl.textContent = meta.agent_display;
-            card.appendChild(agentUserEl);
+        if (!showTechnical && (meta.slow_hint || meta.agent_display)) {
+            mountProcessingMeta(card, meta.slow_hint || '', meta.agent_display || '');
         }
         if (showTechnical && detailLabel) {
             var detailEl = document.createElement('p');
@@ -866,6 +963,10 @@
                 trackEl.setAttribute('aria-label', localized.progressAria);
             }
         }
+        var card = root.querySelector('.processing-status-card');
+        if (card && !shouldShowTechnicalMeta(targetEl)) {
+            mountProcessingMeta(card, localized.slow_hint || '', localized.agent_display || '');
+        }
         return true;
     }
 
@@ -940,33 +1041,22 @@
 
         if (badgeEl) badgeEl.textContent = badge;
         if (labelEl) labelEl.textContent = label;
-        var slowHintEl = wrapper.querySelector('.processing-status-slow-hint');
-        if (!showTechnical && localized.slow_hint) {
-            if (!slowHintEl) {
-                slowHintEl = document.createElement('p');
-                slowHintEl.className = 'processing-status-slow-hint';
-                slowHintEl.style.cssText = 'margin: 4px 0 0; font-size: 0.78em; color: #666;';
-                if (labelEl && labelEl.parentNode) {
-                    labelEl.parentNode.insertBefore(slowHintEl, labelEl.nextSibling);
-                }
+        var card = wrapper.querySelector('.processing-status-card');
+        if (!showTechnical) {
+            var misplacedAgent = wrapper.querySelector('.processing-status-mascot-row .processing-status-agent-user');
+            if (misplacedAgent) {
+                misplacedAgent.remove();
             }
-            slowHintEl.textContent = localized.slow_hint;
-        } else if (slowHintEl) {
-            slowHintEl.remove();
-        }
-        var agentUserEl = wrapper.querySelector('.processing-status-agent-user');
-        if (!showTechnical && localized.agent_display) {
-            if (!agentUserEl) {
-                agentUserEl = document.createElement('p');
-                agentUserEl.className = 'processing-status-agent-user';
-                agentUserEl.style.cssText = 'margin: 4px 0 0; font-size: 0.78em; color: #2e7d32;';
-                if (labelEl && labelEl.parentNode) {
-                    labelEl.parentNode.insertBefore(agentUserEl, labelEl.nextSibling);
-                }
+            var misplacedSlow = wrapper.querySelector('.processing-status-mascot-row .processing-status-slow-hint');
+            if (misplacedSlow) {
+                misplacedSlow.remove();
             }
-            agentUserEl.textContent = localized.agent_display;
-        } else if (agentUserEl) {
-            agentUserEl.remove();
+            mountProcessingMeta(card, localized.slow_hint || '', localized.agent_display || '');
+        } else {
+            var metaSection = card && card.querySelector('.processing-status-meta');
+            if (metaSection) {
+                metaSection.remove();
+            }
         }
         if (showTechnical && detailLabel) {
             if (!detailEl) {

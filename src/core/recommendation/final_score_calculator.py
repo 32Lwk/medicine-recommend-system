@@ -1981,6 +1981,21 @@ def calculate_final_score(candidate: Dict, nlu_result: Dict, user_info: Dict, us
     else:
         # 低スコア領域（0.5未満）はそのまま使用
         total_score = adjusted_base_score + scaled_adjustment
+
+    try:
+        from config.llm_flags import is_reco_cold_nlu_v2_enabled
+
+        if is_reco_cold_nlu_v2_enabled() and user_text and "風邪" in user_text:
+            med_type = str(candidate.get("medicine_type") or "")
+            if "風邪" in med_type and "解熱" not in med_type:
+                total_score += 0.05
+            topical_markers = ("外用", "のど", "鼻", "スプレー", "点鼻")
+            if any(m in med_type for m in topical_markers) or any(
+                m in str(candidate.get("product_name") or "") for m in ("のど", "鼻")
+            ):
+                total_score += 0.04
+    except ImportError:
+        pass
     
     # raw_scoreを保持（正規化は詳細スコアリング完了後に一括で行う）
     raw_score = total_score  # クリップ前の元のスコアを保持

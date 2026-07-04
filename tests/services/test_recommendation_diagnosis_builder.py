@@ -65,6 +65,32 @@ def test_build_display_summary():
     assert "薬A" in summary
 
 
+def test_build_diagnosis_age_policy_notice():
+    result = {
+        "symptoms": ["発熱"],
+        "recommended_medicines": [{"product_name": "テスト薬", "age_restriction": "15歳以上"}],
+        "age_policy_notice": "年齢未確認の注意",
+    }
+    diag = build_diagnosis_v1(result)
+    assert diag.age_policy_notice == "年齢未確認の注意"
+
+
+def test_build_diagnosis_age_policy_fallback_when_v2(monkeypatch):
+    monkeypatch.setenv("RECO_AGE_POLICY_V2", "true")
+    monkeypatch.setattr("config.llm_flags._is_pytest_running", lambda: False)
+    result = {
+        "symptoms": ["発熱"],
+        "recommended_medicines": [
+            {"product_name": "カロナールA", "age_restriction": "15歳以上"},
+        ],
+        "user_info": {"age": None},
+    }
+    diag = build_diagnosis_v1(result)
+    assert "年齢" in diag.age_policy_notice
+    assert "カロナールA" in diag.age_policy_notice
+    assert diag.admin and diag.admin.get("restricted_medicines") == ["カロナールA"]
+
+
 def test_sage_reco_marker_constant():
     assert SAGE_RECO_MARKER == "sage_reco"
 

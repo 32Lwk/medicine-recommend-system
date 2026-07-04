@@ -207,6 +207,19 @@ def generate_personalized_advice(
     if risk_warnings:
         risk_warning_info = f"\n\n【リスク成分について】\n{chr(10).join(risk_warnings)}\nこれらの成分が含まれる医薬品については、使用前に必ず添付文書を確認し、不安な点があれば薬剤師または登録販売者にご相談ください。"
 
+    sports_info = ""
+    try:
+        from config.llm_flags import is_reco_sports_doping_filter_enabled
+        from src.services.medicine_discovery_routing import has_sports_medicine_context
+
+        if is_reco_sports_doping_filter_enabled() and has_sports_medicine_context(user_text or ""):
+            sports_info = (
+                "\n\n【競技文脈】ユーザーは競技・大会前後の使用可否に関心があります。"
+                "ドーピング規定への配慮と、競技前後の使用上の注意を必ず言及してください。"
+            )
+    except ImportError:
+        pass
+
     history_section = ""
     if conversation_history_block:
         history_section = f"【直近の会話】\n{conversation_history_block}\n"
@@ -223,7 +236,7 @@ def generate_personalized_advice(
 {', '.join(symptoms) if symptoms else '症状情報なし'}
 
 【推奨医薬品】
-{', '.join(medicine_names) if medicine_names else '推奨医薬品なし'}{influenza_info}{risk_warning_info}
+{', '.join(medicine_names) if medicine_names else '推奨医薬品なし'}{influenza_info}{risk_warning_info}{sports_info}
 
 【生成するアドバイス】
 - ユーザーの入力内容（「{user_text[:50] if user_text else ''}...」など）に言及し、親身な対応を心がけてください

@@ -1,6 +1,59 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月3日**（CHANGELOG Concierge・app_about ガード・処理中表示マスコット刷新・オンボーディング文言・シーズン装飾固定）
+**最終更新日: 2026年7月4日**（風邪＋水泳推奨改善・RECO_* 本番一括展開・年齢警告・風邪症状チップ・競技ドーピング配慮）
+
+---
+
+## 2026年7月4日 — 風邪＋水泳推奨改善・RECO_* 本番一括展開
+
+### 概要
+
+「風邪ですが、水泳大会なので使える薬を教えて」のような初回相談が `no_recommendation` に落ちる問題を修正。直接原因だった年齢未入力時の chat 側フィルタ（15歳以上薬 3 件 → 0 件）と、`no_candidates` / `escalation_required` より前に実行される早期 empty fallback を解消し、`sage_reco` で候補を表示するようにした。
+
+あわせて、`RECO_AGE_POLICY_V2` / `RECO_COLD_NLU_V2` / `RECO_SPORTS_DOPING_FILTER` は本番カナリア用 env を不要化し、本番・dev とも env 未設定で一括 ON に変更。明示 `false` のみ個別ロールバックとして扱う。pytest 実行中は未設定時 OFF を維持し、既存テストの決定論を保つ。
+
+### Phase 1 — 年齢未入力時の推奨ポリシー
+
+- **`config/llm_flags.py`**: `RECO_*` 専用の `_reco_rollout_flag()` を追加。本番・dev は未設定で ON、pytest は未設定で OFF、明示 `false` でロールバック可能
+- **`src/handlers/chat/chat_recommendation_flow.py`**: `RECO_AGE_POLICY_V2` ON 時は `_filter_medicines_when_age_unknown()` が 12歳以上表記薬を除外せずそのまま返す。小児文脈（例: 5歳の子供）は `pediatric_age_required` の確認導線を維持
+- **`src/handlers/chat/chat_recommendation_flow.py`**: 早期 `_build_empty_recommendation_fallback()` を status 分岐後へ移動。`status=no_candidates` は `no_candidates` エラー UI、`escalation_required` は受診・薬剤師相談 UI に到達
+- **`src/core/recommendation/age_policy.py`**: `build_age_unknown_warnings()` / `apply_age_unknown_policy_to_result()` を追加。年齢未入力かつ 12歳以上制限薬が含まれる場合、`age_policy_notice` と `restricted_medicines` を生成し、`usage_notes` に警告を前置
+- **`src/services/recommendation_diagnosis_builder.py` / `src/schemas/recommendation_diagnosis_v1.py`**: `age_policy_notice` を `DiagnosisV1` に反映し、制限薬名を admin ブロックへ保持
+- **`static/js/ui/recommendation_renderer.js` / `static/js/ui/medicine_mapper.js` / `static/js/ui/medicine_card.js` / `static/js/main.js`**: `sage_reco` 上部の年齢未確認バナーと各薬カードの年齢制限表示を整備
+- **`src/handlers/line/line_web_handoff.py`**: LINE Web handoff 時にも `age_policy_notice` を保持
+- **ログ**: `pipeline_perf` に `reco_age_policy_v2`、`pre_age_filter_count`、`post_age_filter_count`、`empty_fallback_trigger` を記録
+
+### Phase 2 — 風邪 NLU・症状チップ・インフル誤検知抑制
+
+- **`src/core/recommendation/cold_symptom_expansion.py`**: 「風邪」入力に対して発熱、咳、のどの痛み、鼻水、鼻づまり、頭痛、関節痛をルール展開。症状 0–1 件で曖昧な場合は展開せず症状チップへ誘導
+- **`src/services/medicine_context_routing.py`**: `cold_symptom_chip_prompt` ルートを追加。`cold_vague_only` は症状チップ、`cold_cold_swim_meet` は `cold_start_recommend` を維持
+- **`src/handlers/chat/medicine_context_handlers.py` / `src/dialogue/dispatcher.py` / `src/handlers/chat/chat_post_pipeline.py` / `src/handlers/chat/chat_symptom_route.py` / `src/handlers/chat/chat_recommendation_flow.py`**: 症状チップハンドラと各入口の接続を追加。Web クリック後は `_pending_cold_symptoms` / `_awaiting_cold_symptoms` で次ターンを「風邪で{症状}」としてマージ
+- **`src/schemas/status_diagnosis_v1.py` / `static/js/ui/status_renderer.js` / `static/css/sage_terrace.css` / `static/js/main.js`**: `suggested_symptoms` と `data-postback-text` ボタンを追加し、Web チップ UI を表示
+- **`src/handlers/line/flex_messages.py`**: `cold_symptom_chip_prompt` に LINE `quickReply` を付与し、Web と LINE の parity を確保
+- **`src/core/recommendation/final_score_calculator.py`**: 「風邪」文脈で風邪薬系、のど・鼻の外用候補にスコアボーナスを付与（閾値は変更なし）
+- **`src/core/influenza_detector.py`**: インフル疑い判定に高熱必須条件を追加し、誤検知を抑制
+- **`src/core/recommendation/medicine_type_resolver.py`**: 風邪薬 hint を小関数に抽出し、推奨タイプ解決をテスト可能にした
+
+### Phase 3 — 競技・ドーピング配慮
+
+- **`src/core/rule_based_recommendation.py`**: 競技文脈かつ `RECO_SPORTS_DOPING_FILTER` ON の場合、推奨候補から `doping_prohibited == "禁止物質あり"` を除外。除外後 0 件なら `escalation_required` として医師・薬剤師相談へ誘導
+- **`src/services/medicine_discovery_routing.py`**: 競技文脈キーワードに「水泳」「泳ぐ」「プール」「競泳」を追加
+- **`src/core/explanation_generator.py` / `src/services/chat_response_service.py`**: 競技・大会前後の使用可否、ドーピング規定への配慮を説明文に必ず含める指示を追加
+
+### 運用・環境変数
+
+- **`scripts/cloudrun_v2_env.example`**: 風邪水泳推奨改善 Phase 1–3 は本番・dev とも未設定で ON と明記。問題時のみ `RECO_AGE_POLICY_V2=false`、`RECO_COLD_NLU_V2=false`、`RECO_SPORTS_DOPING_FILTER=false` で個別ロールバック
+- 本番カナリア用の `RECO_* = true` 設定は不要。一括デプロイで全セッションに適用
+
+### テスト・検証
+
+- **`tests/config/test_llm_flags.py`**: RECO_* の pytest 既定 OFF、dev / production 既定 ON、明示 false ロールバックを検証
+- **`tests/handlers/test_reco_age_policy_v2.py`**: cold swim 相当、年齢フィルタ ON/OFF、小児文脈、`no_candidates` fallback 順序、症状チップ応答マージを検証
+- **`tests/core/test_age_policy.py` / `tests/services/test_recommendation_diagnosis_builder.py`**: 年齢未確認警告、`restricted_medicines`、`DiagnosisV1` 反映を検証
+- **`tests/core/test_cold_symptom_expansion.py` / `tests/core/test_influenza_detector.py` / `tests/core/test_medicine_type_resolver.py` / `tests/core/test_sports_doping_filter.py`**: Phase 2–3 の個別ロジックを検証
+- **`tests/routing/test_medicine_context_routing_matrix.py`**: ルーティングマトリクスを更新
+- **Live 統合**: `scripts/test_medicine_context_live.py` で 10/10 PASS。`cold_start_cold_swim` は `render=sage_reco`
+- **レポート**: `log/analysis/2026-07-04T021159Z_medicine_context_live.json`
 
 ---
 

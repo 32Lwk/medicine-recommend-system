@@ -347,6 +347,13 @@
     return (
       '<div class="ui-status-actions">' +
         actions.map(function (act) {
+          if (act.postback_text) {
+            return (
+              '<button type="button" class="ui-btn ui-btn--secondary ui-status-chip"' +
+                ' data-postback-text="' + esc(act.postback_text) + '"' +
+                ' data-status-action="' + esc(act.id) + '">' + esc(act.label) + '</button>'
+            );
+          }
           var onclick = act.action ? ' onclick="' + esc(act.action) + '"' : '';
           return (
             '<button type="button" class="ui-btn ui-btn--primary"' + onclick +
