@@ -313,10 +313,6 @@ def run_deterministic_gate(
     if correction is not None:
         return correction
 
-    medicine_ctx = _resolve_medicine_context_gate(text, session, sid)
-    if medicine_ctx is not None:
-        return medicine_ctx
-
     if (
         session is not None
         and hasattr(session, "get")
@@ -449,6 +445,10 @@ def run_deterministic_gate(
             resolved_by="gate",
             source="fever_or_symptom_signal",
         )
+
+    medicine_ctx = _resolve_medicine_context_gate(text, session, sid)
+    if medicine_ctx is not None:
+        return medicine_ctx
 
     if _has_pharmacy_location_intent(text):
         fever_active = (
