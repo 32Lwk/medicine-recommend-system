@@ -28,7 +28,7 @@ def test_get_model_gpt5_default(monkeypatch):
     importlib.reload(llm_config)
     assert llm_config.LLM_MODEL_PROFILE == "gpt5"
     assert llm_config.get_model("triage") == "gpt-5.4-mini"
-    assert llm_config.get_model("explain") == "gpt-5.5"
+    assert llm_config.get_model("explain") == "gpt-5.4"
     assert llm_config.get_model("concierge_greeting") == "gpt-4o-mini"
     assert "concierge_greeting" not in llm_config.RESPONSES_API_ROLES
 

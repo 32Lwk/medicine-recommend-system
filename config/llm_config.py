@@ -46,7 +46,7 @@ _GPT5 = {
     "concierge": "gpt-5.4-mini",
     "concierge_greeting": "gpt-4o-mini",
     "emoji_intent": "gpt-4o-mini",
-    "explain": "gpt-5.5",
+    "explain": "gpt-5.4",
     "ask": "gpt-5.4-mini",
     "admin": "gpt-5.4-mini",
     "store": "gpt-5.4-mini",
@@ -80,7 +80,7 @@ def get_model(role: str) -> str:
 def get_explain_model(is_high_risk: bool) -> str | None:
     """低リスク症状の説明生成に使う高速モデル名を返す（Phase 1 レイテンシ）。
 
-    - フラグ OFF もしくは高リスク → None（呼び出し側は既定の explain モデル= gpt-5.5 を使用）
+    - フラグ OFF もしくは高リスク → None（呼び出し側は既定の explain モデル= gpt-5.4 を使用）
     - 低リスク かつ フラグ ON → 高速モデル（gpt5 プロファイル: gpt-5.4-mini / legacy: gpt-4o-mini）
 
     高リスクの判定は呼び出し側（説明生成）で行う。ここではモデル名の解決のみ。
