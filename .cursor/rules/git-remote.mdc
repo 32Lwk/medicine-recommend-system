@@ -1,11 +1,15 @@
 ---
-description: GitHub 停止中の一時 Git リモート運用（GitLab をプライマリにする）
-alwaysApply: true
+description: (無効・履歴用) GitHub 停止中の一時 Git リモート運用。2026-07-07 に GitHub 復旧しプライマリを origin(GitHub) へ戻したため非適用。
+alwaysApply: false
 ---
 
-# Git リモート（GitHub 停止中の一時運用）
+# Git リモート（GitHub 停止中の一時運用）— 【2026-07-07 復旧により無効】
 
-**期間**: GitHub アカウント [@32Lwk](https://github.com/32Lwk) 復旧まで（インシデント: `docs/ops/GITHUB_ACCOUNT_SUSPENSION_2026-06.md`）  
+> **このルールは 2026-07-07 に無効化されました。** GitHub アカウント [@32Lwk](https://github.com/32Lwk) が復旧し、
+> プライマリリモートを `origin`（GitHub）へ戻しました。以下は移行期間中（2026-06-22〜2026-07-07）の履歴として残します。
+> 現在は `git pull` / `git push` は **GitHub (`origin/main`)** 向けです。
+
+**期間**: GitHub アカウント [@32Lwk](https://github.com/32Lwk) 停止〜復旧（2026-06-22〜**2026-07-07**）（インシデント: `docs/ops/GITHUB_ACCOUNT_SUSPENSION_2026-06.md`）  
 **詳細手順（Cloud Build・復旧チェックリスト）**: `docs/ops/GITLAB_TEMPORARY_MIGRATION.md`
 
 ## プライマリリモート

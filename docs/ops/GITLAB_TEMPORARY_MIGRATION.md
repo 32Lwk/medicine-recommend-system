@@ -343,7 +343,62 @@ git pull
 | 日付 | 内容 |
 |------|------|
 | 2026-06-23 | 初版 — Git リモート移行、Cloud Build dev の GitLab 連携、`cloudbuild.yaml` の `$$` エスケープ、復旧手順 |
-| （復旧日） | GitHub 復旧 — 本節と `GITHUB_ACCOUNT_SUSPENSION_2026-06.md` に日付を記入 |
+| **2026-07-07** | **GitHub 復旧** — `git fetch origin` / `gh` が回復。停止中の 56 コミットを GitHub へ同期し、upstream を `origin/main` に復帰。`.cursor/rules/git-remote.mdc` を `alwaysApply: false` に無効化。詳細は下記「§9 復旧記録」 |
+
+---
+
+## 9. 復旧記録（2026-07-07 実施）
+
+### 9.1 復旧確認
+
+| 項目 | 結果 |
+|------|------|
+| `git fetch origin` | 成功（`9832680..a7455d2`） |
+| `gh auth status` | @32Lwk ログイン済み |
+| `gh issue list` | 正常動作 |
+
+### 9.2 差分と欠落日の確認
+
+- 停止中に **GitLab が 56 コミット先行**（2026-06-23〜2026-07-04）、GitHub のみのコミットはゼロ（fast-forward 可能）。
+- コミットのある日: 6/23〜6/29, 7/1〜7/4。**6/30 と 7/5〜7/7 はコミットが無い**が、これは「その日にコミットした作業が無かった」だけで、ローカルに埋もれた未 push コミットは存在しない（ローカル `main` = `gitlab/main`）。
+- **6/30 の作業成果物は失われていない** — `log/analysis/2026-06-30_post-fix-gpt.err.log` 等が後続コミットに含まれており追跡済み。
+
+### 9.3 巨大ファイル問題（GitHub 100MB 制限）
+
+GitLab 側の履歴に GitHub の 100MB 制限を超えるファイルが含まれていたため、そのままでは `git push origin` が reject される。
+
+| ファイル | サイズ | 混入コミット |
+|----------|--------|--------------|
+| `log/app.log` | **3.4GB** | `59cc703`(6/26) 以降 |
+| `log/analysis/2026-07-02_p4a-dispatch-final_server.err.log` | **131MB** | 7/02 のコミット |
+
+**対応**（GitLab の履歴は保持し、GitHub 用にのみ除去）:
+
+1. `github-sync` ブランチを `gitlab/main` から作成
+2. `git filter-branch --index-filter 'git rm --cached --ignore-unmatch <path>'` で上記 2 ファイルを全 56 コミットから除去
+   - Windows で無効なコロン入りパスがインデックスにあるため `-c core.protectNTFS=false -c core.longpaths=true` が必要だった
+3. `git push origin github-sync:main`（fast-forward、`a7455d2..6cfb768`）
+   - 残る 97MB の `log/raw/...json` は 100MB 未満のため push 成功（50MB 超の警告のみ）
+4. ローカル `main` を `git reset --mixed origin/main` で乗せ換え（app.log は物理ファイルとして温存）
+5. `git branch --set-upstream-to=origin/main main`
+
+> **注意**: この結果、ローカル/GitHub の `main`（app.log 除去版）と `gitlab/main`（app.log 含む旧履歴）は **履歴が分岐**した。内容差分は上記 2 ファイルの有無のみ。GitLab は旧履歴のまま残す方針。今後 GitLab へ push する場合は分岐に注意（必要なら別途 force push で統一）。
+
+### 9.4 今後の巨大ログ運用
+
+`.gitignore` に以下を追加（`!log/**` より後に配置）:
+
+```
+log/app.log
+log/analysis/2026-07-02_p4a-dispatch-final_server.err.log
+```
+
+`log/app.log` は数 GB に肥大化するため追跡対象から恒久除外。他の `log/` 成果物（jsonl・分析 md 等）は従来どおり追跡する。
+
+### 9.5 残タスク（未実施）
+
+- Cloud Build トリガーの整理（dev の GitLab / GitHub トリガー一方化、本番 GitHub トリガー確認）は §6.4 のとおり **GCP コンソールで手動対応が必要**。
+- `git-filter-repo` 未導入・ローカル Python 環境が壊れていたため `filter-branch` を使用。将来的な大規模書き換えでは `git-filter-repo` の導入を推奨。
 
 ---
 
