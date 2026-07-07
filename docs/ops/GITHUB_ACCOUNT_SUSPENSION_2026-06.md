@@ -5,14 +5,15 @@
 **対象アカウント**: [@32Lwk](https://github.com/32Lwk)  
 **対象リポジトリ**: [medicine-recommend-system](https://github.com/32Lwk/medicine-recommend-system)（個人開発・OTC 医薬品推奨アプリ）  
 **本番 URL**: https://medicine.yutok.dev  
-**Support チケット**: **#4501520**（**2026-06-22 11:05** 受付・審査待ち）  
-**一時ミラー（GitLab）**: [blank2703726/medicine-recommend](https://gitlab.com/blank2703726/medicine-recommend) — **2026-06-22 〜 GitHub 復旧まで**
+**Support チケット**: **#4501520**（**2026-06-22 11:05** 受付）  
+**ステータス**: ✅ **解決済み — 2026-07-07 に GitHub アクセス復旧**（`git fetch origin` / `gh` が回復）  
+**一時ミラー（GitLab）**: [blank2703726/medicine-recommend](https://gitlab.com/blank2703726/medicine-recommend) — **2026-06-22 〜 2026-07-07**（復旧後は `origin`/GitHub がプライマリ）
 
 ---
 
 ## エグゼクティブサマリー
 
-2026-06-22 午前、Cursor IDE 上の AI エージェントが `gh`（GitHub CLI）経由で **自リポジトリの issue を大量更新**していた。**09:49 までは `git push` 成功**（コミット履歴より）。**09:52** に GitHub Education の再認証メール着信（この時点ではアクセス中断の記載なし）。その後 **~10:11 頃** モバイルアプリで suspend 403 を確認。**11:05** に Support Appeal 受付（Ticket 4501520）。停止の公式通知メール・パスワードリセットメールは **未着**。復旧待ち。
+2026-06-22 午前、Cursor IDE 上の AI エージェントが `gh`（GitHub CLI）経由で **自リポジトリの issue を大量更新**していた。**09:49 までは `git push` 成功**（コミット履歴より）。**09:52** に GitHub Education の再認証メール着信（この時点ではアクセス中断の記載なし）。その後 **~10:11 頃** モバイルアプリで suspend 403 を確認。**11:05** に Support Appeal 受付（Ticket 4501520）。停止の公式通知メール・パスワードリセットメールは **未着**。**その後 2026-07-07 にアクセスが復旧**し、`git fetch origin` / `gh` が正常動作。停止中に GitLab へ積んだ 56 コミットを GitHub へ同期し、通常運用（`origin`/GitHub プライマリ）へ復帰した。
 
 **推定原因（確定ではない）**: 短時間の大量 issue API 操作が自動 abuse 検知に引っかかった可能性が高い。悪意のあるスパム行為ではなく、CHANGELOG / ロードマップ同期の正当なプロジェクト管理だった。
 
@@ -129,7 +130,8 @@ git push gitlab main        # 明示する場合
 | A. 通常作業 | 〜09:49 | git push ✅ / gh issue ✅ |
 | B. 移行期（推定） | 09:49〜10:05 | push はまだ成功した可能性 / gh は後半で 403 の可能性 |
 | C. 停止確認 | 10:11〜 | API・モバイル 403 / サインイン不可 |
-| D. 救済申請 | 11:05〜 | Ticket 4501520 受付、審査待ち |
+| D. 救済申請 | 11:05〜 | Ticket 4501520 受付 |
+| E. 復旧 | 2026-07-07 | ✅ アクセス回復。`git fetch origin` / `gh` 正常。GitHub へ 56 コミット同期・upstream 復帰 |
 
 ---
 
@@ -435,7 +437,7 @@ GitHub はスパム bot 対策のため、以下パターンでアカウント�
 
 | 優先度 | アクション | 状態 |
 |--------|-----------|------|
-| P0 | Support 返信待ち（Ticket **4501520**） | ⏳ 進行中 |
+| P0 | Support 返信待ち（Ticket **4501520**） | ✅ 復旧（2026-07-07） |
 | P0 | 受信トレイ（icloud.com）の迷惑メール・プロモーション確認 | 未確認 |
 | P1 | Support 返信があれば **同スレッドに返信**で追記（学生証提出等） | 待機 |
 | P1 | 復旧後: `gh auth login` 再実行 | ブロック中 |
@@ -486,6 +488,7 @@ Kawashima Yuto / @32Lwk
 
 | 日付 | 内容 |
 |------|------|
+| **2026-07-07** | ✅ **解決** — GitHub アクセス復旧。停止中の 56 コミットを GitHub へ同期（巨大ログ `log/app.log`(3.4GB)・131MB err.log を GitHub 履歴から除去）、upstream を `origin/main` へ復帰、`git-remote.mdc` 無効化。詳細: [`GITLAB_TEMPORARY_MIGRATION.md` §9](./GITLAB_TEMPORARY_MIGRATION.md#9-復旧記録2026-07-07-実施) |
 | 2026-06-22 | 初版 — 停止判明・Appeal 送信・Ticket 4501520 受付 |
 | 2026-06-22 | **時刻詳細追記** — JST タイムライン、09:52 Education メール全文要約、11:05 Ticket 4501520、`git log` 時刻（09:42/09:49 push）、10:11 モバイルスクショ |
 | 2026-06-22 | **証跡画像追加** — `docs/ops/assets/github-ios-suspend-403-2026-06-22-1011.png`（10:11 iOS 403 画面） |
