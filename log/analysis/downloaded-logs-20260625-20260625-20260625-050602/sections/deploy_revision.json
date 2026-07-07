@@ -1,11 +1,1 @@
-{
-  "revision_timeline": [
-    {
-      "timestamp": "2026-06-25T04:12:50.114799Z",
-      "service": "medicine-recommend-dev",
-      "revision": "medicine-recommend-dev-00123-bpf",
-      "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
-    }
-  ],
-  "revision_count": 1
-}
+{"revision_timeline": [{"timestamp": "2026-06-25T04:12:50.114799Z", "service": "medicine-recommend-dev", "revision": "medicine-recommend-dev-00123-bpf", "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"}], "revision_count": 1}

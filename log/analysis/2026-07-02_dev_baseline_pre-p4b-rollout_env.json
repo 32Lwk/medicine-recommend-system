@@ -1,17 +1,1 @@
-{
-  "revision": "medicine-recommend-dev-00141-j7b",
-  "url": "https://medicine-recommend-dev-4jnmo2x4wa-an.a.run.app",
-  "env": {
-    "GIT_COMMIT": "37da58c6f0dedf0a9fbdec873f824a6f5341755e",
-    "GIT_COMMIT_DATE": "2026-07-01",
-    "DEEPL_API_KEY": "REDACTED:fx",
-    "medicine-recommend-db": "***REDACTED***",
-    "postgres": "***REDACTED***",
-    "APP_ENV": "developmen",
-    "DATABASE_URL": "postgresql://REDACTED:REDACTED@ep-billowing-moon-ao7f12o1-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require",
-    "LINE_CHANNEL_ACCESS_TOKEN": "LINE_CHANNEL_ACCESS_TOKEN_REDACTED",
-    "OPENAI_API_KEY": "sk-proj-REDACTED",
-    "LINE_CHANNEL_SECRET": "***REDACTED***",
-    "LINE_WEBHOOK_ENABLED": "true"
-  }
-}
+{"revision": "medicine-recommend-dev-00141-j7b", "url": "https://medicine-recommend-dev-4jnmo2x4wa-an.a.run.app", "env": {"GIT_COMMIT": "37da58c6f0dedf0a9fbdec873f824a6f5341755e", "GIT_COMMIT_DATE": "2026-07-01", "DEEPL_API_KEY": "REDACTED:fx", "medicine-recommend-db": "***REDACTED***", "postgres": "***REDACTED***", "APP_ENV": "developmen", "DATABASE_URL": "postgresql://REDACTED:REDACTED@ep-billowing-moon-ao7f12o1-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require", "LINE_CHANNEL_ACCESS_TOKEN": "LINE_CHANNEL_ACCESS_TOKEN_REDACTED", "OPENAI_API_KEY": "sk-proj-REDACTED", "LINE_CHANNEL_SECRET": "***REDACTED***", "LINE_WEBHOOK_ENABLED": "true"}}

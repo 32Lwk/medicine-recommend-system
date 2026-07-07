@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 from urllib.parse import urlparse
 
+from src.analysis.log_secret_redaction import redact_gcp_log_entries, redact_object
 from src.analysis.medicine_recommendation_log_extractor import (
     attach_physical_recommendation_context,
     extract_physical_recommendation_events,
@@ -104,6 +105,7 @@ def load_gcp_log_entries(path: Path) -> List[LogEntry]:
         data = json.load(f)
     if not isinstance(data, list):
         raise ValueError(f"Expected JSON array in {path}")
+    data = redact_gcp_log_entries(data)
     return [LogEntry.from_gcp(item) for item in data]
 
 
@@ -865,12 +867,18 @@ def write_analysis_bundle(
 
     paths: Dict[str, str] = {}
     meta_path = output_dir / "metadata.json"
-    meta_path.write_text(json.dumps(bundle["metadata"], ensure_ascii=False, indent=2), encoding="utf-8")
+    meta_path.write_text(
+        json.dumps(redact_object(bundle["metadata"]), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
     paths["metadata"] = str(meta_path)
 
     for name, payload in bundle["sections"].items():
         path = sections_dir / f"{name}.json"
-        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        path.write_text(
+            json.dumps(redact_object(payload), ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
         paths[name] = str(path)
 
     manifest = {
@@ -904,7 +912,10 @@ def write_analysis_bundle(
 
     quality = build_quality_metrics(bundle)
     quality_path = output_dir / "quality_metrics.json"
-    quality_path.write_text(json.dumps(quality, ensure_ascii=False, indent=2), encoding="utf-8")
+    quality_path.write_text(
+        json.dumps(redact_object(quality), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
     paths["quality_metrics"] = str(quality_path)
 
     return paths

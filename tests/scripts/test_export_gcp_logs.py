@@ -15,6 +15,7 @@ from src.analysis.gcp_log_export import (
     parse_timestamp,
     resolve_time_range,
 )
+from src.analysis.log_secret_redaction import REDACTED
 
 
 def test_parse_timestamp_z_suffix():
@@ -94,3 +95,39 @@ def test_export_logs_uses_injected_fetcher():
     assert len(entries) == 1
     assert len(reports) == 1
     assert reports[0]["entry_count"] == 1
+
+
+def test_export_logs_redacts_sensitive_env_values():
+    start = datetime(2026, 6, 24, 0, 0, tzinfo=timezone.utc)
+    end = datetime(2026, 6, 24, 4, 0, tzinfo=timezone.utc)
+
+    def fake_fetcher(**kwargs):
+        return [
+            {
+                "insertId": "secret",
+                "timestamp": "2026-06-24T01:00:00Z",
+                "protoPayload": {
+                    "serviceData": {
+                        "env": [
+                            {
+                                "name": "DATABASE_URL",
+                                "value": "postgresql://neondb_owner:npg_secret123@ep-example.aws.neon.tech/neondb",
+                            }
+                        ]
+                    }
+                },
+            }
+        ]
+
+    entries, _reports = export_logs(
+        project_id="test-project",
+        start=start,
+        end=end,
+        service="medicine-recommend-dev",
+        extra_filter=None,
+        chunk_hours=4,
+        limit_per_chunk=100,
+        fetcher=fake_fetcher,
+    )
+    env = entries[0]["protoPayload"]["serviceData"]["env"][0]
+    assert env["value"] == REDACTED

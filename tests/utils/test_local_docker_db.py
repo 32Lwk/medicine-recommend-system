@@ -6,16 +6,16 @@ from src.utils.local_docker_db import (
 
 def test_is_local_docker_database_url_localhost():
     assert is_local_docker_database_url(
-        "postgresql://REDACTED:REDACTED@localhost:5432/medicine_recommend"
+        "postgresql://medicine:medicine@localhost:5432/medicine_recommend"
     )
     assert is_local_docker_database_url(
-        "postgresql://REDACTED:REDACTED@127.0.0.1:5432/medicine_recommend"
+        "postgresql://medicine:medicine@127.0.0.1:5432/medicine_recommend"
     )
 
 
 def test_is_local_docker_database_url_neon():
     assert not is_local_docker_database_url(
-        "postgresql://REDACTED:REDACTED@ep-abc-pooler.neon.tech/neondb?sslmode=require"
+        "postgresql://user:pass@ep-abc-pooler.neon.tech/neondb?sslmode=require"
     )
     assert not is_local_docker_database_url("")
 

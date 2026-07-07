@@ -10,7 +10,7 @@
 ローカル `.env` 例:
 
 ```env
-DATABASE_URL=postgresql://REDACTED:REDACTED@localhost:5432/medicine_recommend
+DATABASE_URL=postgresql://medicine:medicine@localhost:5432/medicine_recommend
 ```
 
 ## 初回起動
@@ -48,7 +48,7 @@ docker run --rm --network medicine-recommend_default `
 2. **dev 用のみ → Neon dev**（`line:%` セッション + feedback + global_state + dedup）
 
 ```powershell
-$env:LOCAL_DATABASE_URL = "postgresql://REDACTED:REDACTED@localhost:5432/medicine_recommend"
+$env:LOCAL_DATABASE_URL = "postgresql://medicine:medicine@localhost:5432/medicine_recommend"
 $env:DEV_DATABASE_URL = "<Neon dev pooler URL>?sslmode=require"
 docker run --rm --network medicine-recommend_default `
   -e DEV_DATABASE_URL -e LOCAL_DATABASE_URL `

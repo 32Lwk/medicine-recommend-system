@@ -10,7 +10,7 @@ from src.services.database import (
 
 
 def test_validate_database_url_config_warns_without_pooler():
-    url = "postgresql://REDACTED:REDACTED@ep-abc-123.us-east-2.aws.neon.tech/neondb?sslmode=require"
+    url = "postgresql://user:pass@ep-abc-123.us-east-2.aws.neon.tech/neondb?sslmode=require"
     with patch("src.services.database.resolve_database_url", return_value=url):
         warnings = validate_database_url_config()
     assert any("pooler" in w for w in warnings)
@@ -18,7 +18,7 @@ def test_validate_database_url_config_warns_without_pooler():
 
 def test_validate_database_url_config_warns_channel_binding_require():
     url = (
-        "postgresql://REDACTED:REDACTED@ep-abc-pooler.us-east-2.aws.neon.tech/neondb"
+        "postgresql://user:pass@ep-abc-pooler.us-east-2.aws.neon.tech/neondb"
         "?sslmode=require&channel_binding=require"
     )
     with patch.dict("os.environ", {"DATABASE_URL": url}, clear=False):
@@ -31,7 +31,7 @@ def test_normalize_database_url_strips_channel_binding_require():
     from src.services.database import _normalize_database_url
 
     url = (
-        "postgresql://REDACTED:REDACTED@ep-abc-pooler.neon.tech/neondb"
+        "postgresql://user:pass@ep-abc-pooler.neon.tech/neondb"
         "?sslmode=require&channel_binding=require"
     )
     normalized = _normalize_database_url(url)
@@ -42,13 +42,13 @@ def test_normalize_database_url_strips_channel_binding_require():
 def test_normalize_database_url_localhost_adds_sslmode_disable():
     from src.services.database import _normalize_database_url
 
-    url = "postgresql://REDACTED:REDACTED@localhost:5432/medicine_recommend"
+    url = "postgresql://medicine:medicine@localhost:5432/medicine_recommend"
     normalized = _normalize_database_url(url)
     assert "sslmode=disable" in normalized
 
 
 def test_validate_database_url_config_no_pooler_warning_for_localhost():
-    url = "postgresql://REDACTED:REDACTED@localhost:5432/medicine_recommend?sslmode=disable"
+    url = "postgresql://medicine:medicine@localhost:5432/medicine_recommend?sslmode=disable"
     with patch("src.services.database.resolve_database_url", return_value=url):
         warnings = validate_database_url_config()
     assert not any("pooler" in w for w in warnings)
@@ -56,7 +56,7 @@ def test_validate_database_url_config_no_pooler_warning_for_localhost():
 
 def test_validate_database_url_config_ok_with_pooler():
     url = (
-        "postgresql://REDACTED:REDACTED@ep-abc-123-pooler.us-east-2.aws.neon.tech/"
+        "postgresql://user:pass@ep-abc-123-pooler.us-east-2.aws.neon.tech/"
         "neondb?sslmode=require"
     )
     with patch("src.services.database.resolve_database_url", return_value=url):

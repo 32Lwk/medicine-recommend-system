@@ -1,9 +1,1 @@
-{
-  "llm_call_count": 0,
-  "total_cost_jpy": 0.0,
-  "total_latency_ms": 0.0,
-  "by_path": {},
-  "by_model": {},
-  "top_sessions_by_cost": [],
-  "recent_calls": []
-}
+{"llm_call_count": 0, "total_cost_jpy": 0.0, "total_latency_ms": 0.0, "by_path": {}, "by_model": {}, "top_sessions_by_cost": [], "recent_calls": []}

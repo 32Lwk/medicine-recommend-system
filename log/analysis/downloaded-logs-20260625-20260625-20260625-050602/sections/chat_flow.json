@@ -1,5 +1,1 @@
-{
-  "trace_count": 0,
-  "exported_traces": [],
-  "slow_traces_ge_8s": []
-}
+{"trace_count": 0, "exported_traces": [], "slow_traces_ge_8s": []}

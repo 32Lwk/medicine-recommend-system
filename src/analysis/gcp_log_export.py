@@ -13,6 +13,8 @@ import subprocess
 from datetime import datetime, timedelta, timezone
 from typing import Iterable, Iterator, List, Optional, Sequence
 
+from src.analysis.log_secret_redaction import redact_gcp_log_entries
+
 DEFAULT_PROJECT_ID = "medicine-recommend"
 FRESHNESS_RE = re.compile(r"^(\d+)([dhms])$", re.I)
 
@@ -223,4 +225,5 @@ def export_logs(
     if dry_run:
         return [], chunk_reports
 
-    return merge_log_entries(chunk_entries), chunk_reports
+    merged = merge_log_entries(chunk_entries)
+    return redact_gcp_log_entries(merged), chunk_reports

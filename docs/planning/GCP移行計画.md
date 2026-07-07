@@ -62,7 +62,7 @@ GCP コンソールまたは `gcloud` CLI で実施する作業です。
 |---|----------|------------|
 | 2.4.1 | **Neon でプロジェクト作成** | [Neon](https://neon.tech) でサインアップし、プロジェクト作成。リージョンは Tokyo や Singapore などアジアを選択するとレイテンシが良い。 |
 | 2.4.2 | **接続文字列の取得** | Neon コンソールの「Connect」から Connection string をコピー。**Connection pooling** を有効にしたプール接続（ホスト名に `-pooler` が付く）を推奨。 |
-| 2.4.3 | **DATABASE_URL の設定** | Cloud Run の環境変数に `DATABASE_URL` を設定。形式例: `postgresql://REDACTED:REDACTED@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require` |
+| 2.4.3 | **DATABASE_URL の設定** | Cloud Run の環境変数に `DATABASE_URL` を設定。形式例: `postgresql://user:pass@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require` |
 | 2.4.4 | **Cloud SQL 接続は不要** | Neon 利用時は Cloud Run の「Cloud SQL 接続」は追加しない。 |
 
 **Neon 無料枠の接続数について**
