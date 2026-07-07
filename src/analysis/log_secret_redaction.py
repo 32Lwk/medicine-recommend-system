@@ -95,7 +95,13 @@ def redact_object(obj: Any) -> Any:
     if isinstance(obj, dict):
         if "name" in obj and "value" in obj and isinstance(obj.get("name"), str):
             obj = _redact_env_pair(obj)
-        return {key: redact_object(value) for key, value in obj.items()}
+        result: dict = {}
+        for key, value in obj.items():
+            if isinstance(key, str) and isinstance(value, str) and is_sensitive_env_name(key):
+                result[key] = REDACTED
+            else:
+                result[key] = redact_object(value)
+        return result
     return obj
 
 

@@ -24,7 +24,7 @@ def test_redact_text_masks_connection_string_and_api_keys():
     raw = (
         "postgresql://neondb_owner:npg_secret123@ep-example.aws.neon.tech/neondb "
         "openai=sk-proj-abcDEF123 "
-        "deepl=***REDACTED***:fx"
+        "deepl=12345678-9abc-def0-1234-56789abcdef0:fx"
     )
     redacted = redact_text(raw)
     assert "npg_secret123" not in redacted
@@ -72,4 +72,4 @@ from src.analysis.log_secret_redaction import redact_json_text
 def test_redact_json_text_roundtrip():
     payload = {"DATABASE_URL": "postgresql://user:pass@host/db"}
     redacted = json.loads(redact_json_text(json.dumps(payload)))
-    assert redacted["DATABASE_URL"] == "postgresql://REDACTED:REDACTED@host/db"
+    assert redacted["DATABASE_URL"] == REDACTED
