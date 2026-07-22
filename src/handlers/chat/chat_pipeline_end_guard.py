@@ -6,6 +6,8 @@ Web / LINE 共通（サーバーサイド session.messages を参照）。
 from __future__ import annotations
 
 import logging
+import uuid
+from datetime import datetime
 from typing import Any, Optional, Tuple
 
 from openai import OpenAI
@@ -73,6 +75,39 @@ def _user_input_for_latest_bot(session: Any) -> str:
     return ""
 
 
+def append_system_error_bot_message(session: Any, sid: Optional[str]) -> dict[str, Any]:
+    """想定外の無応答回復用 — system_error Sage カード bot。"""
+    from src.services.sage_bot_response import build_bot_response
+    from src.services.status_diagnosis_builder import build_system_error_status
+
+    sage_diag = build_system_error_status().to_client_dict()
+    legacy = str(sage_diag.get("message") or sage_diag.get("title") or "")
+    return build_bot_response(
+        session,
+        sid,
+        sage_diagnosis=sage_diag,
+        legacy_content=legacy,
+        uuid=str(uuid.uuid4()),
+    )
+
+
+def append_system_error_notice(session: Any, sid: Optional[str]) -> bool:
+    """パイプライン無応答時に system_error カードを1件追加する。"""
+    from src.services.session_manager import get_session_from_db, save_session_to_db
+
+    bot = append_system_error_bot_message(session, sid)
+    session.setdefault("messages", []).append(bot)
+    if hasattr(session, "modified"):
+        session.modified = True
+    if sid:
+        session_data = get_session_from_db(sid) or {}
+        session_data["messages"] = session.get("messages", []).copy()
+        session_data["last_activity"] = datetime.now()
+        save_session_to_db(sid, session_data)
+    logger.warning("System error card appended by pipeline end guard sid=%s", sid)
+    return True
+
+
 def _schedule_turn_detail_log(
     session: Any,
     sid: Optional[str],
@@ -135,11 +170,12 @@ def finalize_pipeline_response(
         sid,
         (user_message or _user_input_for_latest_bot(session))[:200],
     )
+    append_system_error_notice(session, sid)
     if hasattr(session, "__setitem__"):
-        session["_pipeline_end_guard"] = "missing"
+        session["_pipeline_end_guard"] = "recovered"
     _schedule_turn_detail_log(session, sid, user_message=user_message)
     body, status = response
     new_body = dict(body) if isinstance(body, dict) else {"status": "ok"}
     new_body["message_count"] = len(session.get("messages", []))
-    new_body["pipeline_end_guard"] = "missing"
+    new_body["pipeline_end_guard"] = "recovered"
     return new_body, status

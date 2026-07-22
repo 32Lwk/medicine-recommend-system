@@ -244,6 +244,16 @@ def run_chat_post_pipeline(
     if budget_resp is not None:
         return _guard_return(budget_resp)
 
+    from src.services.llm_unavailability import try_respond_when_openai_unconfigured
+
+    openai_guard_resp = try_respond_when_openai_unconfigured(
+        session,
+        sid,
+        user_message=ctx.original_user_message or ctx.user_message,
+    )
+    if openai_guard_resp is not None:
+        return _guard_return(openai_guard_resp)
+
     mark_pipeline_step("before_security")
     from src.agents.safety_gate import run_safety_gate_pre
 

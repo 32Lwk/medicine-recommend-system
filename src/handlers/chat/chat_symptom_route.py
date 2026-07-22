@@ -294,15 +294,14 @@ def run_symptom_recommendation(
         logger.error("❌ select_symptoms_via_gpt実行時エラー: %s", e)
 
     logger.info("💊 Hybrid medicine recommendation system starting...")
+    if not os.getenv("OPENAI_API_KEY"):
+        from src.services.llm_unavailability import mark_llm_infrastructure_degraded
+
+        mark_llm_infrastructure_degraded(session, sid, user_message=user_message)
+        message_count = len(session.get("messages", []))
+        return ({"status": "ok", "message_count": message_count}, 200)
+
     api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        return ({
-            "error": True,
-            "response": (
-                "⚠️ システムエラー: OpenAI APIキーが設定されていません。"
-                "管理者に連絡してください。"
-            ),
-        }, 200)
     recommendation_client = OpenAI(api_key=api_key)
 
     resp = run_recommendation_flow(

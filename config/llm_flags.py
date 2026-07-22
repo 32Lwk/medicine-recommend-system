@@ -1,10 +1,10 @@
 """
 LLM 機能フラグ（環境変数）
 
-開発ランタイム（APP_ENV=development 等）では Chat Pipeline v2 および
-UX品質改善 Phase 2–4b の大半が env 未設定でも自動 ON。
-本番は env 明示 + ALLOWLIST カナリアが基本。RECO_* 改善は一括展開のため本番も未設定時 ON。
-pytest 中は未設定時 OFF。
+Chat Pipeline v2 / IntentRouter PRIMARY / LEGACY_FALLBACK_TRIM は
+本番・dev とも env 未設定で ON（pytest 中のみ OFF）。
+明示 false でロールバック。CHAT_PIPELINE_V2_DENYLIST / PRIMARY_DENYLIST で sid 除外可。
+RECO_* 改善も本番未設定時 ON。UX Phase 2–4b の *_rollout_flag は dev 自動 ON・本番は env 明示。
 """
 from __future__ import annotations
 
@@ -49,12 +49,27 @@ def _is_pytest_running() -> bool:
     return bool(os.getenv("PYTEST_CURRENT_TEST"))
 
 
+def _v2_rollout_flag(name: str) -> bool:
+    """
+    v2 / PRIMARY / TRIM 等の本番一括展開フラグ。
+
+    - 明示 env → その値（false で即時ロールバック）
+    - pytest 実行中は未設定時 False
+    - それ以外は本番・dev とも未設定時 True
+    """
+    val = os.getenv(name)
+    if val is not None:
+        return val.strip().lower() in ("1", "true", "yes", "on")
+    if _is_pytest_running():
+        return False
+    return True
+
+
 def is_chat_pipeline_v2_enabled() -> bool:
     """
     Chat Pipeline v2 キルスイッチ（Web / LINE 共通）。
     - 明示 true/false → その値
-    - 未設定 + 開発ランタイム（APP_ENV=development 等）→ True（ローカル / GCP dev 一括 ON）
-    - 未設定 + 本番 → False
+    - 未設定 → True（本番・dev 共通。pytest 中のみ False）
     ON 時は IntentRouter / dispatch / LLM も未設定ならすべて True（段階フラグ不要）。
     """
     val = os.getenv("CHAT_PIPELINE_V2")
@@ -62,9 +77,7 @@ def is_chat_pipeline_v2_enabled() -> bool:
         return _flag("CHAT_PIPELINE_V2", False)
     if _is_pytest_running():
         return False
-    from config.app_config import is_development_runtime
-
-    return is_development_runtime()
+    return True
 
 
 def _v2_subflag_enabled(name: str) -> bool:
@@ -116,8 +129,8 @@ def _reco_rollout_flag(name: str) -> bool:
 
 
 def _primary_master_enabled() -> bool:
-    """PRIMARY マスター。開発ランタイムでは未設定時 ON、本番は未設定時 OFF。"""
-    return _ux_rollout_flag("CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY")
+    """PRIMARY マスター。未設定時 ON（pytest 除く）。明示 false でロールバック。"""
+    return _v2_rollout_flag("CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY")
 
 
 def _parse_sid_list(env_name: str) -> frozenset[str]:
@@ -130,7 +143,6 @@ def is_chat_pipeline_v2_for_session(sid: str | None) -> bool:
     セッション単位の v2 有効判定。
     - CHAT_PIPELINE_V2=false → 常に False
     - CHAT_PIPELINE_V2_DENYLIST → 一致 sid は False（ロールバック）
-    - CHAT_PIPELINE_V2_ALLOWLIST が非空 → リスト内 sid のみ True（カナリア）
     - 上記以外 → グローバルフラグに従う
     """
     if not is_chat_pipeline_v2_enabled():
@@ -140,9 +152,6 @@ def is_chat_pipeline_v2_for_session(sid: str | None) -> bool:
     deny = _parse_sid_list("CHAT_PIPELINE_V2_DENYLIST")
     if sid in deny:
         return False
-    allow = _parse_sid_list("CHAT_PIPELINE_V2_ALLOWLIST")
-    if allow:
-        return sid in allow
     return True
 
 
@@ -179,8 +188,7 @@ def is_intent_router_llm_enabled(sid: str | None = None) -> bool:
 def is_intent_router_primary_enabled(sid: str | None = None) -> bool:
     """
     Phase 4b-2 — IntentRouter LLM を triage map（legacy）より優先する主スイッチ。
-    開発ランタイムでは未設定時 ON（全セッション）。本番は未設定時 OFF。
-    production で ON 時は PRIMARY_ALLOWLIST / PRIMARY_DENYLIST を適用。
+    未設定時 ON（全セッション）。PRIMARY_DENYLIST で sid 除外可。
     """
     if not is_intent_router_dispatch_enabled(sid):
         return False
@@ -191,24 +199,17 @@ def is_intent_router_primary_enabled(sid: str | None = None) -> bool:
     deny = _parse_sid_list("CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY_DENYLIST")
     if sid in deny:
         return False
-    from config.app_config import is_development_runtime
-
-    if is_development_runtime():
-        return True
-    allow = _parse_sid_list("CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY_ALLOWLIST")
-    if allow:
-        return sid in allow
-    return False
+    return True
 
 
 def is_legacy_fallback_trim_enabled(sid: str | None = None) -> bool:
     """
     Phase 4b-5a — PRIMARY ON 時に legacy category route / Other fallback の実効範囲を縮小。
-    開発ランタイムでは未設定時 ON。PRIMARY OFF または dispatch 無効時は常に False。
+    未設定時 ON（pytest 除く）。PRIMARY OFF または dispatch 無効時は常に False。
     """
     if not is_intent_router_primary_enabled(sid):
         return False
-    return _ux_rollout_flag("CHAT_PIPELINE_V2_LEGACY_FALLBACK_TRIM")
+    return _v2_rollout_flag("CHAT_PIPELINE_V2_LEGACY_FALLBACK_TRIM")
 
 
 # --- Phase 1 レイテンシ最適化フラグ（既定 OFF = post-p0 と同一挙動） ---

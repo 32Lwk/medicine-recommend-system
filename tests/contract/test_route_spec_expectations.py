@@ -105,8 +105,9 @@ def test_intent_router_schema_valid_json() -> None:
     assert "Physical" in data["properties"]["primary_route"]["enum"]
 
 
-def test_chat_pipeline_v2_flag_default_off() -> None:
+def test_chat_pipeline_v2_flag_default_on_outside_pytest(monkeypatch) -> None:
     from config.llm_flags import is_chat_pipeline_v2_enabled, is_chat_pipeline_v2_for_session
 
-    assert is_chat_pipeline_v2_enabled() is False
-    assert is_chat_pipeline_v2_for_session("line:U1") is False
+    monkeypatch.setattr("config.llm_flags._is_pytest_running", lambda: False)
+    assert is_chat_pipeline_v2_enabled() is True
+    assert is_chat_pipeline_v2_for_session("line:U1") is True

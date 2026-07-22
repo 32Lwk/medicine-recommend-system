@@ -25,26 +25,62 @@ _INFRA_ERROR_MARKERS = (
     "llm_budget_blocked",
 )
 
+_CONFIG_ERROR_MARKERS = (
+    "openai_api_key not configured",
+    "openai api key not found",
+    "openai api key not configured",
+    "openai_api_keyが環境変数に設定されていません",
+)
+
+
+def is_openai_configured() -> bool:
+    """OPENAI API キーが設定されているか（クライアント生成前の早期判定用）。"""
+    try:
+        from config.llm_config import get_openai_api_key
+
+        key = get_openai_api_key()
+    except ImportError:
+        import os
+
+        key = os.getenv("OPENAI_API_KEY")
+    return bool((key or "").strip())
+
+
+def is_llm_configuration_error_text(text: str) -> bool:
+    """API キー未設定など、設定不足由来の LLM 不可を判定。"""
+    lowered = (text or "").strip().lower()
+    if not lowered:
+        return False
+    return any(marker in lowered for marker in _CONFIG_ERROR_MARKERS)
+
 
 def is_openai_infrastructure_error_text(text: str) -> bool:
     """例外メッセージや reasoning 文字列から LLM インフラ障害を判定。"""
     lowered = (text or "").strip().lower()
     if not lowered:
         return False
+    if is_llm_configuration_error_text(text):
+        return True
     return any(marker in lowered for marker in _INFRA_ERROR_MARKERS)
 
 
 def is_llm_triage_infrastructure_error(triage_result: Optional[dict]) -> bool:
-    """llm_triage の error フォールバックが LLM インフラ障害由来か。"""
+    """llm_triage の error フォールバックが LLM インフラ / 設定障害由来か。"""
     if not triage_result:
         return False
+    if triage_result.get("infrastructure_error") is True:
+        return True
     if (triage_result.get("subcategory") or "").strip().lower() != "error":
         return False
     reasoning = str(triage_result.get("reasoning") or "")
     if is_openai_infrastructure_error_text(reasoning):
         return True
     if float(triage_result.get("confidence", 1.0)) == 0.0 and "エラーが発生しました" in reasoning:
-        return "429" in reasoning or "quota" in reasoning.lower()
+        return (
+            "429" in reasoning
+            or "quota" in reasoning.lower()
+            or is_llm_configuration_error_text(reasoning)
+        )
     return False
 
 
@@ -132,6 +168,30 @@ def mark_llm_infrastructure_degraded(
 def should_block_llm_dependent_reply(session: Any) -> bool:
     """Concierge テンプレート等、LLM 停止中に誤解を招く通常返信を抑止する。"""
     return is_llm_infrastructure_degraded(session)
+
+
+def try_respond_when_openai_unconfigured(
+    session: Any,
+    sid: Optional[str],
+    *,
+    user_message: str = "",
+) -> tuple[dict, int] | None:
+    """
+    OPENAI 未設定時に llm_unavailable Sage カードを返す。
+    設定済みまたは既に degraded 通知済みの場合は None。
+    """
+    if is_openai_configured():
+        return None
+    if should_block_llm_dependent_reply(session):
+        return (
+            {"status": "ok", "message_count": len(session.get("messages", []))},
+            200,
+        )
+    mark_llm_infrastructure_degraded(session, sid, user_message=user_message)
+    return (
+        {"status": "ok", "message_count": len(session.get("messages", []))},
+        200,
+    )
 
 
 def get_llm_unavailable_notice_bot_for_delivery(

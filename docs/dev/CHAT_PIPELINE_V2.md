@@ -1,25 +1,21 @@
 # Chat Pipeline v2
 
 **ブランチ**: `feature/chat-pipeline-v2`  
-**フラグ**: 本番 `APP_ENV=production` では **OFF**。ローカル / GCP dev（`APP_ENV=development`）では **未設定でも v2 全機能有効**。
+**フラグ**: 本番・dev とも **env 未設定で v2 + PRIMARY + TRIM すべて ON**（pytest 中のみ OFF）。ロールバックは `CHAT_PIPELINE_V2=false` 等。
 
-### 一括 ON（dev 推奨 — 追加 env 不要）
+### 一括 ON（追加 env 不要）
 
 | 環境 | 設定 |
 |------|------|
-| ローカル | `.env` に `APP_ENV=development`（`.env.example` 既定）のみで OK |
-| GCP dev | Cloud Run に `APP_ENV=development` |
-| 明示 ON | `CHAT_PIPELINE_V2=true` 1 変数（router / dispatch / LLM までカスケード ON） |
-
-`CHAT_PIPELINE_V2=true` 時、サブフラグ未設定 = **IntentRouter + dispatch + LLM すべて ON**。ALLOWLIST 不要（全セッション v2）。
+| ローカル / GCP dev / GCP 本番 / AWS | 特になし（`CHAT_PIPELINE_V2` 未設定 = 全セッション v2） |
+| 明示 OFF | `CHAT_PIPELINE_V2=false` または `CHAT_PIPELINE_V2_DENYLIST=<sid>` |
 
 ### 環境変数一覧
 
 | 環境変数 | 用途 |
 |---------|------|
-| `CHAT_PIPELINE_V2` | グローバル ON/OFF。dev 未設定時は development ランタイムで自動 ON |
-| `CHAT_PIPELINE_V2_ALLOWLIST` | （本番カナリア用）非空時はリスト内 sid のみ v2 |
-| `CHAT_PIPELINE_V2_DENYLIST` | 一致 sid を v2 から除外 |
+| `CHAT_PIPELINE_V2` | グローバル ON/OFF。未設定時 ON（pytest 除く） |
+| `CHAT_PIPELINE_V2_DENYLIST` | 一致 sid を v2 から除外（ロールバック） |
 | `CHAT_PIPELINE_V2_INTENT_ROUTER` | 既定 ON。`false` で router 全体 OFF |
 | `CHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH` | 既定 ON。`false` で shadow のみ（旧 orchestrator dispatch） |
 | `CHAT_PIPELINE_V2_INTENT_ROUTER_LLM` | 既定 ON。`false` で gate/triage のみ |

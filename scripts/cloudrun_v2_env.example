@@ -1,73 +1,18 @@
-# Cloud Run — Chat Pipeline v2 / Phase 4b カナリア用環境変数
+# Cloud Run — Chat Pipeline v2 環境変数（2026-07 以降: 未設定 = v2 + PRIMARY + TRIM すべて ON）
 #
 # 参照:
-#   docs/ops/CLOUD_RUN_LLM_ENV.md          — サービス名・基本 LLM 変数
-#   docs/dev/PHASE4B_ROUTER_PRIMARY_MIGRATION.md — 4b-5b カナリア手順
+#   docs/ops/CLOUD_RUN_LLM_ENV.md
+#   docs/dev/CHAT_PIPELINE_V2.md
 #
-# サービス:
-#   本番: medicine-recommend          (asia-northeast1)
-#   dev:  medicine-recommend-dev      (asia-northeast1)
-#
-# 注意: gcloud run services update --update-env-vars は既存 env を置き換える場合がある。
-#       GITLAB_TEMPORARY_MIGRATION.md §3.5 を読んでから更新すること。
+# ロールバック（コード revert 不要）:
+#   CHAT_PIPELINE_V2=false
+#   CHAT_PIPELINE_V2_DENYLIST=<sid>
+#   CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY=false
+#   CHAT_PIPELINE_V2_LEGACY_FALLBACK_TRIM=false
 
-# --- ランタイム ---
 APP_ENV=production
-# dev 検証時のみ: APP_ENV=development
 
-# --- dev（medicine-recommend-dev）---
-# APP_ENV=development なら Phase 2–4b の UX フラグは env 未設定でも自動 ON（config/llm_flags.py）。
-# 以下の PRIMARY / TRIM / Phase3 八種は dev では **設定不要**（明示 false でのみ OFF）。
-# CHAT_PIPELINE_V2 も未設定で ON（v2 カスケード同様）。
-
-# --- 本番カナリア（medicine-recommend）のみ以下を設定 ---
-
-# PRIMARY: 本番は ALLOWLIST 内 sid のみ True。dev（APP_ENV=development）は未設定で全セッション ON。
-# CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY=true
-# CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY_ALLOWLIST=line:YOUR_LINE_USER_ID
-
-# Legacy fallback trim: dev は未設定で ON（PRIMARY 有効時）。本番は true 推奨（allowlist 連動）。
-# CHAT_PIPELINE_V2_LEGACY_FALLBACK_TRIM=true
-
-# Phase 3 八種: dev は未設定で ON。本番カナリア時のみ明示 true 推奨。
-# RECO_LOW_RISK_HEADACHE=true
-# ROUTING_STORE_PROCUREMENT=true
-# ROUTING_CONCIERGE_INTENT=true
-# ROUTING_CONCIERGE_FOLLOWUP=true
-# UX_CORRECTION_DELETE_CANCEL=true
-# UX_SESSION_OPS_REAL_DATA=true
-# UX_PROGRESSIVE_CLARIFICATION=true
-# UX_RECO_DEDUP=true
-
-# 風邪水泳推奨改善 Phase 1–3: 本番・dev とも未設定で ON（一括デプロイ）。
-# 問題時のみ個別ロールバックとして false を明示する。
-# RECO_AGE_POLICY_V2=false
-# RECO_COLD_NLU_V2=false
-# RECO_SPORTS_DOPING_FILTER=false
-
-# Phase 2 安全・counseling: dev は未設定で ON。本番カナリア時のみ明示 true 推奨。
-# SAFETY_VIOLENCE_CONTEXT_GUARD=true
-# SAFETY_EMERGENCY_CHANNEL_SPLIT=true
-# UX_COUNSELING_CONTEXT_MAINTAIN=true
-# UX_COUNSELING_TONE_VARIETY=true
-
-# 本番カナリア用 v2 スイッチ（dev では不要）
-CHAT_PIPELINE_V2=true
-
-# --- ロールバック手順（5 分以内・コード revert 不要）---
-# 1. 即時: CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY_ALLOWLIST=  （空にする）
-# 2. または: CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY=false
-# 3. または: CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY_DENYLIST=<問題 sid>
-# 4. v2 全体を戻す: CHAT_PIPELINE_V2=false または CHAT_PIPELINE_V2_ALLOWLIST を空に
-# 5. gcloud run services update ... --update-env-vars で新リビジョンをデプロイ
-# 6. 前リビジョンへトラフィック切替（Cloud Run コンソール）も可
-
-# --- gcloud 例（本番・値はコンソールの現行 env とマージして使う）---
-# gcloud run services update medicine-recommend \
-#   --region=asia-northeast1 \
-#   --update-env-vars="CHAT_PIPELINE_V2=true,CHAT_PIPELINE_V2_ALLOWLIST=line:Uxxxx,CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY=true,CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY_ALLOWLIST=line:Uxxxx,CHAT_PIPELINE_V2_LEGACY_FALLBACK_TRIM=true"
-
-# dev カナリア例:
-# gcloud run services update medicine-recommend-dev \
-#   --region=asia-northeast1 \
-#   --update-env-vars="APP_ENV=production,CHAT_PIPELINE_V2=true,..."
+# 通常は以下を設定不要（未設定 = ON）。問題時のみ false を明示。
+# CHAT_PIPELINE_V2=false
+# CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY=false
+# CHAT_PIPELINE_V2_LEGACY_FALLBACK_TRIM=false
