@@ -1,6 +1,64 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月4日**（風邪＋水泳推奨改善・RECO_* 本番一括展開・年齢警告・風邪症状チップ・競技ドーピング配慮）
+**最終更新日: 2026年7月22日**（Chat Pipeline v2 本番デフォルト ON・障害 UX 改善・AWS CodePipeline / ECS デプロイ・ECS パフォーマンス改善）
+
+---
+
+## 2026年7月22日 — Chat Pipeline v2 本番デフォルト ON・障害 UX・AWS CodePipeline / ECS
+
+### 概要
+
+**ブランチ `main`** に、Chat Pipeline v2 / IntentRouter PRIMARY / レガシー経路 TRIM を本番・dev とも env 未設定で **一括 ON** に変更。OPENAI 未設定・パイプライン無応答時の Sage 障害カード UX を v2 経路でも復元。あわせて GitHub main push → CodeBuild → ECR → ECS Express（`aws.medicine.yutok.dev`）の CI/CD を追加し、デプロイ・ビルドの遅延要因を調査・改善した。
+
+### Chat Pipeline v2 — 本番デフォルト ON
+
+- **`config/llm_flags.py`**: `CHAT_PIPELINE_V2` / `INTENT_ROUTER_PRIMARY` / `LEGACY_FALLBACK_TRIM` を本番・dev で env 未設定 = ON。pytest 実行中のみ OFF（既存テストの決定論を維持）。明示 `false` のみロールバック
+- **ALLOWLIST 削除**: `CHAT_PIPELINE_V2_ALLOWLIST` / `PRIMARY_ALLOWLIST` を削除。`DENYLIST` のみセッション単位ロールバック用に残存
+- **`docs/dev/CHAT_PIPELINE_V2.md`**, **`.env.example`**, **`scripts/cloudrun_v2_env.example`**, **`scripts/verify_v2_canary_flags.py`**: カナリア env 不要・本番一括 ON の運用に合わせて更新
+
+### 障害 UX（v2 経路）
+
+- **`src/services/llm_unavailability.py`**: `is_openai_configured()` / `is_llm_configuration_error_text()` を追加。インフラ系 triage 判定を拡張。`try_respond_when_openai_unconfigured()` で早期 Sage カード返却
+- **`src/handlers/chat/chat_post_pipeline.py`**: POST 直後の OPENAI 未設定ガード
+- **`src/handlers/chat/chat_symptom_route.py`**: レガシー `{"error": True}` JSON を廃止 → Sage カード（`llm_unavailable` / `system_error` の使い分け）
+- **`src/handlers/chat/chat_pipeline_end_guard.py`**: パイプライン終了時に bot 応答が無い場合、`system_error` Sage カードを自動追加（fail loud）
+- **方針**: インフラ障害 = `llm_unavailable`、その他 = `system_error`。`LLM_AGENT_ENABLED` は固定 ON 想定だが env は緊急キルスイッチとして残す
+
+### テスト
+
+- **`tests/dialogue/test_v2_flags.py`**, **`tests/dialogue/test_v2_primary_canary_flags.py`**: 本番デフォルト ON・ALLOWLIST 削除に合わせて更新
+- **`tests/handlers/test_chat_pipeline_end_guard_fail_loud.py`**, **`tests/services/test_llm_unavailability_guard.py`**: 早期 LLM ガード・end guard のテスト追加
+- **`tests/contract/test_route_spec_expectations.py`**: ルート期待値を更新
+
+### AWS CodePipeline / ECS Express デプロイ
+
+- **`buildspec.yml`（新規）**: GitHub main → CodeBuild（linux/amd64 Docker build → ECR push → `ecs update-service --force-new-deployment`）。ビルド失敗時は ECS デプロイをスキップ
+- **`scripts/setup-aws-codepipeline.sh`（新規）**: Pipeline `medicine-recommend-main`、CodeBuild `medicine-recommend-build`、CodeStar Connection、IAM ロールの初回セットアップ
+- **`scripts/deploy-aws-ecs.sh`（新規）**: Pipeline なしの手動ビルド・プッシュ・再デプロイ
+- **`scripts/setup-aws-ecs-secrets.sh`（新規）**: `.env` から Secrets Manager（OPENAI / DATABASE_URL / SECRET_KEY 等）を投入し、タスク定義を更新して再デプロイ
+- **`docs/ops/AWS_CODEPIPELINE.md`（新規）**: 構成・初回 OAuth・手動実行・トラブルシュート
+- **`Dockerfile`**: CodeBuild の Docker Hub 429 回避のため `public.ecr.aws/docker/library/python:3.11-slim` ベースイメージに変更（commit `3357e54`）
+- **本番 URL**: `https://aws.medicine.yutok.dev/health`（`git_commit` でデプロイ revision を確認）
+
+### ECS パフォーマンス調査・改善
+
+**症状**: GitHub push から `aws.medicine.yutok.dev` へ反映されるまで **6〜8 分**程度かかる。
+
+| 要因 | 詳細 | 実施した改善 |
+|------|------|-------------|
+| CANARY デプロイ | ECS Express Gateway は **ROLLING 不可**。既定 `bakeTimeInMinutes=3` + `canaryBakeTimeInMinutes=3` | bake 時間を **0 分**に短縮（`scripts/tune-aws-ecs-performance.sh`） |
+| CodeBuild | `BUILD_GENERAL1_SMALL`、キャッシュ無効 → ビルド ~2 分/回 | **LOCAL_DOCKER_LAYER_CACHE** 有効化。`buildspec.yml` / `deploy-aws-ecs.sh` で **BuildKit + `--cache-from ECR:latest`** |
+| ランタイム同時処理 | タスク定義 `GUNICORN_WORKERS=1`（512 CPU / 1024 MiB） | **`GUNICORN_WORKERS=2`** に更新（`setup-aws-ecs-secrets.sh` / tune スクリプト） |
+| ウォーム `/health` | 50〜150 ms — ALB・タスク自体は問題なし | ユーザー体感の遅延は主に **デプロイ待ち** と **ビルド** |
+| Secrets 未設定 | `DATABASE_URL` 無し → セッション未永続化、UI「AI分析中」停滞 | **`setup-aws-ecs-secrets.sh`** でユーザー投入（エージェント側では未実施） |
+
+- **`scripts/tune-aws-ecs-performance.sh`（新規）**: CANARY bake 短縮・GUNICORN ワーカー数・CodeBuild キャッシュを一括適用
+
+### 運用メモ
+
+- **Secrets 投入**（ユーザー側）: `cp .env.example .env` → `OPENAI_API_KEY` / `DATABASE_URL` / `SECRET_KEY` を記入 → `./scripts/setup-aws-ecs-secrets.sh .env`
+- **SECRET_KEY**: 管理画面 Cookie HMAC 署名用（`src/services/admin_auth.py`）。Flask セッション用ではない
+- **GCP 本番**（`medicine.yutok.dev`）は従来どおり Cloud Run。AWS はステージング / デモ用途
 
 ---
 

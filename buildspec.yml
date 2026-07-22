@@ -20,10 +20,18 @@ phases:
       - export GIT_COMMIT="${CODEBUILD_RESOLVED_SOURCE_VERSION:-unknown}"
       - export GIT_COMMIT_DATE="$(date -u +%Y-%m-%d)"
       - echo "GIT_COMMIT=${GIT_COMMIT}"
+      - echo "==> pull cache image (ignore if missing)"
+      - docker pull "${IMAGE_URI}:latest" || true
   build:
     commands:
-      - echo "==> docker build linux/amd64"
-      - docker build --platform linux/amd64 --build-arg "GIT_COMMIT=${GIT_COMMIT}" --build-arg "GIT_COMMIT_DATE=${GIT_COMMIT_DATE}" -t "${IMAGE_URI}:latest" .
+      - echo "==> docker build linux/amd64 (BuildKit + cache-from)"
+      - export DOCKER_BUILDKIT=1
+      - |
+        docker build --platform linux/amd64 \
+          --cache-from "${IMAGE_URI}:latest" \
+          --build-arg "GIT_COMMIT=${GIT_COMMIT}" \
+          --build-arg "GIT_COMMIT_DATE=${GIT_COMMIT_DATE}" \
+          -t "${IMAGE_URI}:latest" .
       - docker push "${IMAGE_URI}:latest"
   post_build:
     commands:

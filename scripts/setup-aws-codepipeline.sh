@@ -144,6 +144,10 @@ cat > "$CB_SPEC" <<EOF
   "serviceRole": "${CB_ROLE_ARN}",
   "timeoutInMinutes": 30,
   "queuedTimeoutInMinutes": 30,
+  "cache": {
+    "type": "LOCAL",
+    "modes": ["LOCAL_DOCKER_LAYER_CACHE", "LOCAL_SOURCE_CACHE"]
+  },
   "logsConfig": {
     "cloudWatchLogs": {
       "status": "ENABLED",

@@ -91,6 +91,33 @@ export AWS_PROFILE=admin
 | Build 失敗 `Cannot connect to Docker` | CodeBuild `privilegedMode: true` を確認 |
 | Build 成功 / ECS 503 | `/health` を確認。Secrets（OPENAI 等）未設定は別問題 |
 | `buildspec.yml not found` | main に merge されているか確認 |
+| push から反映まで 6 分以上 | CANARY bake 時間・CodeBuild キャッシュを確認（下記 § パフォーマンス） |
+
+## パフォーマンス（ECS Express デプロイ遅延）
+
+**調査日 2026-07-22** — `https://aws.medicine.yutok.dev`（ECS Express Mode）
+
+| 要因 | 内容 | 対策 |
+|------|------|------|
+| CANARY デプロイ | Express Gateway は **ROLLING 不可**。既定 bake 3+3 分で push→反映が 6〜8 分 | `bakeTimeInMinutes=0` / `canaryBakeTimeInMinutes=0` に短縮（`scripts/tune-aws-ecs-performance.sh`） |
+| CodeBuild | `BUILD_GENERAL1_SMALL`、キャッシュ無効時 ~2 分/回 | `LOCAL_DOCKER_LAYER_CACHE` 有効化、`buildspec.yml` で BuildKit + `--cache-from ECR:latest` |
+| ランタイム同時処理 | タスク定義 `GUNICORN_WORKERS=1` | `GUNICORN_WORKERS=2`（512 CPU / 1024 MiB ステージング向け） |
+| ウォーム `/health` | 50〜150 ms — ALB/タスク自体は速い | 遅延の大半は **デプロイ待ち** と **ビルド** |
+| Secrets 未設定 | `DATABASE_URL` 無し → セッション未永続化、UI が「AI分析中」のまま | `./scripts/setup-aws-ecs-secrets.sh .env` |
+
+一括調整:
+
+```bash
+export AWS_PROFILE=admin
+./scripts/tune-aws-ecs-performance.sh
+```
+
+Secrets 投入:
+
+```bash
+cp .env.example .env   # OPENAI_API_KEY, DATABASE_URL, SECRET_KEY
+./scripts/setup-aws-ecs-secrets.sh .env
+```
 
 ## 関連
 

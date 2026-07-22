@@ -1,7 +1,21 @@
 {
   "source": "CHANGELOG.md",
-  "header_date": "2026年7月3日（CHANGELOG Concierge・app_about ガード・処理中表示マスコット刷新・オンボーディング文言・シーズン装飾固定）",
+  "header_date": "2026年7月4日（風邪＋水泳推奨改善・RECO_* 本番一括展開・年齢警告・風邪症状チップ・競技ドーピング配慮）",
   "releases": [
+    {
+      "heading": "2026年7月4日 — 風邪＋水泳推奨改善・RECO_* 本番一括展開",
+      "overview": "「風邪ですが、水泳大会なので使える薬を教えて」のような初回相談が no_recommendation に落ちる問題を修正。直接原因だった年齢未入力時の chat 側フィルタ（15歳以上薬 3 件 → 0 件）と、no_candidates / escalation_required より前に実行される早期 empty fallback を解消し、sage_reco で候補を表示するようにした。 あわせて、RECO_AGE_POLICY_V2 / RECO_COLD_NLU_V2 / RECO_SPORTS_DOPING_FILTER は本番カナリア用 env を不要化し、本番・dev とも env 未設定で一括 ON に変更。明示 false のみ個別ロールバックとして扱う。pytest 実行中は未設定時 OFF を維持し、既存テストの決定論を保つ。",
+      "highlights": [
+        "config/llm_flags.py: RECO_* 専用の _reco_rollout_flag() を追加。本番・dev は未設定で ON、pytest は未設定で OFF、明示 false でロールバック可能",
+        "src/handlers/chat/chat_recommendation_flow.py: RECO_AGE_POLICY_V2 ON 時は _filter_medicines_when_age_unknown() が 12歳以上表記薬を除外せずそのまま返す。小児文脈（例:…",
+        "src/handlers/chat/chat_recommendation_flow.py: 早期 _build_empty_recommendation_fallback() を status 分岐後へ移動。status=no_candidates は no_candidat…",
+        "src/core/recommendation/age_policy.py: build_age_unknown_warnings() / apply_age_unknown_policy_to_result() を追加。年齢未入力かつ 12歳以上制限薬が含まれる場合、age_…",
+        "src/services/recommendation_diagnosis_builder.py / src/schemas/recommendation_diagnosis_v1.py: age_policy_notice を DiagnosisV1 に反映し、制限薬名を a…",
+        "static/js/ui/recommendation_renderer.js / static/js/ui/medicine_mapper.js / static/js/ui/medicine_card.js / static/js/main.js: sage_reco 上部…",
+        "src/handlers/line/line_web_handoff.py: LINE Web handoff 時にも age_policy_notice を保持",
+        "ログ: pipeline_perf に reco_age_policy_v2、pre_age_filter_count、post_age_filter_count、empty_fallback_trigger を記録"
+      ]
+    },
     {
       "heading": "2026年7月3日 — CHANGELOG Concierge・app_about ガード・UI 改善",
       "overview": "ブランチ main に、CHANGELOG 要約を Concierge で回答する doc_changelog intent、IntentRouter の app_about 誤ルーティング補正、処理中ステータスマスコットの段階別アニメーション、チャットビューポートとシーズン装飾のレイヤー修正、オンボーディングスライドの文言刷新を実装。",
@@ -98,20 +112,6 @@
         "line_delivery.py: reply token 不可時は Push フォールバックをスキップ（二重配信防止）",
         "line_progressive_delivery.py: carousel Push 済み時は full bundle 再送を抑止。未送信時は reply_token 付き一括配信",
         "line_message_handler.py: pipeline 後 redirect を deliver_line_messages 経由に統一"
-      ]
-    },
-    {
-      "heading": "2026年6月27日 — SessionAgent・LINE QA（P0–P2）・Concierge 文脈ルーティング・GCP ログ分析強化",
-      "overview": "GCP ログ分析（2026-06-25〜26）と開発 QA に基づき、SessionAgent でセッション統合・管理画面ルーティング・メモリ削除を集約し、LINE 改善計画 P0–P2（ルーティング修正・counseling_detail 全経路・攻撃入力・フィードバック期限・トリアージ短絡・pipeline_perf 警告）を実装した。 続けて Concierge 文脈ルーティング（CCR-P0〜P2） により、architecture / doc_* / session_ops 等のメタ会話で「詳しく」「もっと」等のフォローアップが greeting 誤分類 されないよう、prior intent 推定・structural greeting ガード・meta LLM スキップ条件を強化。concierge_state の DB 同期と concierge_intent_source の counseling_detai…",
-      "highlights": [
-        "session_agent.py（新規）: セッション状態・削除・要約・統合ステータスを SessionAgent に集約。Concierge / 管理画面 / LINE から classify_session_intent 経由でルーティング",
-        "memory_delete_agent.py: SessionAgent 連携にリファクタ",
-        "status_diagnosis_builder.py: 統合セッション診断・Concierge カード向け表示を拡張",
-        "sage_message_plain.py（新規）: Flex / HTML 応答のプレーンテキスト化（ログ・分析用）",
-        "chat_pipeline_end_guard.py / chat_post_pipeline.py: 全経路で counseling_detail 非同期出力のカバレッジ拡大",
-        "chat_input_validator.py / known_attack_rules.py: 攻撃・挑発入力のパイプライン到達抑止を追加",
-        "line_feedback.py: フィードバック postback の期限切れ処理",
-        "line_flex_messages.py / line_menu_actions.py / line_quick_actions.py: Sage マーカー・メニュー整合"
       ]
     }
   ]

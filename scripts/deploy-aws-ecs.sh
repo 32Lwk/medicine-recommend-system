@@ -31,8 +31,13 @@ echo "==> ECR login (${REGION})"
 aws ecr get-login-password --region "$REGION" | \
   docker login --username AWS --password-stdin "${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
 
-echo "==> docker build --platform linux/amd64"
+echo "==> pull cache image (ignore if missing)"
+docker pull "$IMAGE" || true
+
+echo "==> docker build --platform linux/amd64 (BuildKit + cache-from)"
+export DOCKER_BUILDKIT=1
 docker build --platform linux/amd64 \
+  --cache-from "$IMAGE" \
   --build-arg "GIT_COMMIT=${COMMIT}" \
   --build-arg "GIT_COMMIT_DATE=${COMMIT_DATE}" \
   -t "$IMAGE" \
