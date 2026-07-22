@@ -27,6 +27,11 @@ phases:
       - docker push "${IMAGE_URI}:latest"
   post_build:
     commands:
+      - |
+        if [ "${CODEBUILD_BUILD_SUCCEEDING:-0}" -ne 1 ]; then
+          echo "Build failed — skip ECS deploy"
+          exit 1
+        fi
       - echo "==> ECS force redeploy ${ECS_CLUSTER}/${ECS_SERVICE}"
       - aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" --force-new-deployment --region "$AWS_DEFAULT_REGION" --query 'service.serviceName' --output text
       - echo "Done. https://aws.medicine.yutok.dev/health"
