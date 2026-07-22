@@ -1,0 +1,36 @@
+# AWS CodeBuild — GitHub main push → ECR push → ECS Express redeploy
+# Requires: privilegedMode (Docker), IAM role with ECR + ECS permissions
+version: 0.2
+
+env:
+  variables:
+    AWS_ACCOUNT_ID: "290780119994"
+    AWS_DEFAULT_REGION: "ap-northeast-1"
+    IMAGE_REPO_NAME: "medicine-recommend"
+    ECS_CLUSTER: "default"
+    ECS_SERVICE: "medicine-recommend"
+
+phases:
+  pre_build:
+    commands:
+      - echo "==> ECR login"
+      - IMAGE_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}"
+      - aws ecr describe-repositories --repository-names "$IMAGE_REPO_NAME" --region "$AWS_DEFAULT_REGION" || aws ecr create-repository --repository-name "$IMAGE_REPO_NAME" --region "$AWS_DEFAULT_REGION"
+      - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+      - export GIT_COMMIT="${CODEBUILD_RESOLVED_SOURCE_VERSION:-unknown}"
+      - export GIT_COMMIT_DATE="$(date -u +%Y-%m-%d)"
+      - echo "GIT_COMMIT=${GIT_COMMIT}"
+  build:
+    commands:
+      - echo "==> docker build linux/amd64"
+      - docker build --platform linux/amd64 --build-arg "GIT_COMMIT=${GIT_COMMIT}" --build-arg "GIT_COMMIT_DATE=${GIT_COMMIT_DATE}" -t "${IMAGE_URI}:latest" .
+      - docker push "${IMAGE_URI}:latest"
+  post_build:
+    commands:
+      - echo "==> ECS force redeploy ${ECS_CLUSTER}/${ECS_SERVICE}"
+      - aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" --force-new-deployment --region "$AWS_DEFAULT_REGION" --query 'service.serviceName' --output text
+      - echo "Done. https://aws.medicine.yutok.dev/health"
+
+cache:
+  paths:
+    - "/root/.cache/pip/**/*"
