@@ -1,4 +1,5 @@
-FROM python:3.11-slim
+# CodeBuild / AWS: Docker Hub 429 回避のため Public ECR ミラーを使用
+FROM public.ecr.aws/docker/library/python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=off
