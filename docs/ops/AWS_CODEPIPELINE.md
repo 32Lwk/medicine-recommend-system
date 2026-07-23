@@ -87,6 +87,8 @@ export AWS_PROFILE=medicine-recommend-dev
 
 | 症状 | 対処 |
 |------|------|
+| push しても Build が走らない | Source の Webhook / CodeStar Connection が **Available** か確認。Console → Pipeline → 実行履歴 |
+| Build は走るが毎回 Failed（post_build） | CloudWatch `/aws/codebuild/medicine-recommend-build` を確認。`AWS_PROFILE medicine-recommend-dev could not be found` → `aws_common.sh` が CodeBuild でも profile を付けていた（修正済み: `CODEBUILD_BUILD_ID` 検出時は IAM ロール使用） |
 | Source 失敗 `Connection not available` | GitHub OAuth 未完了 → Connections で Available に |
 | Build 失敗 `Cannot connect to Docker` | CodeBuild `privilegedMode: true` を確認 |
 | Build 成功 / ECS 503 | `/health` を確認。Secrets（OPENAI 等）未設定は別問題 |

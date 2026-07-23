@@ -6,7 +6,14 @@
 export MSYS2_ARG_CONV_EXCL="${MSYS2_ARG_CONV_EXCL:-*}"
 
 # ローカル CLI 既定プロファイル（~/.aws/credentials の [medicine-recommend-dev]）
-export AWS_PROFILE="${AWS_PROFILE:-medicine-recommend-dev}"
+# CodeBuild / ECS 等では IAM ロールを使うため profile を付けない。
+if [[ -z "${AWS_PROFILE:-}" ]]; then
+  if [[ -n "${CODEBUILD_BUILD_ID:-}" || -n "${AWS_CONTAINER_CREDENTIALS_RELATIVE_URI:-}" || -n "${AWS_LAMBDA_FUNCTION_NAME:-}" ]]; then
+    :
+  else
+    export AWS_PROFILE="medicine-recommend-dev"
+  fi
+fi
 
 AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:-290780119994}"
 AWS_REGION="${AWS_REGION:-ap-northeast-1}"
