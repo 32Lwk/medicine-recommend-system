@@ -34,9 +34,9 @@ def test_resolve_git_commit_date_from_env(monkeypatch):
     assert main._resolve_git_commit_date_iso() == "2026-06-18"
 
 
-def test_default_git_repo_url_is_gitlab_mirror(monkeypatch):
+def test_default_git_repo_url_is_github(monkeypatch):
     monkeypatch.delenv("GIT_REPO_URL", raising=False)
-    assert main._resolve_git_repo_url() == "https://gitlab.com/blank2703726/medicine-recommend"
+    assert main._resolve_git_repo_url() == "https://github.com/32Lwk/medicine-recommend-system"
 
 
 def test_build_git_commit_browse_url_gitlab():
@@ -57,7 +57,7 @@ def test_resolve_git_commit_browse_url(monkeypatch):
     monkeypatch.delenv("GIT_REPO_URL", raising=False)
     monkeypatch.setattr(main, "_resolve_git_commit_short", lambda: "abc1234")
     assert main._resolve_git_commit_browse_url() == (
-        "https://gitlab.com/blank2703726/medicine-recommend/-/commit/abc1234"
+        "https://github.com/32Lwk/medicine-recommend-system/commit/abc1234"
     )
 
 

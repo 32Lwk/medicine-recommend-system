@@ -2083,8 +2083,7 @@
         return null;
     }
 
-    // GitHub 停止中の一時ミラー（docs/ops/GITLAB_TEMPORARY_MIGRATION.md）。復旧後はサーバー gitCommitUrl に委譲。
-    const GITLAB_MIRROR_REPO_URL = 'https://gitlab.com/blank2703726/medicine-recommend';
+    const DEFAULT_GIT_REPO_URL = 'https://github.com/32Lwk/medicine-recommend-system';
 
     function buildGitCommitBrowseUrl(repoUrl, commit) {
         if (!repoUrl || !commit) {
@@ -2109,10 +2108,14 @@
         }
         const cfg = getRuntimeClientConfig();
         const direct = cfg && typeof cfg.gitCommitUrl === 'string' ? cfg.gitCommitUrl.trim() : '';
-        if (direct && /gitlab\.com/i.test(direct)) {
+        if (direct) {
             return direct;
         }
-        return buildGitCommitBrowseUrl(GITLAB_MIRROR_REPO_URL, commit);
+        const repo = cfg && typeof cfg.gitRepoUrl === 'string' ? cfg.gitRepoUrl.trim() : '';
+        if (repo) {
+            return buildGitCommitBrowseUrl(repo, commit);
+        }
+        return buildGitCommitBrowseUrl(DEFAULT_GIT_REPO_URL, commit);
     }
 
     function getRuntimeGitCommitDateIso() {

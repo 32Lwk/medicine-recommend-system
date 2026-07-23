@@ -423,8 +423,7 @@ def _resolve_git_commit_date_iso() -> str | None:
     return None
 
 
-# GitHub 復旧まで一時（docs/ops/GITLAB_TEMPORARY_MIGRATION.md）
-_DEFAULT_GIT_REPO_URL = "https://gitlab.com/blank2703726/medicine-recommend"
+_DEFAULT_GIT_REPO_URL = "https://github.com/32Lwk/medicine-recommend-system"
 
 
 def _resolve_git_repo_url() -> str:
@@ -447,8 +446,7 @@ def _resolve_git_commit_browse_url() -> str | None:
     commit = _resolve_git_commit_short()
     if not commit:
         return None
-    # GitHub 停止中は常に GitLab ミラー（GIT_REPO_URL が GitHub のままでもリンク先を誤らない）
-    return _build_git_commit_browse_url(_DEFAULT_GIT_REPO_URL, commit)
+    return _build_git_commit_browse_url(_resolve_git_repo_url(), commit)
 
 
 def _compat_url_for(endpoint: str, **values) -> str:

@@ -226,10 +226,10 @@
     if (!commit) return null;
     var cfg = getRuntimeClientConfig() || {};
     var direct = typeof cfg.gitCommitUrl === 'string' ? cfg.gitCommitUrl.trim() : '';
-    if (direct && /gitlab\.com/i.test(direct)) return direct;
+    if (direct) return direct;
     var repo = typeof cfg.gitRepoUrl === 'string' ? cfg.gitRepoUrl.trim() : '';
     if (repo) return buildGitCommitBrowseUrl(repo, commit);
-    return buildGitCommitBrowseUrl('https://gitlab.com/blank2703726/medicine-recommend', commit);
+    return buildGitCommitBrowseUrl('https://github.com/32Lwk/medicine-recommend-system', commit);
   }
 
   function sectionCommitHtml(commit) {
