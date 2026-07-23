@@ -272,3 +272,31 @@ def test_run_intent_router_llm_corrects_architecture_over_llm_redirect(mock_llm,
     )
     assert d is not None
     assert d.sub_route == "architecture"
+
+
+@patch("config.llm_flags.is_intent_router_primary_enabled", return_value=True)
+@patch("src.dialogue.routing.intent_router_llm.call_intent_router_llm")
+def test_run_intent_router_llm_corrects_architecture_over_triage_doc_changelog(
+    mock_llm, _primary
+):
+    mock_llm.return_value = RouteDecision(
+        primary_route="Concierge",
+        sub_route="architecture",
+        confidence=0.88,
+        resolved_by="llm",
+        source="intent_router_llm",
+    )
+    triage = {
+        "category": "Other",
+        "confidence": 1.0,
+        "concierge_intent": "doc_changelog",
+        "concierge_intent_source": "keyword_probe",
+    }
+    d = run_intent_router_llm(
+        "最近の AWS 関連更新は？",
+        {},
+        "web:U1",
+        triage_result=triage,
+    )
+    assert d is not None
+    assert d.sub_route == "doc_changelog"

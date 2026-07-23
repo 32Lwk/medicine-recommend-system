@@ -20,25 +20,50 @@ need_cmd() {
 }
 
 need_cmd curl
-need_cmd jq
+
+_json_field() {
+  local json="$1"
+  local field="$2"
+  if command -v jq >/dev/null 2>&1; then
+    printf '%s' "$json" | jq -r "$field // empty"
+    return
+  fi
+  printf '%s' "$json" | PYTHONUTF8=1 PYTHONNOUSERSITE=1 python -S -c '
+import json, sys
+field = sys.argv[1]
+raw = sys.stdin.read()
+data = json.loads(raw)
+cur = data
+for part in field.lstrip(".").split("."):
+    if not part:
+        continue
+    if isinstance(cur, dict):
+        cur = cur.get(part)
+    else:
+        cur = None
+        break
+if cur is not None:
+    print(cur)
+' "$field"
+}
 
 echo "==> Concierge staging smoke: ${BASE_URL}"
 
 bash "${ROOT}/scripts/verify-concierge-ssot.sh"
 
 health="$(curl -sf "${BASE_URL}/health")" || fail "GET /health failed"
-status="$(printf '%s' "$health" | jq -r '.status // empty')"
-commit="$(printf '%s' "$health" | jq -r '.git_commit // empty')"
+status="$(_json_field "$health" ".status")"
+commit="$(_json_field "$health" ".git_commit")"
 [[ "$status" == "ok" ]] || fail "/health status not ok"
 [[ -n "$commit" ]] || fail "/health git_commit empty"
 echo "OK /health git_commit=${commit:0:12}"
 
 aws_health="$(curl -sf "${BASE_URL}/health/aws")" || fail "GET /health/aws failed"
-translation="$(printf '%s' "$aws_health" | jq -r '.translation_provider // empty')"
-tts="$(printf '%s' "$aws_health" | jq -r '.tts_provider // empty')"
-kb_rag="$(printf '%s' "$aws_health" | jq -r '.bedrock_kb_rag // empty')"
-static_cdn="$(printf '%s' "$aws_health" | jq -r '.static_cdn_base // empty')"
-image_cdn="$(printf '%s' "$aws_health" | jq -r '.medicine_image_cdn_base // empty')"
+translation="$(_json_field "$aws_health" ".translation_provider")"
+tts="$(_json_field "$aws_health" ".tts_provider")"
+kb_rag="$(_json_field "$aws_health" ".bedrock_kb_rag")"
+static_cdn="$(_json_field "$aws_health" ".static_cdn_base")"
+image_cdn="$(_json_field "$aws_health" ".medicine_image_cdn_base")"
 
 [[ "$translation" == "translate" ]] || fail "expected translation_provider=translate got ${translation:-unset}"
 [[ "$tts" == "polly" ]] || fail "expected tts_provider=polly got ${tts:-unset}"

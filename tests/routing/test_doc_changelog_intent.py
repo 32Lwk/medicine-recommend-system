@@ -1,11 +1,14 @@
-"""doc_changelog 意図判定（LLM のみ。キーワードプローブ・除外 regex は使わない）。"""
+"""doc_changelog 意図判定（キーワードプローブ + meta_triage LLM）。"""
 from __future__ import annotations
 
 import json
 from unittest.mock import MagicMock, patch
 
 from src.content.changelog_digest import format_changelog_llm_reference, load_changelog_digest
-from src.services.concierge_intent import probe_meta_concierge_intent
+from src.services.concierge_intent import (
+    is_excluded_doc_changelog_probe,
+    probe_meta_concierge_intent,
+)
 from src.services.meta_triage import classify_meta_concierge_intent
 
 
@@ -20,14 +23,24 @@ def _mock_response(intent: str):
     return resp
 
 
-def test_probe_does_not_route_doc_changelog_by_keywords():
-    """更新系フレーズはキーワードプローブせず LLM へ。"""
+def test_probe_routes_doc_changelog_for_app_updates():
     for text in (
         "アプリの更新内容を教えてください",
         "更新教えて",
-        "最近のあなたの更新内容を教えて",
+        "最近の AWS 関連更新は？",
         "CHANGELOGを見せて",
+        "最近の更新履歴を教えて",
     ):
+        assert probe_meta_concierge_intent(text) == "doc_changelog", text
+
+
+def test_probe_excludes_non_app_changelog():
+    for text in (
+        "ポケモンの更新があったんだってどん内容かな",
+        "最近の私は人間として更新しているんだ",
+        "最近のあなたの更新内容を教えて",
+    ):
+        assert is_excluded_doc_changelog_probe(text), text
         assert probe_meta_concierge_intent(text) is None, text
 
 

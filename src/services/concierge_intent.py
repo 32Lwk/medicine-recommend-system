@@ -437,6 +437,8 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"(あなた|あんた)(について|は誰|って何|は何|のこと)"), "app_about"),
     (re.compile(r"自己紹介"), "app_about"),
     (re.compile(r"(このツール|このアプリ|このボット)(について|とは|は何)"), "app_about"),
+    (re.compile(r"(更新履歴|最近.{0,16}更新|更新内容|更新.{0,6}教え|CHANGELOG|リリース履歴|変更履歴|関連更新)"), "doc_changelog"),
+    (re.compile(r"what changed|recent(ly)?.*(update|change|release|app)", re.I), "doc_changelog"),
     (re.compile(r"(マルチエージェント|薬はどうやって|選び方の仕組み|内部構成)"), "architecture"),
     (re.compile(r"(技術スタック|技術構成|開発環境|使ってる技術|tech\s*stack|デプロイ|インフラ)"), "architecture"),
     (re.compile(r"(FastAPI|Cloud\s*Run|PostgreSQL|Gunicorn|Neon|Sage\s*Terrace)"), "architecture"),
@@ -452,7 +454,6 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"(今|いま).{0,12}(答え|回答|返信|応答)"), "architecture"),
     (re.compile(r"(答え|回答|返信|応答).{0,12}(誰|だれ|なに|何)"), "architecture"),
     (re.compile(r"(運営者|連絡先|お問い合わせ|不具合.{0,4}報告)"), "doc_operator"),
-    (re.compile(r"(更新履歴|最近の更新|CHANGELOG|リリース履歴|変更履歴)"), "doc_changelog"),
     (re.compile(r"LINE.{0,16}(どこ|動|ホスト|Webhook|サーバ)", re.I), "architecture"),
     (re.compile(r"(CloudWatch|Cloud\s*Logging|/health|ヘルスチェック|監視|ログ(?:の|は|を|で|先|出力|確認))", re.I), "architecture"),
     (re.compile(r"(CDN|医薬品画像|images\.yutok)", re.I), "architecture"),
@@ -464,7 +465,6 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"ソースコード|公開リポジ|GitHub|github\.com", re.I), "architecture"),
     (re.compile(r"開示ポリシー|公開情報の開示", re.I), "architecture"),
     (re.compile(r"RECO_[A-Z0-9_]+|CHAT_PIPELINE_V2", re.I), "architecture"),
-    (re.compile(r"what changed|recent(ly)?.*(update|change|release|app)", re.I), "doc_changelog"),
     (re.compile(r"(PMDA|厚労省|#7119|相談先|相談窓口)"), "doc_consultation"),
     (re.compile(r"(アプリの概要|開発背景|β版|ベータ版)"), "doc_app_overview"),
     (re.compile(r"プリンシプルオブプログラミング|オブジェクト指向とは|デザインパターンとは"), "redirect"),
@@ -526,6 +526,18 @@ def probe_service_app_about_request(text: str) -> bool:
     return probe_meta_concierge_intent(text) == "app_about"
 
 
+_DOC_CHANGELOG_PROBE_EXCLUDE_RE = re.compile(
+    r"ポケモン|ゲーム|あの|その|私|僕|ぼく|あなた|スマホ|iPhone|Android|"
+    r"OS.{0,6}バージョン|人間として",
+    re.I,
+)
+
+
+def is_excluded_doc_changelog_probe(text: str) -> bool:
+    """他製品・ユーザー自身・OS 更新など本アプリ CHANGELOG 以外。"""
+    return bool(_DOC_CHANGELOG_PROBE_EXCLUDE_RE.search((text or "").strip()))
+
+
 def probe_session_admin_intent(user_text: str) -> Optional[str]:
     """セッション操作（削除・要約・ステータス）のキーワードプローブ。"""
     from src.agents.session_agent import probe_session_admin_intent as _probe
@@ -547,6 +559,8 @@ def probe_meta_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
     for pattern, intent in _META_PROBE_RULES:
         if pattern.search(text):
             if intent == "app_about" and is_excluded_service_app_about_request(text):
+                continue
+            if intent == "doc_changelog" and is_excluded_doc_changelog_probe(text):
                 continue
             return intent
     if _is_concierge_intent_routing_enabled():

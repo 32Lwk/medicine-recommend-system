@@ -3,10 +3,33 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import os
 import time
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
+
+_DEFAULT_MIN_SCORE = 0.4
+
+
+def _min_kb_score() -> float:
+    """低スコア chunk を捨てる閾値（Phase Q2-d）。未設定時 0.4。"""
+    raw = (os.getenv("BEDROCK_KB_MIN_SCORE") or "").strip()
+    if not raw:
+        return _DEFAULT_MIN_SCORE
+    try:
+        return max(0.0, min(1.0, float(raw)))
+    except ValueError:
+        return _DEFAULT_MIN_SCORE
+
+
+def _passes_score_threshold(score: Any, *, min_score: float) -> bool:
+    if score is None:
+        return True
+    try:
+        return float(score) >= min_score
+    except (TypeError, ValueError):
+        return True
 
 
 def _cache_key(query: str, top_k: int) -> str:
@@ -70,22 +93,28 @@ def retrieve_concierge_context(
         logger.warning("Bedrock KB retrieve failed: %s", exc)
         return empty
 
+    min_score = _min_kb_score()
     chunks: List[str] = []
     sources: List[Dict[str, Any]] = []
     source_uris: List[str] = []
+    dropped = 0
     for item in resp.get("retrievalResults") or []:
+        score = item.get("score")
+        if not _passes_score_threshold(score, min_score=min_score):
+            dropped += 1
+            continue
         text = str(item.get("content", {}).get("text") or "").strip()
-        if text:
-            chunks.append(text)
         loc = item.get("location") or {}
         s3_loc = loc.get("s3Location") or {}
         uri = str(s3_loc.get("uri") or "").strip()
+        if text:
+            chunks.append(text)
         if uri and uri not in source_uris:
             source_uris.append(uri)
         sources.append(
             {
                 "uri": uri,
-                "score": item.get("score"),
+                "score": score,
             }
         )
 
@@ -97,10 +126,14 @@ def retrieve_concierge_context(
         "chunk_count": len(chunks),
         "source_uris": source_uris,
         "provider": "bedrock_kb",
+        "min_score": min_score,
+        "dropped_low_score": dropped,
     }
     logger.info(
-        "Bedrock KB retrieve: chunks=%d ms=%.2f uris=%s",
+        "Bedrock KB retrieve: chunks=%d dropped=%d min_score=%.2f ms=%.2f uris=%s",
         len(chunks),
+        dropped,
+        min_score,
         elapsed_ms,
         source_uris[:3],
     )

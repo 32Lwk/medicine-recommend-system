@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Concierge 技術 FAQ — ローカル localhost E2E smoke（代表質問）。"""
+"""Concierge 技術 FAQ — ローカル / ステージング E2E smoke。"""
 from __future__ import annotations
 
-import json
+import argparse
 import os
-import re
 import sys
 import time
 from pathlib import Path
@@ -27,6 +26,72 @@ FORBIDDEN_IN_OUTPUT = (
     "docs/concierge/technical/",
 )
 
+# 計画 §4 Phase Q1 代表 10 問（手動 smoke の種）
+REPRESENTATIVE_10: list[dict[str, Any]] = [
+    {
+        "id": "q1-cross-cloud",
+        "message": "GCP 本番と AWS ステージングの違いは？",
+        "must_contain_any": ["GCP", "AWS", "Cloud Run", "ECS", "ステージング"],
+        "expect_concierge": True,
+    },
+    {
+        "id": "q2-codepipeline",
+        "message": "CodePipeline のデプロイフローを教えて",
+        "must_contain_any": ["CodePipeline", "CodeBuild", "ECR", "デプロイ"],
+        "expect_concierge": True,
+    },
+    {
+        "id": "q3-rule-based",
+        "message": "市販薬推奨は LLM？ ルールベース？",
+        "must_contain_any": ["ルールベース", "rule", "LLM"],
+        "expect_concierge": True,
+    },
+    {
+        "id": "q4-r2-cdn",
+        "message": "医薬品画像 CDN はどこ？",
+        "must_contain_any": ["R2", "images.yutok", "CDN"],
+        "expect_concierge": True,
+    },
+    {
+        "id": "q5-bedrock-kb",
+        "message": "Bedrock KB は何のため？ 今動いている？",
+        "must_contain_any": ["Bedrock", "ナレッジ", "KB", "ingestion"],
+        "expect_concierge": True,
+    },
+    {
+        "id": "q6-line-gcp",
+        "message": "LINE はどのクラウド？",
+        "must_contain_any": ["LINE", "GCP", "Cloud Run"],
+        "expect_concierge": True,
+    },
+    {
+        "id": "q7-data-storage",
+        "message": "セッションデータの保存先は？",
+        "must_contain_any": ["PostgreSQL", "Neon", "保存", "データ"],
+        "expect_concierge": True,
+    },
+    {
+        "id": "q8-aws-changelog",
+        "message": "最近の AWS 関連更新は？",
+        "must_contain_any": ["更新", "AWS", "2026", "改善", "CHANGELOG"],
+        "must_not_contain": FORBIDDEN_IN_OUTPUT + ("doc_changelog",),
+        "expect_concierge": True,
+        "expect_intent": "doc_changelog",
+    },
+    {
+        "id": "q9-sse",
+        "message": "SSE とはこのアプリでは何に使う？",
+        "must_contain_any": ["SSE", "Server-Sent", "段階", "ストリーム", "配信"],
+        "expect_concierge": True,
+    },
+    {
+        "id": "q10-multi-agent",
+        "message": "マルチエージェントの役割分担は？",
+        "must_contain_any": ["TriageAgent", "マルチエージェント", "Concierge", "担当"],
+        "expect_concierge": True,
+    },
+]
+
 SCENARIOS: list[dict[str, Any]] = [
     {
         "id": "cross-cloud-deep",
@@ -48,6 +113,7 @@ SCENARIOS: list[dict[str, Any]] = [
         "must_contain_any": ["更新", "CHANGELOG", "2026", "改善", "追加"],
         "must_not_contain": FORBIDDEN_IN_OUTPUT + ("doc_changelog",),
         "expect_concierge": True,
+        "expect_intent": "doc_changelog",
     },
     {
         "id": "english-cross-cloud",
@@ -133,14 +199,19 @@ def _bot_text(msg: dict[str, Any]) -> str:
     return content
 
 
-def run_smoke(base_url: str = DEFAULT_BASE) -> int:
+def run_smoke(
+    base_url: str = DEFAULT_BASE,
+    *,
+    scenarios: list[dict[str, Any]] | None = None,
+) -> int:
+    items = scenarios or SCENARIOS
     client = LocalChatClient(base_url)
-    print(f"==> Concierge local FAQ smoke: {base_url}")
+    print(f"==> Concierge local FAQ smoke: {base_url} ({len(items)} scenarios)")
     client.wait_ready()
     print("OK server ready")
 
     failures: list[str] = []
-    for scenario in SCENARIOS:
+    for scenario in items:
         sid = client.new_session()
         print(f"\n--- {scenario['id']} (session={sid[:24]}...)")
         resp = client.chat(scenario["message"])
@@ -156,6 +227,13 @@ def run_smoke(base_url: str = DEFAULT_BASE) -> int:
             print("FAIL not concierge")
             continue
         intent = bot.get("concierge_intent") or ""
+        expected_intent = scenario.get("expect_intent")
+        if expected_intent and intent != expected_intent:
+            failures.append(
+                f"{scenario['id']}: intent {intent!r} != {expected_intent!r}"
+            )
+            print(f"FAIL intent {intent!r}")
+            continue
         print(f"intent={intent} len={len(text)}")
         snippet = text.replace("\n", " ")[:240]
         print(f"snippet: {snippet}...")
@@ -165,7 +243,7 @@ def run_smoke(base_url: str = DEFAULT_BASE) -> int:
                 f"{scenario['id']}: missing keywords {scenario['must_contain_any']}"
             )
             print("FAIL missing keywords")
-        for bad in scenario.get("must_not_contain") or ():
+        for bad in scenario.get("must_not_contain") or FORBIDDEN_IN_OUTPUT:
             if bad in text:
                 failures.append(f"{scenario['id']}: forbidden {bad!r}")
                 print(f"FAIL forbidden {bad!r}")
@@ -180,6 +258,23 @@ def run_smoke(base_url: str = DEFAULT_BASE) -> int:
     return 0
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Concierge technical FAQ E2E smoke")
+    parser.add_argument(
+        "base_url",
+        nargs="?",
+        default=DEFAULT_BASE,
+        help="Base URL (default: V2_TEST_BASE_URL or http://127.0.0.1:5000/)",
+    )
+    parser.add_argument(
+        "--representative10",
+        action="store_true",
+        help="Run plan Phase Q1 representative 10 questions",
+    )
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    url = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_BASE
-    raise SystemExit(run_smoke(url))
+    args = _parse_args()
+    selected = REPRESENTATIVE_10 if args.representative10 else SCENARIOS
+    raise SystemExit(run_smoke(args.base_url, scenarios=selected))

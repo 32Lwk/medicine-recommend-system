@@ -154,8 +154,6 @@ def maybe_correct_concierge_keyword_meta_route(
     """
     if decision is None or decision.primary_route != "Concierge":
         return decision
-    if decision.sub_route not in _META_REDIRECT_MISROUTE_SUBS:
-        return decision
 
     from src.services.concierge_intent import (
         CONCIERGE_META_INTENTS,
@@ -173,6 +171,24 @@ def maybe_correct_concierge_keyword_meta_route(
         if hit in CONCIERGE_META_INTENTS:
             probed = hit
     if not probed:
+        return decision
+
+    if triage.get("concierge_intent_source") == "keyword_probe" and decision.sub_route != probed:
+        logger.info(
+            "intent_router_llm: keyword_meta guard corrected sub_route %s -> %s (triage locked)",
+            decision.sub_route,
+            probed,
+        )
+        return RouteDecision(
+            primary_route="Concierge",
+            sub_route=probed,
+            confidence=max(decision.confidence, 0.92),
+            resolved_by=decision.resolved_by,
+            source=decision.source,
+            meta={**(decision.meta or {}), "keyword_meta_guard": True, "triage_locked": True},
+        )
+
+    if decision.sub_route not in _META_REDIRECT_MISROUTE_SUBS:
         return decision
 
     logger.info(

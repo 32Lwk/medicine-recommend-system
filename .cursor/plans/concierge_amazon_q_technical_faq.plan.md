@@ -15,7 +15,7 @@ todos:
     content: "Phase Q2（Support 解消後）: Bedrock KB ingestion → sync 全量 → retrieve 検証（生成は OpenAI のまま）"
     status: pending
   - id: q2-hybrid-rag
-    content: "Phase Q2（Support 解消後）: KB ベクトル検索をローカル参照に追加"
+    content: "Phase Q2（Support 解消後）: KB ベクトル検索をローカル参照に追加（score 閾値・hybrid 実装済み）"
     status: pending
   - id: q3-runtime-tools
     content: "Phase Q3: ランタイム参照（/health/aws, git_commit — 秘匿除外）"
@@ -440,12 +440,13 @@ flowchart TB
 
 ### 今すぐ（Support 不要）
 
-1. ~~Phase Q1 コード commit & push~~ → **未コミット**（ローカル実装済み）
+1. ~~Phase Q1 コード commit & push~~ → **完了**（`04cf8d6`）
 2. ~~SSOT 04–07~~ → **完了**
 3. ~~評価 YAML 30→40 問~~ → **完了**
 4. ~~LINE チャネル別深さ~~ → **完了**
 5. ~~`verify-concierge-ssot.sh` / `concierge-staging-smoke.sh`~~ → **完了**
-6. **commit & push** → CodePipeline デプロイ → staging smoke
+6. **CodePipeline デプロイ** → push 済み（`04cf8d6`）— staging `/health` で commit 反映を確認
+7. **代表 10 問 E2E** — `python scripts/concierge_local_technical_faq_smoke.py --representative10`
 
 ### Support 解消後のみ
 
