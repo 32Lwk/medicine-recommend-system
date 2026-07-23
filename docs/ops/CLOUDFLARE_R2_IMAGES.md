@@ -50,6 +50,41 @@ curl -sI https://images.yutok.dev/otc/test.webp
 # → HTTP/1.1 200
 ```
 
+## ログ推奨上位 OTC の一括同期（マツキヨココカラ → R2）
+
+推奨ログ頻度上位（既定 200 件）を [scripts/sync_otc_images_from_matsukiyo.py](../../scripts/sync_otc_images_from_matsukiyo.py) で取得・アップロードする。
+
+```bash
+# 一覧・マッチングのみ（アップロードなし）
+py -3.11 scripts/sync_otc_images_from_matsukiyo.py --dry-run --limit 200
+
+# R2 アップロード（.env の R2_* 必須）
+py -3.11 scripts/sync_otc_images_from_matsukiyo.py --limit 200 --upload
+
+# 中断後の再開
+py -3.11 scripts/sync_otc_images_from_matsukiyo.py --limit 200 --upload --resume
+```
+
+成果物: `log/analysis/otc_image_sync/manifest.json` / `candidates.csv`  
+画像ソース: `https://www.matsukiyococokara-online.com/store/`（商品検索 → JAN → 商品画像 `_01_` 優先）  
+R2 キー: `otc/{slug}.webp`（`slugify_product_name` と同一規則）
+
+**ローカルコピー**: `static/otc/{slug}.webp`（オフライン確認・再アップロード用）
+
+```bash
+# 既存 manifest から CDN → static/otc へ一括取得
+py -3.11 scripts/export_otc_images_local.py
+
+# 同期スクリプトは --upload 時に static/otc にも保存（--no-local で無効化）
+py -3.11 scripts/sync_otc_images_from_matsukiyo.py --limit 200 --upload --local-dir static/otc
+```
+
+オフラインでローカル画像を使う場合（任意）:
+
+```bash
+MEDICINE_IMAGE_CDN_BASE=http://127.0.0.1:5000/static/otc/
+```
+
 S3 API エンドポイント（ユーザー向け URL ではない）:
 
 `https://2a1ac0678cd0b207ca4fa5681a9a0690.r2.cloudflarestorage.com/medicine-recommend-otc-images`

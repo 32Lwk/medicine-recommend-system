@@ -23,6 +23,10 @@ dist/
 build/
 *.egg-info/
 
+# OTC 商品画像（R2/CDN と同期。生成物）
+static/otc/*.webp
+static/otc/index.json
+
 # iOS
 ios/
 xcuserdata/

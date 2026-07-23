@@ -1,0 +1,474 @@
+Candidates: 200 (log-prioritized, limit=200)
+[1/200] resolve カロナールＡ (rec=795)
+  -> JAN 4987107634115 | カロナールＡ １２錠 第一三共ヘルスケア 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/カロナールA.webp
+[2/200] resolve トキワイブプロエースＡ (rec=790)
+  -> not_found: matsukiyo search: no match
+[3/200] resolve タイレノールＡ (rec=518)
+  -> JAN 4987910002705 | タイレノールＡＳ ３０錠 アリナミン製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/タイレノールA.webp
+[4/200] resolve イブロックフィルムプラスター (rec=260)
+  -> JAN 4987373080760 | matsukiyo イブロックフィルムプラスター ３０枚 【第3類医薬品】
+  -> uploaded https://images.yutok.dev/otc/イブロックフィルムプラスター.webp
+[5/200] resolve スカイブブロンのどスプレー (rec=197)
+  -> not_found: matsukiyo search: no match
+[6/200] resolve イブロック冷感Ｓ (rec=152)
+  -> not_found: matsukiyo search: no match
+[7/200] resolve リビメックスコーワクリーム (rec=126)
+  -> JAN 4987973132432 | 新リビメックスコーワＷ軟膏 １５ｇ 興和 【指定第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/リビメックスコーワクリーム.webp
+[8/200] resolve タクトプラスローション (rec=126)
+  -> JAN 4987316015071 | タクトプラスクリーム ２０ｇ 佐藤製薬 【指定第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/タクトプラスローション.webp
+[9/200] resolve サロンパス３０ (rec=123)
+  -> JAN 4987188171172 | ら・サロンパス ３０枚 久光製薬 【第3類医薬品】
+  -> uploaded https://images.yutok.dev/otc/サロンパス30.webp
+[10/200] resolve マキセリン「コタロー」 (rec=119)
+  -> not_found: matsukiyo search: no match
+[11/200] resolve イブプロフェン錠２００Ｓ (rec=118)
+  -> not_found: matsukiyo search: no match
+[12/200] resolve ベンザブロックトローチ (rec=116)
+  -> JAN 4987123139588 | ベンザブロックトローチ ２４錠 アリナミン製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ベンザブロックトローチ.webp
+[13/200] resolve 新エスベナントローチ (rec=115)
+  -> not_found: matsukiyo search: no match
+[14/200] resolve イブプロフェンソフトカプセル２００「キョーワ」 (rec=108)
+  -> not_found: matsukiyo search: no match
+[15/200] resolve トピックＧトローチ (rec=106)
+  -> not_found: matsukiyo search: no match
+[16/200] resolve デーチカ (rec=92)
+  -> not_found: matsukiyo search: no match
+[17/200] resolve キップパイロール－Ｈｉ (rec=75)
+  -> JAN 4987315001402 | キップパイロール－Ｈｉ ４０ｇ キップ薬品 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/キップパイロール-Hi.webp
+[18/200] resolve オリブ油「タイセイ」Ｐ (rec=75)
+  -> not_found: matsukiyo search: no match
+[19/200] resolve クールスロート (rec=75)
+  -> not_found: matsukiyo search: no match
+[20/200] resolve ザッツ錠 (rec=66)
+  -> not_found: matsukiyo search: no match
+[21/200] resolve 角野龍雲湯 (rec=63)
+  -> not_found: matsukiyo search: no match
+[22/200] resolve 東洋漢方の小青龍湯 (rec=63)
+  -> not_found: matsukiyo search: no match
+[23/200] resolve 新キャベジンコーワＳ (rec=63)
+  -> JAN 4987067267408 | 新キャベ2コーワ ３０包 興和 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/新キャベジンコーワS.webp
+[24/200] resolve 富士はら薬「赤玉」 (rec=63)
+  -> not_found: matsukiyo search: no match
+[25/200] resolve 高砂オウレン (rec=63)
+  -> not_found: matsukiyo search: no match
+[26/200] resolve 高砂オウレン末 (rec=63)
+  -> not_found: matsukiyo search: no match
+[27/200] resolve 大柴胡湯 (rec=63)
+  -> JAN 4987045043369 | 大柴胡湯エキス顆粒クラシエ ４５包 クラシエ薬品 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/大柴胡湯.webp
+[28/200] resolve グリセリン浣腸Ａ１０ (rec=63)
+  -> not_found: matsukiyo search: no match
+[29/200] resolve スースカット浣腸１０ (rec=63)
+  -> not_found: matsukiyo search: no match
+[30/200] resolve リビメックスコーワローション (rec=63)
+  -> JAN 4987973113837 | 新リビメックスコーワローション １５ｇ 興和 【指定第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/リビメックスコーワローション.webp
+[31/200] resolve 胃健錠 (rec=63)
+  -> not_found: matsukiyo search: no match
+[32/200] resolve ベトノバールＳクリーム (rec=63)
+  -> JAN 4987316026077 | ベトノバールＳクリーム ５ｇ 佐藤製薬 【指定第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ベトノバールSクリーム.webp
+[33/200] resolve キンカンＡＬ錠 (rec=63)
+  -> not_found: matsukiyo search: no match
+[34/200] resolve メンソレータムメディクイッククリームＳ (rec=63)
+  -> JAN 4987241125326 | メンソレータム メディクイック クリームS ８ｇ ロート製薬 【指定第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/メンソレータムメディクイッククリームS.webp
+[35/200] resolve メンソレータムメディクイックプロクリーム (rec=63)
+  -> JAN 4987241196654 | メンソレータムメディクイックプロクリームａ ８ｇ ロート製薬 【指定第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/メンソレータムメディクイックプロクリーム.webp
+[36/200] resolve デイトナＳ (rec=42)
+  -> not_found: matsukiyo search: no match
+[37/200] resolve ノイロンムーンＳ (rec=42)
+  -> not_found: matsukiyo search: no match
+[38/200] resolve フストールＳ (rec=42)
+  -> not_found: matsukiyo search: no match
+[39/200] resolve ハイカゼ内服液Ｓ (rec=39)
+  -> not_found: matsukiyo search: no match
+[40/200] resolve スロナースのどスプレー (rec=29)
+  -> not_found: matsukiyo search: no match
+[41/200] resolve セイヨン総合かぜ薬 (rec=28)
+  -> not_found: matsukiyo search: no match
+[42/200] resolve 新スカイブブロンゴールド錠 (rec=20)
+  -> not_found: matsukiyo search: no match
+[43/200] resolve カイゲンＡＺのどスプレー (rec=18)
+  -> not_found: matsukiyo search: no match
+[44/200] resolve スカイブブロンストレート (rec=18)
+  -> not_found: matsukiyo search: no match
+[45/200] resolve 新ストナエースＧ (rec=17)
+  -> not_found: matsukiyo search: no match
+[46/200] resolve 救風 (rec=17)
+  -> not_found: matsukiyo search: no match
+[47/200] resolve カゼンエース (rec=16)
+  -> not_found: matsukiyo search: no match
+[48/200] resolve 新スカイブブロンゴールド微粒 (rec=15)
+  -> not_found: matsukiyo search: no match
+[49/200] resolve ナロンｍ (rec=13)
+  -> JAN 4987306040519 | ナロンｍ ２４錠 大正製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ナロンm.webp
+[50/200] resolve ガストール細粒 (rec=13)
+  -> JAN 4987300037003 | ガストール細粒 １０包 エスエス製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ガストール細粒.webp
+[51/200] resolve ガストール錠 (rec=13)
+  -> JAN 4987300037515 | ガストール錠 ６０錠 エスエス製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ガストール錠.webp
+[52/200] resolve 健栄のどフレッシュ (rec=9)
+  -> not_found: matsukiyo search: no match
+[53/200] resolve コーフパウダー (rec=9)
+  -> not_found: matsukiyo search: no match
+[54/200] resolve ストナリニＳ (rec=9)
+  -> JAN 4987316012384 | ストナリニS ２４錠 佐藤製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ストナリニS.webp
+[55/200] resolve 第一三共胃腸薬コアブロック散剤 (rec=9)
+  -> not_found: matsukiyo search: no match
+[56/200] resolve 新エスタックイブエースカプセル (rec=9)
+  -> not_found: matsukiyo search: no match
+[57/200] resolve ジキニンのどクリア (rec=9)
+  -> JAN 4987305510815 | ジキニン のどクリア ３０ＭＬ×３ 全薬工業 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ジキニンのどクリア.webp
+[58/200] resolve スカイブブロンＮＡスプレー (rec=9)
+  -> not_found: matsukiyo search: no match
+[59/200] resolve カーフェソフト錠 (rec=8)
+  -> JAN 4987028132394 | カーフェソフト錠 １６錠 エーザイ 【第3類医薬品】
+  -> uploaded https://images.yutok.dev/otc/カーフェソフト錠.webp
+[60/200] resolve グットエイドＥＸ (rec=7)
+  -> not_found: matsukiyo search: no match
+[61/200] resolve ジキニン鼻炎ＡＧ顆粒 (rec=7)
+  -> not_found: matsukiyo search: no match
+[62/200] resolve ポピショット (rec=7)
+  -> JAN 4935583204087 | matsukiyo ポピショットα ３０ｍｌ 【第3類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ポピショット.webp
+[63/200] resolve エスタロンモカ１２ (rec=7)
+  -> JAN 4987300042205 | エスタロンモカ１２ ２０錠 エスエス製薬 【第3類医薬品】
+  -> uploaded https://images.yutok.dev/otc/エスタロンモカ12.webp
+[64/200] resolve エスタロンモカ内服液 (rec=7)
+  -> JAN 4987300020500 | エスタロンモカ内服液 ３０ｍｌ×２本 エスエス製薬 【第3類医薬品】
+  -> uploaded https://images.yutok.dev/otc/エスタロンモカ内服液.webp
+[65/200] resolve クミアイ新頭痛錠 (rec=6)
+  -> not_found: matsukiyo search: no match
+[66/200] resolve リングルＮ３００ (rec=6)
+  -> JAN 4987316032948 | リングルＮ ２０錠 佐藤製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/リングルN300.webp
+[67/200] resolve ムコダイン去たん錠Ｐｒｏ５００ (rec=6)
+  -> JAN 4987904101407 | ムコダイン去たん錠Ｐｒｏ５００ ２０錠 シオノギヘルスケア 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ムコダイン去たん錠Pro500.webp
+[68/200] resolve エスタックイブファインＥＸ (rec=6)
+  -> not_found: matsukiyo search: no match
+[69/200] resolve バファリンかぜＥＸ錠《瓶》 (rec=6)
+  -> not_found: matsukiyo search: no match
+[70/200] resolve 仁壽 (rec=5)
+  -> not_found: matsukiyo search: no match
+[71/200] resolve ズッキノンａ (rec=5)
+  -> JAN 4987072083239 | 塗るズッキノン軟膏 １５ｇ 小林製薬 【第3類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ズッキノンa.webp
+[72/200] resolve 暖中錠 (rec=5)
+  -> not_found: matsukiyo search: no match
+[73/200] resolve メソッドＷＯクリーム (rec=5)
+  -> JAN 4903301301417 | メソッド ＷＯクリーム １２ｇ ライオン 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/メソッドWOクリーム.webp
+[74/200] resolve 新スキントールＳ (rec=5)
+  -> not_found: matsukiyo search: no match
+[75/200] resolve メンソレータムカブレーナ乳液 (rec=5)
+  -> JAN 4987241188642 | メンソレータム カブレーナ乳液 １５ｇ ロート製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/メンソレータムカブレーナ乳液.webp
+[76/200] resolve ロキソニンＳ (rec=5)
+  -> JAN 4987107610867 | ロキソニンＳ １２錠 第一三共ヘルスケア 【第1類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ロキソニンS.webp
+[77/200] resolve フジコールＩＰ錠 (rec=4)
+  -> not_found: matsukiyo search: no match
+[78/200] resolve 東洋の茵ちん五苓散料エキス顆粒 (rec=4)
+  -> not_found: matsukiyo search: no match
+[79/200] resolve サンワ白虎加人参湯エキス細粒 (rec=4)
+  -> not_found: matsukiyo search: no match
+[80/200] resolve ナロン顆粒 (rec=4)
+  -> JAN 4987306040519 | ナロンｍ ２４錠 大正製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ナロン顆粒.webp
+[81/200] resolve ニタンダ麻杏甘石湯エキス顆粒 (rec=4)
+  -> not_found: matsukiyo search: no match
+[82/200] resolve ヤマサンシャゼンソウ (rec=4)
+  -> not_found: matsukiyo search: no match
+[83/200] resolve ストナデイタイム (rec=3)
+  -> not_found: matsukiyo search: no match
+[84/200] resolve キュアティホワイトＮＫＢ (rec=3)
+  -> not_found: matsukiyo search: no match
+[85/200] resolve ＤＨＣエルシスホワイト２４０ (rec=3)
+  -> JAN 4511413804360 | ＭＫ　ＤＨＣエルシスホワイト ２４０錠 ディーエイチシー 【第3類医薬品】
+  -> uploaded https://images.yutok.dev/otc/DHCエルシスホワイト240.webp
+[86/200] resolve グロンサンゴールド錠Ａ (rec=3)
+  -> not_found: matsukiyo search: no match
+[87/200] resolve アオキュア (rec=3)
+  -> JAN 4987072094693 | チュメキュア ５Ｇ 小林製薬 【第3類医薬品】
+  -> uploaded https://images.yutok.dev/otc/アオキュア.webp
+[88/200] resolve エイクレス (rec=3)
+  -> not_found: matsukiyo search: no match
+[89/200] resolve コリクリアーＳローション (rec=3)
+  -> not_found: matsukiyo search: no match
+[90/200] resolve オムニンエース (rec=3)
+  -> not_found: matsukiyo search: no match
+[91/200] resolve ウチダの大黄牡丹皮湯 (rec=3)
+  -> not_found: matsukiyo search: no match
+[92/200] resolve ザッツ (rec=3)
+  -> not_found: matsukiyo search: no match
+[93/200] resolve キャベジンコーワ細粒 (rec=3)
+  -> JAN 4987973126516 | キャベジンコーワαプラス顆粒 ５６包 興和 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/キャベジンコーワ細粒.webp
+[94/200] resolve 新リバヘルスゴールド (rec=2)
+  -> not_found: matsukiyo search: no match
+[95/200] resolve 健栄のどスプレー (rec=2)
+  -> JAN 4987286318264 | 健栄のどスプレー ２５ｍｌ 健栄製薬 【第3類医薬品】
+  -> uploaded https://images.yutok.dev/otc/健栄のどスプレー.webp
+[96/200] resolve 清風散 (rec=2)
+  -> not_found: matsukiyo search: no match
+[97/200] resolve ヒストミンせき止め液ＮＸ (rec=2)
+  -> not_found: matsukiyo search: no match
+[98/200] resolve ナカジマキキョウ末 (rec=2)
+  -> not_found: matsukiyo search: no match
+[99/200] resolve 再春痛散湯エキス顆粒 (rec=2)
+  -> not_found: matsukiyo search: no match
+[100/200] resolve 大正胃腸薬Ｋ＜錠剤＞ (rec=1)
+  -> JAN 4987306009462 | 大正胃腸薬Ｋ＜錠剤＞ １１０錠 大正製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/大正胃腸薬K錠剤.webp
+[101/200] resolve ビオフェルミン止瀉薬 (rec=1)
+  -> JAN 4987306054837 | ビオフェルミン止瀉薬 １２包 大正製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ビオフェルミン止瀉薬.webp
+[102/200] resolve ビオフェルミン下痢止め (rec=1)
+  -> JAN 4987306054813 | ビオフェルミン下痢止め ３０錠 大正製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ビオフェルミン下痢止め.webp
+[103/200] resolve 新ルルエースのどスプレー (rec=1)
+  -> JAN 4987107611925 | ルルのどスプレー ２５ｍｌ 第一三共ヘルスケア 【第3類医薬品】
+  -> uploaded https://images.yutok.dev/otc/新ルルエースのどスプレー.webp
+[104/200] resolve キオフィーバ (rec=1)
+  -> JAN 4987192002066 | キオフィーバ こども解熱坐薬 １０個 樋屋製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/キオフィーバ.webp
+[105/200] resolve 大正トンプク (rec=1)
+  -> not_found: matsukiyo search: no match
+[106/200] resolve ファイティーＥＸ (rec=1)
+  -> JAN 4987067227105 | matsukiyo ファイティーEX ３０ｍｌ×６本 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ファイティーEX.webp
+[107/200] resolve ウチダの麻黄附子細辛湯 (rec=1)
+  -> not_found: matsukiyo search: no match
+[108/200] resolve 新セキリック液 (rec=1)
+  -> not_found: matsukiyo search: no match
+[109/200] resolve クールワンせき止めＧＸプラス (rec=1)
+  -> not_found: matsukiyo search: no match
+[110/200] resolve カコナールせき止め液Ｗ (rec=1)
+  -> not_found: matsukiyo search: no match
+[111/200] resolve のどスッキリスプレーＡＣ (rec=1)
+  -> not_found: matsukiyo search: no match
+[112/200] resolve 清痛顆粒 (rec=1)
+  -> not_found: matsukiyo search: no match
+[113/200] resolve クミアイ解熱鎮痛錠 (rec=1)
+  -> not_found: matsukiyo search: no match
+[114/200] resolve 竹参かぜまる (rec=1)
+  -> not_found: matsukiyo search: no match
+[115/200] resolve ロキソニンＳプレミアム (rec=1)
+  -> JAN 4987107619013 | ロキソニンＳプレミアム ２４錠 第一三共ヘルスケア 【第1類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ロキソニンSプレミアム.webp
+[116/200] resolve ササイサン (rec=1)
+  -> not_found: matsukiyo search: no match
+[117/200] resolve フラーリンＪ粒 (rec=1)
+  -> not_found: matsukiyo search: no match
+[118/200] resolve 加香ヒマシ油 (rec=0)
+  -> JAN 49232677 | 日本薬局方 加香ヒマシ油 ２０ｍｌ 健栄製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/加香ヒマシ油.webp
+[119/200] resolve 乙字湯 (rec=0)
+  -> JAN 4987045043239 | 「クラシエ」漢方乙字湯エキス顆粒 ４５包 クラシエ薬品 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/乙字湯.webp
+[120/200] resolve 防已黄耆湯 (rec=0)
+  -> JAN 4987045049255 | 防已黄耆湯エキス錠Ｆクラシエ ９６錠 クラシエ薬品 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/防已黄耆湯.webp
+[121/200] resolve ナイシトールＧ (rec=0)
+  -> JAN 4987072056431 | ナイシトールＧａ ８４錠 小林製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/ナイシトールG.webp
+[122/200] resolve 東洋漢方のセンナ顆粒Ｓ（分包） (rec=0)
+  -> not_found: matsukiyo search: no match
+[123/200] resolve ミカサ浣腸Ｎ４０ (rec=0)
+  -> not_found: matsukiyo search: no match
+[124/200] resolve コトブキ浣腸４０ (rec=0)
+  -> not_found: matsukiyo search: no match
+[125/200] resolve コトブキ浣腸ひとおし (rec=0)
+  -> JAN 4987388063215 | コトブキ浣腸ひとおし ３０ＧＸ２個 ムネ製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/コトブキ浣腸ひとおし.webp
+[126/200] resolve コトブキ浣腸４０パステル (rec=0)
+  -> not_found: matsukiyo search: no match
+[127/200] resolve コトブキ浣腸３０パステル (rec=0)
+  -> not_found: matsukiyo search: no match
+[128/200] resolve コリイス浣腸３０ (rec=0)
+  -> not_found: matsukiyo search: no match
+[129/200] resolve 本草センナ錠 (rec=0)
+  -> not_found: matsukiyo search: no match
+[130/200] resolve ゼリア健胃内服液 (rec=0)
+  -> JAN 4987103052814 | ヘパリーゼ胃腸内服液EX ５０ｍｌ×３ ゼリア新薬工業 (指定医薬部外品)
+  -> uploaded https://images.yutok.dev/otc/ゼリア健胃内服液.webp
+[131/200] resolve 新バック液 (rec=0)
+  -> not_found: matsukiyo search: no match
+[132/200] resolve ソルマックプラス (rec=0)
+  -> JAN 4987117396065 | ソルマック 5 ５０ｍＬ×８ 大鵬薬品工業 (指定医薬部外品)
+  -> uploaded https://images.yutok.dev/otc/ソルマックプラス.webp
+[133/200] resolve ソルマックＥＸ２ (rec=0)
+  -> not_found: matsukiyo search: no match
+[134/200] resolve ストーゼ胃腸内服液 (rec=0)
+  -> not_found: matsukiyo search: no match
+[135/200] resolve 太田胃散＜内服液＞ (rec=0)
+  -> not_found: matsukiyo search: no match
+[136/200] resolve ガロール健芯液 (rec=0)
+  -> not_found: matsukiyo search: no match
+[137/200] resolve パンシロンソフトベール (rec=0)
+  -> not_found: matsukiyo search: no match
+[138/200] resolve ワクナガ生薬胃腸薬 (rec=0)
+  -> not_found: matsukiyo search: no match
+[139/200] resolve オウレンいけだや (rec=0)
+  -> not_found: matsukiyo search: no match
+[140/200] resolve オウレン末いけだや (rec=0)
+  -> not_found: matsukiyo search: no match
+[141/200] resolve 新新胃腸薬Ｓ (rec=0)
+  -> not_found: matsukiyo search: no match
+[142/200] resolve イスロ胃腸ドリンクＳ (rec=0)
+  -> not_found: matsukiyo search: no match
+[143/200] resolve 大光丸 (rec=0)
+  -> not_found: matsukiyo search: no match
+[144/200] resolve オウレンダイコー (rec=0)
+  -> not_found: matsukiyo search: no match
+[145/200] resolve オウレン末ダイコー (rec=0)
+  -> not_found: matsukiyo search: no match
+[146/200] resolve 液キャベコーワＬ (rec=0)
+  -> JAN 4987067806607 | 液キャベコーワ ５０ｍｌ 興和 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/液キャベコーワL.webp
+[147/200] resolve 大草胃腸薬内服液３０ (rec=0)
+  -> not_found: matsukiyo search: no match
+[148/200] resolve 救胆 (rec=0)
+  -> not_found: matsukiyo search: no match
+[149/200] resolve 御岳百草丸 (rec=0)
+  -> JAN 4987352002448 | 御岳百草丸 ２７００粒 長野県製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/御岳百草丸.webp
+[150/200] resolve 御岳百草丸分包 (rec=0)
+  -> JAN 4987352002448 | 御岳百草丸 ２７００粒 長野県製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/御岳百草丸分包.webp
+[151/200] resolve ナカジマオウレン (rec=0)
+  -> not_found: matsukiyo search: no match
+[152/200] resolve ナカジマオウレン末 (rec=0)
+  -> not_found: matsukiyo search: no match
+[153/200] resolve 御百草丸Ｕ (rec=0)
+  -> not_found: matsukiyo search: no match
+[154/200] resolve 日野百草丸 (rec=0)
+  -> not_found: matsukiyo search: no match
+[155/200] resolve 百草丸プラス (rec=0)
+  -> not_found: matsukiyo search: no match
+[156/200] resolve 増田胃腸薬 (rec=0)
+  -> not_found: matsukiyo search: no match
+[157/200] resolve ヤマサンオウレン末 (rec=0)
+  -> not_found: matsukiyo search: no match
+[158/200] resolve ヤマサンオウレン (rec=0)
+  -> not_found: matsukiyo search: no match
+[159/200] resolve トチモトのオウレンＰ (rec=0)
+  -> not_found: matsukiyo search: no match
+[160/200] resolve トチモトのオウレン末Ｐ (rec=0)
+  -> not_found: matsukiyo search: no match
+[161/200] resolve 薬草健胃薬Ｆ (rec=0)
+  -> not_found: matsukiyo search: no match
+[162/200] resolve 恵命我神散 (rec=0)
+  -> JAN 4955982058012 | 恵命我神散 徳用 １００ｇ×４袋 恵命堂 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/恵命我神散.webp
+[163/200] resolve 恵命我神散Ｓ (rec=0)
+  -> JAN 4955982012007 | 恵命我神散S ３ｇ×２０包 恵命堂 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/恵命我神散S.webp
+[164/200] resolve 恵命我神散Ｓ＜細粒＞ (rec=0)
+  -> not_found: matsukiyo search: no match
+[165/200] resolve フラーリンＪ錠 (rec=0)
+  -> not_found: matsukiyo search: no match
+[166/200] resolve はらはら薬「翁丸」 (rec=0)
+  -> not_found: matsukiyo search: no match
+[167/200] resolve ニチイ胃腸内服液 (rec=0)
+  -> not_found: matsukiyo search: no match
+[168/200] resolve やまと丸 (rec=0)
+  -> not_found: matsukiyo search: no match
+[169/200] resolve クレンジル (rec=0)
+  -> not_found: matsukiyo search: no match
+[170/200] resolve 大正漢方胃腸薬＜内服液＞ (rec=0)
+  -> JAN 4987306008717 | 【使用期限：2026年9月まで】大正漢方胃腸薬＜内服液＞ ３０ｍｌ 大正製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/大正漢方胃腸薬内服液.webp
+[171/200] resolve サクロンＱ (rec=0)
+  -> JAN 4987028105688 | サクロンQ １２錠 エーザイ 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/サクロンQ.webp
+[172/200] resolve セルベール (rec=0)
+  -> JAN 4987028114918 | 新セルベール整胃プレミアム錠 １８錠 エーザイ 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/セルベール.webp
+[173/200] resolve 新セルベール整胃プレミアム＜細粒＞ (rec=0)
+  -> JAN 4987028114765 | 新セルベール整胃プレミアム細粒 ２４包 エーザイ 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/新セルベール整胃プレミアム細粒.webp
+[174/200] resolve 新セルベール整胃プレミアム＜錠＞ (rec=0)
+  -> JAN 4987028114963 | 新セルベール整胃プレミアム錠 ７２錠 エーザイ 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/新セルベール整胃プレミアム錠.webp
+[175/200] resolve 太田胃散 (rec=0)
+  -> JAN 4987033000268 | 太田胃散　太田胃散分包Ｓ ５０包 太田胃散 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/太田胃散.webp
+[176/200] resolve 太田胃散＜分包＞ (rec=0)
+  -> JAN 4987033000268 | 太田胃散　太田胃散分包Ｓ ５０包 太田胃散 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/太田胃散分包.webp
+[177/200] resolve 太田胃散Ａ＜錠剤＞ (rec=0)
+  -> JAN 4987033209135 | 太田胃散Ａ【錠剤】 ４５錠 太田胃散 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/太田胃散A錠剤.webp
+[178/200] resolve 太田漢方胃腸薬Ⅱ (rec=0)
+  -> JAN 4987033000428 | 太田漢方胃腸薬ＩＩ １２０錠 太田胃散 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/太田漢方胃腸薬II.webp
+[179/200] resolve 太田漢方胃腸薬Ⅱ＜錠剤＞ (rec=0)
+  -> JAN 4987033602103 | 太田漢方胃腸薬ＩＩ【錠剤】 ５４錠 太田胃散 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/太田漢方胃腸薬II錠剤.webp
+[180/200] resolve バランサー胃腸薬 (rec=0)
+  -> JAN 4987306012493 | 大正胃腸薬バランサー １２包 大正製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/バランサー胃腸薬.webp
+[181/200] resolve 複方熊胆円 (rec=0)
+  -> not_found: matsukiyo search: no match
+[182/200] resolve 複方熊胆丸 (rec=0)
+  -> not_found: matsukiyo search: no match
+[183/200] resolve 新マルコターンソフト (rec=0)
+  -> not_found: matsukiyo search: no match
+[184/200] resolve 熊膽圓Ｓ (rec=0)
+  -> not_found: matsukiyo search: no match
+[185/200] resolve イスロンＧⅡ (rec=0)
+  -> not_found: matsukiyo search: no match
+[186/200] resolve タブローンＭⅡ (rec=0)
+  -> not_found: matsukiyo search: no match
+[187/200] resolve 新キャベ２コーワ (rec=0)
+  -> JAN 4987067267408 | 新キャベ2コーワ ３０包 興和 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/新キャベ2コーワ.webp
+[188/200] resolve キャベジンコーワα《瓶》 (rec=0)
+  -> not_found: matsukiyo search: no match
+[189/200] resolve パンジアス顆粒 (rec=0)
+  -> not_found: matsukiyo search: no match
+[190/200] resolve ハイウルソグリーンＳ (rec=0)
+  -> not_found: matsukiyo search: no match
+[191/200] resolve 新グリーン胃腸薬ＤＸ (rec=0)
+  -> not_found: matsukiyo search: no match
+[192/200] resolve 大正胃腸薬Ｋ (rec=0)
+  -> JAN 4987306009417 | 大正胃腸薬K ２４包 大正製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/大正胃腸薬K.webp
+[193/200] resolve 大正漢方胃腸薬 (rec=0)
+  -> JAN 4987306009486 | 大正漢方胃腸薬 ４８包 大正製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/大正漢方胃腸薬.webp
+[194/200] resolve 大正漢方胃腸薬＜錠剤＞ (rec=0)
+  -> JAN 4987306009776 | 大正漢方胃腸薬【錠剤】 ２２０錠 大正製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/大正漢方胃腸薬錠剤.webp
+[195/200] resolve アバロンＳ (rec=0)
+  -> not_found: matsukiyo search: no match
+[196/200] resolve 大正漢方胃腸薬「爽和」錠剤 (rec=0)
+  -> JAN 4987306009783 | 大正漢方胃腸薬【錠剤】 ６０錠 大正製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/大正漢方胃腸薬爽和錠剤.webp
+[197/200] resolve 大正漢方胃腸薬「爽和」微粒 (rec=0)
+  -> JAN 4987306009486 | 大正漢方胃腸薬 ４８包 大正製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/大正漢方胃腸薬爽和微粒.webp
+[198/200] resolve 大正漢方胃腸薬アクティブ＜錠剤＞ (rec=0)
+  -> JAN 4987306009776 | 大正漢方胃腸薬【錠剤】 ２２０錠 大正製薬 【第2類医薬品】
+  -> uploaded https://images.yutok.dev/otc/大正漢方胃腸薬アクティブ錠剤.webp
+[199/200] resolve 大正漢方胃腸薬アクティブ＜微粒＞ (rec=0)
+  -> not_found: matsukiyo search: no match
+[200/200] resolve 胃腸薬エースプラス (rec=0)
+  -> not_found: matsukiyo search: no match
+Done. uploaded=71 resolved=71 not_found=129 errors=0
+Outputs: D:\Programing\medicine-recommend\log\analysis\otc_image_sync\manifest.json , D:\Programing\medicine-recommend\log\analysis\otc_image_sync\candidates.csv

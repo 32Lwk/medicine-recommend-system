@@ -1,6 +1,75 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月23日**（Concierge 更新履歴 UI・CodePipeline 自動デプロイ修正・Sage 推奨一括描画）
+**最終更新日: 2026年7月24日**（OTC 商品画像 R2 一括同期・ローカル export・UI 表示開始）
+
+---
+
+## 2026年7月24日 — OTC 商品画像 R2 一括同期・ローカル export
+
+### 概要
+
+推奨ログ頻度上位の OTC 医薬品について、**マツキヨココカラ online** から商品画像を取得し **Cloudflare R2**（`https://images.yutok.dev/otc/`）へ一括アップロードするパイプラインを追加。初回実行で **71 / 200 件** を R2 に配置（ログ推奨 117 件のうち **41 件**）。UI は `MEDICINE_IMAGE_CDN_BASE` 経由で **アップロード済み品目のパッケージ画像** を表示（未配置は従来どおりプレースホルダー）。
+
+### 一括同期スクリプト（マツキヨ → R2）
+
+**新規**: **`scripts/sync_otc_images_from_matsukiyo.py`**
+
+- 推奨ログ（`recommendation_detail_log.jsonl` / `recommendation_log.jsonl` / `counseling_detail_log.jsonl`）から推奨頻度を集計
+- 上位 117 品目を優先し、不足分を `data/otc_medicine_data.csv` で 200 件まで補完
+- マツキヨ検索: セッション Cookie 取得後 `search_keyword` パラメータで `/store/catalogsearch/result/` を検索（`?q=` は不可）
+- 商品ページ（JAN）から `_01_` パック画像を取得 → WebP 変換 → R2 `otc/{slug}.webp` へ PUT
+- スラッグは **`src/services/medicine_image_urls.py`** の `slugify_product_name()` と同一規則
+- フラグ: `--dry-run` / `--upload` / `--resume` / `--limit` / `--delay` / `--local-dir` / `--no-local`
+- 成果物: `log/analysis/otc_image_sync/manifest.json` / `candidates.csv` / `run.log`
+
+**初回実行結果（2026-07-24）**:
+
+| 指標 | 件数 |
+|------|------|
+| 処理対象 | 200 |
+| R2 アップロード成功 | **71** |
+| マツキヨ未ヒット | 129 |
+| エラー | 0 |
+| ログ推奨 117 件のうち成功 | **41** |
+
+CDN 確認例: `https://images.yutok.dev/otc/カロナールA.webp` → HTTP 200
+
+### ローカル export
+
+**新規**: **`scripts/export_otc_images_local.py`**
+
+- `manifest.json` の `uploaded` 行を CDN から **`static/otc/{slug}.webp`** へ一括ダウンロード
+- `static/otc/index.json` にファイル一覧を出力
+- 同期スクリプト `--upload` 時も `--local-dir static/otc`（既定）で同時保存可能
+
+**オフライン確認（任意）**:
+
+```bash
+MEDICINE_IMAGE_CDN_BASE=http://127.0.0.1:5000/static/otc/
+```
+
+### UI 連携
+
+- ローカル `.env` / GCP 本番（`cloudbuild.yaml`）/ AWS ステージングは **`MEDICINE_IMAGE_CDN_BASE=https://images.yutok.dev/otc/`** 設定済み
+- **`src/services/recommendation_client_payload.py`** → `enrich_medicine_image_url()` が API ペイロードに `image_url` を付与
+- フロント: **`static/js/ui/medicine_mapper.js`** / **`medicine_card.js`** — 404 時 `onerror` でプレースホルダー
+
+### R2 無料枠
+
+- 71 枚 WebP 合計 **約 5.7 MB**（200 枚でも ~50 MB 想定）
+- Cloudflare R2 無料枠: **10 GB ストレージ** / egress 無料 → **十分余裕**
+
+### ドキュメント・Git 管理
+
+- **`docs/ops/CLOUDFLARE_R2_IMAGES.md`**: 一括同期・ローカル export・オフライン env の手順を追記
+- **`.gitignore`**: `static/otc/*.webp` / `static/otc/index.json` を生成物として除外（`static/otc/.gitkeep` のみ追跡）
+
+### 今後の改善候補（未実装）
+
+- `--log-only`（ログ推奨品目のみ対象）
+- `data/otc_image_jan_overrides.csv` による JAN 手動上書き
+- マッチ品質レビュー（例: タイレノールＡ → ＡS バリアント等）
+- マツキヨ未掲載品（トキワイブプロエースＡ 等）の別ソース検討
 
 ---
 
