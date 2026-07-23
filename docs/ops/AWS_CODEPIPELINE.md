@@ -55,7 +55,7 @@ git push origin main
 ## 手動で Pipeline 実行
 
 ```bash
-export AWS_PROFILE=admin
+export AWS_PROFILE=medicine-recommend-dev
 aws codepipeline start-pipeline-execution \
   --name medicine-recommend-main \
   --region ap-northeast-1
@@ -64,14 +64,14 @@ aws codepipeline start-pipeline-execution \
 ## 再セットアップ（IAM / Pipeline 作り直し）
 
 ```bash
-export AWS_PROFILE=admin
+export AWS_PROFILE=medicine-recommend-dev
 ./scripts/setup-aws-codepipeline.sh
 ```
 
 ## 手動デプロイ（Pipeline なし）
 
 ```bash
-export AWS_PROFILE=admin
+export AWS_PROFILE=medicine-recommend-dev
 ./scripts/deploy-aws-ecs.sh
 ```
 
@@ -108,7 +108,7 @@ export AWS_PROFILE=admin
 一括調整:
 
 ```bash
-export AWS_PROFILE=admin
+export AWS_PROFILE=medicine-recommend-dev
 ./scripts/tune-aws-ecs-performance.sh
 ```
 
@@ -121,5 +121,6 @@ cp .env.example .env   # OPENAI_API_KEY, DATABASE_URL, SECRET_KEY
 
 ## 関連
 
+- **Phase 1 インフラ**: [AWS_INFRA.md](./AWS_INFRA.md)（CloudWatch / WAF / CloudFront）
 - GCP 自動デプロイ: `cloudbuild.yaml` + Cloud Build トリガー
 - 手動 AWS デプロイ: `scripts/deploy-aws-ecs.sh`

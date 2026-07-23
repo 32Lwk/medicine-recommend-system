@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from src.services.medicine_image_urls import enrich_medicine_image_url
+
 
 def is_sage_web_ui(session: Any) -> bool:
     """Web チャットで Sage UI カード描画を使うか。"""
@@ -54,6 +56,7 @@ def enrich_recommended_medicines(
     *,
     medicine_type: str | None = None,
     symptoms: list[Any] | None = None,
+    session_id: str | None = None,
 ) -> list[dict[str, Any]]:
     """diagnosis / SSE 用に医薬品 dict を補完（インプレースではなくコピーを返す）。"""
     if not medicines:
@@ -73,5 +76,8 @@ def enrich_recommended_medicines(
                 if row.get(key):
                     row["image_url"] = row[key]
                     break
+        row = enrich_medicine_image_url(row)
         enriched.append(row)
-    return enriched
+    from src.services.personalize_ranker import rerank_if_enabled
+
+    return rerank_if_enabled(enriched, session_id=session_id)

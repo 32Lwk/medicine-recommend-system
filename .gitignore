@@ -5,6 +5,11 @@ __pycache__/
 *.pyd
 .env
 *.env
+scripts/.aws-static-cdn-url
+scripts/.aws-bedrock-kb-id
+scripts/.aws-bedrock-kb-env
+scripts/.aws-redis-url
+scripts/.aws-personalize-env
 *.log
 !log/
 !log/**

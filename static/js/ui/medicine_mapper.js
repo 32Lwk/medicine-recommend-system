@@ -139,13 +139,23 @@
   }
 
   function imageUrlFromMed(med) {
-    for (var i = 0; i < arguments.length; i++) {}
     var keys = ['image_url', 'imageUrl', 'hero_url', 'product_image_url'];
     for (var j = 0; j < keys.length; j++) {
       var v = med[keys[j]];
       if (v && String(v).trim()) return String(v).trim();
     }
-    return null;
+    var base = (typeof window !== 'undefined' && window.MEDICINE_IMAGE_CDN_BASE) || '';
+    if (!base) return null;
+    var slug = med.image_slug || med.product_image_slug || '';
+    if (!slug) {
+      var name = med.product_name || med.name || '';
+      if (name) {
+        slug = String(name).replace(/\s+/g, '-').replace(/[^\w\-一-龥ぁ-んァ-ヶ]/g, '').slice(0, 80);
+      }
+    }
+    if (!slug) return null;
+    var ext = med.image_ext || 'webp';
+    return String(base).replace(/\/?$/, '/') + slug + '.' + String(ext).replace(/^\./, '');
   }
 
   function splitUsageField(usageText) {

@@ -467,6 +467,8 @@ def generate_doc_answer_text(
 ) -> str:
     """公式 docs/*.md を参照し、Concierge LLM で正確に回答する。"""
     title, doc_body = load_concierge_doc(intent)
+    # 公式ドキュメント（特に privacy/terms）は md のみを根拠とする。KB 補助は meta 系のみ。
+    reference_body = doc_body
     hist = ""
     if history:
         lines = []
@@ -523,7 +525,7 @@ def generate_doc_answer_text(
 {title}
 
 【参照ドキュメント全文（唯一の根拠）】
-{doc_body}
+{reference_body}
 
 【会話履歴（参考）】
 {hist or "（なし）"}
@@ -1667,6 +1669,9 @@ def _invoke_meta_concierge_llm(
     context = format_meta_concierge_context_block(history, user_text, intent=intent)
     requirements = _meta_requirements_for(user_text, intent)
     reference = _meta_reference_block(intent)
+    from src.services.bedrock_kb_retrieve import augment_reference_with_kb
+
+    reference = augment_reference_with_kb(user_text, reference)
     prompt = f"""{get_policy_snippet()}
 
 {reference}

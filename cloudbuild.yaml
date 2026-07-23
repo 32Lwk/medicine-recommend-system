@@ -56,7 +56,7 @@ steps:
           --image="$${IMAGE}" \
           --region="${_DEPLOY_REGION}" \
           --platform=managed \
-          --update-env-vars "GIT_COMMIT=${COMMIT_SHA},GIT_COMMIT_DATE=$${COMMIT_DATE}" \
+          --update-env-vars "GIT_COMMIT=${COMMIT_SHA},GIT_COMMIT_DATE=$${COMMIT_DATE},MEDICINE_IMAGE_CDN_BASE=https://images.yutok.dev/otc/" \
           --startup-probe=httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=3,periodSeconds=5,failureThreshold=24 \
           --quiet
 

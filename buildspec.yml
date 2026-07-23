@@ -42,6 +42,11 @@ phases:
         fi
       - echo "==> ECS force redeploy ${ECS_CLUSTER}/${ECS_SERVICE}"
       - aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" --force-new-deployment --region "$AWS_DEFAULT_REGION" --query 'service.serviceName' --output text
+      - |
+        if [ "${SYNC_STATIC_TO_S3:-false}" = "true" ]; then
+          echo "==> sync static/ to S3 (CloudFront origin)"
+          bash scripts/sync-static-to-s3.sh --invalidate || echo "WARN: static sync failed"
+        fi
       - echo "Done. https://aws.medicine.yutok.dev/health"
 
 cache:

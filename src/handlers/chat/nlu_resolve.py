@@ -114,5 +114,8 @@ def resolve_nlu_for_recommendation(
 
     merged_prefs = merge_user_preferences(llm_prefs, context_text, nlu)
     nlu["user_preferences"] = merged_prefs
+    from src.services.comprehend_medical import merge_comprehend_into_nlu
+
+    nlu = merge_comprehend_into_nlu(nlu, user_text, session_id=session_id)
     set_cached_nlu_result(user_text, nlu, session_id)
     return nlu

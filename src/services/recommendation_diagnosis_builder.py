@@ -232,6 +232,7 @@ def build_diagnosis_v1(
         recommendation_result.get("recommended_medicines") or [],
         medicine_type=medicine_type or None,
         symptoms=symptoms,
+        session_id=session_id,
     )
     usage_notes = recommendation_result.get("usage_notes") or ""
     usage_sections = (

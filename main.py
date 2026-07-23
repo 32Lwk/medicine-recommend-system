@@ -452,10 +452,10 @@ def _resolve_git_commit_browse_url() -> str | None:
 def _compat_url_for(endpoint: str, **values) -> str:
     # templates/*.html は Flask 互換の url_for('static', filename=...) を使用している。
     if endpoint == "static":
+        from config.aws_features import resolve_static_asset_url
+
         filename = values.get("filename") or values.get("path") or ""
-        if filename.startswith("/"):
-            filename = filename[1:]
-        return f"/static/{filename}"
+        return resolve_static_asset_url(filename)
     raise KeyError(f"Unsupported url_for endpoint: {endpoint}")
 
 
@@ -528,6 +528,18 @@ async def _unhandled_exception_handler(request: Request, exc: Exception):
     return HTMLResponse(f"<h1>エラー</h1><p>{error_msg}</p>", status_code=500)
 
 
+def _medicine_image_cdn_base() -> str:
+    from config.aws_features import get_medicine_image_cdn_base
+
+    return get_medicine_image_cdn_base()
+
+
+def _tts_provider() -> str:
+    from config.aws_features import get_tts_provider
+
+    return get_tts_provider()
+
+
 def _render_index(request: Request, sid: str, app_base_path: str, status_code: int = 200) -> HTMLResponse:
     # VERSION は毎プロセスで固定（キャッシュバスティング用）
     nv = _normalized_app_version_env()
@@ -548,6 +560,7 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
             "gitCommitDateIso": _resolve_git_commit_date_iso(),
             "gitRepoUrl": _DEFAULT_GIT_REPO_URL,
             "gitCommitUrl": _resolve_git_commit_browse_url(),
+            "medicineImageCdnBase": _medicine_image_cdn_base(),
         }
     )
 
@@ -565,6 +578,8 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
             "is_dev_env": is_dev_env,
             "runtime_client_config_json": runtime_client_config_json,
             "ui_variant": ui_variant,
+            "medicine_image_cdn_base": _medicine_image_cdn_base(),
+            "tts_provider": _tts_provider(),
         },
         status_code=status_code,
     )
@@ -688,6 +703,33 @@ def health_check():
         "status": "ok",
         "git_commit": os.environ.get("GIT_COMMIT", ""),
     }
+
+
+@app.post("/api/tts")
+async def api_tts(request: Request):
+    """Amazon Polly TTS（TTS_PROVIDER=polly 時のみ。AWS ステージング向け）。"""
+    from config.aws_features import use_polly_tts
+
+    if not use_polly_tts():
+        return JSONResponse({"error": "not_available"}, status_code=404)
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse({"error": "invalid_json"}, status_code=400)
+    text = str(body.get("text") or "").strip()
+    lang = str(body.get("lang") or "ja").strip().lower()[:2]
+    if not text:
+        return JSONResponse({"error": "text_required"}, status_code=400)
+    if len(text) > 3000:
+        text = text[:3000]
+    try:
+        from src.services.polly_tts import synthesize_speech_mp3
+
+        audio = synthesize_speech_mp3(text, lang)
+    except Exception as exc:
+        logger.exception("Polly TTS failed")
+        return JSONResponse({"error": "synthesis_failed", "detail": str(exc)[:200]}, status_code=502)
+    return StarletteResponse(content=audio, media_type="audio/mpeg")
 
 
 @app.get("/", response_class=HTMLResponse)

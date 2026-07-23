@@ -7,12 +7,14 @@ from src.content.concierge_docs import (
 
 
 def test_all_doc_intents_load():
-    assert len(DOC_CONCIERGE_INTENTS) == 5
-    for intent in DOC_CONCIERGE_INTENTS:
+    assert len(DOC_CONCIERGE_INTENTS) == 6
+    file_backed = DOC_CONCIERGE_INTENTS - {"doc_changelog"}
+    for intent in file_backed:
         assert is_doc_concierge_intent(intent)
         title, body = load_concierge_doc(intent)
         assert title
         assert len(body) > 50
+    assert is_doc_concierge_intent("doc_changelog")
 
 
 def test_privacy_doc_contains_policy_heading():

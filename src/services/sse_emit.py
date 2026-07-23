@@ -254,7 +254,10 @@ def emit_cards(
     session_id: Optional[str] = None,
 ) -> None:
     payload = []
+    from src.services.medicine_image_urls import enrich_medicine_image_url
+
     for i, med in enumerate(medicines[:5], 1):
+        med = enrich_medicine_image_url(dict(med))
         efficacy = med.get("efficacy") or ""
         if not isinstance(efficacy, str):
             efficacy = str(efficacy) if efficacy is not None else ""

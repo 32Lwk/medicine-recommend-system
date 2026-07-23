@@ -616,6 +616,8 @@
         window.APP_VERSION = {{ version | tojson }};
         window.APP_BASE_PATH = {{ (app_base_path or '') | tojson }};
         window.CHAT_USE_SSE = true;
+        window.MEDICINE_IMAGE_CDN_BASE = {{ (medicine_image_cdn_base or '') | tojson }};
+        window.__TTS_PROVIDER__ = {{ tts_provider | tojson }};
     </script>
     <script src="{{ url_for('static', filename='js/easter-eggs.js') }}?v={{ version }}" defer onerror="console.error('Failed to load Easter Eggs JS file')"></script>
     <script src="{{ url_for('static', filename='js/processing_status.js') }}?v={{ version }}" defer></script>

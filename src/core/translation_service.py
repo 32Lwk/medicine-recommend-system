@@ -1,7 +1,7 @@
 """
 医薬品推奨文の翻訳モジュール
 
-DeepL API を用いた翻訳とキャッシュの責務を持つ。
+DeepL API（既定）または Amazon Translate（AWS ステージング）とキャッシュの責務を持つ。
 """
 import logging
 import os
@@ -20,6 +20,11 @@ _max_cache_size = 200
 def get_cached_translation(text: str, target_language: str):
     """翻訳キャッシュから結果を取得"""
     cache_key = f"{target_language}:{hash(text)}"
+    from src.services.redis_cache import cache_get
+
+    redis_val = cache_get(f"translate:{cache_key}")
+    if redis_val:
+        return redis_val
     return _translation_cache.get(cache_key)
 
 
@@ -31,6 +36,29 @@ def set_cached_translation(text: str, target_language: str, translated_text: str
         del _translation_cache[oldest_key]
     cache_key = f"{target_language}:{hash(text)}"
     _translation_cache[cache_key] = translated_text
+    from src.services.redis_cache import cache_set
+
+    cache_set(f"translate:{cache_key}", translated_text, ttl_sec=86400)
+
+
+def _translate_target_code(target_language: str) -> str:
+    return {"en": "en", "ko": "ko", "zh": "zh"}.get(target_language, "en")
+
+
+def _translate_with_aws(text: str, target_language: str) -> str:
+    from config.aws_features import get_aws_region, use_aws_translate
+
+    if not use_aws_translate():
+        raise RuntimeError("TRANSLATION_PROVIDER is not translate")
+    import boto3
+
+    client = boto3.client("translate", region_name=get_aws_region())
+    resp = client.translate_text(
+        Text=text,
+        SourceLanguageCode="ja",
+        TargetLanguageCode=_translate_target_code(target_language),
+    )
+    return str(resp.get("TranslatedText") or text)
 
 
 def translate_medicine_recommendation(text, target_language, client=None, session_id=None):
@@ -64,6 +92,37 @@ def translate_medicine_recommendation(text, target_language, client=None, sessio
             except Exception as e:
                 logger.warning(f"翻訳ログ記録エラー: {e}")
         return cached_result
+
+    from config.aws_features import use_aws_translate
+
+    if use_aws_translate():
+        try:
+            start_time = time.time()
+            translated_text = _translate_with_aws(text, target_language)
+            elapsed_time = time.time() - start_time
+            logger.info(
+                "✅ Amazon Translate完了 (%s): %.2f秒, %d文字",
+                target_language,
+                elapsed_time,
+                len(translated_text),
+            )
+            set_cached_translation(text, target_language, translated_text)
+            if session_id:
+                try:
+                    from src.utils.structured_logger import log_translation_detail
+
+                    log_translation_detail(
+                        session_id=session_id,
+                        original_text=text[:500],
+                        translated_text=translated_text[:500],
+                        target_language=target_language,
+                    )
+                except Exception as e:
+                    logger.warning(f"翻訳ログ記録エラー: {e}")
+            return translated_text
+        except Exception as e:
+            logger.error(f"❌ Amazon Translate エラー: {e}")
+            return text
 
     try:
         from dotenv import load_dotenv

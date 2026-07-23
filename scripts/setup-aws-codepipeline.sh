@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 # One-time: IAM roles, S3, CodeStar connection, CodeBuild, CodePipeline
-# Usage: AWS_PROFILE=admin ./scripts/setup-aws-codepipeline.sh
+# Usage: ./scripts/setup-aws-codepipeline.sh
+# AWS_PROFILE=medicine-recommend-dev（省略可 — aws_common.sh 既定）
 set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=lib/aws_common.sh
+source "$ROOT/scripts/lib/aws_common.sh"
 
 ACCOUNT_ID="${AWS_ACCOUNT_ID:-290780119994}"
 REGION="${AWS_REGION:-ap-northeast-1}"

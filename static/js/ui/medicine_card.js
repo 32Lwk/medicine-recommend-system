@@ -14,9 +14,12 @@
     var variantClass = variant === 'pro' || variant === 'card' ? 'ui-med-image--card' : 'ui-med-image--' + variant;
     var url = m.imageUrl;
     if (url) {
+      var ph = m.placeholderUrl || (global.MedicineMapper && global.MedicineMapper.placeholderUrl) || '';
       return (
         '<div class="ui-med-image ' + variantClass + '">' +
-          '<img src="' + esc(url) + '" alt="' + esc(m.name) + '" loading="lazy" decoding="async">' +
+          '<img src="' + esc(url) + '" alt="' + esc(m.name) + '" loading="lazy" decoding="async"' +
+          (ph ? ' onerror="this.onerror=null;this.src=\'' + esc(ph) + '\';this.closest(\'.ui-med-image\').classList.add(\'ui-med-image--placeholder\');"' : '') +
+          '>' +
         '</div>'
       );
     }

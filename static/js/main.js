@@ -13829,12 +13829,73 @@ function appendQaDelta(text, section) {
     let currentUtterance = null;
     let voiceReadSpeed = parseFloat(localStorage.getItem('voiceReadSpeed')) || 1.0;
     let voiceReadProgress = 0;
+    let pollyAudio = null;
+
+    function stopPollyAudio() {
+        if (pollyAudio) {
+            try {
+                pollyAudio.pause();
+            } catch (e) { /* ignore */ }
+            if (pollyAudio.src && pollyAudio.src.indexOf('blob:') === 0) {
+                try { URL.revokeObjectURL(pollyAudio.src); } catch (e2) { /* ignore */ }
+            }
+            pollyAudio = null;
+        }
+    }
+
+    function speakViaPolly(text, lang) {
+        const basePath = window.APP_BASE_PATH || '';
+        updateVoiceReadButtonState(true);
+        showVoiceReadProgress();
+        voiceReadProgress = 0;
+        updateVoiceReadProgress(0);
+        fetch(basePath + '/api/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text, lang: lang || 'ja' }),
+        })
+            .then(function (res) {
+                if (!res.ok) {
+                    throw new Error('TTS HTTP ' + res.status);
+                }
+                return res.blob();
+            })
+            .then(function (blob) {
+                stopPollyAudio();
+                pollyAudio = new Audio(URL.createObjectURL(blob));
+                pollyAudio.onplay = function () {
+                    isReading = true;
+                };
+                pollyAudio.onended = function () {
+                    stopPollyAudio();
+                    updateVoiceReadButtonState(false);
+                    hideVoiceReadProgress();
+                    isReading = false;
+                    voiceReadProgress = 0;
+                };
+                pollyAudio.onerror = function () {
+                    stopPollyAudio();
+                    updateVoiceReadButtonState(false);
+                    hideVoiceReadProgress();
+                    isReading = false;
+                    alert('音声読み上げでエラーが発生しました。');
+                };
+                return pollyAudio.play();
+            })
+            .catch(function (err) {
+                console.error('Polly TTS error:', err);
+                updateVoiceReadButtonState(false);
+                hideVoiceReadProgress();
+                isReading = false;
+                alert('音声読み上げの開始に失敗しました。');
+            });
+    }
     
     // 音声読み上げのトグル機能
     function toggleVoiceRead() {
         if (isReading) {
-            // 読み上げ中 → 停止
             speechSynthesis.cancel();
+            stopPollyAudio();
             updateVoiceReadButtonState(false);
             hideVoiceReadProgress();
             isReading = false;
@@ -13885,9 +13946,16 @@ function appendQaDelta(text, section) {
             alert('読み上げる内容がありません。');
             return;
         }
+
+        speechSynthesis.cancel();
+        stopPollyAudio();
+
+        if (window.__TTS_PROVIDER__ === 'polly') {
+            speakViaPolly(text, (typeof currentLanguage !== 'undefined' && currentLanguage) || 'ja');
+            return;
+        }
         
         // 既存の読み上げを停止
-        speechSynthesis.cancel();
         
         // 新しい読み上げを開始
         const utterance = new SpeechSynthesisUtterance(text);
@@ -14037,7 +14105,8 @@ function appendQaDelta(text, section) {
         // 読み上げ中の場合は再開
         if (isReading) {
             speechSynthesis.cancel();
-            setTimeout(() => {
+            stopPollyAudio();
+            setTimeout(function () {
                 speakFullRecommendation();
             }, 100);
         }

@@ -2495,6 +2495,7 @@ def run_recommendation_flow(
                             recommended_medicines,
                             medicine_type=medicine_type,
                             symptoms=symptoms,
+                            session_id=sid,
                         )
                         recommendation_result["recommended_medicines"] = recommended_medicines
     

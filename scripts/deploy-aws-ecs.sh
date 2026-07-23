@@ -3,6 +3,10 @@
 # Prerequisites: aws CLI configured, docker, account 290780119994
 set -euo pipefail
 
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=lib/aws_common.sh
+source "$ROOT/scripts/lib/aws_common.sh"
+
 ACCOUNT_ID="${AWS_ACCOUNT_ID:-290780119994}"
 REGION="${AWS_REGION:-ap-northeast-1}"
 REPO="${ECR_REPO:-medicine-recommend}"
@@ -10,7 +14,6 @@ CLUSTER="${ECS_CLUSTER:-default}"
 SERVICE="${ECS_SERVICE:-medicine-recommend}"
 IMAGE="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${REPO}:latest"
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 COMMIT="$(git rev-parse HEAD 2>/dev/null || echo unknown)"

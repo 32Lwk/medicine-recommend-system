@@ -668,6 +668,11 @@ def build_advice_bubble(
 
 def resolve_medicine_hero_url(medicine: dict) -> str:
     """商品画像 URL があればそれを、なければ No Image プレースホルダーを返す。"""
+    from src.services.medicine_image_urls import resolve_medicine_image_url
+
+    cdn_url = resolve_medicine_image_url(medicine)
+    if cdn_url and cdn_url.startswith("https://"):
+        return cdn_url
     for key in ("image_url", "hero_url", "product_image_url"):
         val = (medicine.get(key) or "").strip()
         if val.startswith("https://"):

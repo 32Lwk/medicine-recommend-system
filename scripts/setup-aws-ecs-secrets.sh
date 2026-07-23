@@ -2,11 +2,14 @@
 # ECS Express: Secrets Manager 作成 + タスク定義更新 + サービス再デプロイ
 #
 # Usage:
-#   export AWS_PROFILE=admin
-#   cp .env.example .env   # OPENAI_API_KEY, DATABASE_URL, SECRET_KEY を記入
 #   ./scripts/setup-aws-ecs-secrets.sh .env
 #
+# AWS プロファイル: scripts/lib/aws_common.sh で medicine-recommend-dev が既定
 set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=lib/aws_common.sh
+source "$ROOT/scripts/lib/aws_common.sh"
 
 ENV_FILE="${1:-.env}"
 REGION="${AWS_REGION:-ap-northeast-1}"
@@ -66,7 +69,7 @@ fi
 echo "==> Register new task definition revision" >&2
 CURRENT="$(aws ecs describe-task-definition --task-definition "$TASK_FAMILY" --region "$REGION" --output json)"
 NEW_ENV=$(python3 - "$CURRENT" "$OPENAI_ARN" "$DB_ARN" "$SECRET_KEY_ARN" "$ADMIN_ARN" <<'PY'
-import json, sys
+import json, os, sys
 td = json.loads(sys.argv[1])["taskDefinition"]
 for k in ("taskDefinitionArn", "revision", "status", "requiresAttributes", "compatibilities", "registeredAt", "registeredBy"):
     td.pop(k, None)
@@ -77,6 +80,25 @@ base.setdefault("PUBLIC_SITE_URL", "https://aws.medicine.yutok.dev")
 base.setdefault("GUNICORN_WORKERS", "2")
 base.setdefault("GUNICORN_WORKER_CLASS", "uvicorn.workers.UvicornWorker")
 base.setdefault("GUNICORN_TIMEOUT", "300")
+for key in (
+    "MEDICINE_IMAGE_CDN_BASE",
+    "TRANSLATION_PROVIDER",
+    "TTS_PROVIDER",
+    "CONCIERGE_RAG_PROVIDER",
+    "COMPREHEND_MEDICAL_ENABLED",
+    "AWS_REGION",
+    "AWS_DEFAULT_REGION",
+    "REDIS_URL",
+    "PERSONALIZE_CAMPAIGN_ARN",
+    "PERSONALIZE_TRACKING_ID",
+    "BEDROCK_KB_ID",
+    "STATIC_CDN_BASE_URL",
+):
+    val = os.environ.get(key)
+    if val:
+        base[key] = val
+if not base.get("MEDICINE_IMAGE_CDN_BASE"):
+    base.setdefault("MEDICINE_IMAGE_CDN_BASE", "https://images.yutok.dev/otc/")
 c["environment"] = [{"name": k, "value": v} for k, v in sorted(base.items())]
 c["secrets"] = [
     {"name": "OPENAI_API_KEY", "valueFrom": sys.argv[2]},

@@ -1,0 +1,39 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "IamRolesMedicineRecommend",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:GetRole",
+        "iam:PutRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:AttachRolePolicy",
+        "iam:PassRole"
+      ],
+      "Resource": "arn:aws:iam::290780119994:role/medicine-recommend-*"
+    },
+    {
+      "Sid": "BedrockKb",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:CreateKnowledgeBase",
+        "bedrock:GetKnowledgeBase",
+        "bedrock:ListKnowledgeBases",
+        "bedrock:UpdateKnowledgeBase",
+        "bedrock:CreateDataSource",
+        "bedrock:StartIngestionJob",
+        "bedrock:InvokeModel",
+        "bedrock-agent:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "OpenSearchServerless",
+      "Effect": "Allow",
+      "Action": "aoss:*",
+      "Resource": "*"
+    }
+  ]
+}
