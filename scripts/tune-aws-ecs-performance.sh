@@ -7,10 +7,14 @@
 #   - GUNICORN_WORKERS=1 → 同時リクエスト 1 本のみ
 #
 # Usage:
-#   export AWS_PROFILE=admin
+#   # AWS_PROFILE=medicine-recommend-dev（省略可 — aws_common.sh 既定）
 #   ./scripts/tune-aws-ecs-performance.sh
 #
 set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# shellcheck source=lib/aws_common.sh
+source "$ROOT/scripts/lib/aws_common.sh"
 
 REGION="${AWS_REGION:-ap-northeast-1}"
 CLUSTER="${ECS_CLUSTER:-default}"

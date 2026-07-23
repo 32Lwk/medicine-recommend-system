@@ -65,7 +65,7 @@ def _extract_overview(section_body: str, *, max_chars: int = 420) -> str:
     return plain[: max_chars - 1].rstrip() + "…"
 
 
-def _extract_highlights(section_body: str, *, max_items: int = 8) -> Tuple[str, ...]:
+def _extract_highlights(section_body: str, *, max_items: int = 24) -> Tuple[str, ...]:
     items: List[str] = []
     for raw in section_body.splitlines():
         if _TABLE_LINE_RE.match(raw):
@@ -428,6 +428,27 @@ def _release_date_key(heading: str) -> str:
     return m.group(1) if m else ""
 
 
+def release_user_facing_items(
+    release: ChangelogRelease,
+    *,
+    max_items: int = 4,
+) -> List[str]:
+    """概要＋ハイライトからユーザー向け箇条書き（ファイルパスは除外）。"""
+    items = overview_to_user_bullets(release.overview, max_items=max_items)
+    if len(items) >= max_items:
+        return items[:max_items]
+    seen = set(items)
+    for highlight in release.highlights:
+        softened = _soften_for_user_display(highlight)
+        if not softened or softened in seen:
+            continue
+        items.append(softened)
+        seen.add(softened)
+        if len(items) >= max_items:
+            break
+    return items
+
+
 def build_changelog_ui_sections(
     releases: Tuple[ChangelogRelease, ...],
     *,
@@ -443,8 +464,8 @@ def build_changelog_ui_sections(
 
     grouped: List[dict[str, Any]] = []
     for idx, release in enumerate(releases[:max_releases]):
-        items = overview_to_user_bullets(
-            release.overview,
+        items = release_user_facing_items(
+            release,
             max_items=max_items_per_release,
         )
         if not items:

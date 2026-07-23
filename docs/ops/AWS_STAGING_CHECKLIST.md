@@ -52,10 +52,17 @@ STATIC_CDN_BASE_URL=$STATIC_CDN_BASE_URL ./scripts/update-aws-express-env.sh
 | `/health` | `200` |
 | static CSS | DevTools で CloudFront URL から読み込み（`STATIC_CDN_BASE_URL` 設定時） |
 
-CodePipeline で static 同期する場合:
+CodePipeline で static 同期 + smoke（push 毎自動）:
 
-- [ ] CodeBuild env `SYNC_STATIC_TO_S3=true`
-- [ ] CodeBuild ロールに S3 + `cloudfront:CreateInvalidation`
+- [x] CodeBuild env `SYNC_STATIC_TO_S3=true`（[buildspec.yml](../../buildspec.yml) 既定 + CodeBuild 環境変数）
+- [x] CodeBuild ロールに S3 + `cloudfront:CreateInvalidation`（`setup-aws-codepipeline.sh`）
+- [x] post_build: `sync-static-to-s3.sh --invalidate` → `aws-staging-smoke.sh`（Translate / Polly / CDN）
+
+手動 smoke（ローカル）:
+
+```bash
+GIT_COMMIT=$(git rev-parse HEAD) ./scripts/aws-staging-smoke.sh
+```
 
 ## Phase 2 — Translate / Polly / R2 画像
 

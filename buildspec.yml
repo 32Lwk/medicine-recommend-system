@@ -9,6 +9,8 @@ env:
     IMAGE_REPO_NAME: "medicine-recommend"
     ECS_CLUSTER: "default"
     ECS_SERVICE: "medicine-recommend"
+    SYNC_STATIC_TO_S3: "true"
+    AWS_STAGING_URL: "https://aws.medicine.yutok.dev"
 
 phases:
   pre_build:
@@ -42,12 +44,16 @@ phases:
         fi
       - echo "==> ECS force redeploy ${ECS_CLUSTER}/${ECS_SERVICE}"
       - aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" --force-new-deployment --region "$AWS_DEFAULT_REGION" --query 'service.serviceName' --output text
+      - echo "==> wait for ECS service stable"
+      - aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" --region "$AWS_DEFAULT_REGION"
       - |
         if [ "${SYNC_STATIC_TO_S3:-false}" = "true" ]; then
           echo "==> sync static/ to S3 (CloudFront origin)"
-          bash scripts/sync-static-to-s3.sh --invalidate || echo "WARN: static sync failed"
+          bash scripts/sync-static-to-s3.sh --invalidate
         fi
-      - echo "Done. https://aws.medicine.yutok.dev/health"
+      - echo "==> AWS staging smoke (Translate / Polly / CDN)"
+      - bash scripts/aws-staging-smoke.sh
+      - echo "Done. ${AWS_STAGING_URL:-https://aws.medicine.yutok.dev}/health"
 
 cache:
   paths:

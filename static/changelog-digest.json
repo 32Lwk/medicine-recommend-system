@@ -1,7 +1,62 @@
 {
   "source": "CHANGELOG.md",
-  "header_date": "2026年7月4日（風邪＋水泳推奨改善・RECO_* 本番一括展開・年齢警告・風邪症状チップ・競技ドーピング配慮）",
+  "header_date": "2026年7月23日（AWS/Cloudflare ステージング一括展開・CodeBuild 自動 static 同期/smoke・Concierge 更新履歴/技術回答改善）",
   "releases": [
+    {
+      "heading": "2026年7月23日 — AWS/Cloudflare ステージング展開・CI 自動化・Concierge 改善",
+      "overview": "ブランチ main に、GCP 本番（medicine.yutok.dev）を変更せず AWS ステージング（aws.medicine.yutok.dev）で Translate / Polly / Bedrock KB(RAG) / Comprehend Medical / ElastiCache / Personalize / CloudFront static CDN / Cloudflare R2 画像を env ゲート付きで一括導入（commit 74b7fde）。あわせて CodeBuild で push 毎の static S3 同期 + CloudFront invalidation + Translate/Polly smoke を自動化し、Concierge の 更新履歴（doc_changelog）表示不足 と AWS 環境での技術質問が GCP 前提で答える問題 を修正した。",
+      "highlights": [
+        "config/aws_features.py（新規）: TRANSLATION_PROVIDER（deepl | translate）、TTS_PROVIDER（webspeech | polly）、CONCIERGE_RAG_PROVIDER（local | bedrock_…",
+        ".env.example: AWS ステージング向け env 例を追記",
+        "docs/ops/AWS_FEATURES_ROLLOUT.md（新規）: ロールアウト方針・env 一覧",
+        "docs/medicine.md: Bedrock KB / AWS ステージング構成の説明を更新",
+        "scripts/setup-aws-infra.sh（新規）: Phase 1 一括（CloudWatch / WAF / CloudFront）",
+        "scripts/setup-aws-waf.sh（新規）: ALB 向け WAF（Rate limit + AWSManagedRulesCommonRuleSet）",
+        "scripts/setup-aws-cloudfront.sh（新規）: S3 オリジン + CloudFront 配信（STATIC_CDN_BASE_URL）",
+        "scripts/setup-aws-cloudwatch.sh（新規）: Log Group /ecs/medicine-recommend + アラーム雛形",
+        "scripts/sync-static-to-s3.sh（新規）: static/ → S3 + 任意 CloudFront invalidation",
+        "scripts/lib/aws_common.sh（新規）: AWS CLI 共通（プロファイル medicine-recommend-dev 既定、Git Bash MSYS 対策）",
+        "docs/ops/AWS_INFRA.md（新規）: 構成・手順",
+        "src/core/translation_service.py: TRANSLATION_PROVIDER=translate 時 Amazon Translate + Redis/メモリキャッシュ",
+        "src/services/polly_tts.py（新規）: Amazon Polly MP3 合成",
+        "main.py: POST /api/tts（Polly ON 時）、GET /health/aws（機能フラグ smoke 用）、POST /api/smoke/aws-translate（CI smoke 用）",
+        "static/js/main.js: TTS_PROVIDER=polly 時 /api/tts 経由の読み上げ",
+        "templates/index.html: window.__TTS_PROVIDER__ を注入",
+        "src/services/medicine_image_urls.py（新規）: MEDICINE_IMAGE_CDN_BASE（R2/CDN）URL 解決",
+        "static/js/ui/medicine_mapper.js / medicine_card.js / src/handlers/line/flex_messages.py: 画像 URL 統一 + onerror プレースホルダー",
+        "scripts/upload-r2-otc-image.sh / upload_r2_otc_image.py（新規）: R2 へ OTC 画像アップロード",
+        "docs/ops/CLOUDFLARE_R2_IMAGES.md（新規）: R2 + images.yutok.dev 運用",
+        "scripts/setup-aws-bedrock-kb.sh / create-aws-bedrock-kb.sh / sync-concierge-kb-to-s3.sh / sync-aws-bedrock-kb-ingestion.sh / start_bedrock_…",
+        "**scripts/setup-aws-opensearch-kb-collection.sh / setup-aws-aoss-vector-index.sh / create_aoss_vector_index.py / update-aoss-kb-*-policy.sh…",
+        "src/services/bedrock_kb_retrieve.py（新規）: Bedrock KB retrieve + Redis キャッシュ + Concierge 参照ブロック追記",
+        "src/agents/concierge_agent.py: augment_reference_with_kb() で architecture 等に KB チャンク注入"
+      ]
+    },
+    {
+      "heading": "2026年7月22日 — Chat Pipeline v2 本番デフォルト ON・障害 UX・AWS CodePipeline / ECS",
+      "overview": "ブランチ main に、Chat Pipeline v2 / IntentRouter PRIMARY / レガシー経路 TRIM を本番・dev とも env 未設定で 一括 ON に変更。OPENAI 未設定・パイプライン無応答時の Sage 障害カード UX を v2 経路でも復元。あわせて GitHub main push → CodeBuild → ECR → ECS Express（aws.medicine.yutok.dev）の CI/CD を追加し、デプロイ・ビルドの遅延要因を調査・改善した。",
+      "highlights": [
+        "config/llm_flags.py: CHAT_PIPELINE_V2 / INTENT_ROUTER_PRIMARY / LEGACY_FALLBACK_TRIM を本番・dev で env 未設定 = ON。pytest 実行中のみ OFF（既存テストの決定論を維持）。…",
+        "ALLOWLIST 削除: CHAT_PIPELINE_V2_ALLOWLIST / PRIMARY_ALLOWLIST を削除。DENYLIST のみセッション単位ロールバック用に残存",
+        "docs/dev/CHAT_PIPELINE_V2.md, .env.example, scripts/cloudrun_v2_env.example, scripts/verify_v2_canary_flags.py: カナリア env 不要・本番一括 ON の運用に合わせ…",
+        "src/services/llm_unavailability.py: is_openai_configured() / is_llm_configuration_error_text() を追加。インフラ系 triage 判定を拡張。try_respond_when_open…",
+        "src/handlers/chat/chat_post_pipeline.py: POST 直後の OPENAI 未設定ガード",
+        "src/handlers/chat/chat_symptom_route.py: レガシー {\"error\": True} JSON を廃止 → Sage カード（llm_unavailable / system_error の使い分け）",
+        "src/handlers/chat/chat_pipeline_end_guard.py: パイプライン終了時に bot 応答が無い場合、system_error Sage カードを自動追加（fail loud）",
+        "方針: インフラ障害 = llm_unavailable、その他 = system_error。LLM_AGENT_ENABLED は固定 ON 想定だが env は緊急キルスイッチとして残す",
+        "buildspec.yml（新規）: GitHub main → CodeBuild（linux/amd64 Docker build → ECR push → ecs update-service --force-new-deployment）。ビルド失敗時は ECS デプロ…",
+        "scripts/setup-aws-codepipeline.sh（新規）: Pipeline medicine-recommend-main、CodeBuild medicine-recommend-build、CodeStar Connection、IAM ロールの初回セッ…",
+        "scripts/deploy-aws-ecs.sh（新規）: Pipeline なしの手動ビルド・プッシュ・再デプロイ",
+        "scripts/setup-aws-ecs-secrets.sh（新規）: .env から Secrets Manager（OPENAI / DATABASE_URL / SECRET_KEY 等）を投入し、タスク定義を更新して再デプロイ",
+        "docs/ops/AWS_CODEPIPELINE.md（新規）: 構成・初回 OAuth・手動実行・トラブルシュート",
+        "Dockerfile: CodeBuild の Docker Hub 429 回避のため public.ecr.aws/docker/library/python:3.11-slim ベースイメージに変更（commit 3357e54）",
+        "本番 URL: https://aws.medicine.yutok.dev/health（git_commit でデプロイ revision を確認）",
+        "scripts/tune-aws-ecs-performance.sh（新規）: CANARY bake 短縮・GUNICORN ワーカー数・CodeBuild キャッシュを一括適用",
+        "Secrets 投入（ユーザー側）: cp .env.example .env → OPENAI_API_KEY / DATABASE_URL / SECRET_KEY を記入 → ./scripts/setup-aws-ecs-secrets.sh .env",
+        "SECRET_KEY: 管理画面 Cookie HMAC 署名用（src/services/admin_auth.py）。Flask セッション用ではない",
+        "GCP 本番（medicine.yutok.dev）は従来どおり Cloud Run。AWS はステージング / デモ用途"
+      ]
+    },
     {
       "heading": "2026年7月4日 — 風邪＋水泳推奨改善・RECO_* 本番一括展開",
       "overview": "「風邪ですが、水泳大会なので使える薬を教えて」のような初回相談が no_recommendation に落ちる問題を修正。直接原因だった年齢未入力時の chat 側フィルタ（15歳以上薬 3 件 → 0 件）と、no_candidates / escalation_required より前に実行される早期 empty fallback を解消し、sage_reco で候補を表示するようにした。 あわせて、RECO_AGE_POLICY_V2 / RECO_COLD_NLU_V2 / RECO_SPORTS_DOPING_FILTER は本番カナリア用 env を不要化し、本番・dev とも env 未設定で一括 ON に変更。明示 false のみ個別ロールバックとして扱う。pytest 実行中は未設定時 OFF を維持し、既存テストの決定論を保つ。",
@@ -13,7 +68,23 @@
         "src/services/recommendation_diagnosis_builder.py / src/schemas/recommendation_diagnosis_v1.py: age_policy_notice を DiagnosisV1 に反映し、制限薬名を a…",
         "static/js/ui/recommendation_renderer.js / static/js/ui/medicine_mapper.js / static/js/ui/medicine_card.js / static/js/main.js: sage_reco 上部…",
         "src/handlers/line/line_web_handoff.py: LINE Web handoff 時にも age_policy_notice を保持",
-        "ログ: pipeline_perf に reco_age_policy_v2、pre_age_filter_count、post_age_filter_count、empty_fallback_trigger を記録"
+        "ログ: pipeline_perf に reco_age_policy_v2、pre_age_filter_count、post_age_filter_count、empty_fallback_trigger を記録",
+        "src/core/recommendation/cold_symptom_expansion.py: 「風邪」入力に対して発熱、咳、のどの痛み、鼻水、鼻づまり、頭痛、関節痛をルール展開。症状 0–1 件で曖昧な場合は展開せず症状チップへ誘導",
+        "src/services/medicine_context_routing.py: cold_symptom_chip_prompt ルートを追加。cold_vague_only は症状チップ、cold_cold_swim_meet は cold_start_recommend…",
+        "src/handlers/chat/medicine_context_handlers.py / src/dialogue/dispatcher.py / src/handlers/chat/chat_post_pipeline.py / src/handlers/chat/c…",
+        "src/schemas/status_diagnosis_v1.py / static/js/ui/status_renderer.js / static/css/sage_terrace.css / static/js/main.js: suggested_symptoms…",
+        "src/handlers/line/flex_messages.py: cold_symptom_chip_prompt に LINE quickReply を付与し、Web と LINE の parity を確保",
+        "src/core/recommendation/final_score_calculator.py: 「風邪」文脈で風邪薬系、のど・鼻の外用候補にスコアボーナスを付与（閾値は変更なし）",
+        "src/core/influenza_detector.py: インフル疑い判定に高熱必須条件を追加し、誤検知を抑制",
+        "src/core/recommendation/medicine_type_resolver.py: 風邪薬 hint を小関数に抽出し、推奨タイプ解決をテスト可能にした",
+        "src/core/rule_based_recommendation.py: 競技文脈かつ RECO_SPORTS_DOPING_FILTER ON の場合、推奨候補から doping_prohibited == \"禁止物質あり\" を除外。除外後 0 件なら escalatio…",
+        "src/services/medicine_discovery_routing.py: 競技文脈キーワードに「水泳」「泳ぐ」「プール」「競泳」を追加",
+        "src/core/explanation_generator.py / src/services/chat_response_service.py: 競技・大会前後の使用可否、ドーピング規定への配慮を説明文に必ず含める指示を追加",
+        "scripts/cloudrun_v2_env.example: 風邪水泳推奨改善 Phase 1–3 は本番・dev とも未設定で ON と明記。問題時のみ RECO_AGE_POLICY_V2=false、RECO_COLD_NLU_V2=false、RECO_SPORTS…",
+        "本番カナリア用の RECO_* = true 設定は不要。一括デプロイで全セッションに適用",
+        "Live 統合: scripts/test_medicine_context_live.py で 10/10 PASS。cold_start_cold_swim は render=sage_reco",
+        "レポート: log/analysis/2026-07-04T021159Z_medicine_context_live.json",
+        "CI 修正: medicine_context gate を発熱・緊急判定の後へ移動し、guards が fever_flow を上書きしないよう修正（IntentRouter contract / gate テスト）"
       ]
     },
     {
@@ -27,7 +98,14 @@
         "src/services/meta_triage.py: meta triage プロンプトに doc_changelog を追加",
         "src/agents/emergency_classifier.py / src/handlers/line/line_delivery.py: 非緊急・遅延 Concierge intent リストに doc_changelog を追加",
         "src/dialogue/routing/intent_router_llm.py: プロンプトに app_about / doc_changelog の判定ガイドを追加。legacy triage の concierge_intent をヒントに含める。maybe_corre…",
-        "src/dialogue/routing/intent_router.py: route 決定後に app_about ガードを適用"
+        "src/dialogue/routing/intent_router.py: route 決定後に app_about ガードを適用",
+        "src/services/concierge_intent.py: probe_service_app_about_request() / is_excluded_service_app_about_request() — ユーザー自身の自己紹介・他アプリ紹介依頼を除外",
+        "static/js/processing_status.js: パイプライン step / detail_code からマスコット mood を細分化（idle / peek / think / scan / focus / spark / alert / compose /…",
+        "static/css/main.css: 目のみのマスコット + 頭上バブル（? ! …）の段階別 CSS アニメーション。prefers-reduced-motion 対応",
+        "templates/index.html: .chat-messages-viewport ラッパーを追加。シーズン装飾をビューポート下端に固定（メッセージスクロールと独立）",
+        "static/css/main.css / static/css/sage_terrace.css: 背景を viewport に移し .chat-messages は透明化。装飾レイヤの z-index・パディング調整",
+        "static/js/main.js: 全言語（ja / en / ko / zh）のオンボーディングスライドを「完了した改善」と「開発中・今後の予定」に分割。GitLab 一時移行の説明を dev スライドの footnote に移動。チェックリスト項目を現状に合わせて更新",
+        "static/css/main.css: .onboarding-footnote（<details> 折りたたみ）スタイル追加"
       ]
     },
     {
@@ -41,7 +119,23 @@
         "scripts/migrate_dev_neon_selective.py（新規）: v2 テストセッション除外のうえ line:* 実データ + feedback 等を Neon dev へ選別移行",
         ".env.example: ローカル Docker / Neon dev 接続例、LOCAL_DOCKER_DB_* 変数",
         ".gitignore: tmp_db_migration/ を追加",
-        "src/security/input_block_responses.py（新規）: threat_abuse / sexual_content / solicitation / illegal_drugs / system_abuse のカテゴリ分類と応答文言。性被害相談キー…"
+        "src/security/input_block_responses.py（新規）: threat_abuse / sexual_content / solicitation / illegal_drugs / system_abuse のカテゴリ分類と応答文言。性被害相談キー…",
+        "src/security/aggressive_input.py: 判定ロジックを input_block_responses.match_input_block に委譲",
+        "src/handlers/chat/chat_input_validator.py / chat_inappropriate_route.py: カテゴリ別 title / variant / kind でブロック応答。ブロック user メッセージに original_con…",
+        "src/services/session_manager.py: filter_messages_for_user_api() — ユーザー API では original_content 等を除去しプレースホルダのみ返却",
+        "main.py: api_sessions_get / api_sessions_restore で user API フィルタ適用",
+        "src/handlers/line/line_web_handoff.py: handoff 正規化後も user API フィルタ",
+        "static/js/main.js: 新 kind（inappropriate_sexual 等）を SECURITY_NOTICE に追加。user メッセージ畳み込みを uuid / message_id / pending_turn_id キーに変更",
+        "src/handlers/line/line_feedback.py: 不適切入力 kind ではフィードバック UI を非表示",
+        "src/analysis/session_conversation_analysis.py: セキュリティ応答 route_kind を挨拶誤判定から除外",
+        "src/services/store_facility_index.py（新規）: store_inquiry_keyword_catalog.json から施設・外部チェーン・小売チェーンの正規化インデックス。商品照合から施設名を分離",
+        "data/store_inquiry_keyword_catalog.json: external_retail_chains / retail_store_chains セクション追加（マツキヨ・ドンキ・百貨店・家電量販等）",
+        "src/services/store_inquiry_handler.py: 店内外デュアル案内（_compose_dual_location_guidance）、施設名ラベル解決、一般「薬局＋近く」問い合わせの external_chain 検出拡張",
+        "src/services/store_product_index.py: 施設トークン除外で商品誤マッチ防止",
+        "data/store_products.json: カテゴリに空 brands: [] フィールドを正規化追加",
+        "templates/admin_chat.html: sage_terrace.css 適用、data-ui-variant=\"sage\"。ヘッダーをアイコンボタン群に再構成。セッション管理モーダル・ログクリア確認モーダル追加。チャットメッセージ複数選択削除 UI",
+        "static/css/admin_chat.css: Sage Terrace トークン準拠の全面スタイル刷新（レイアウト・モーダル・セッションカード・チャットバブル）",
+        "static/css/scrollbar.css: #session-management-list 等の新スクロール領域を app-scrollbar グループに追加"
       ]
     },
     {
@@ -55,7 +149,21 @@
         "scripts/measure_intent_router_shadow.py / local_v2_chat_test_runner.py: IntentRouter KPI セクション、--failed-only / --resume / checkpoint",
         "config/llm_flags.py: _ux_rollout_flag() — 開発ランタイム（APP_ENV=development）で UX 十二種 + PRIMARY/TRIM を自動 ON。LATENCY_* は従来どおり明示 ON のみ",
         "src/dialogue/routing/intent_router.py / intent_router_llm.py: PRIMARY 切替（triage map 降格）",
-        "src/handlers/chat_orchestrator.py: dispatch 成功 route では meta_triage / SessionAgent / Concierge / Store 再判定をスキップ（orch-trim）"
+        "src/handlers/chat_orchestrator.py: dispatch 成功 route では meta_triage / SessionAgent / Concierge / Store 再判定をスキップ（orch-trim）",
+        "src/handlers/chat/chat_post_pipeline.py: LEGACY_FALLBACK_TRIM 観測ログ",
+        "src/services/concierge_orchestrator.py / store_inquiry_handler.py / session_ops.py: _intent_router_dispatch 連携",
+        "scripts/verify_v2_canary_flags.py（新規）: dev auto-on / 本番 ALLOWLIST パターン検証",
+        "scripts/canary_sim_smoke.py（新規）: 固定 sid 手動スモーク",
+        "scripts/cloudrun_v2_env.example: 本番カナリア用 env 一覧更新",
+        "背景: dev は env 手動投入済み（rev 00142-ln2）だがコードは 37da58c 相当で Phase 4b 実装未反映",
+        "APP_ENV タイポ developmen 修正（development に統一）",
+        "冗長 env（PRIMARY / TRIM / Phase 3 八種 / Phase 2 四種）を 削除可能（コード自動 ON で代替）",
+        "監視 t0 をコード反映時刻に リセット（log/analysis/2026-07-03_dev_p4b-rollout_monitoring.json）",
+        "log/analysis/: p4a-dispatch-final / p4a-gate* / p4b2〜p4b5a / p3-followup-hotfix* / dev_p4b-rollout_monitoring",
+        "log/raw/archive/2026-07-02_pre-p4a2-dispatch/: dispatch/shadow ログアーカイブ",
+        "p4-unify: legacy 物理削除・本番全面展開（plan 上は pending）",
+        "e2e p95 < 5s: Phase 1/1b レイテンシ（4b スコープ外）",
+        "concierge-followup-04/07: Sage / rule キーワード揺れ（既知・未対応）"
       ]
     },
     {
@@ -69,7 +177,23 @@
         "_kind_route() を kind 優先判定に是正（本文「市販薬」ヒューリスティックによる Concierge/Security/Store 誤判定を解消）",
         "レポートに レイテンシ KPI（e2e p50/p95、pipeline phase 内訳）セクション追加",
         "--judge: LLM-as-judge による内容品質スコア（意図充足・トーン・安全・総合 0–5）",
-        "src/services/llm_triage.py: LATENCY_TRIAGE_SINGLE_CALL 時の単一 structured call 経路"
+        "src/services/llm_triage.py: LATENCY_TRIAGE_SINGLE_CALL 時の単一 structured call 経路",
+        "src/core/explanation_generator.py: 高速モデル切替・キャッシュキー（リスク属性込み）",
+        "src/handlers/chat/chat_recommendation_flow.py: 並列化フック・翻訳スキップ連携",
+        "src/core/rule_based_recommendation.py: _mark_rb_pipeline_step() — rb_missing_info_done / rb_scoring_only_done / rb_explain_batch_done のサブステ…",
+        "src/core/explanation_generator.py: batch 安定化（MR-C）",
+        "src/handlers/chat/chat_recommendation_flow.py: MR-D _apply_external_rb_llm_layers()、花粉症併用注意マージ、戻り値インターフェース維持",
+        "src/handlers/chat/chat_recommendation_flow.py: mark_processing_step — symptom_check / candidate_match 段階通知",
+        "static/js/processing_status.js: 段階ラベル追加、Sage Terrace トーンの控えめ CSS マスコット（--symptom / --match / --notes）",
+        "static/css/main.css: bob アニメーション（医療信頼感を損なわない範囲）",
+        "src/services/store_emergency_handler.py: violence 文脈ガード（_violence_ambiguous_terms / _violence_strong_signals / _is_counseling_violence_cont…",
+        "src/handlers/chat/emergency_dispatch.py: チャネル別緊急メッセージ組み立て",
+        "src/handlers/chat/chat_counseling_flow.py / chat_other_counseling_route.py: counseling 文脈維持フック",
+        "src/services/counseling/counseling_generator.py / counseling_prompts.py / counseling_processor.py: トーン多様化",
+        "src/services/concierge_intent.py: 技術系 _META_PROBE_RULES 拡張、APP_ENV ゲート付き技術詳細開示",
+        "src/content/concierge_knowledge.ja.json / concierge_knowledge.py: technical_details セクション（dev + フラグ ON 時のみ参照）",
+        "src/services/concierge_agent_history.py / concierge_orchestrator.py / concierge_agent.py: フォローアップ intent 継承",
+        "src/dialogue/routing/gate.py: Store 購入先・Concierge follow-up の gate 補完"
       ]
     },
     {
@@ -83,35 +207,23 @@
         "_has_pharmacy_location_intent — OTC 購入先・薬局案内の補完判定",
         "カウンセリング/Physical ライフスタイルのフォローアップ回答検出",
         "src/services/concierge_intent.py: _META_PROBE_RULES に rule_based・データ保存・Sage Terrace 等を追加。医薬品相談誤分類の除外ルール強化",
-        "src/content/concierge_knowledge.ja.json: アーキテクチャ・rule_based・データ保存のナレッジ補完"
-      ]
-    },
-    {
-      "heading": "2026年6月28日 — Chat Pipeline v2（Wave 0–4 コード実装）",
-      "overview": "ブランチ feature/chat-pipeline-v2 に Web / LINE 共通チャット基盤 v2 を実装。決定権分散（SessionAgent 多重呼び出し・legacy fallback 競合）と履歴注入の散在を src/dialogue/ へ集約。OTC 推奨本体は rule_based 維持。本番は OFF、dev（APP_ENV=development）は v2 全機能が一括 ON。 実装計画: docs/planning/CHAT_PIPELINE_V2_PLAN.md（49/54 todo 完了、残 5 件は人手ゲート）",
-      "highlights": [
-        "session_agent.py: delete 強制上書き削除、pending_memory_delete 中 Physical/Emergency 自動キャンセル、status 語彙拡張、Quick Reply 削除/キャンセル統一、is_pending_delete_ca…",
-        "chat_pipeline_end_guard.py: fail-loud（response_missing 時 redirect 補完しない）",
-        "gate.py: pending delete キャンセル → SessionOps/pending_clear 即決",
-        "counseling_triage.py / LINE ルート: 発熱→店舗禁止ゲート、aggressive_input 監査、フィードバック期限切れ B+D",
-        "docs/ops/PRE_P0_LINE_QA_10.md（新規）: 10 項目 QA チェックリスト",
-        "docs/dev/ROUTE_SPEC.md: 決定権マトリクス・期待 route 表",
-        "docs/dev/CHAT_PIPELINE_V2.md（新規）: v2 技術仕様・パッケージ境界・ベースライン数値",
-        "docs/schemas/dialogue_state_v1.json（新規）: DialogueContext JSON Schema v1"
-      ]
-    },
-    {
-      "heading": "2026年6月27日（後半） — 管理 API 認証・LINE 二重配信防止・医薬品購入先ルーティング・レッドチーム",
-      "overview": "ローカルレッドチーム（148 ケース）で判明した 管理 JSON API 無認証露出 を admin_json_auth Depends により一括修正。LINE Webhook 重複による二重 Push を DB 去重・reply token 失効検知・progressive 配信ロジックで抑止。 医薬品購入先・入手要求（「処方箋なしの購入先」「処方箋の購入先」等）を店舗案内 fast-path へ振り分け、Concierge structural greeting 誤分類と不適切カウンセリング経路を回避。scripts/local_red_team_runner.py でオフライン／HTTP 混在のセキュリティ回帰を自動化。",
-      "highlights": [
-        "main.py: admin_json_auth Depends を新設し、管理系 JSON エンドポイント（/admin/*・/api/status・/api/performance・フィードバック CRUD 等）に一括適用",
-        "static/js/admin_chat.js: 監視・LLM 設定・フィードバック・手動返信等の fetch を adminFetchOptions() 経由に統一",
-        "database.py: line_webhook_dedup テーブルと try_claim_line_webhook_event（Cloud Run 複数インスタンス向け TTL claim）",
-        "line_dedup.py: DB claim をファイル去重の前段に追加",
-        "line_reply.py: reply token 400 失効時に reply_token_unavailable を設定",
-        "line_delivery.py: reply token 不可時は Push フォールバックをスキップ（二重配信防止）",
-        "line_progressive_delivery.py: carousel Push 済み時は full bundle 再送を抑止。未送信時は reply_token 付き一括配信",
-        "line_message_handler.py: pipeline 後 redirect を deliver_line_messages 経由に統一"
+        "src/content/concierge_knowledge.ja.json: アーキテクチャ・rule_based・データ保存のナレッジ補完",
+        "src/services/store_inquiry_handler.py: 医薬品購入先 fast-path・store_locator diagnosis kind の整備",
+        "src/services/llm_triage.py: Concierge/SessionOps/Store の stage1–2 スキップ fast-path。FIRST_STAGE_TRIAGE_PROMPT に Store/Concierge 例示追加",
+        "src/handlers/chat/chat_concierge_route.py: meta probe 連携の改善",
+        "src/handlers/chat/chat_emotional_route.py: 感情ルートの gate 連携調整",
+        "src/dialogue/routing/guards.py: fever/store/confidence ガードの微調整",
+        "src/handlers/chat/chat_post_pipeline.py: パイプライン順序再編",
+        "SessionOps admin probe を LLM 前に早期実行",
+        "エコー検知（chat_echo_guard）を security 直後に挿入",
+        "IntentRouter dispatch を confidence_gate 前に移動（clarification ループ短絡のため）",
+        "src/handlers/chat/chat_echo_guard.py（新規）: ボット発話のユーザー入力への混入（エコー）検知・応答",
+        "src/handlers/chat/llm_pipeline_guard.py（新規）: LLM インフラ障害・clarification ループの単一短絡入口",
+        "src/services/llm_unavailability.py（新規）: OpenAI quota/429 検知、セッション degraded フラグ、error カード通知",
+        "src/services/confidence_gate.py: LLM 障害時の clarification 抑制・pipeline guard 連携",
+        "src/services/status_diagnosis_builder.py: build_llm_unavailable_status 追加",
+        "src/services/reco_error_messages.py: LLM 障害向けメッセージ追加",
+        "static/js/main.js: インフラ通知 bot をターン完了判定から除外（isInfraNoticeBotMessage）、SSE 同期改善"
       ]
     }
   ]

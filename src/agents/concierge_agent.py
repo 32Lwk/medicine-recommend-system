@@ -700,7 +700,7 @@ def generate_changelog_intro_text(
     )
     from src.utils.sage_message_plain import strip_concierge_prompt_leakage
 
-    header_date, releases = load_changelog_digest(max_releases=4)
+    header_date, releases = load_changelog_digest(max_releases=6)
     if not releases:
         return changelog_unavailable_user_message(), False
 
@@ -778,7 +778,7 @@ def build_changelog_payload(
     )
     from src.services.status_diagnosis_builder import StatusSection, build_notice_status
 
-    header_date, releases = load_changelog_digest(max_releases=4)
+    header_date, releases = load_changelog_digest(max_releases=6)
     fb = feedback_data if feedback_data is not None else _feedback_data(user_text, "doc_changelog")
 
     if not releases:
@@ -807,6 +807,8 @@ def build_changelog_payload(
     detailed = wants_changelog_detail(user_text, history)
     section_specs = build_changelog_ui_sections(
         releases,
+        max_releases=4 if detailed else 3,
+        max_items_per_release=4 if detailed else 3,
         detailed=detailed,
     )
     sections = [
@@ -1567,30 +1569,43 @@ def _meta_reference_block(intent: str) -> str:
         except Exception:
             pass
 
-        # Phase 3 (p3-concierge, 前半): API/SSE/rule_based の技術詳細は
-        # ROUTING_CONCIERGE_INTENT ON かつ development ランタイム限定で追加開示する
-        # （production は上記の既存抽象コンテンツのみで変更なし）。
         try:
             from config.llm_flags import is_concierge_intent_routing_enabled
+            from config.aws_features import is_concierge_technical_reference_enabled
 
-            if is_concierge_intent_routing_enabled():
-                from config.app_config import is_development_runtime
+            if is_concierge_intent_routing_enabled() and is_concierge_technical_reference_enabled():
+                from src.content.concierge_knowledge import get_technical_details
 
-                if is_development_runtime():
-                    from src.content.concierge_knowledge import get_technical_details
+                details = get_technical_details()
+                ordered_keys = (
+                    "api_description",
+                    "sse_description",
+                    "rule_based_description",
+                )
+                detail_lines = [details[k] for k in ordered_keys if details.get(k)]
+                if detail_lines:
+                    lines.append("")
+                    lines.append("【技術詳細（参照）】")
+                    for item in detail_lines:
+                        lines.append(f"- {item}")
+        except Exception:
+            pass
 
-                    details = get_technical_details()
-                    ordered_keys = (
-                        "api_description",
-                        "sse_description",
-                        "rule_based_description",
-                    )
-                    detail_lines = [details[k] for k in ordered_keys if details.get(k)]
-                    if detail_lines:
-                        lines.append("")
-                        lines.append("【技術詳細（開発環境限定・参照）】")
-                        for item in detail_lines:
-                            lines.append(f"- {item}")
+        try:
+            from config.aws_features import is_aws_staging_site
+
+            if is_aws_staging_site():
+                lines.append("")
+                lines.append("【AWS ステージング環境（参照）】")
+                lines.append("- URL: aws.medicine.yutok.dev（ECS Express Gateway + ALB + WAF）")
+                lines.append("- static アセット: S3 + CloudFront CDN（STATIC_CDN_BASE_URL）")
+                lines.append("- 翻訳: Amazon Translate（TRANSLATION_PROVIDER=translate）")
+                lines.append("- 読み上げ: Amazon Polly（TTS_PROVIDER=polly、POST /api/tts）")
+                lines.append("- Concierge ナレッジ: Bedrock Knowledge Base（CONCIERGE_RAG_PROVIDER=bedrock_kb）")
+                lines.append("- 医薬品画像: Cloudflare R2（images.yutok.dev/otc/）— GCP/AWS 共通 CDN")
+                lines.append("- セッションキャッシュ: ElastiCache Serverless（REDIS_URL）")
+                lines.append("- 推奨ランキング補助: Amazon Personalize（イベント蓄積中、campaign はデータ待ち）")
+                lines.append("- 本番 GCP（medicine.yutok.dev）は Cloud Run + DeepL + Web Speech API のまま変更なし")
         except Exception:
             pass
     else:

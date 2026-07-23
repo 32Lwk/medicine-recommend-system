@@ -56,6 +56,31 @@ aws bedrock get-foundation-model-availability \
 
 ## 当アカウントで確認済み（2026-07-23）
 
+### AWS Support ケース（起票済み）
+
+| Case ID | 件名 | 状態 | 起票 (JST) |
+|---------|------|------|------------|
+| **178479394100149** | Bedrock on-demand quotas not provisioned — Titan Embed v2 ingestion blocked (429) | **アサイン待ち** | 2026-07-23 08:05 |
+| **178479739800503** | Quota Increase: Bedrock | **アサイン待ち** | 2026-07-23 09:03 |
+| **178479235800574** | Quota Increase: Bedrock（Claude Sonnet TPM 等） | **アサイン待ち** | 2026-07-23 07:39 |
+| 178479294400698 | [Amazon Q] Bedrock On-demand quota provisioning — ap-northeast-1 | 解決済み | 2026-07-23 07:49 |
+
+**フォローアップ文案（英語 — 178479394100149 等に追記）:**
+
+```
+Case ID: 178479394100149 (and related 178479739800503, 178479235800574)
+
+Follow-up: Still blocked as of 2026-07-23 JST.
+
+- amazon.titan-embed-text-v2:0 InvokeModel returns ThrottlingException (429)
+- Service Quotas still shows NO on-demand RPM/TPM entries for Titan Embed v2
+- get-foundation-model-availability: AUTHORIZED / AVAILABLE
+- KB ID 4PEWLBZGTH — zero successful ingestion jobs
+
+Please provision default on-demand quotas (RPM 6,000 / TPM 300,000) and confirm
+when ingestion can proceed.
+```
+
 | QuotaCode | 名称 | 現在値 | Adjustable |
 |-----------|------|--------|------------|
 | — | Titan Embed v2 **On-demand RPM/TPM/day** | **Service Quotas にエントリなし** | Support 要 |

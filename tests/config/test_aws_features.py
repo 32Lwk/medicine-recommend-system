@@ -16,6 +16,9 @@ def _clear_aws_env(monkeypatch):
         "MEDICINE_IMAGE_CDN_BASE",
         "STATIC_CDN_BASE_URL",
         "BEDROCK_KB_ID",
+        "PUBLIC_SITE_URL",
+        "AWS_STAGING",
+        "APP_ENV",
     ):
         monkeypatch.delenv(key, raising=False)
 
@@ -53,3 +56,14 @@ def test_aws_staging_flags(monkeypatch):
     assert aws_features.use_aws_translate()
     assert aws_features.use_polly_tts()
     assert aws_features.get_medicine_image_cdn_base() == "https://images.yutok.dev/otc/"
+
+
+def test_is_aws_staging_site_from_public_url(monkeypatch):
+    monkeypatch.setenv("PUBLIC_SITE_URL", "https://aws.medicine.yutok.dev")
+    assert aws_features.is_aws_staging_site()
+
+
+def test_concierge_technical_reference_on_aws_staging(monkeypatch):
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("PUBLIC_SITE_URL", "https://aws.medicine.yutok.dev")
+    assert aws_features.is_concierge_technical_reference_enabled()

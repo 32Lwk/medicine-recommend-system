@@ -705,6 +705,55 @@ def health_check():
     }
 
 
+@app.get("/health/aws")
+def health_aws_features():
+    """AWS ステージング向け機能フラグ（シークレット非含有）。CodeBuild smoke 用。"""
+    from config.aws_features import (
+        get_medicine_image_cdn_base,
+        get_static_cdn_base_url,
+        get_translation_provider,
+        get_tts_provider,
+        is_comprehend_medical_enabled,
+        use_bedrock_kb_rag,
+    )
+
+    return {
+        "translation_provider": get_translation_provider(),
+        "tts_provider": get_tts_provider(),
+        "bedrock_kb_rag": use_bedrock_kb_rag(),
+        "comprehend_medical": is_comprehend_medical_enabled(),
+        "static_cdn_base": get_static_cdn_base_url(),
+        "medicine_image_cdn_base": get_medicine_image_cdn_base(),
+    }
+
+
+@app.post("/api/smoke/aws-translate")
+async def api_smoke_aws_translate():
+    """Amazon Translate 疎通（TRANSLATION_PROVIDER=translate 時のみ。CI smoke 用）。"""
+    from config.aws_features import use_aws_translate
+
+    if not use_aws_translate():
+        return JSONResponse({"error": "not_available"}, status_code=404)
+    sample_ja = "頭が痛いです。"
+    try:
+        from src.core.translation_service import translate_medicine_recommendation
+
+        translated = translate_medicine_recommendation(sample_ja, "en")
+    except Exception as exc:
+        logger.exception("AWS Translate smoke failed")
+        return JSONResponse(
+            {"error": "translate_failed", "detail": str(exc)[:200]},
+            status_code=502,
+        )
+    if not translated or translated.strip() == sample_ja:
+        return JSONResponse({"error": "empty_or_unchanged"}, status_code=502)
+    return {
+        "ok": True,
+        "target_language": "en",
+        "translated_preview": translated[:120],
+    }
+
+
 @app.post("/api/tts")
 async def api_tts(request: Request):
     """Amazon Polly TTS（TTS_PROVIDER=polly 時のみ。AWS ステージング向け）。"""

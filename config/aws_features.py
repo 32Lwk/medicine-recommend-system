@@ -113,3 +113,18 @@ def get_bedrock_kb_id() -> str:
 
 def get_aws_region() -> str:
     return _env("AWS_REGION", _env("AWS_DEFAULT_REGION", "ap-northeast-1"))
+
+
+def is_aws_staging_site() -> bool:
+    """AWS ステージング（aws.medicine.yutok.dev）判定。PUBLIC_SITE_URL または AWS_STAGING=1。"""
+    url = _env("PUBLIC_SITE_URL", "").lower()
+    if "aws.medicine" in url:
+        return True
+    return _flag("AWS_STAGING", False)
+
+
+def is_concierge_technical_reference_enabled() -> bool:
+    """Concierge が API/SSE/ルールベース等の技術詳細を参照に含めてよい環境。"""
+    from config.app_config import is_development_runtime
+
+    return is_development_runtime() or is_aws_staging_site()

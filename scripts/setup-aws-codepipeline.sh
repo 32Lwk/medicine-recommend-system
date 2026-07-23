@@ -96,6 +96,29 @@ for pol in AmazonEC2ContainerRegistryPowerUser AmazonECS_FullAccess CloudWatchLo
   aws iam attach-role-policy --role-name "$CB_ROLE" --policy-arn "arn:aws:iam::aws:policy/${pol}" 2>/dev/null || true
 done
 
+CB_EXTRA_POLICY="$(mktemp)"
+cat > "$CB_EXTRA_POLICY" <<EOFCB
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cloudfront:CreateInvalidation",
+        "cloudfront:ListDistributions",
+        "cloudfront:GetDistribution"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+EOFCB
+aws iam put-role-policy --role-name "$CB_ROLE" \
+  --policy-name medicine-recommend-codebuild-extra \
+  --policy-document "file://${CB_EXTRA_POLICY}"
+rm -f "$CB_EXTRA_POLICY"
+echo "Attached inline policy medicine-recommend-codebuild-extra (CloudFront invalidation)"
+
 echo "Waiting for IAM role propagation..."
 sleep 10
 
@@ -144,7 +167,10 @@ cat > "$CB_SPEC" <<EOF
     "image": "aws/codebuild/amazonlinux-x86_64-standard:5.0",
     "computeType": "BUILD_GENERAL1_SMALL",
     "privilegedMode": true,
-    "environmentVariables": []
+    "environmentVariables": [
+      {"name": "SYNC_STATIC_TO_S3", "value": "true", "type": "PLAINTEXT"},
+      {"name": "AWS_STAGING_URL", "value": "https://aws.medicine.yutok.dev", "type": "PLAINTEXT"}
+    ]
   },
   "serviceRole": "${CB_ROLE_ARN}",
   "timeoutInMinutes": 30,

@@ -42,7 +42,7 @@ echo "STATIC_CDN_BASE_URL=${STATIC_CDN_BASE_URL}" >> .env
 
 ## CodePipeline 連携（任意）
 
-CodeBuild 環境変数 `SYNC_STATIC_TO_S3=true` で [buildspec.yml](../../buildspec.yml) post_build から `sync-static-to-s3.sh --invalidate` を実行。
+CodeBuild では [buildspec.yml](../../buildspec.yml) 既定 `SYNC_STATIC_TO_S3=true` で push 毎に post_build から `sync-static-to-s3.sh --invalidate` と `aws-staging-smoke.sh`（Translate / Polly / CDN）を実行。
 
 CodeBuild ロールに以下が必要:
 

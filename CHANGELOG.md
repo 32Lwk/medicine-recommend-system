@@ -1,6 +1,100 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月22日**（Chat Pipeline v2 本番デフォルト ON・障害 UX 改善・AWS CodePipeline / ECS デプロイ・ECS パフォーマンス改善）
+**最終更新日: 2026年7月23日**（AWS/Cloudflare ステージング一括展開・CodeBuild 自動 static 同期/smoke・Concierge 更新履歴/技術回答改善）
+
+---
+
+## 2026年7月23日 — AWS/Cloudflare ステージング展開・CI 自動化・Concierge 改善
+
+### 概要
+
+**ブランチ `main`** に、GCP 本番（`medicine.yutok.dev`）を変更せず **AWS ステージング**（`aws.medicine.yutok.dev`）で Translate / Polly / Bedrock KB(RAG) / Comprehend Medical / ElastiCache / Personalize / CloudFront static CDN / Cloudflare R2 画像を env ゲート付きで一括導入（commit `74b7fde`）。あわせて CodeBuild で push 毎の **static S3 同期 + CloudFront invalidation + Translate/Polly smoke** を自動化し、Concierge の **更新履歴（doc_changelog）表示不足** と **AWS 環境での技術質問が GCP 前提で答える問題** を修正した。
+
+### AWS / Cloudflare 機能フラグ（GCP 本番は未設定 = レガシー維持）
+
+- **`config/aws_features.py`（新規）**: `TRANSLATION_PROVIDER`（deepl | translate）、`TTS_PROVIDER`（webspeech | polly）、`CONCIERGE_RAG_PROVIDER`（local | bedrock_kb）、`COMPREHEND_MEDICAL_ENABLED`、`REDIS_URL`、`PERSONALIZE_*`、`MEDICINE_IMAGE_CDN_BASE`、`STATIC_CDN_BASE_URL`、`BEDROCK_KB_ID` を集約。`is_aws_staging_site()` / `is_concierge_technical_reference_enabled()` を追加
+- **`.env.example`**: AWS ステージング向け env 例を追記
+- **`docs/ops/AWS_FEATURES_ROLLOUT.md`（新規）**: ロールアウト方針・env 一覧
+- **`docs/medicine.md`**: Bedrock KB / AWS ステージング構成の説明を更新
+
+### Phase 1 — インフラ（WAF / CloudFront / CloudWatch）
+
+- **`scripts/setup-aws-infra.sh`（新規）**: Phase 1 一括（CloudWatch / WAF / CloudFront）
+- **`scripts/setup-aws-waf.sh`（新規）**: ALB 向け WAF（Rate limit + AWSManagedRulesCommonRuleSet）
+- **`scripts/setup-aws-cloudfront.sh`（新規）**: S3 オリジン + CloudFront 配信（`STATIC_CDN_BASE_URL`）
+- **`scripts/setup-aws-cloudwatch.sh`（新規）**: Log Group `/ecs/medicine-recommend` + アラーム雛形
+- **`scripts/sync-static-to-s3.sh`（新規）**: `static/` → S3 + 任意 CloudFront invalidation
+- **`scripts/lib/aws_common.sh`（新規）**: AWS CLI 共通（プロファイル `medicine-recommend-dev` 既定、Git Bash MSYS 対策）
+- **`docs/ops/AWS_INFRA.md`（新規）**: 構成・手順
+
+### Phase 2 — Translate / Polly / Cloudflare R2 画像
+
+- **`src/core/translation_service.py`**: `TRANSLATION_PROVIDER=translate` 時 Amazon Translate + Redis/メモリキャッシュ
+- **`src/services/polly_tts.py`（新規）**: Amazon Polly MP3 合成
+- **`main.py`**: `POST /api/tts`（Polly ON 時）、`GET /health/aws`（機能フラグ smoke 用）、`POST /api/smoke/aws-translate`（CI smoke 用）
+- **`static/js/main.js`**: `TTS_PROVIDER=polly` 時 `/api/tts` 経由の読み上げ
+- **`templates/index.html`**: `window.__TTS_PROVIDER__` を注入
+- **`src/services/medicine_image_urls.py`（新規）**: `MEDICINE_IMAGE_CDN_BASE`（R2/CDN）URL 解決
+- **`static/js/ui/medicine_mapper.js` / `medicine_card.js` / `src/handlers/line/flex_messages.py`**: 画像 URL 統一 + `onerror` プレースホルダー
+- **`scripts/upload-r2-otc-image.sh` / `upload_r2_otc_image.py`（新規）**: R2 へ OTC 画像アップロード
+- **`docs/ops/CLOUDFLARE_R2_IMAGES.md`（新規）**: R2 + `images.yutok.dev` 運用
+
+### Phase 3 — Bedrock KB + Comprehend Medical
+
+- **`scripts/setup-aws-bedrock-kb.sh` / `create-aws-bedrock-kb.sh` / `sync-concierge-kb-to-s3.sh` / `sync-aws-bedrock-kb-ingestion.sh` / `start_bedrock_kb_ingestion.py`（新規）**: KB 作成・S3 同期・ingestion（Titan Embed 429 時は指数バックオフ）
+- **`scripts/setup-aws-opensearch-kb-collection.sh` / `setup-aws-aoss-vector-index.sh` / `create_aoss_vector_index.py` / `update-aoss-kb-*-policy.sh`（新規）**: OpenSearch Serverless コレクション + ベクトル index + network/data policy
+- **`src/services/bedrock_kb_retrieve.py`（新規）**: Bedrock KB retrieve + Redis キャッシュ + Concierge 参照ブロック追記
+- **`src/agents/concierge_agent.py`**: `augment_reference_with_kb()` で architecture 等に KB チャンク注入
+- **`src/services/comprehend_medical.py`（新規）**: Comprehend Medical エンティティ抽出（NLU 補助・ログ分析）
+- **`src/handlers/chat/nlu_resolve.py`**: Comprehend Medical オプション統合
+- **`scripts/analyze_comprehend_logs.py`（新規）**: ログから Medical エンティティ集計
+- **`scripts/test_bedrock_titan_embed.py` / `test_bedrock_claude_invoke.py` / `test_bedrock_embed_models.py`（新規）**: Bedrock 事前確認
+- **`docs/ops/AWS_BEDROCK_KB.md` / `AWS_BEDROCK_QUOTAS.md`（新規）**: KB 運用・429/Support ケース ID 一覧
+
+### Phase 4 — ElastiCache + Personalize
+
+- **`scripts/setup-aws-elasticache.sh`（新規）**: ElastiCache Serverless + `REDIS_URL`
+- **`src/services/redis_cache.py`（新規）**: Translate / KB retrieve キャッシュ
+- **`scripts/setup-aws-personalize.sh`（新規）**: Dataset group + event tracker（campaign はイベント蓄積後）
+- **`src/services/personalize_ranker.py`（新規）**: Personalize ランキング補助（Web AWS のみ）
+- **`src/handlers/chat/chat_recommendation_flow.py` / `recommendation_diagnosis_builder.py`**: Personalize フック
+- **`docs/ops/AWS_PERSONALIZE.md`（新規）**
+
+### ECS Express / Secrets / env 反映
+
+- **`scripts/setup-aws-express-secrets.sh`（新規）**: Secrets Manager 移行（7 件 `primaryContainer.secrets`）。`APP_ENV=production` / `PUBLIC_SITE_URL=https://aws.medicine.yutok.dev` 既定
+- **`scripts/update-aws-express-env.sh`（新規）**: Express タスク env 一括更新（PassRole 不要）
+- **`scripts/setup-aws-ecs-secrets.sh`**: AWS feature flags + `STATIC_CDN_BASE_URL` 対応
+- **`docs/ops/AWS_IAM_MEDICINE_RECOMMEND_DEV_EXTRA.json` / `AWS_IAM_ADMIN_POLICY.json`（新規）**: IAM ポリシー例
+
+### CodeBuild / CodePipeline 自動化（本エントリ追加分）
+
+- **`buildspec.yml`**: 既定 `SYNC_STATIC_TO_S3=true`。ECS `services-stable` 待ち後 `sync-static-to-s3.sh --invalidate` → **`scripts/aws-staging-smoke.sh`**（Translate / Polly / CDN / health）
+- **`scripts/aws-staging-smoke.sh`（新規）**: デプロイ commit 一致待ち + `/health/aws` + smoke API 検証
+- **`scripts/setup-aws-codepipeline.sh`**: CodeBuild env（`SYNC_STATIC_TO_S3` / `AWS_STAGING_URL`）+ CloudFront invalidation IAM
+- **CodeBuild live 更新**: 環境変数・IAM を AWS アカウントに反映済み
+
+### Concierge — 更新履歴・技術回答（AWS ステージング修正）
+
+**原因**: (1) `static/changelog-digest.json` / Docker 焼き込み digest のハイライト上限 8 件で **7/22 以降の変更が UI に出にくい**。(2) AWS ステージングは `APP_ENV=production` のため **技術詳細参照が development 限定**で、architecture 回答が **Cloud Run/Neon 前提**のまま。(3) Bedrock KB ingestion 未完了時は RAG 空だが、ローカル参照に AWS 構成が無かった。
+
+**修正**:
+
+- **`src/content/changelog_digest.py`**: ハイライト上限 24、`release_user_facing_items()` で概要+ハイライトをユーザー向けに統合、`build_changelog_ui_sections` の表示件数拡大
+- **`src/agents/concierge_agent.py`**: `doc_changelog` で digest 6 件参照・UI 3〜4 セクション表示。`is_concierge_technical_reference_enabled()` で AWS ステージングでも API/SSE/ルールベース詳細を参照に含める。**AWS ステージング専用参照ブロック**（ECS / Translate / Polly / Bedrock KB / R2 / Redis / GCP 本番との差分）を architecture に追加
+- **`scripts/write_changelog_digest.py`**: ビルド時 digest 再生成（既存 Dockerfile フロー）
+
+### テスト
+
+- **`tests/config/test_aws_features.py`**: AWS フラグ + staging 判定
+- **`tests/core/test_translation_service_aws.py`**, **`tests/api/test_tts_api.py`**, **`tests/services/test_bedrock_kb_retrieve.py`**, **`tests/services/test_comprehend_medical.py`**, **`tests/services/test_medicine_image_urls.py`**, **`tests/services/test_personalize_ranker.py`**, **`tests/services/test_redis_cache.py`**, **`tests/scripts/test_analyze_comprehend_logs.py`**
+
+### 運用メモ / 既知ブロッカー
+
+- **Bedrock Titan Embed v2 429**: on-demand クォータ未 provisioning。Support ケース **178479394100149** / **178479739800503** / **178479235800574**（アサイン待ち）。詳細は `docs/ops/AWS_BEDROCK_QUOTAS.md`
+- **KB ingestion**: クォータ解消後 `scripts/sync-aws-bedrock-kb-ingestion.sh 4PEWLBZGTH`
+- **Personalize campaign**: イベント蓄積後に作成（意図的保留）
+- **GCP 本番**: `cloudbuild.yaml` は `GIT_COMMIT` / `MEDICINE_IMAGE_CDN_BASE` のみ — AWS フラグは注入しない
 
 ---
 
