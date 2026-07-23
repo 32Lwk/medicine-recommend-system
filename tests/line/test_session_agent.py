@@ -27,6 +27,17 @@ def test_classify_session_intent_summarize():
     assert probe_session_admin_intent("履歴を要約して") == "summarize"
 
 
+def test_classify_session_intent_excludes_app_changelog():
+    assert classify_session_intent("最近の更新履歴を教えて") == "none"
+    assert probe_session_admin_intent("最近の更新履歴を教えて") is None
+
+
+def test_classify_session_ops_detail_excludes_app_changelog():
+    from src.agents.session_agent import classify_session_ops_detail
+
+    assert classify_session_ops_detail("最近の更新履歴を教えて") == "none"
+
+
 def test_classify_session_intent_via_triage_session_admin():
     triage = {"subcategory": "session_admin", "category": "Other"}
     assert classify_session_intent("状態は？", triage_result=triage) == "status"

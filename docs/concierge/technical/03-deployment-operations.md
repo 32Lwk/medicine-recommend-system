@@ -13,7 +13,7 @@
   2. CodeBuild `medicine-recommend-build` — Docker build → ECR push
   3. `ecs update-service --force-new-deployment`
   4. `services-stable` 待ち
-  5. `sync-static-to-s3.sh --invalidate`（`SYNC_STATIC_TO_S3=true`）
+  5. `sync-static-to-s3.sh --invalidate`（CodeBuild で static 同期が有効な場合）
   6. `aws-staging-smoke.sh` — health / Translate / Polly / CDN
 - **確認**: `GET /health` の `git_commit`、 `GET /health/aws` の機能フラグ
 - **手動デプロイ**: `scripts/deploy-aws-ecs.sh`
@@ -34,8 +34,8 @@
 
 ## ロールバック
 
-- AWS 機能のみ OFF: ECS env で `TRANSLATION_PROVIDER=deepl`, `CONCIERGE_RAG_PROVIDER=local`, `TTS_PROVIDER=webspeech` → redeploy
-- Chat Pipeline v2: 明示 env `CHAT_PIPELINE_V2=false` 等（通常は不要）
+- AWS 機能のみ OFF: ECS タスク定義で Translate/Polly/Bedrock KB を **レガシー設定（DeepL / Web Speech / ローカル参照）** に戻して redeploy
+- Chat Pipeline v2: 通常は env 変更不要。緊急時のみ v2 フラグを明示 OFF（運用ドキュメント参照）
 
 ## 医薬品相談としての境界
 

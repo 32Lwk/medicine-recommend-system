@@ -166,6 +166,9 @@ def _is_medicine_consultation(text: str) -> bool:
     if re.search(r"データ.{0,12}(保存|どこ|記憶)", text):
         return False
 
+    if re.search(r"医薬品画像|images\.yutok|/otc/", text, re.I):
+        return False
+
     hints = (
 
         "薬",
@@ -422,6 +425,7 @@ _PRE_TRIAGE_META_INTENTS = frozenset({
     "doc_operator",
     "doc_consultation",
     "doc_app_overview",
+    "doc_changelog",
 })
 
 _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
@@ -448,6 +452,19 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"(今|いま).{0,12}(答え|回答|返信|応答)"), "architecture"),
     (re.compile(r"(答え|回答|返信|応答).{0,12}(誰|だれ|なに|何)"), "architecture"),
     (re.compile(r"(運営者|連絡先|お問い合わせ|不具合.{0,4}報告)"), "doc_operator"),
+    (re.compile(r"(更新履歴|最近の更新|CHANGELOG|リリース履歴|変更履歴)"), "doc_changelog"),
+    (re.compile(r"LINE.{0,16}(どこ|動|ホスト|Webhook|サーバ)", re.I), "architecture"),
+    (re.compile(r"(CloudWatch|Cloud\s*Logging|/health|ヘルスチェック|監視|ログ(?:の|は|を|で|先|出力|確認))", re.I), "architecture"),
+    (re.compile(r"(CDN|医薬品画像|images\.yutok)", re.I), "architecture"),
+    (re.compile(r"Chat\s*Pipeline|IntentRouter", re.I), "architecture"),
+    (re.compile(r"PhysicalOrchestrator|TriageAgent|ConciergeAgent", re.I), "architecture"),
+    (re.compile(r"Comprehend\s*Medical", re.I), "architecture"),
+    (re.compile(r"\bRedis\b|ElastiCache", re.I), "architecture"),
+    (re.compile(r"\bWAF\b", re.I), "architecture"),
+    (re.compile(r"ソースコード|公開リポジ|GitHub|github\.com", re.I), "architecture"),
+    (re.compile(r"開示ポリシー|公開情報の開示", re.I), "architecture"),
+    (re.compile(r"RECO_[A-Z0-9_]+|CHAT_PIPELINE_V2", re.I), "architecture"),
+    (re.compile(r"what changed|recent(ly)?.*(update|change|release|app)", re.I), "doc_changelog"),
     (re.compile(r"(PMDA|厚労省|#7119|相談先|相談窓口)"), "doc_consultation"),
     (re.compile(r"(アプリの概要|開発背景|β版|ベータ版)"), "doc_app_overview"),
     (re.compile(r"プリンシプルオブプログラミング|オブジェクト指向とは|デザインパターンとは"), "redirect"),

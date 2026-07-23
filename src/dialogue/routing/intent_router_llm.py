@@ -49,6 +49,8 @@ _INTENT_ROUTER_PROMPT = """あなたは医薬品相談チャットの IntentRout
 - 発熱・症状がある場合は Store より Physical を優先
 - 履歴操作キーワードは SessionOps
 - 医薬品相談アプリ外の一般知識は Concierge/redirect
+- **本サービスの** AWS/GCP/CodePipeline/Cloud Run/ECS/デプロイ/インフラ/技術スタックの質問は Concierge/architecture（redirect にしない）
+- legacy triage に concierge_intent=architecture か source=keyword_probe の architecture 系がある場合は architecture を優先
 - 症状が曖昧で判断不能なら Unknown（confidence 低め）
 - 直近で医薬品を推奨済みのセッションで「どれ」「使える」「競技」「大会」「ドーピング」等の追質問は Physical/medicine_followup_qa（新規症状推奨ではない）
 - 推奨履歴なしで競技・大会のみ・症状不明は Physical/symptom_prompt_sports
@@ -133,6 +135,59 @@ def _format_triage_hint(triage_result: dict[str, Any] | None) -> str:
 
 
 _APP_ABOUT_MISROUTE_SUBS = frozenset({"chitchat", "greeting", "general_other", None, ""})
+
+
+_META_REDIRECT_MISROUTE_SUBS = frozenset(
+    {"redirect", "chitchat", "greeting", "general_other", None, ""}
+)
+
+
+def maybe_correct_concierge_keyword_meta_route(
+    decision: RouteDecision | None,
+    user_text: str,
+    *,
+    triage_result: dict[str, Any] | None = None,
+) -> RouteDecision | None:
+    """
+    keyword_probe で確定した Concierge メタ意図を、LLM の redirect/chitchat 誤判定から保護する。
+    例: CodePipeline / インフラ / doc_changelog 等。
+    """
+    if decision is None or decision.primary_route != "Concierge":
+        return decision
+    if decision.sub_route not in _META_REDIRECT_MISROUTE_SUBS:
+        return decision
+
+    from src.services.concierge_intent import (
+        CONCIERGE_META_INTENTS,
+        probe_meta_concierge_intent,
+    )
+
+    triage = triage_result or {}
+    probed: str | None = None
+    if triage.get("concierge_intent_source") == "keyword_probe":
+        intent = str(triage.get("concierge_intent") or "")
+        if intent in CONCIERGE_META_INTENTS:
+            probed = intent
+    if not probed:
+        hit = probe_meta_concierge_intent(user_text)
+        if hit in CONCIERGE_META_INTENTS:
+            probed = hit
+    if not probed:
+        return decision
+
+    logger.info(
+        "intent_router_llm: keyword_meta guard corrected sub_route %s -> %s",
+        decision.sub_route,
+        probed,
+    )
+    return RouteDecision(
+        primary_route="Concierge",
+        sub_route=probed,
+        confidence=max(decision.confidence, 0.92),
+        resolved_by=decision.resolved_by,
+        source=decision.source,
+        meta={**(decision.meta or {}), "keyword_meta_guard": True},
+    )
 
 
 def maybe_correct_concierge_app_about_route(

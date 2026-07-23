@@ -7,10 +7,10 @@ todos:
     status: completed
   - id: q1-ssot-docs
     content: "Phase Q1: 技術ナレッジ SSOT 拡充（docs/concierge/technical/ + ops 同期）と CHANGELOG 連携ルール"
-    status: in_progress
+    status: completed
   - id: q1-local-rag
     content: "Phase Q1: ローカル tech reference（concierge_tech_reference.py）本番反映・architecture 深掘りモード"
-    status: in_progress
+    status: completed
   - id: q2-bedrock-kb
     content: "Phase Q2（Support 解消後）: Bedrock KB ingestion → sync 全量 → retrieve 検証（生成は OpenAI のまま）"
     status: pending
@@ -19,16 +19,22 @@ todos:
     status: pending
   - id: q3-runtime-tools
     content: "Phase Q3: ランタイム参照（/health/aws, git_commit — 秘匿除外）"
-    status: pending
+    status: completed
   - id: q3-eval-suite
     content: "Phase Q3: 技術 FAQ 評価 YAML 20–40 問"
-    status: pending
+    status: completed
+  - id: q3-ci-contract
+    content: "Phase Q3-d: concierge-technical-faq-contract.sh + verify-concierge-ssot.sh + staging smoke"
+    status: completed
+  - id: q2-prep-ssot
+    content: "Phase Q2 準備: SSOT verify + KB sync スクリプト整合 + changelog digest 再生成"
+    status: completed
   - id: q4-ui-deep-card
     content: "Phase Q4: 深掘り UI（LINE は詳しく聞かれたら medium・通常は概要）"
-    status: pending
+    status: completed
   - id: q4-guardrails
     content: "Phase Q4: プロンプト二重防御（Support 前）→ Bedrock Guardrails（Support 後）"
-    status: pending
+    status: completed
   - id: q5-optional-agents
     content: "Phase Q5（任意）: Bedrock Agents + Lambda ツール（KB 再検索・CHANGELOG 差分・デプロイ状態）"
     status: pending
@@ -434,10 +440,12 @@ flowchart TB
 
 ### 今すぐ（Support 不要）
 
-1. Phase Q1 コード **commit & push**（`concierge_tech_reference.py` + 深掘り + technical docs）
-2. SSOT **04–07** 草案（データ/セキュリティ、v2 フラグ、LINE 経路、監視）
-3. 代表 **10 問** smoke → YAML **20 問**へ拡張
-4. **チャネル別深さ**: LINE 短縮要約の実装設計
+1. ~~Phase Q1 コード commit & push~~ → **未コミット**（ローカル実装済み）
+2. ~~SSOT 04–07~~ → **完了**
+3. ~~評価 YAML 30→40 問~~ → **完了**
+4. ~~LINE チャネル別深さ~~ → **完了**
+5. ~~`verify-concierge-ssot.sh` / `concierge-staging-smoke.sh`~~ → **完了**
+6. **commit & push** → CodePipeline デプロイ → staging smoke
 
 ### Support 解消後のみ
 

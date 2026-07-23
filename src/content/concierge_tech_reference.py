@@ -98,7 +98,7 @@ def format_concierge_technical_reference_block(
         "医薬品の症状相談には踏み込まず、インフラ・エージェント・デプロイの質問に答える。",
         "開示: 公開情報は述べてよい。深い内容はユーザーが詳しく求めたときのみ。",
         "禁止: 環境変数名・「env/設定を参照した」等のメタ・Secrets/APIキー。",
-        "事実は利用者向けの言葉で（例: Amazon Translate を利用、而非 TRANSLATION_PROVIDER=translate）。",
+        "事実は利用者向けの言葉で（例: Amazon Translate を利用、而非 env 名の列挙）。",
         "",
     ]
     used = sum(len(x) for x in lines)
@@ -114,8 +114,13 @@ def format_concierge_technical_reference_block(
     return "\n".join(lines).strip()
 
 
-def augment_architecture_reference(base_reference: str, *, deep: bool = False) -> str:
-    """architecture 用参照にローカル技術ドキュメントを追記。"""
+def augment_architecture_reference(
+    base_reference: str,
+    *,
+    deep: bool = False,
+    user_text: str = "",
+) -> str:
+    """architecture 用参照にローカル技術ドキュメント・ランタイム情報を追記。"""
     tech = format_concierge_technical_reference_block(
         max_total_chars=24_000 if deep else 14_000,
         include_ops_docs=deep,
@@ -130,4 +135,7 @@ def augment_architecture_reference(base_reference: str, *, deep: bool = False) -
             )
         except Exception:
             pass
-    return "\n\n".join(p for p in parts if p)
+    merged = "\n\n".join(p for p in parts if p)
+    from src.content.concierge_runtime_reference import augment_with_runtime_reference
+
+    return augment_with_runtime_reference(merged, user_text, deep=deep)

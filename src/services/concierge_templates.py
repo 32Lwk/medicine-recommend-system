@@ -144,9 +144,54 @@ def extract_inline_agent_bullets(text: str) -> tuple[str, List[str]]:
     return prose, bullets
 
 
+_DEEP_ARCH_TOPIC_RULES: list[tuple[str, re.Pattern[str]]] = [
+    ("GCP 本番", re.compile(r"GCP|Cloud\s*Run|medicine\.yutok\.dev|DeepL|Google Cloud", re.I)),
+    (
+        "AWS ステージング",
+        re.compile(
+            r"AWS|ECS|aws\.medicine|Translate|Polly|Bedrock|ElastiCache|Personalize",
+            re.I,
+        ),
+    ),
+    (
+        "デプロイ・CI/CD",
+        re.compile(r"CodePipeline|CodeBuild|ECR|デプロイ|cloudbuild|ingestion", re.I),
+    ),
+    ("LINE", re.compile(r"\bLINE\b|Messaging API", re.I)),
+    ("画像・CDN", re.compile(r"Cloudflare|R2|images\.yutok|CloudFront|\bCDN\b", re.I)),
+]
+
+
+def _bucket_architecture_deep_paragraphs(
+    paragraphs: List[str],
+) -> tuple[List[str], List[Dict[str, Any]]]:
+    """深掘り architecture 本文をトピック別セクションに分割する。"""
+    buckets: dict[str, List[str]] = {title: [] for title, _ in _DEEP_ARCH_TOPIC_RULES}
+    intro: List[str] = []
+
+    for para in paragraphs:
+        assigned = False
+        for title, pattern in _DEEP_ARCH_TOPIC_RULES:
+            if pattern.search(para):
+                buckets[title].append(para)
+                assigned = True
+                break
+        if not assigned:
+            intro.append(para)
+
+    sections: List[Dict[str, Any]] = []
+    for title, _ in _DEEP_ARCH_TOPIC_RULES:
+        items = buckets[title]
+        if items:
+            sections.append({"title": title, "items": items})
+    return intro, sections
+
+
 def structure_concierge_meta_display(
     intent: str,
     body_text: str,
+    *,
+    deep: bool = False,
 ) -> tuple[str, List[Dict[str, Any]]]:
     """
     Web Sage / LINE 向けに読みやすく整形。
@@ -185,6 +230,12 @@ def structure_concierge_meta_display(
                 "items": deduped,
             }
         )
+
+    if intent == "architecture" and deep and prose_parts:
+        intro_parts, topic_sections = _bucket_architecture_deep_paragraphs(prose_parts)
+        if topic_sections:
+            prose_parts = intro_parts
+            sections = topic_sections + sections
 
     message = "\n\n".join(prose_parts) if prose_parts else (body_text or "").strip()
     return message, sections
@@ -228,11 +279,13 @@ def format_dynamic_concierge_meta_card(
     variant: str = "notice",
     intent: str = "",
     include_agent_roster: bool = False,
+    deep: bool = False,
 ) -> str:
     """LLM 生成本文から Web 用 status カード HTML を組み立てる。"""
     display_message, section_specs = structure_concierge_meta_display(
         intent or "app_about",
         body_text,
+        deep=deep,
     )
     if include_agent_roster and (intent or "") == "architecture":
         section_specs = merge_agent_roster_section(section_specs)
@@ -259,6 +312,46 @@ def format_dynamic_concierge_meta_card(
 
 
 _LINE_CONCIERGE_BODY_MAX_CHARS = 4200
+_LINE_SHALLOW_BODY_MAX_CHARS = 1100
+_LINE_SHALLOW_MAX_PARAGRAPHS = 4
+
+
+def _apply_line_channel_body_limits(
+    paragraphs: List[str],
+    *,
+    channel: str = "web",
+    deep: bool = False,
+) -> List[str]:
+    """LINE 非 deep 時は概要のみ（Q4 チャネル別深さ）。"""
+    if channel != "line":
+        return _truncate_line_body_paragraphs(paragraphs)
+    if deep:
+        return _truncate_line_body_paragraphs(paragraphs)
+
+    import os
+
+    total = 0
+    out: List[str] = []
+    for para in paragraphs[:_LINE_SHALLOW_MAX_PARAGRAPHS]:
+        chunk = (para or "").strip()
+        if not chunk:
+            continue
+        if total + len(chunk) > _LINE_SHALLOW_BODY_MAX_CHARS:
+            remain = _LINE_SHALLOW_BODY_MAX_CHARS - total
+            if remain > 60:
+                out.append(chunk[: remain - 1].rstrip() + "…")
+            break
+        out.append(chunk)
+        total += len(chunk)
+
+    truncated = (
+        len(paragraphs) > len(out)
+        or sum(len(p) for p in paragraphs) > _LINE_SHALLOW_BODY_MAX_CHARS
+    )
+    if truncated:
+        site = (os.getenv("PUBLIC_SITE_URL") or "https://medicine.yutok.dev").rstrip("/")
+        out.append(f"続きは Web チャット（{site}）または「詳しく」と送ってください。")
+    return out
 
 
 def _truncate_line_body_paragraphs(paragraphs: List[str]) -> List[str]:
@@ -294,11 +387,14 @@ def build_dynamic_concierge_line_flex(
     variant: str = "notice",
     intent: str = "",
     include_agent_roster: bool = False,
+    deep: bool = False,
+    channel: str = "web",
 ) -> Dict[str, Any]:
     """LLM 生成本文から LINE status Flex スペックを組み立てる。"""
     display_message, section_specs = structure_concierge_meta_display(
         intent or "app_about",
         body_text,
+        deep=deep,
     )
     if include_agent_roster and (intent or "") == "architecture":
         section_specs = merge_agent_roster_section(section_specs)
@@ -309,7 +405,7 @@ def build_dynamic_concierge_line_flex(
         if title_label and items:
             body.append(title_label)
             body.extend(items)
-    body = _truncate_line_body_paragraphs(body)
+    body = _apply_line_channel_body_limits(body, channel=channel, deep=deep)
     return {
         "variant": variant,
         "title": title,

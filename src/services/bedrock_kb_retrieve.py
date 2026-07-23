@@ -137,5 +137,9 @@ def augment_reference_with_kb(query: str, base_reference: str) -> str:
     result = retrieve_concierge_context(query, top_k=5)
     block = format_kb_context_block(result)
     if not block:
+        if use_bedrock_kb_rag():
+            logger.info(
+                "Bedrock KB retrieve empty — using local SSOT reference only (ingestion pending?)"
+            )
         return base_reference
     return f"{base_reference.rstrip()}\n\n{block}"

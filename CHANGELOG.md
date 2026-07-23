@@ -87,17 +87,36 @@
 ### Concierge — Amazon Q 型 技術 FAQ（Phase Q1）
 
 - **`docs/concierge/technical/`（新規）**: クロスクラウド構成・パイプライン・デプロイ SSOT + [00-disclosure-policy.md](docs/concierge/technical/00-disclosure-policy.md)（公開情報 OK / 深掘りは聞かれたとき / env メタ禁止）
+- **`docs/concierge/technical/04–07`（追記）**: データ保存・v2 フラグ・LINE/GCP 経路・監視運用 SSOT
 - **`src/content/concierge_tech_reference.py`（新規）**: ローカル tech 参照 + `wants_technical_deep_dive()` + architecture 深掘り（medium ~1500 字）
+- **`src/content/concierge_runtime_reference.py`（新規）**: `/health` 相当の公開デプロイ情報をプロンプト注入（env 名はユーザー出力に出さない）
 - **`src/services/concierge_i18n.py`（新規）**: Concierge 応答を問い合わせ言語へ Translate/DeepL
 - **`src/handlers/chat/chat_concierge_route.py`**: セッション言語更新 + i18n 適用
 - **`src/services/concierge_templates.py`**: LINE Flex 文字数切り詰め + Web 誘導
+- **`src/services/concierge_intent.py`**: 技術 FAQ プローブ拡張（doc_changelog / LINE / Chat Pipeline / CDN / 監視）
 - **`.cursor/plans/concierge_amazon_q_technical_faq.plan.md`（新規）**: 改善計画（Bedrock KB は Support 解消後）
 - **`scripts/sync-concierge-kb-to-s3.sh`**: technical + ops + CHANGELOG を KB ソースに同期
+- **`tests/fixtures/concierge_technical_faq.yaml`**: 技術 FAQ **40 問** contract セット
+- **`scripts/concierge-technical-faq-contract.sh`（新規）**: Support 不要の contract テスト（55 件）
+- **`scripts/verify-concierge-ssot.sh`（新規）**: 技術 SSOT 整合性チェック（CodeBuild post_build 常時）
+- **`scripts/concierge-staging-smoke.sh`（新規）**: staging HTTP smoke（/health/aws・changelog-digest CDN）
+- **`docs/concierge/technical/README.md`（新規）**: SSOT 索引
+- **`static/changelog-digest.json`**: Phase Q1–Q4 追記反映で再生成
+
+### Concierge — Amazon Q 型 技術 FAQ（Phase Q4）
+
+- **`src/services/concierge_channel.py`（新規）**: LINE 非 deep 時の概要制限 + 「詳しく」誘導ヒント
+- **`src/services/bedrock_kb_retrieve.py`**: KB 空時ログ（ingestion 待ち — ローカル SSOT フォールバック明示）
+
+- **`src/services/concierge_output_sanitize.py`（新規）**: env 名・内部パス・メタ文言の出力サニタイズ + 症状混入時の一行導線
+- **`src/services/concierge_templates.py`**: 深掘り architecture を GCP/AWS/デプロイ等の **多セクション Sage カード** に分割
+- **`src/agents/concierge_agent.py`**: サニタイズ適用、深掘り時 `参照: 公開技術ドキュメント`、doc_changelog に `参照: 更新履歴`
+- **`tests/services/test_concierge_output_sanitize.py`（新規）**: サニタイズ・深掘りセクションのテスト
 
 ### テスト
 
 - **`tests/config/test_aws_features.py`**: AWS フラグ + staging 判定
-- **`tests/content/test_concierge_tech_reference.py`**, **`tests/services/test_concierge_i18n.py`**
+- **`tests/content/test_concierge_tech_reference.py`**, **`tests/content/test_concierge_runtime_reference.py`**, **`tests/concierge/test_technical_faq_contract.py`**, **`tests/services/test_concierge_i18n.py`**, **`tests/services/test_concierge_output_sanitize.py`**, **`tests/services/test_concierge_channel.py`**, **`tests/scripts/test_verify_concierge_ssot.py`**
 - **`tests/core/test_translation_service_aws.py`**, **`tests/api/test_tts_api.py`**, **`tests/services/test_bedrock_kb_retrieve.py`**, **`tests/services/test_comprehend_medical.py`**, **`tests/services/test_medicine_image_urls.py`**, **`tests/services/test_personalize_ranker.py`**, **`tests/services/test_redis_cache.py`**, **`tests/scripts/test_analyze_comprehend_logs.py`**
 
 ### 運用メモ / 既知ブロッカー

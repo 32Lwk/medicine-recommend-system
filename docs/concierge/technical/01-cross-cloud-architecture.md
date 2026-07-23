@@ -15,7 +15,7 @@
 | **LINE** | LINE Messaging API | GCP Cloud Run 上（本番と同一アプリ） | 上記 GCP 本番と同じ |
 | **画像 CDN** | images.yutok.dev/otc/ | **Cloudflare R2**（GCP/AWS 共通） | — |
 
-**原則**: GCP 本番は AWS 向け env を **注入しない**（`config/aws_features.py` で default=レガシー）。AWS ステージングのみ Translate / Polly / Bedrock KB / Redis / Personalize を ON。
+**原則**: GCP 本番は AWS 専用機能（Translate / Polly / Bedrock KB 等）を **有効にしない**（DeepL / Web Speech / ローカル参照のまま）。AWS ステージングのみ Translate / Polly / Bedrock KB / Redis / Personalize を利用。
 
 ## リクエストの流れ（Web チャット）
 
@@ -28,9 +28,10 @@
 
 ## AWS ステージング追加コンポーネント
 
-- **static/**: S3 + CloudFront（`STATIC_CDN_BASE_URL`）— push 毎 CodeBuild で同期
-- **Concierge RAG**: Bedrock Knowledge Base（`CONCIERGE_RAG_PROVIDER=bedrock_kb`）— `docs/concierge/` 等を S3 経由で ingestion
+- **static/**: S3 + CloudFront CDN — push 毎 CodeBuild で同期
+- **Concierge RAG**: Bedrock Knowledge Base — `docs/concierge/` 等を S3 経由で ingestion（準備中の場合あり）
 - **キャッシュ**: ElastiCache Serverless（Translate / KB retrieve）
+- **NLU 補助（任意）**: Amazon Comprehend Medical — 症状エンティティ抽出（NLU 補助・ログ分析）
 - **CI/CD**: GitHub main → CodeStar Connection → CodeBuild（`buildspec.yml`）→ ECR → ECS force redeploy → smoke（Translate/Polly/health）
 - **Secrets**: Secrets Manager → ECS Express `primaryContainer.secrets`
 

@@ -133,6 +133,13 @@ def _is_pending_delete_explain_request(text: str) -> bool:
     return False
 
 
+def _is_app_changelog_question(text: str) -> bool:
+    """本アプリの CHANGELOG 案内（SessionOps の会話履歴と区別）。"""
+    from src.services.concierge_intent import probe_meta_concierge_intent
+
+    return probe_meta_concierge_intent(text) == "doc_changelog"
+
+
 def classify_session_intent(
     user_text: str,
     *,
@@ -141,6 +148,9 @@ def classify_session_intent(
     """削除・要約・ステータス意図を分類する。"""
     t = (user_text or "").strip()
     if not t:
+        return "none"
+
+    if _is_app_changelog_question(t):
         return "none"
 
     if _has_destructive_delete_intent(t):
@@ -187,7 +197,11 @@ def classify_session_ops_detail(
         return "none"
     if _matches_any(t, _RECORDED_ITEMS_HINTS):
         return "recorded_items"
-    if _matches_any(t, _HISTORY_OVERVIEW_HINTS) and not re.search(r"要約|まとめ", t):
+    if (
+        _matches_any(t, _HISTORY_OVERVIEW_HINTS)
+        and not re.search(r"要約|まとめ", t)
+        and not _is_app_changelog_question(t)
+    ):
         return "history_overview"
     if coarse == "summarize":
         return "summarize"

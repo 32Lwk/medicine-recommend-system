@@ -91,6 +91,14 @@ def run_intent_router_llm(
         llm,
         primary_llm_over_legacy=primary,
     )
-    from src.dialogue.routing.intent_router_llm import maybe_correct_concierge_app_about_route
+    from src.dialogue.routing.intent_router_llm import (
+        maybe_correct_concierge_app_about_route,
+        maybe_correct_concierge_keyword_meta_route,
+    )
 
+    picked = maybe_correct_concierge_keyword_meta_route(
+        picked,
+        user_text,
+        triage_result=triage_result,
+    )
     return maybe_correct_concierge_app_about_route(picked, user_text)

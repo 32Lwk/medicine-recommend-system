@@ -821,12 +821,15 @@ def build_changelog_payload(
         if s.get("title") and s.get("items")
     ]
     subtitle = format_changelog_deploy_subtitle(header_date)
+    from src.services.concierge_output_sanitize import concierge_source_hint
+
+    changelog_hints = [concierge_source_hint("doc_changelog") or "参照: 更新履歴"]
 
     diag = build_notice_status(
         intro,
         title=changelog_doc_title(),
         subtitle=subtitle,
-        hints=[],
+        hints=changelog_hints,
         sections=sections,
         kind="concierge_doc_changelog",
         show_feedback=True,
@@ -843,7 +846,7 @@ def build_changelog_payload(
             title=changelog_doc_title(),
             body_text=plain_body,
             subtitle=subtitle,
-            hints=[],
+            hints=changelog_hints,
             feedback_data=fb,
             intent="doc_changelog",
         ),
@@ -852,7 +855,7 @@ def build_changelog_payload(
             title=changelog_doc_title(),
             body_text=plain_body,
             subtitle=subtitle,
-            hints=[],
+            hints=changelog_hints,
             intent="doc_changelog",
         ),
         "concierge_intent": "doc_changelog",
@@ -1600,12 +1603,12 @@ def _meta_reference_block(intent: str) -> str:
                 lines.append("")
                 lines.append("【AWS ステージング環境（参照）】")
                 lines.append("- URL: aws.medicine.yutok.dev（ECS Express Gateway + ALB + WAF）")
-                lines.append("- static アセット: S3 + CloudFront CDN（STATIC_CDN_BASE_URL）")
-                lines.append("- 翻訳: Amazon Translate（TRANSLATION_PROVIDER=translate）")
-                lines.append("- 読み上げ: Amazon Polly（TTS_PROVIDER=polly、POST /api/tts）")
-                lines.append("- Concierge ナレッジ: Bedrock Knowledge Base（CONCIERGE_RAG_PROVIDER=bedrock_kb）")
+                lines.append("- static アセット: S3 + CloudFront CDN")
+                lines.append("- 翻訳: Amazon Translate")
+                lines.append("- 読み上げ: Amazon Polly（POST /api/tts）")
+                lines.append("- Concierge ナレッジ: Bedrock Knowledge Base")
                 lines.append("- 医薬品画像: Cloudflare R2（images.yutok.dev/otc/）— GCP/AWS 共通 CDN")
-                lines.append("- セッションキャッシュ: ElastiCache Serverless（REDIS_URL）")
+                lines.append("- セッションキャッシュ: ElastiCache Serverless")
                 lines.append("- 推奨ランキング補助: Amazon Personalize（イベント蓄積中、campaign はデータ待ち）")
                 lines.append("- 本番 GCP（medicine.yutok.dev）は Cloud Run + DeepL + Web Speech API のまま変更なし")
         except Exception:
@@ -1708,7 +1711,9 @@ def _invoke_meta_concierge_llm(
     if intent == "architecture":
         from src.content.concierge_tech_reference import augment_architecture_reference
 
-        reference = augment_architecture_reference(reference, deep=deep)
+        reference = augment_architecture_reference(
+            reference, deep=deep, user_text=user_text
+        )
     from src.services.bedrock_kb_retrieve import augment_reference_with_kb
 
     reference = augment_reference_with_kb(user_text, reference)
@@ -1739,7 +1744,25 @@ def _invoke_meta_concierge_llm(
             " 技術・インフラ・デプロイの質問では、参照ドキュメントに忠実に詳しく答える。"
             "医療診断や症状への具体助言は行わない。"
         )
-    max_tokens = 1400 if deep and intent == "architecture" else 520
+    elif (
+        intent == "architecture"
+        and not deep
+        and session_id
+    ):
+        from src.services.concierge_channel import is_concierge_line_channel
+
+        if is_concierge_line_channel(session_id):
+            system_content += " LINE 向けの概要回答とし、4文以内で要点だけ述べる。"
+
+    max_tokens = 520
+    if intent == "architecture":
+        if deep:
+            max_tokens = 1400
+        else:
+            from src.services.concierge_channel import is_concierge_line_channel
+
+            if is_concierge_line_channel(session_id):
+                max_tokens = 360
     resp = concierge_chat(
         client,
         f"concierge_agent.meta_{intent}" + ("_deep" if deep else ""),
@@ -1756,7 +1779,10 @@ def _invoke_meta_concierge_llm(
     )
     from src.utils.sage_message_plain import strip_internal_llm_prefix
 
-    return strip_internal_llm_prefix((resp.choices[0].message.content or "").strip())
+    raw = strip_internal_llm_prefix((resp.choices[0].message.content or "").strip())
+    from src.services.concierge_output_sanitize import sanitize_concierge_meta_output
+
+    return sanitize_concierge_meta_output(raw, intent=intent)
 
 
 def _meta_concierge_fallback_card(user_text: str, intent: str) -> str:
@@ -1801,6 +1827,12 @@ def generate_meta_concierge_text(
                     history, user_text
                 ) and not _TECH_STACK_TOPIC_RE.search(text):
                     text = _append_tech_stack_reminder(text)
+                if intent == "architecture" and deep:
+                    from src.services.concierge_output_sanitize import (
+                        append_symptom_consultation_boundary,
+                    )
+
+                    text = append_symptom_consultation_boundary(text, user_text)
                 return text, True
             logger.warning(
                 "Concierge meta LLM empty (%s), attempt=%s",
@@ -1822,6 +1854,8 @@ def _architecture_response_hints(
     user_text: str,
     intent: str,
     history: Optional[List[Dict[str, str]]] = None,
+    *,
+    session_id: Optional[str] = None,
 ) -> list[str]:
     hints = list(_META_CARD_HINTS.get(intent, []))
     if intent != "architecture":
@@ -1836,11 +1870,30 @@ def _architecture_response_hints(
             )
     except Exception:
         pass
+    deep = False
     try:
         from src.content.concierge_tech_reference import wants_technical_deep_dive
 
-        if wants_technical_deep_dive(user_text, history):
+        deep = wants_technical_deep_dive(user_text, history)
+        if deep:
             hints.insert(0, "公開情報に基づく案内")
+            from src.services.concierge_output_sanitize import concierge_source_hint
+
+            source = concierge_source_hint(intent, deep=True)
+            if source and source not in hints:
+                hints.append(source)
+    except Exception:
+        pass
+    try:
+        from src.services.concierge_channel import (
+            is_concierge_line_channel,
+            line_architecture_follow_up_hint,
+        )
+
+        if is_concierge_line_channel(session_id):
+            follow_up = line_architecture_follow_up_hint(deep=deep)
+            if follow_up and follow_up not in hints:
+                hints.append(follow_up)
     except Exception:
         pass
     return hints
@@ -1854,6 +1907,7 @@ def _assemble_dynamic_concierge_payload(
     llm_used: bool,
     feedback_data: Optional[Dict[str, Any]] = None,
     history: Optional[List[Dict[str, str]]] = None,
+    session_id: Optional[str] = None,
 ) -> ResponsePayload:
     """
     メタ質問・ドキュメント案内など、LLM 動的本文を Web カード + LINE Flex で返す。
@@ -1862,9 +1916,21 @@ def _assemble_dynamic_concierge_payload(
     from src.services.status_diagnosis_builder import build_notice_status
 
     title = _META_CARD_TITLES.get(intent, "ご案内")
-    hints = _architecture_response_hints(user_text, intent, history)
+    hints = _architecture_response_hints(
+        user_text, intent, history, session_id=session_id
+    )
     kind = f"concierge_{intent}"
     fb = feedback_data if feedback_data is not None else _feedback_data(user_text, intent)
+
+    deep = False
+    if intent == "architecture":
+        from src.content.concierge_tech_reference import wants_technical_deep_dive
+
+        deep = wants_technical_deep_dive(user_text, history)
+
+    from src.services.concierge_channel import resolve_concierge_channel
+
+    channel = resolve_concierge_channel(session_id)
 
     if llm_used:
         from src.services.concierge_agent_history import is_agent_roster_question
@@ -1875,7 +1941,9 @@ def _assemble_dynamic_concierge_payload(
         )
         from src.services.concierge_templates import merge_agent_roster_section
 
-        display_message, section_specs = structure_concierge_meta_display(intent, plain)
+        display_message, section_specs = structure_concierge_meta_display(
+            intent, plain, deep=deep
+        )
         if include_roster:
             section_specs = merge_agent_roster_section(section_specs)
         from src.services.status_diagnosis_builder import StatusSection
@@ -1893,6 +1961,7 @@ def _assemble_dynamic_concierge_payload(
                 feedback_data=fb,
                 intent=intent,
                 include_agent_roster=include_roster,
+                deep=deep,
             ),
             "content_format": "status_card",
             "line_flex": build_dynamic_concierge_line_flex(
@@ -1901,6 +1970,8 @@ def _assemble_dynamic_concierge_payload(
                 hints=hints,
                 intent=intent,
                 include_agent_roster=include_roster,
+                deep=deep,
+                channel=channel,
             ),
             "concierge_intent": intent,
             "llm_used": True,
@@ -2078,6 +2149,7 @@ def build_concierge_payload(
             llm_used=meta_llm_used,
             feedback_data=fb,
             history=history,
+            session_id=session_id,
         )
     if intent == "doc_operator":
         return build_doc_operator_payload(
@@ -2110,6 +2182,7 @@ def build_concierge_payload(
             llm_used=True,
             feedback_data=fb,
             history=history,
+            session_id=session_id,
         )
     if intent == "chitchat":
         from src.services.status_diagnosis_builder import build_concierge_text_status

@@ -12380,3 +12380,52 @@
 {"timestamp": "2026-07-04T14:54:04.100820", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-04T14:54:04.101264", "event_type": "input_validation", "user_id": "ユーザー1001", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "のどが痛いです"}}
 {"timestamp": "2026-07-04T14:54:05.871998", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T14:26:54.121756", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:35:23.032056", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:35:23.033054", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 23, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "GCP と AWS の構成の違いを詳しく教えて"}}
+{"timestamp": "2026-07-23T19:35:28.924969", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:35:28.924969", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 23, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "CodePipeline のデプロイの流れは？"}}
+{"timestamp": "2026-07-23T19:35:31.530222", "original_length": 46, "sanitized_length": 46, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:35:31.531220", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 46, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "Explain the cross-cloud architecture in detail"}}
+{"timestamp": "2026-07-23T19:35:44.431204", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:35:44.432205", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "インフラ構成は？"}}
+{"timestamp": "2026-07-23T19:37:34.353915", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:37:34.353915", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 23, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "GCP と AWS の構成の違いを詳しく教えて"}}
+{"timestamp": "2026-07-23T19:37:39.094740", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:37:39.094740", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 23, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "CodePipeline のデプロイの流れは？"}}
+{"timestamp": "2026-07-23T19:37:43.827662", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:37:43.827662", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新履歴を教えて"}}
+{"timestamp": "2026-07-23T19:37:44.354695", "original_length": 46, "sanitized_length": 46, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:37:44.355696", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 46, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "Explain the cross-cloud architecture in detail"}}
+{"timestamp": "2026-07-23T19:37:58.386714", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:37:58.387714", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "インフラ構成は？"}}
+{"timestamp": "2026-07-23T19:38:35.937890", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:38:35.938895", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 23, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "GCP と AWS の構成の違いを詳しく教えて"}}
+{"timestamp": "2026-07-23T19:38:40.489524", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:38:40.490058", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 23, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "CodePipeline のデプロイの流れは？"}}
+{"timestamp": "2026-07-23T19:38:44.764055", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:38:44.765048", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新履歴を教えて"}}
+{"timestamp": "2026-07-23T19:38:48.347394", "original_length": 46, "sanitized_length": 46, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:38:48.347394", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 46, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "Explain the cross-cloud architecture in detail"}}
+{"timestamp": "2026-07-23T19:39:07.513098", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:39:07.514097", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "インフラ構成は？"}}
+{"timestamp": "2026-07-23T19:39:11.620378", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:39:11.621380", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 23, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "GCP と AWS の構成の違いを詳しく教えて"}}
+{"timestamp": "2026-07-23T19:39:16.233283", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:39:16.234282", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 23, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "CodePipeline のデプロイの流れは？"}}
+{"timestamp": "2026-07-23T19:39:20.198606", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:39:20.198606", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新履歴を教えて"}}
+{"timestamp": "2026-07-23T19:39:23.637254", "original_length": 46, "sanitized_length": 46, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:39:23.638254", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 46, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "Explain the cross-cloud architecture in detail"}}
+{"timestamp": "2026-07-23T19:39:33.371353", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:39:33.372353", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "インフラ構成は？"}}
+{"timestamp": "2026-07-23T19:39:37.347681", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:39:37.347681", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 23, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "GCP と AWS の構成の違いを詳しく教えて"}}
+{"timestamp": "2026-07-23T19:39:41.435448", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:39:41.436448", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 23, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "CodePipeline のデプロイの流れは？"}}
+{"timestamp": "2026-07-23T19:39:46.475899", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:39:46.476899", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新履歴を教えて"}}
+{"timestamp": "2026-07-23T19:39:49.690750", "original_length": 46, "sanitized_length": 46, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:39:49.691749", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 46, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "Explain the cross-cloud architecture in detail"}}
+{"timestamp": "2026-07-23T19:39:58.566682", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-23T19:39:58.566682", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "インフラ構成は？"}}

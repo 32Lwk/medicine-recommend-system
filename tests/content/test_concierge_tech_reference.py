@@ -13,6 +13,8 @@ def test_technical_reference_block_contains_cross_cloud():
     assert "GCP 本番" in block
     assert "AWS ステージング" in block
     assert "Cloudflare R2" in block
+    assert "04-data-security.md" in block
+    assert "07-observability-ops.md" in block
 
 
 def test_wants_deep_dive_on_infra_question():
@@ -33,6 +35,9 @@ def test_wants_deep_dive_on_follow_up():
 
 def test_augment_architecture_includes_tech_docs():
     base = "【エージェント構成（参照）】\n- TriageAgent: 振り分け"
-    out = augment_architecture_reference(base, deep=True)
+    out = augment_architecture_reference(
+        base, deep=True, user_text="デプロイ commit を詳しく"
+    )
     assert "技術ドキュメント参照" in out
     assert "CHANGELOG" in out or "開発履歴" in out
+    assert "公開デプロイ情報" in out

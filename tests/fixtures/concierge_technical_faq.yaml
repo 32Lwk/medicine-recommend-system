@@ -1,0 +1,310 @@
+# Concierge 技術 FAQ 評価セット（参照・深掘り判定の contract テスト用）
+# LLM 生成本文は対象外 — SSOT 参照ブロックと intent/deep 判定を検証する。
+
+scenarios:
+  - id: cross-cloud-diff-deep
+    message: "GCP と AWS の構成の違いを詳しく教えて"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "GCP 本番"
+      - "AWS ステージング"
+      - "Cloudflare R2"
+
+  - id: codepipeline-flow
+    message: "CodePipeline のデプロイの流れは？"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "CodePipeline"
+      - "CodeBuild"
+      - "ECS"
+
+  - id: cloud-run-vs-ecs
+    message: "Cloud Run と ECS の違いは？"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "Cloud Run"
+      - "ECS"
+
+  - id: translate-provider-aws
+    message: "AWS ステージングでは翻訳は何を使ってる？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "Amazon Translate"
+      - "DeepL"
+
+  - id: polly-tts
+    message: "読み上げ機能 Polly について"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "Polly"
+      - "Web Speech"
+
+  - id: bedrock-kb-status
+    message: "Bedrock ナレッジベースの状態を教えて"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "Bedrock"
+      - "ingestion"
+
+  - id: line-gcp-path
+    message: "LINE は GCP Cloud Run 上で動いてる？"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "LINE"
+      - "Cloud Run"
+      - "GCP"
+
+  - id: data-storage-security
+    message: "チャットデータはどこに保存される？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "PostgreSQL"
+      - "Neon"
+
+  - id: chat-pipeline-v2
+    message: "Chat Pipeline v2 とは？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "CHAT_PIPELINE_V2"
+      - "IntentRouter"
+
+  - id: health-check-deploy
+    message: "今デプロイされている commit はどう確認する？"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "/health"
+      - "git_commit"
+    expect_runtime_block: true
+
+  - id: observability-logs
+    message: "ログはどこで見れる？運用構成を詳しく"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "Cloud Logging"
+      - "CloudWatch"
+
+  - id: r2-images-cdn
+    message: "医薬品画像の CDN は？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "images.yutok.dev"
+      - "R2"
+
+  - id: multi-agent-architecture
+    message: "マルチエージェント構成を教えて"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "TriageAgent"
+
+  - id: doc-changelog
+    message: "最近の更新履歴を教えて"
+    expected_intent: doc_changelog
+    expect_deep_dive: false
+    skip_reference: true
+
+  - id: capabilities-not-architecture
+    message: "あなたにできることをまとめて"
+    expected_intent: capabilities
+    expect_deep_dive: false
+    skip_reference: true
+
+  - id: cross-cloud-english
+    message: "Explain the cross-cloud architecture in detail"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "GCP"
+      - "AWS"
+
+  - id: elasticache-redis
+    message: "ElastiCache は何に使ってる？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "Redis"
+      - "ElastiCache"
+
+  - id: cloudfront-static
+    message: "static ファイルの CDN CloudFront について"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "CloudFront"
+      - "S3"
+
+  - id: neon-database
+    message: "データベース Neon について"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "Neon"
+      - "PostgreSQL"
+
+  - id: follow-up-deep-dive
+    message: "もっと詳しく"
+    expected_intent: null
+    expect_deep_dive: true
+    history:
+      - type: user
+        content: "インフラ構成は？"
+      - type: bot
+        content: "概要です"
+        concierge_intent: architecture
+    reference_must_contain:
+      - "技術ドキュメント参照"
+
+  - id: waf-security
+    message: "WAF の構成は？"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "WAF"
+
+  - id: personalise-ranking
+    message: "Personalize は何に使う？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "Personalize"
+
+  - id: comprehend-medical
+    message: "Comprehend Medical について"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "Comprehend"
+
+  - id: redis-cache
+    message: "Redis キャッシュの用途は？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "Redis"
+
+  - id: github-public-repo
+    message: "GitHub でソース公開してる？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "github.com"
+
+  - id: intent-router
+    message: "IntentRouter とは何？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "IntentRouter"
+
+  - id: physical-orchestrator
+    message: "PhysicalOrchestrator の役割は？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "PhysicalOrchestrator"
+
+  - id: disclosure-policy-deep
+    message: "公開情報の開示ポリシーを詳しく"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "公開情報"
+      - "深い情報"
+
+  - id: health-aws-features
+    message: "/health/aws で確認できることは？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "/health/aws"
+    expect_runtime_block: true
+
+  - id: rule-based-reco
+    message: "市販薬推奨はルールベース？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "ルールベース"
+
+  - id: store-inquiry-boundary
+    message: "トイレはどこ？"
+    expected_intent: null
+    expect_deep_dive: false
+    skip_reference: true
+
+  - id: doc-privacy-probe
+    message: "プライバシーポリシーについて"
+    expected_intent: doc_privacy
+    expect_deep_dive: false
+    skip_reference: true
+
+  - id: sage-terrace-ui
+    message: "Sage Terrace UI とは？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "Sage Terrace"
+
+  - id: opensearch-kb-vector
+    message: "OpenSearch Serverless と Bedrock KB"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "Bedrock"
+
+  - id: secrets-manager-ops
+    message: "Secrets Manager の使い方は？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "Secrets"
+
+  - id: cold-nlu-v2
+    message: "RECO_COLD_NLU_V2 フラグは？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "RECO_COLD_NLU"
+
+  - id: english-changelog
+    message: "What changed recently in this app?"
+    expected_intent: doc_changelog
+    expect_deep_dive: false
+    skip_reference: true
+
+  - id: cross-cloud-japanese-short
+    message: "インフラ構成は？"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "GCP"
+
+  - id: agent-triage-role
+    message: "TriageAgent は何をする？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "TriageAgent"
+
+# ランタイム参照ブロック（利用者向け）で禁止
+reference_forbidden_patterns:
+  - "TRANSLATION_PROVIDER"
+  - "TTS_PROVIDER"
+  - "CONCIERGE_RAG_PROVIDER"
+  - "DATABASE_URL"
+  - "OPENAI_API_KEY"
+  - "GIT_COMMIT"
+  - "環境変数を参照"
+  - "env を読"

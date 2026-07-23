@@ -51,8 +51,16 @@ phases:
           echo "==> sync static/ to S3 (CloudFront origin)"
           bash scripts/sync-static-to-s3.sh --invalidate
         fi
-      - echo "==> AWS staging smoke (Translate / Polly / CDN)"
-      - bash scripts/aws-staging-smoke.sh
+      - echo "==> Concierge SSOT verify"
+      - bash scripts/verify-concierge-ssot.sh
+      - echo "==> AWS staging smoke (Translate / Polly / CDN / Concierge)"
+      - |
+        if [ "${RUN_CONCIERGE_FAQ_CONTRACT:-false}" = "true" ]; then
+          export RUN_CONCIERGE_FAQ_CONTRACT=true
+          bash scripts/concierge-staging-smoke.sh
+        else
+          bash scripts/aws-staging-smoke.sh
+        fi
       - echo "Done. ${AWS_STAGING_URL:-https://aws.medicine.yutok.dev}/health"
 
 cache:
