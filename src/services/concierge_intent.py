@@ -436,6 +436,8 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"(マルチエージェント|薬はどうやって|選び方の仕組み|内部構成)"), "architecture"),
     (re.compile(r"(技術スタック|技術構成|開発環境|使ってる技術|tech\s*stack|デプロイ|インフラ)"), "architecture"),
     (re.compile(r"(FastAPI|Cloud\s*Run|PostgreSQL|Gunicorn|Neon|Sage\s*Terrace)"), "architecture"),
+    (re.compile(r"(ECS|ECR|CodePipeline|CodeBuild|CloudFront|Bedrock|Translate|Polly|ElastiCache|Personalize)", re.I), "architecture"),
+    (re.compile(r"(AWS|GCP|クロスクラウド|cross[\s-]?cloud|Cloudflare|R2)", re.I), "architecture"),
     (re.compile(r"ルールベース|rule[\s-]?based"), "architecture"),
     (re.compile(r"データ.{0,12}(保存|どこ)"), "architecture"),
     (re.compile(r"(記憶|保存).{0,12}(どこ|仕組み|方法)"), "architecture"),

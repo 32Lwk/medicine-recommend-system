@@ -258,6 +258,33 @@ def format_dynamic_concierge_meta_card(
     )
 
 
+_LINE_CONCIERGE_BODY_MAX_CHARS = 4200
+
+
+def _truncate_line_body_paragraphs(paragraphs: List[str]) -> List[str]:
+    """LINE Flex 上限対策 — 切り詰め + Web 誘導（深掘り medium 用）。"""
+    import os
+
+    total = 0
+    out: List[str] = []
+    for para in paragraphs:
+        chunk = (para or "").strip()
+        if not chunk:
+            continue
+        if total + len(chunk) > _LINE_CONCIERGE_BODY_MAX_CHARS:
+            remain = _LINE_CONCIERGE_BODY_MAX_CHARS - total
+            if remain > 80:
+                out.append(chunk[: remain - 1].rstrip() + "…")
+            site = (
+                os.getenv("PUBLIC_SITE_URL") or "https://medicine.yutok.dev"
+            ).rstrip("/")
+            out.append(f"続きの詳しい説明は Web チャット（{site}）でご覧ください。")
+            return out
+        out.append(chunk)
+        total += len(chunk)
+    return out
+
+
 def build_dynamic_concierge_line_flex(
     *,
     title: str,
@@ -282,6 +309,7 @@ def build_dynamic_concierge_line_flex(
         if title_label and items:
             body.append(title_label)
             body.extend(items)
+    body = _truncate_line_body_paragraphs(body)
     return {
         "variant": variant,
         "title": title,

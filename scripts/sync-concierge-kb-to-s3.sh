@@ -28,6 +28,12 @@ fi
 echo "==> Sync concierge docs -> s3://${BUCKET}/concierge/"
 aws s3 sync "$(to_win_path "$ROOT/docs/concierge")" "s3://${BUCKET}/concierge/" --delete --region "$AWS_REGION"
 aws s3 sync "$(to_win_path "$ROOT/docs/public")" "s3://${BUCKET}/public/" --delete --region "$AWS_REGION"
+for rel in docs/ops/AWS_FEATURES_ROLLOUT.md docs/ops/AWS_INFRA.md docs/ops/AWS_CODEPIPELINE.md docs/ops/CLOUDFLARE_R2_IMAGES.md docs/ops/AWS_BEDROCK_KB.md; do
+  if [[ -f "$ROOT/$rel" ]]; then
+    aws s3 cp "$(to_win_path "$ROOT/$rel")" "s3://${BUCKET}/ops/$(basename "$rel")" --region "$AWS_REGION"
+  fi
+done
+aws s3 cp "$(to_win_path "$ROOT/CHANGELOG.md")" "s3://${BUCKET}/content/CHANGELOG.md" --region "$AWS_REGION"
 aws s3 cp "$(to_win_path "$ROOT/src/content/concierge_knowledge.ja.json")" "s3://${BUCKET}/content/concierge_knowledge.ja.json" --region "$AWS_REGION"
 
 echo "KB source synced to s3://${BUCKET}/"

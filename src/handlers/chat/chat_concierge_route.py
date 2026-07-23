@@ -262,6 +262,10 @@ def try_concierge_response(
     if not was_last_user_message(session, user_message or llm_text):
         append_user_message(session, user_message or llm_text)
 
+    from src.core.language_utils import update_session_language_from_message
+
+    update_session_language_from_message(session, user_message or llm_text or routing_text)
+
     from src.dialogue.history import (
         resolve_concierge_history_with_fallback,
         resolve_counseling_history_with_fallback,
@@ -305,6 +309,9 @@ def try_concierge_response(
         session_id=sid,
         history=history,
     )
+    from src.services.concierge_i18n import apply_concierge_payload_i18n
+
+    payload = apply_concierge_payload_i18n(session, payload, session_id=sid)
     mark_pipeline_step("concierge_build_payload_end")
     _append_bot_message(session, payload, sid)
     update_concierge_state(

@@ -1519,6 +1519,8 @@ _META_INTENT_REQUIREMENTS = {
 - マルチエージェント＝複数の専門担当が連携する仕組みであることを、聞かれたときは中心に説明する
 - 市販薬候補がルールベースで選ばれることは、質問に関係するときだけ簡潔に触れる
 - 技術スタック・開発環境・デプロイ構成の質問には、参照情報の技術一覧に基づいて答える
+- **初回は概要優先（2〜6文）。詳しく求められていない限り、深い内部詳細を先出ししない**
+- **環境変数名・Secrets・「設定/envを参照した」等のメタ表現は出力しない**（公開情報は利用者向けの言葉で述べる）
 - 会話履歴（直前の説明など）を踏まえ、同じ説明の繰り返しを避ける
 - 2〜6文・プレーンテキスト（Markdown不可）
 - 話題が変わるときは空行を1行入れる
@@ -1620,7 +1622,7 @@ def _meta_reference_block(intent: str) -> str:
     return "\n".join(lines)
 
 
-def _meta_requirements_for(user_text: str, intent: str) -> str:
+def _meta_requirements_for(user_text: str, intent: str, *, deep: bool = False) -> str:
     """intent 共通要件に、今回の質問タイプ限定の追記を付ける。"""
     from src.services.concierge_agent_history import (
         is_agent_roster_question,
@@ -1629,6 +1631,24 @@ def _meta_requirements_for(user_text: str, intent: str) -> str:
     )
 
     base = _META_INTENT_REQUIREMENTS[intent]
+    if intent == "architecture" and deep:
+        if not (
+            is_who_is_answering_question(user_text)
+            or is_agent_roster_question(user_text)
+        ):
+            return (
+                base
+                + """
+
+【深掘りモード（技術 FAQ）】
+- 参照ドキュメントの事実のみに基づき、正確かつ具体的に答える（推測・創作禁止）
+- 4〜12文、または短い段落2〜4個。必要なら「・」箇条書き可（1項目1行）
+- GCP 本番 / AWS ステージング / Cloudflare R2 / LINE の役割分担を聞かれたら参照どおりに説明
+- デプロイ（Cloud Run / CodePipeline）、Bedrock KB、エージェント構成、ルールベース推奨を具体名で述べてよい
+- **環境変数名・「env/内部設定を読んだ」等は出力しない**（公開されている説明として自然な日本語で）
+- 医薬品の症状・用法・選び方には踏み込まない（必要なら一行で症状入力を促す）
+- 内部コードパスは出力しない（サービス名・公開 URL は可）"""
+            )
     if intent != "architecture":
         return base
     if is_who_is_answering_question(user_text):
@@ -1679,11 +1699,16 @@ def _invoke_meta_concierge_llm(
     *,
     session_id: Optional[str] = None,
     history: Optional[List[Dict[str, str]]] = None,
+    deep: bool = False,
 ) -> str:
     hist = format_concierge_history_block(history, user_text)
     context = format_meta_concierge_context_block(history, user_text, intent=intent)
-    requirements = _meta_requirements_for(user_text, intent)
+    requirements = _meta_requirements_for(user_text, intent, deep=deep)
     reference = _meta_reference_block(intent)
+    if intent == "architecture":
+        from src.content.concierge_tech_reference import augment_architecture_reference
+
+        reference = augment_architecture_reference(reference, deep=deep)
     from src.services.bedrock_kb_retrieve import augment_reference_with_kb
 
     reference = augment_reference_with_kb(user_text, reference)
@@ -1702,21 +1727,30 @@ def _invoke_meta_concierge_llm(
 
 {requirements}
 """
+    system_content = (
+        "あなたは市販薬相談ツールの案内役です。"
+        "参照情報と会話履歴に基づき、正確で自然な続きの回答をします。"
+        "薬名の創作や処方の約束はしません。"
+        "環境変数・内部設定・参照方法についてユーザーに言及しない。"
+        "公開されている事実だけを、利用者向けの言葉で述べる。"
+    )
+    if deep and intent == "architecture":
+        system_content += (
+            " 技術・インフラ・デプロイの質問では、参照ドキュメントに忠実に詳しく答える。"
+            "医療診断や症状への具体助言は行わない。"
+        )
+    max_tokens = 1400 if deep and intent == "architecture" else 520
     resp = concierge_chat(
         client,
-        f"concierge_agent.meta_{intent}",
+        f"concierge_agent.meta_{intent}" + ("_deep" if deep else ""),
         [
             {
                 "role": "system",
-                "content": (
-                    "あなたは市販薬相談ツールの案内役です。"
-                    "参照情報と会話履歴に基づき、正確で自然な続きの回答をします。"
-                    "薬名の創作や処方の約束はしません。"
-                ),
+                "content": system_content,
             },
             {"role": "user", "content": prompt},
         ],
-        max_tokens=520,
+        max_tokens=max_tokens,
         temperature=0.35,
         session_id=session_id,
     )
@@ -1746,6 +1780,12 @@ def generate_meta_concierge_text(
     if intent not in _META_LLM_INTENTS:
         raise ValueError(f"unsupported meta intent: {intent}")
 
+    deep = False
+    if intent == "architecture":
+        from src.content.concierge_tech_reference import wants_technical_deep_dive
+
+        deep = wants_technical_deep_dive(user_text, history)
+
     for attempt in range(2):
         try:
             text = _invoke_meta_concierge_llm(
@@ -1754,6 +1794,7 @@ def generate_meta_concierge_text(
                 intent,
                 session_id=session_id,
                 history=history,
+                deep=deep,
             )
             if text:
                 if intent == "architecture" and _prior_topic_mentions_tech_stack(
@@ -1777,6 +1818,34 @@ def generate_meta_concierge_text(
     return _meta_concierge_fallback_card(user_text, intent), False
 
 
+def _architecture_response_hints(
+    user_text: str,
+    intent: str,
+    history: Optional[List[Dict[str, str]]] = None,
+) -> list[str]:
+    hints = list(_META_CARD_HINTS.get(intent, []))
+    if intent != "architecture":
+        return hints
+    try:
+        from config.aws_features import is_aws_staging_site
+
+        if is_aws_staging_site():
+            hints.append(
+                "ナレッジベース（Bedrock KB）の全文同期は準備中です。"
+                "説明は公開ドキュメントに基づきます。"
+            )
+    except Exception:
+        pass
+    try:
+        from src.content.concierge_tech_reference import wants_technical_deep_dive
+
+        if wants_technical_deep_dive(user_text, history):
+            hints.insert(0, "公開情報に基づく案内")
+    except Exception:
+        pass
+    return hints
+
+
 def _assemble_dynamic_concierge_payload(
     *,
     intent: str,
@@ -1784,6 +1853,7 @@ def _assemble_dynamic_concierge_payload(
     body_text: str,
     llm_used: bool,
     feedback_data: Optional[Dict[str, Any]] = None,
+    history: Optional[List[Dict[str, str]]] = None,
 ) -> ResponsePayload:
     """
     メタ質問・ドキュメント案内など、LLM 動的本文を Web カード + LINE Flex で返す。
@@ -1792,7 +1862,7 @@ def _assemble_dynamic_concierge_payload(
     from src.services.status_diagnosis_builder import build_notice_status
 
     title = _META_CARD_TITLES.get(intent, "ご案内")
-    hints = _META_CARD_HINTS.get(intent, [])
+    hints = _architecture_response_hints(user_text, intent, history)
     kind = f"concierge_{intent}"
     fb = feedback_data if feedback_data is not None else _feedback_data(user_text, intent)
 
@@ -2007,6 +2077,7 @@ def build_concierge_payload(
             body_text=text,
             llm_used=meta_llm_used,
             feedback_data=fb,
+            history=history,
         )
     if intent == "doc_operator":
         return build_doc_operator_payload(
@@ -2038,6 +2109,7 @@ def build_concierge_payload(
             body_text=text,
             llm_used=True,
             feedback_data=fb,
+            history=history,
         )
     if intent == "chitchat":
         from src.services.status_diagnosis_builder import build_concierge_text_status

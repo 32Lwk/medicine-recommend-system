@@ -84,9 +84,20 @@
 - **`src/agents/concierge_agent.py`**: `doc_changelog` で digest 6 件参照・UI 3〜4 セクション表示。`is_concierge_technical_reference_enabled()` で AWS ステージングでも API/SSE/ルールベース詳細を参照に含める。**AWS ステージング専用参照ブロック**（ECS / Translate / Polly / Bedrock KB / R2 / Redis / GCP 本番との差分）を architecture に追加
 - **`scripts/write_changelog_digest.py`**: ビルド時 digest 再生成（既存 Dockerfile フロー）
 
+### Concierge — Amazon Q 型 技術 FAQ（Phase Q1）
+
+- **`docs/concierge/technical/`（新規）**: クロスクラウド構成・パイプライン・デプロイ SSOT + [00-disclosure-policy.md](docs/concierge/technical/00-disclosure-policy.md)（公開情報 OK / 深掘りは聞かれたとき / env メタ禁止）
+- **`src/content/concierge_tech_reference.py`（新規）**: ローカル tech 参照 + `wants_technical_deep_dive()` + architecture 深掘り（medium ~1500 字）
+- **`src/services/concierge_i18n.py`（新規）**: Concierge 応答を問い合わせ言語へ Translate/DeepL
+- **`src/handlers/chat/chat_concierge_route.py`**: セッション言語更新 + i18n 適用
+- **`src/services/concierge_templates.py`**: LINE Flex 文字数切り詰め + Web 誘導
+- **`.cursor/plans/concierge_amazon_q_technical_faq.plan.md`（新規）**: 改善計画（Bedrock KB は Support 解消後）
+- **`scripts/sync-concierge-kb-to-s3.sh`**: technical + ops + CHANGELOG を KB ソースに同期
+
 ### テスト
 
 - **`tests/config/test_aws_features.py`**: AWS フラグ + staging 判定
+- **`tests/content/test_concierge_tech_reference.py`**, **`tests/services/test_concierge_i18n.py`**
 - **`tests/core/test_translation_service_aws.py`**, **`tests/api/test_tts_api.py`**, **`tests/services/test_bedrock_kb_retrieve.py`**, **`tests/services/test_comprehend_medical.py`**, **`tests/services/test_medicine_image_urls.py`**, **`tests/services/test_personalize_ranker.py`**, **`tests/services/test_redis_cache.py`**, **`tests/scripts/test_analyze_comprehend_logs.py`**
 
 ### 運用メモ / 既知ブロッカー
