@@ -22,6 +22,20 @@ logger = logging.getLogger(__name__)
 
 ResponseTuple = Tuple[dict, int]
 
+_PIPELINE_TURN_BOT_APPENDED_KEY = "_pipeline_turn_bot_appended"
+
+
+def mark_pipeline_turn_bot_appended(session: Any) -> None:
+    """Web の Cookie  slimming 等で messages を消す前に、当該ターンで bot 追記済みと記録。"""
+    if hasattr(session, "__setitem__"):
+        session[_PIPELINE_TURN_BOT_APPENDED_KEY] = True
+
+
+def _turn_produced_bot_reply(session: Any, bot_count_before: int) -> bool:
+    if session.get(_PIPELINE_TURN_BOT_APPENDED_KEY):
+        return True
+    return count_bot_messages_in_session(session) > bot_count_before
+
 
 def append_redirect_bot_response(
     session: Any,
@@ -145,8 +159,9 @@ def finalize_pipeline_response(
     user_message: Optional[str] = None,
 ) -> ResponseTuple:
     """応答返却直前に bot 追記有無を確認する。無応答時は fail-loud（redirect 補完しない）。"""
-    if count_bot_messages_in_session(session) > bot_count_before:
-        if hasattr(session, "__setitem__"):
+    if _turn_produced_bot_reply(session, bot_count_before):
+        if hasattr(session, "pop"):
+            session.pop(_PIPELINE_TURN_BOT_APPENDED_KEY, None)
             session.pop("_pipeline_end_guard", None)
         _schedule_turn_detail_log(session, sid, user_message=user_message)
         return response

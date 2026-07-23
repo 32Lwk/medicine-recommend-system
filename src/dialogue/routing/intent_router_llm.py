@@ -49,7 +49,7 @@ _INTENT_ROUTER_PROMPT = """あなたは医薬品相談チャットの IntentRout
 - 発熱・症状がある場合は Store より Physical を優先
 - 履歴操作キーワードは SessionOps
 - 医薬品相談アプリ外の一般知識は Concierge/redirect
-- **本サービスの** AWS/GCP/CodePipeline/Cloud Run/ECS/デプロイ/インフラ/技術スタックの質問は Concierge/architecture（redirect にしない）
+- **本サービスの** インフラ・デプロイ・技術スタック・構成に関する質問は Concierge/architecture（redirect にしない）
 - legacy triage に concierge_intent=architecture か source=keyword_probe の architecture 系がある場合は architecture を優先
 - 症状が曖昧で判断不能なら Unknown（confidence 低め）
 - 直近で医薬品を推奨済みのセッションで「どれ」「使える」「競技」「大会」「ドーピング」等の追質問は Physical/medicine_followup_qa（新規症状推奨ではない）

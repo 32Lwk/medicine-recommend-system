@@ -31,6 +31,19 @@ aws ecs update-service \
   --query 'service.deploymentConfiguration.{strategy:strategy,bake:bakeTimeInMinutes,canary:canaryConfiguration}' \
   --output table
 
+echo "==> ALB: idle timeout 300s (推奨フロー 60s 超・504 対策)"
+ALB_ARN="$(resolve_alb_arn)"
+if [[ -n "$ALB_ARN" && "$ALB_ARN" != "None" ]]; then
+  aws elbv2 modify-load-balancer-attributes \
+    --load-balancer-arn "$ALB_ARN" \
+    --region "$REGION" \
+    --attributes Key=idle_timeout.timeout_seconds,Value=300 \
+    --query 'Attributes[?Key==`idle_timeout.timeout_seconds`]' \
+    --output table
+else
+  echo "WARN: ALB ARN not found — set ALB_ARN or check ECS service loadBalancers" >&2
+fi
+
 echo "==> ECS: GUNICORN_WORKERS=2 in task definition"
 CURRENT="$(aws ecs describe-task-definition --task-definition "$TASK_FAMILY" --region "$REGION" --output json)"
 NEW_TD=$(python3 - "$CURRENT" <<'PY'

@@ -274,6 +274,9 @@
   function sectionBadgeLabel(variant, title, kind) {
     if (kind === 'concierge_doc_changelog') return t('statusBadgeUpdate') || '更新';
     if (/^\d{4}年\d{1,2}月\d{1,2}日/.test(title || '')) return t('statusBadgeUpdate') || '更新';
+    if (/^GCP/.test(title || '')) return 'GCP';
+    if (/^AWS/.test(title || '')) return 'AWS';
+    if (/デプロイ|CI\/CD|Pipeline/i.test(title || '')) return t('statusBadgeDeploy') || 'デプロイ';
     if (/医師|受診|相談/.test(title || '')) return t('statusBadgeConsult') || '受診';
     if (/詳細|案内/.test(title || '')) return t('statusBadgeInfo') || '案内';
     if (variant === 'critical' || variant === 'error') return t('statusBadgeImportant') || '重要';

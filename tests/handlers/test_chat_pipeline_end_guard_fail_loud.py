@@ -38,3 +38,19 @@ def test_finalize_clears_guard_when_bot_added():
         ({"status": "ok"}, 200),
     )
     assert "_pipeline_end_guard" not in session
+
+
+def test_finalize_accepts_turn_flag_after_web_cookie_slimming():
+    """DB 保存後に session.messages を消す Web 経路でも誤って system_error にしない。"""
+    session = {"_pipeline_turn_bot_appended": True}
+    body, _ = finalize_pipeline_response(
+        session,
+        "sid-web",
+        None,
+        0,
+        ({"status": "ok", "message_count": 2}, 200),
+        user_message="頭痛が痛い",
+    )
+    assert body.get("pipeline_end_guard") is None
+    assert "_pipeline_turn_bot_appended" not in session
+    assert len(session.get("messages") or []) == 0

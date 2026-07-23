@@ -187,11 +187,159 @@ def _bucket_architecture_deep_paragraphs(
     return intro, sections
 
 
+_GENERIC_ARCHITECTURE_BOILERPLATE_RE = re.compile(
+    r"(?:"
+    r"マルチエージェント|"
+    r"ルールベース(?:のスコアリング|のアルゴリズム)?|"
+    r"専門担当|役割分担|振り分け|"
+    r"症状やお薬の選び方については、具体的な症状"
+    r")",
+    re.I,
+)
+
+_QUESTION_SECTION_PRIORITIES: list[tuple[re.Pattern[str], list[str]]] = [
+    (
+        re.compile(r"GCP.*AWS|AWS.*GCP|クロスクラウド|違い|cross[- ]cloud", re.I),
+        ["GCP 本番", "AWS ステージング"],
+    ),
+    (
+        re.compile(r"CodePipeline|デプロイ.*流れ|CI/CD|pipeline", re.I),
+        ["デプロイ・CI/CD", "AWS ステージング"],
+    ),
+    (
+        re.compile(r"Cloud\s*Run|GCP\s*本番|medicine\.yutok\.dev", re.I),
+        ["GCP 本番"],
+    ),
+    (
+        re.compile(
+            r"ECS|aws\.medicine|AWS\s*ステージング|Translate|Bedrock",
+            re.I,
+        ),
+        ["AWS ステージング"],
+    ),
+    (
+        re.compile(r"Cloudflare|R2|CDN|CloudFront|images\.yutok", re.I),
+        ["画像・CDN"],
+    ),
+    (re.compile(r"\bLINE\b|Messaging API", re.I), ["LINE"]),
+]
+
+_ARCH_SECTION_TITLE_ORDER = {title: idx for idx, (title, _) in enumerate(_DEEP_ARCH_TOPIC_RULES)}
+
+
+def _priority_section_titles_for_question(user_text: str) -> list[str]:
+    text = (user_text or "").strip()
+    if not text:
+        return []
+    seen: set[str] = set()
+    out: list[str] = []
+    for pattern, titles in _QUESTION_SECTION_PRIORITIES:
+        if pattern.search(text):
+            for title in titles:
+                if title not in seen:
+                    seen.add(title)
+                    out.append(title)
+    return out
+
+
+def _is_generic_architecture_intro(intro_parts: List[str]) -> bool:
+    if not intro_parts:
+        return True
+    non_generic = [
+        part
+        for part in intro_parts
+        if not _GENERIC_ARCHITECTURE_BOILERPLATE_RE.search(part)
+    ]
+    return len(non_generic) == 0
+
+
+def _paragraph_matches_question(user_text: str, paragraph: str) -> bool:
+    text = (user_text or "").strip()
+    para = (paragraph or "").strip()
+    if not text or not para:
+        return False
+    for title in _priority_section_titles_for_question(text):
+        for rule_title, pattern in _DEEP_ARCH_TOPIC_RULES:
+            if rule_title == title and pattern.search(para):
+                return True
+    for pattern, _ in _QUESTION_SECTION_PRIORITIES:
+        if pattern.search(text) and pattern.search(para):
+            return True
+    return False
+
+
+def _rebalance_architecture_deep_display(
+    user_text: str,
+    intro_parts: List[str],
+    sections: List[Dict[str, Any]],
+) -> tuple[List[str], List[Dict[str, Any]]]:
+    """質問意図に合う段落をカード本文へ昇格し、一般論は補足へ退避する。"""
+    if not sections:
+        return intro_parts, sections
+
+    priority_titles = _priority_section_titles_for_question(user_text)
+    generic_intro = _is_generic_architecture_intro(intro_parts)
+    if not priority_titles and not generic_intro:
+        return intro_parts, sections
+    if not priority_titles:
+        priority_titles = [
+            str(sec.get("title") or "")
+            for sec in sections
+            if sec.get("items")
+        ]
+
+    promoted: List[str] = []
+    demoted_sections: List[Dict[str, Any]] = []
+    for sec in sections:
+        title = str(sec.get("title") or "")
+        items = list(sec.get("items") or [])
+        if not items:
+            continue
+        if title in priority_titles:
+            limit = 3 if title == priority_titles[0] else 2
+            promoted.extend(items[:limit])
+            remainder = items[limit:]
+            if remainder:
+                demoted_sections.append({"title": title, "items": remainder})
+        else:
+            demoted_sections.append(sec)
+
+    if not promoted:
+        return intro_parts, sections
+
+    new_intro = list(promoted)
+    if intro_parts:
+        relevant = [
+            part
+            for part in intro_parts
+            if _paragraph_matches_question(user_text, part)
+        ]
+        irrelevant = [
+            part
+            for part in intro_parts
+            if not _paragraph_matches_question(user_text, part)
+        ]
+        if relevant:
+            new_intro = relevant + new_intro
+        elif generic_intro:
+            demoted_sections.append(
+                {"title": "このサービスの概要", "items": intro_parts}
+            )
+        elif irrelevant:
+            demoted_sections.append({"title": "その他", "items": irrelevant})
+
+    demoted_sections.sort(
+        key=lambda sec: _ARCH_SECTION_TITLE_ORDER.get(str(sec.get("title") or ""), 999)
+    )
+    return new_intro, demoted_sections
+
+
 def structure_concierge_meta_display(
     intent: str,
     body_text: str,
     *,
     deep: bool = False,
+    user_text: str = "",
 ) -> tuple[str, List[Dict[str, Any]]]:
     """
     Web Sage / LINE 向けに読みやすく整形。
@@ -234,6 +382,11 @@ def structure_concierge_meta_display(
     if intent == "architecture" and deep and prose_parts:
         intro_parts, topic_sections = _bucket_architecture_deep_paragraphs(prose_parts)
         if topic_sections:
+            intro_parts, topic_sections = _rebalance_architecture_deep_display(
+                user_text,
+                intro_parts,
+                topic_sections,
+            )
             prose_parts = intro_parts
             sections = topic_sections + sections
 
@@ -280,12 +433,14 @@ def format_dynamic_concierge_meta_card(
     intent: str = "",
     include_agent_roster: bool = False,
     deep: bool = False,
+    user_text: str = "",
 ) -> str:
     """LLM 生成本文から Web 用 status カード HTML を組み立てる。"""
     display_message, section_specs = structure_concierge_meta_display(
         intent or "app_about",
         body_text,
         deep=deep,
+        user_text=user_text,
     )
     if include_agent_roster and (intent or "") == "architecture":
         section_specs = merge_agent_roster_section(section_specs)
@@ -389,12 +544,14 @@ def build_dynamic_concierge_line_flex(
     include_agent_roster: bool = False,
     deep: bool = False,
     channel: str = "web",
+    user_text: str = "",
 ) -> Dict[str, Any]:
     """LLM 生成本文から LINE status Flex スペックを組み立てる。"""
     display_message, section_specs = structure_concierge_meta_display(
         intent or "app_about",
         body_text,
         deep=deep,
+        user_text=user_text,
     )
     if include_agent_roster and (intent or "") == "architecture":
         section_specs = merge_agent_roster_section(section_specs)

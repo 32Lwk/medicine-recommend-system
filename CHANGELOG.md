@@ -1,6 +1,54 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月23日**（AWS/Cloudflare ステージング一括展開・CodeBuild 自動 static 同期/smoke・Concierge 更新履歴/技術回答改善）
+**最終更新日: 2026年7月23日**（技術カード表示/end_guard 医薬品エラー修正・ALB timeout・Concierge プロンプト汎用化）
+
+---
+
+## 2026年7月23日 — 技術カード・AWS 医薬品相談エラー・プロンプト改善（夕）
+
+### 概要
+
+AWS ステージング（`aws.medicine.yutok.dev`）で、(1) **Concierge 技術カード**の本文が質問に答えず「補足」セクションに正答が入る、(2) **医薬品相談**（例: 「頭痛が痛い」）が成功後も **一時的なエラー** カードになる、という 2 件を修正。あわせて LLM プロンプトの **特定トピック過剰指定** をやめ、ユーザー意図に沿う **汎用方針** に統一した。
+
+### Concierge — 技術カード本文と「補足」のズレ
+
+**原因**: `structure_concierge_meta_display(deep=True)` が GCP/AWS/CodePipeline 等を含む段落をセクションへ移し、マルチエージェント等の一般論だけがカード本文（intro）に残っていた。
+
+**修正**:
+
+- **`src/services/concierge_templates.py`**: `_rebalance_architecture_deep_display()` を追加。質問意図に合うセクション内容を本文へ昇格し、一般論は「このサービスの概要」/「その他」へ退避。`user_text` を display 整形に渡す
+- **`static/js/ui/status_renderer.js`**: 技術セクションのバッジ（GCP / AWS / デプロイ）を改善
+- **`src/agents/concierge_agent.py`**: architecture 深掘りプロンプトを **【ユーザーの質問】の主題に直接答える** 汎用方針に変更（GCP/CodePipeline 等の例示を削除）
+- **`src/content/concierge_tech_reference.py`**: 参照ブロック指示を「質問の主題優先」に統一
+- **`src/dialogue/routing/intent_router_llm.py`**: 技術ルート判定文言を汎用化
+- **`tests/concierge/test_concierge_templates.py`**: GCP/AWS・CodePipeline の display リバランステスト追加
+
+### AWS ステージング — 医薬品相談が「一時的なエラー」になる重大バグ
+
+**原因（CloudWatch 確認）**: ルールベース推奨は **約 36〜52 秒で成功** していたが、Web の Cookie 肥大化対策で DB 保存後に `session['messages']` を削除 → **`finalize_pipeline_response`（end_guard）** が bot 未追加と誤判定し、成功レスポンスの上に `system_error` カードを追加していた。
+
+**修正**:
+
+- **`src/handlers/chat/chat_pipeline_end_guard.py`**: `mark_pipeline_turn_bot_appended()` / `_turn_produced_bot_reply()` を追加。DB 保存後に messages を消す経路でも end_guard が成功を認識
+- **`src/handlers/chat/chat_recommendation_flow.py`**, **`src/services/chat_response_service.py`**, **`src/handlers/chat/chat_question_route.py`**: messages 削除前にフラグを設定
+- **`tests/handlers/test_chat_pipeline_end_guard_fail_loud.py`**: Web cookie slimming シナリオのテスト追加
+
+### AWS インフラ — ALB idle timeout（504 対策）
+
+**原因**: ECS Express Gateway ALB の idle timeout が **60 秒** のため、推奨フロー（60 秒超）で **504** が発生しうる（Gunicorn は 300 秒設定済み）。
+
+**修正**:
+
+- **ステージング ALB**: `idle_timeout.timeout_seconds` を **300 秒** に変更済み（2026-07-23 手動反映）
+- **`scripts/tune-aws-ecs-performance.sh`**: 上記 ALB 調整ステップをワンショットスクリプトに追加
+
+### 検証・運用
+
+- **`scripts/concierge_staging_chat_probe.py`（新規）**: ステージング混合シナリオ簡易プローブ（挨拶 / 症状 / 技術 FAQ / 更新履歴 / redirect 等）
+
+### デプロイ
+
+- 本修正は **main push → CodePipeline** 後に `aws.medicine.yutok.dev` へ反映。ALB timeout のみ先行反映済み。
 
 ---
 

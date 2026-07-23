@@ -1041,6 +1041,11 @@ def handle_question_flow(
                     
                 # Cookieサイズ削減（メッセージはDBのみに保存）
                 if 'messages' in session:
+                    from src.handlers.chat.chat_pipeline_end_guard import (
+                        mark_pipeline_turn_bot_appended,
+                    )
+
+                    mark_pipeline_turn_bot_appended(session)
                     del session['messages']
                     session.modified = True
                     logger.info(f"📝 Session cookie size reduced - messages only in DB")

@@ -3139,6 +3139,11 @@ def run_recommendation_flow(
                 from src.handlers.line.line_session import is_line_session_id
 
                 if not is_line_session_id(sid):
+                    from src.handlers.chat.chat_pipeline_end_guard import (
+                        mark_pipeline_turn_bot_appended,
+                    )
+
+                    mark_pipeline_turn_bot_appended(session)
                     if 'messages' in session:
                         del session['messages']
                         session.modified = True

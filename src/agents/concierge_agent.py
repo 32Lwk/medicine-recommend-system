@@ -292,36 +292,35 @@ def format_meta_concierge_context_block(
         )
         if last_agent:
             lines.append(
-                f"- 回答の第一文は「いまの案内は{last_agent}が担当しています」"
-                "のように担当名から始める"
+                "- 回答の第一文は直前の返信担当名から始める"
             )
     elif intent == "architecture":
         if roster_question:
             lines.append(
-                "- ユーザーはマルチエージェントの構成・役割分担について聞いている"
+                "- ユーザーは構成・役割分担について聞いている"
             )
             lines.append(
-                "- 本文は導入2〜4文のみ。エージェント一覧はシステムが別カードで表示するため本文に列挙しない"
+                "- 本文は導入2〜4文のみ。一覧はシステムが別カードで表示するため本文に列挙しない"
             )
             lines.append(
-                "- 「いま誰が答えているか」「ConciergeAgentが担当」など担当宣言から答えを始めない"
+                "- 担当宣言から答えを始めない（ユーザーが明示的に聞いていない限り）"
             )
             lines.append(
                 "- 会話履歴に既出の説明があれば補足にとどめ、同じ説明の繰り返しを避ける"
             )
         elif multi_agent_question:
             lines.append(
-                "- ユーザーはマルチエージェントの意味・このサービスの役割分担について聞いている"
+                "- ユーザーは概念・仕組み・役割分担について聞いている"
             )
             lines.append(
-                "- 「いま誰が答えているか」「ConciergeAgentが担当」など担当宣言から答えを始めない"
+                "- 担当宣言から答えを始めない（ユーザーが明示的に聞いていない限り）"
             )
             lines.append(
-                "- マルチエージェント＝複数の専門担当が連携する仕組みであることを中心に説明する"
+                "- 【ユーザーの質問】の焦点に合わせて説明する（聞かれていない一般論から始めない）"
             )
         else:
             lines.append(
-                "- ユーザーは仕組み・技術・構成について聞いている（担当者の確認ではない）"
+                "- ユーザーは仕組み・技術・構成などについて聞いている（担当者の確認ではない）"
             )
             lines.append(
                 "- 聞かれていない限り、担当エージェント名や「いま誰が答えているか」から答えを始めない"
@@ -1518,11 +1517,9 @@ _META_INTENT_REQUIREMENTS = {
 - 処方・診断は行わない旨を必要なときだけ簡潔に触れる
 - 内部ラベル（[ステータス]、[Q&A]、bot[...]、HTML/Markdown）を出力に含めない""",
     "architecture": """【要件】
-- ユーザーの質問の主題（マルチエージェントの意味、技術構成、仕組み、誰が答えたか等）に直接答える
-- マルチエージェント＝複数の専門担当が連携する仕組みであることを、聞かれたときは中心に説明する
+- 【ユーザーの質問】の主題に直接答える。聞かれていない一般説明・定型のサービス概要から始めない
+- 会話の焦点に合わせ、参照情報から必要な部分だけ選んで述べる（詳しくない限り深い内部詳細を先出ししない）
 - 市販薬候補がルールベースで選ばれることは、質問に関係するときだけ簡潔に触れる
-- 技術スタック・開発環境・デプロイ構成の質問には、参照情報の技術一覧に基づいて答える
-- **初回は概要優先（2〜6文）。詳しく求められていない限り、深い内部詳細を先出ししない**
 - **環境変数名・Secrets・「設定/envを参照した」等のメタ表現は出力しない**（公開情報は利用者向けの言葉で述べる）
 - 会話履歴（直前の説明など）を踏まえ、同じ説明の繰り返しを避ける
 - 2〜6文・プレーンテキスト（Markdown不可）
@@ -1644,13 +1641,13 @@ def _meta_requirements_for(user_text: str, intent: str, *, deep: bool = False) -
                 + """
 
 【深掘りモード（技術 FAQ）】
+- **第一段落は【ユーザーの質問】の主題への直接回答とする**（定型のサービス概要や、質問と無関係な一般論から始めない）
 - 参照ドキュメントの事実のみに基づき、正確かつ具体的に答える（推測・創作禁止）
 - 4〜12文、または短い段落2〜4個。必要なら「・」箇条書き可（1項目1行）
-- GCP 本番 / AWS ステージング / Cloudflare R2 / LINE の役割分担を聞かれたら参照どおりに説明
-- デプロイ（Cloud Run / CodePipeline）、Bedrock KB、エージェント構成、ルールベース推奨を具体名で述べてよい
+- 参照情報に記載のサービス名・公開 URL・構成要素は、質問に応じて具体名で述べてよい
 - **環境変数名・「env/内部設定を読んだ」等は出力しない**（公開されている説明として自然な日本語で）
 - 医薬品の症状・用法・選び方には踏み込まない（必要なら一行で症状入力を促す）
-- 内部コードパスは出力しない（サービス名・公開 URL は可）"""
+- 内部コードパスは出力しない"""
             )
     if intent != "architecture":
         return base
@@ -1660,8 +1657,8 @@ def _meta_requirements_for(user_text: str, intent: str, *, deep: bool = False) -
             + """
 
 【今回の質問に限定】
-- 「誰が答えているか」「誰が回答したか」への直接回答とする
-- 会話履歴の【直前の返信担当】を第一文で明示する（例: 「いまの案内は ConciergeAgent が担当しています」）
+- ユーザーが聞いていること（誰が答えているか）に直接答える
+- 会話履歴の【直前の返信担当】を第一文で明示する
 - 続けて、このチャットの返信文はAIが生成していること、市販薬候補選定はルールベースであることを短く述べる"""
         )
     if is_agent_roster_question(user_text):
@@ -1670,11 +1667,11 @@ def _meta_requirements_for(user_text: str, intent: str, *, deep: bool = False) -
             + """
 
 【今回の質問に限定】
-- マルチエージェントの意味と、このサービスでの役割分担・構成を、ユーザーの聞き方に合わせて説明する
-- 本文は導入2〜4文にとどめる（エージェント一覧はシステムが別表示するため本文に列挙しない）
-- 「いま誰が答えているか」「ConciergeAgentが担当」など担当宣言から答えを始めない
-- 会話履歴を踏まえ、既出説明の繰り返しや長いフロー例（「たとえば A→B→C」）は避ける
-- 市販薬がルールベースで選ばれることは1文だけ触れてよい"""
+- ユーザーが聞いていること（役割分担・構成）に直接答える
+- 本文は導入2〜4文にとどめる（一覧はシステムが別表示するため本文に列挙しない）
+- 担当宣言から答えを始めない（ユーザーが明示的に聞いていない限り）
+- 会話履歴を踏まえ、既出説明の繰り返しや長いフロー例は避ける
+- 市販薬がルールベースで選ばれることは、質問に関係するときだけ1文触れてよい"""
         )
     if is_multi_agent_concept_question(user_text):
         return (
@@ -1682,16 +1679,16 @@ def _meta_requirements_for(user_text: str, intent: str, *, deep: bool = False) -
             + """
 
 【今回の質問に限定】
-- マルチエージェントの意味と、このサービスでの役割分担を説明する
-- 「いま誰が答えているか」「ConciergeAgentが担当」など担当宣言から答えを始めない
-- 一般論＋このツールでの例（振り分け→専門担当）を簡潔に述べる"""
+- ユーザーが聞いている概念・仕組みに直接答える
+- 担当宣言から答えを始めない（ユーザーが明示的に聞いていない限り）
+- 一般論とこのサービスでの例を、質問の範囲に合わせて簡潔に述べる"""
         )
     return (
         base
         + """
 
 【今回の質問に限定】
-- 担当エージェント名や「いま誰が答えているか」から答えを始めない（ユーザーが明示的に聞いていない限り）"""
+- 【ユーザーの質問】で明示されていない話題から答えを始めない（担当者の確認など）"""
     )
 
 
@@ -1741,8 +1738,8 @@ def _invoke_meta_concierge_llm(
     )
     if deep and intent == "architecture":
         system_content += (
-            " 技術・インフラ・デプロイの質問では、参照ドキュメントに忠実に詳しく答える。"
-            "医療診断や症状への具体助言は行わない。"
+            " 参照ドキュメントに忠実に、ユーザーの質問の主題から答える。"
+            "聞かれていない一般論から始めない。医療診断や症状への具体助言は行わない。"
         )
     elif (
         intent == "architecture"
@@ -1942,7 +1939,7 @@ def _assemble_dynamic_concierge_payload(
         from src.services.concierge_templates import merge_agent_roster_section
 
         display_message, section_specs = structure_concierge_meta_display(
-            intent, plain, deep=deep
+            intent, plain, deep=deep, user_text=user_text
         )
         if include_roster:
             section_specs = merge_agent_roster_section(section_specs)
@@ -1962,6 +1959,7 @@ def _assemble_dynamic_concierge_payload(
                 intent=intent,
                 include_agent_roster=include_roster,
                 deep=deep,
+                user_text=user_text,
             ),
             "content_format": "status_card",
             "line_flex": build_dynamic_concierge_line_flex(
@@ -1972,6 +1970,7 @@ def _assemble_dynamic_concierge_payload(
                 include_agent_roster=include_roster,
                 deep=deep,
                 channel=channel,
+                user_text=user_text,
             ),
             "concierge_intent": intent,
             "llm_used": True,
