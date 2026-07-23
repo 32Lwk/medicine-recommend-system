@@ -1324,6 +1324,14 @@
         return document.body && document.body.getAttribute('data-ui-variant') === 'sage';
     }
 
+    /** Sage 推奨バブル: 途中 SSE（cards/advice 等）を使わず done の diagnosis で一括描画 */
+    function shouldBulkRenderSageReco() {
+        if (window.SAGE_RECO_BULK_RENDER === false) {
+            return false;
+        }
+        return isSageUi();
+    }
+
     function isSeasonDecorationEnabled() {
         const v = localStorage.getItem('seasonDecorationEnabled');
         return v === null || v === 'true';
@@ -6334,6 +6342,7 @@
         const sid = getSidFromCookie();
         saveChatCache(sid, merged);
         removeStreamingChatBubble();
+        removeStreamingRecommendation();
         return applyBotResponseSession(
             { session_id: sid, messages: merged },
             { preserveStatusCards: false, forceRender: true }
@@ -11671,7 +11680,12 @@ function appendQaDelta(text, section) {
                         appendQaSectionHtml(ev.data.section, ev.data.html);
                     });
                 }
-                if (ev.event === 'reco_detail' && ev.data && window.RecommendationRenderer) {
+                if (
+                    !shouldBulkRenderSageReco()
+                    && ev.event === 'reco_detail'
+                    && ev.data
+                    && window.RecommendationRenderer
+                ) {
                     const chatMessages = document.getElementById('chatMessages');
                     if (chatMessages) {
                         const nodes = chatMessages.querySelectorAll('.message--sage-reco');
@@ -11682,6 +11696,9 @@ function appendQaDelta(text, section) {
                     }
                 }
                 if (ev.event === 'cards' && ev.data && ev.data.medicines) {
+                    if (shouldBulkRenderSageReco()) {
+                        return;
+                    }
                     startRecommendationSseBulkMode();
                     window.__pendingSseMedicines = ev.data.medicines;
                     if (isSageUi()) {
@@ -11689,7 +11706,7 @@ function appendQaDelta(text, section) {
                     }
                 }
                 if (ev.event === 'advice_delta' && ev.data && ev.data.text) {
-                    if (recommendationSseBulkMode) {
+                    if (shouldBulkRenderSageReco() || recommendationSseBulkMode) {
                         return;
                     }
                     revealStreamingChunk(function () {
@@ -11697,13 +11714,17 @@ function appendQaDelta(text, section) {
                     });
                 }
                 if (ev.event === 'explanations' && ev.data && ev.data.items) {
-                    if (recommendationSseBulkMode) {
+                    if (shouldBulkRenderSageReco() || recommendationSseBulkMode) {
                         return;
                     }
                     updateStreamingExplanations(ev.data.items);
                 }
                 if (ev.event === 'bot_followup' && ev.data) {
-                    if (ev.data.type === 'explanations_ready' && !shouldDeferSessionSync()) {
+                    if (
+                        ev.data.type === 'explanations_ready'
+                        && !shouldBulkRenderSageReco()
+                        && !shouldDeferSessionSync()
+                    ) {
                         fetchMessagesAfterPost({ message_count: 0, from_sse_done: true }, null);
                     }
                 }

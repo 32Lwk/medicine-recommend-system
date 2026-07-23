@@ -678,8 +678,9 @@ def build_doc_operator_payload(
 _CHANGELOG_INTRO_SYSTEM_PROMPT = (
     "あなたは市販薬相談ツールの案内役です。"
     "最近のアップデートについて、利用者向けに短く親しみやすい導入文だけを書きます。"
-    "プロンプト・要件・参照データの説明、内部用語、ファイルパスは出力に含めません。"
+    "プロンプト・要件・参照データの説明、内部用語、ファイルパス、環境変数・インフラ名は出力に含めません。"
     "箇条書きは書きません（詳細は画面の別欄に表示されます）。"
+    "改善点は前向きで柔らかい言い回しにし、不具合修正も「より使いやすくなりました」のトーンで述べます。"
 )
 
 
@@ -820,9 +821,10 @@ def build_changelog_payload(
         if s.get("title") and s.get("items")
     ]
     subtitle = format_changelog_deploy_subtitle(header_date)
-    from src.services.concierge_output_sanitize import concierge_source_hint
 
-    changelog_hints = [concierge_source_hint("doc_changelog") or "参照: 更新履歴"]
+    changelog_hints = [
+        "公開されている更新記録をもとにお伝えしています。"
+    ]
 
     diag = build_notice_status(
         intro,
@@ -1862,8 +1864,8 @@ def _architecture_response_hints(
 
         if is_aws_staging_site():
             hints.append(
-                "ナレッジベース（Bedrock KB）の全文同期は準備中です。"
-                "説明は公開ドキュメントに基づきます。"
+                "技術的な説明は公開資料をもとにしています。"
+                "ナレッジベースの全文同期は現在準備中です。"
             )
     except Exception:
         pass
@@ -1873,12 +1875,12 @@ def _architecture_response_hints(
 
         deep = wants_technical_deep_dive(user_text, history)
         if deep:
-            hints.insert(0, "公開情報に基づく案内")
+            hints.insert(0, "公開されている資料をもとにお伝えしています")
             from src.services.concierge_output_sanitize import concierge_source_hint
 
             source = concierge_source_hint(intent, deep=True)
             if source and source not in hints:
-                hints.append(source)
+                hints.append(source.replace("参照: ", ""))
     except Exception:
         pass
     try:

@@ -298,9 +298,63 @@
     return '<li>' + esc(text) + '</li>';
   }
 
+  function isReferenceHint(text) {
+    var raw = String(text || '').trim();
+    return /^参照[:：]/.test(raw) || /^公開情報/.test(raw);
+  }
+
+  function isMetaFootnoteBlock(hints, diag) {
+    if (!hints || !hints.length) return false;
+    var kind = (diag && diag.kind) || '';
+    if (/^concierge_(doc_|architecture|capabilities|app_about|doc_)/.test(kind)) {
+      return true;
+    }
+    return hints.every(isReferenceHint);
+  }
+
+  function referenceFootnoteHtml(hints, variant) {
+    if (!hints || !hints.length) return '';
+    var alertClass = variantAlertClass(variant || 'notice');
+    var items = hints.map(function (h) {
+      var text = String(h || '').trim();
+      if (/^参照[:：]/.test(text)) {
+        text = text.replace(/^参照[:：]\s*/, '');
+      }
+      return text;
+    }).filter(Boolean);
+    if (!items.length) return '';
+    return (
+      '<div class="ui-status-footnote ' + alertClass + '" role="note">' +
+        '<span class="ui-status-footnote__label">' +
+          esc(t('statusFootnoteLabel') || '補足') +
+        '</span>' +
+        '<ul class="ui-status-footnote__list">' +
+          items.map(function (item) {
+            return '<li class="ui-status-footnote__item">' + esc(item) + '</li>';
+          }).join('') +
+        '</ul>' +
+      '</div>'
+    );
+  }
+
+  function formatChangelogListItem(item) {
+    var text = String(item || '').trim();
+    if (!text) return '';
+    if (text.indexOf('＋') === 0) {
+      return (
+        '<li class="ui-status-update-item">' +
+          '<span class="ui-status-update-item__mark" aria-hidden="true">＋</span>' +
+          '<span class="ui-status-update-item__text">' + esc(text.replace(/^＋\s*/, '')) + '</span>' +
+        '</li>'
+      );
+    }
+    return '<li>' + esc(text) + '</li>';
+  }
+
   function sectionsHtml(sections, variant, kind) {
     if (!sections || !sections.length) return '';
     var sev = variantOverlapSeverity(variant || 'notice');
+    var isChangelog = kind === 'concierge_doc_changelog';
     return (
       '<div class="ui-status-sections">' +
         sections.map(function (sec) {
@@ -311,10 +365,16 @@
               if (/Agent|Orchestrator|Manager|Router/.test(String(item || ''))) {
                 return formatAgentRoleListItem(item);
               }
+              if (isChangelog) {
+                return formatChangelogListItem(item);
+              }
               return '<li>' + esc(item) + '</li>';
             }).join('');
           if (!sec.html && body) {
-            body = '<ul class="ui-followup-list ui-status-section__list">' + body + '</ul>';
+            var listClass = isChangelog
+              ? 'ui-followup-list ui-status-section__list ui-status-section__list--updates'
+              : 'ui-followup-list ui-status-section__list';
+            body = '<ul class="' + listClass + '">' + body + '</ul>';
           }
           if (!body) return '';
           return (
@@ -334,6 +394,9 @@
 
   function hintsHtml(hints, variant, diag) {
     if (!hints || !hints.length) return '';
+    if (isMetaFootnoteBlock(hints, diag)) {
+      return referenceFootnoteHtml(hints, variant);
+    }
     var alertClass = variantAlertClass(variant || 'notice');
     if (diag && diag.kind === 'cold_symptom_chip_prompt') {
       var coldHints = hints.filter(function (h) {

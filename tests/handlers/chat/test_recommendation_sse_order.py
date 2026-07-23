@@ -49,24 +49,26 @@ def test_emit_cards_before_personalized_advice(is_line, monkeypatch):
     assert call_order == ["emit_cards", "personalized_advice", "personalized_advice"]
 
 
-def test_emit_reco_detail_after_done_pattern():
-    """Sage Web: reco_detail は cards/advice 処理後に emit される想定。"""
+def test_sage_web_skips_progressive_reco_sse():
+    """Sage Web は diagnosis 一括返却のため cards/reco_detail SSE を省略。"""
+    from src.services.recommendation_client_payload import should_skip_reco_progressive_sse
+
+    session = {"ui_variant": "sage"}
+    assert should_skip_reco_progressive_sse(session, "web:s1") is True
+    assert should_skip_reco_progressive_sse(session, "line:U1") is False
+
+
+def test_legacy_web_keeps_progressive_reco_sse_pattern():
+    """非 Sage Web は cards → done の段階 SSE パターンを維持。"""
     call_order: list[str] = []
 
     def _emit_cards(*_a, **_k):
         call_order.append("emit_cards")
 
-    def _emit_reco_detail(*_a, **_k):
-        call_order.append("emit_reco_detail")
-
-    with (
-        patch("src.services.sse_emit.emit_cards", side_effect=_emit_cards),
-        patch("src.services.sse_emit.emit_reco_detail", side_effect=_emit_reco_detail),
-    ):
+    with patch("src.services.sse_emit.emit_cards", side_effect=_emit_cards):
         sid = "web:s1"
         meds = [{"product_name": "薬A"}]
         _emit_cards(meds, session_id=sid)
         call_order.append("done")
-        _emit_reco_detail({"usage_sections": [], "recommended_medicines": meds}, session_id=sid)
 
-    assert call_order == ["emit_cards", "done", "emit_reco_detail"]
+    assert call_order == ["emit_cards", "done"]

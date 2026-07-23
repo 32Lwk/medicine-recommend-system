@@ -1707,12 +1707,21 @@ def run_recommendation_flow(
 
                     if recommended_medicines and sid:
                         try:
-                            from src.services.sse_emit import emit_cards
+                            from src.services.recommendation_client_payload import (
+                                should_skip_reco_progressive_sse,
+                            )
 
-                            emit_cards(recommended_medicines, session_id=sid)
-                            mark_pipeline_step("emit_cards")
-                        except Exception:
-                            pass
+                            skip_reco_sse = should_skip_reco_progressive_sse(session, sid)
+                        except ImportError:
+                            skip_reco_sse = False
+                        if not skip_reco_sse:
+                            try:
+                                from src.services.sse_emit import emit_cards
+
+                                emit_cards(recommended_medicines, session_id=sid)
+                                mark_pipeline_step("emit_cards")
+                            except Exception:
+                                pass
                         try:
                             from src.handlers.line.line_progressive_delivery import (
                                 schedule_carousel_push_for_line,
@@ -2187,7 +2196,7 @@ def run_recommendation_flow(
                         conversation_history_block=history_block,
                     )
                     mark_pipeline_step("personalized_advice")
-                    if recommended_medicines and sid and not line_session:
+                    if recommended_medicines and sid and not line_session and not sage_web:
                         try:
                             _emit_explanation_followup_sse(
                                 session,
@@ -2228,22 +2237,6 @@ def run_recommendation_flow(
                             sage_diagnosis_v1.ingredient_overlap
                         )
                     bot_content = SAGE_RECO_MARKER
-                    if sage_web:
-                        try:
-                            from src.services.sse_emit import emit_reco_detail
-
-                            emit_reco_detail(
-                                {
-                                    "usage_sections": [
-                                        s.model_dump(mode="json")
-                                        for s in sage_diagnosis_v1.usage_sections
-                                    ],
-                                    "recommended_medicines": sage_diagnosis_v1.recommended_medicines,
-                                },
-                                session_id=sid,
-                            )
-                        except Exception:
-                            pass
                     try:
                         from src.core.rule_based_recommendation import log_recommendation_session
                         log_recommendation_session(

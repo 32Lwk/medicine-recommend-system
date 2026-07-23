@@ -300,7 +300,10 @@ def soften_changelog_highlight(text: str, *, max_len: int = 96) -> str:
 _DEV_BULLET_RE = re.compile(
     r"src/|static/|CHANGELOG\.md|build-meta|\.py\b|scripts/|docker-compose|"
     r"meta_triage|concierge_intent|ALLOWLIST|LEGACY_FALLBACK|Neon dev|"
-    r"プロンプト|LLM|intent_router|dispatcher",
+    r"プロンプト|LLM|intent_router|dispatcher|"
+    r"\.env|env\s*ゲート|env\s*未設定|Secrets|buildspec|CodeBuild|CodePipeline|"
+    r"config/|Dockerfile|ECS|ECR|WAF|CloudFront|S3|IAM|OAuth|"
+    r"commit\s+[0-9a-f]{6,}|ブランチ\s+\S+",
     re.I,
 )
 
@@ -320,8 +323,34 @@ _USER_DISPLAY_REPLACEMENTS: tuple[tuple[str, str], ...] = (
 
 _USER_FACING_SKIP_RE = re.compile(
     r"Concierge|intent|IntentRouter|doc_changelog|CHANGELOG|プローブ|ガード|"
-    r"meta_triage|dispatcher|Neon|docker|Postgres|sslmode",
+    r"meta_triage|dispatcher|Neon|docker|Postgres|sslmode|"
+    r"env\s|\.env|Secrets|設定/env|環境変数|medicine\.yutok\.dev|aws\.medicine",
     re.I,
+)
+
+_POSITIVE_REWRITE_RULES: tuple[tuple[str, str], ...] = (
+    (r"Translate\s*/?\s*Polly|Amazon Translate|Amazon Polly|TTS_PROVIDER", "翻訳と読み上げの選択肢が増えました"),
+    (r"Bedrock KB|ナレッジベース|RAG", "技術的な質問への案内が厚くなりました"),
+    (r"更新履歴.*表示|doc_changelog|CHANGELOG.*要約", "更新内容の案内が見やすくなりました"),
+    (r"技術質問.*GCP|architecture|技術.*回答", "技術的な質問への案内が整いました"),
+    (r"CodeBuild|static S3|CloudFront invalidation|自動.*同期", "画面の更新がよりスムーズに反映されるようになりました"),
+    (r"デプロイ.*遅延|ビルド.*遅延|tune-aws-ecs", "表示の反映が速くなるよう調整しました"),
+    (r"障害.*UX|system_error|llm_unavailable|fail loud", "不具合時の案内が分かりやすくなりました"),
+    (r"Chat Pipeline v2|IntentRouter PRIMARY", "相談の流れがより安定しました"),
+    (r"風邪.*水泳|cold_symptom|RECO_.*V2|年齢未入力", "風邪の相談で候補が出やすくなりました"),
+    (r"処理中ステータス|マスコット", "処理中の表示が分かりやすくなりました"),
+    (r"オンボーディング|はじめの案内", "はじめの案内が見やすくなりました"),
+    (r"チャットビューポート|シーズン装飾|季節", "チャット画面の見た目が整いました"),
+    (r"画像.*CDN|R2|OTC 画像", "お薬の画像表示が安定しました"),
+    (r"Comprehend Medical|Personalize", "相談内容の理解・おすすめ表示がより賢くなりました"),
+)
+
+_RELEASE_THEME_LABELS: tuple[tuple[str, str], ...] = (
+    (r"AWS/Cloudflare|ステージング|Translate|Polly|Bedrock", "体験の向上"),
+    (r"Concierge|更新履歴|doc_changelog", "案内の改善"),
+    (r"Chat Pipeline|障害|CodePipeline|ECS", "安定性の向上"),
+    (r"風邪|RECO_|cold_symptom", "相談まわりの改善"),
+    (r"UX|オンボーディング|Sage Terrace|画面", "使いやすさの向上"),
 )
 
 
@@ -331,16 +360,62 @@ def _is_dev_only_bullet(text: str) -> bool:
     return bool(_USER_FACING_SKIP_RE.search(text))
 
 
-def _soften_for_user_display(text: str, *, max_len: int = 72) -> str:
-    line = soften_changelog_highlight(text, max_len=max_len + 40)
-    if not line or _is_dev_only_bullet(line):
+def _strip_infra_noise(text: str) -> str:
+    line = (text or "").strip()
+    line = re.sub(r"GCP 本番（[^）]+）を変更せず\s*", "", line)
+    line = re.sub(r"AWS ステージング（[^）]+）(で|に)?\s*", "", line)
+    line = re.sub(r"（commit\s+[0-9a-f]+\）?", "", line, flags=re.I)
+    line = re.sub(r"env ゲート付きで\s*", "", line, flags=re.I)
+    line = re.sub(r"env 未設定で\s*", "", line, flags=re.I)
+    return re.sub(r"\s+", " ", line).strip(" 、。")
+
+
+def _positive_rewrite(text: str) -> str:
+    line = _strip_infra_noise(text)
+    if not line:
         return ""
+    for pattern, replacement in _POSITIVE_REWRITE_RULES:
+        if re.search(pattern, line, re.I):
+            return replacement
     for pattern, replacement in _USER_DISPLAY_REPLACEMENTS:
         line = re.sub(pattern, replacement, line, flags=re.I)
-    line = re.sub(r"\s+", " ", line).strip(" ・")
-    if len(line) > max_len:
-        line = line[: max_len - 1].rstrip() + "…"
+    line = re.sub(
+        r"(を|の)(実装|追加|修正|改善|更新|刷新|整備|導入)(した|しました|した。)",
+        r"が\2されました",
+        line,
+    )
+    line = re.sub(r"^あわせて\s*", "", line)
+    line = re.sub(r"^ブランチ\s+\S+\s+に、?", "", line)
+    line = re.sub(r"一括 ON", "標準で有効", line)
+    line = re.sub(r"\s+", " ", line).strip(" ・、。")
+    if not line or _is_dev_only_bullet(line):
+        return ""
+    if re.search(r"問題|不足|エラー|障害|修正|解消|fail|bug", line, re.I):
+        line = re.sub(r"(問題|不足|エラー|障害).{0,12}(修正|解消|改善)", "案内が整い", line)
+        line = re.sub(r"を修正した", "が改善されました", line)
     return line
+
+
+def _format_positive_bullet(text: str, *, max_len: int = 96) -> str:
+    line = _positive_rewrite(text)
+    if not line:
+        return ""
+    if not line.startswith("＋"):
+        line = f"＋ {line}"
+    if len(line) > max_len:
+        cut = line[: max_len - 1]
+        if "、" in cut[2:]:
+            cut = cut.rsplit("、", 1)[0]
+        line = cut.rstrip(" 、。") + "…"
+    return line
+
+
+def _soften_for_user_display(text: str, *, max_len: int = 96) -> str:
+    line = soften_changelog_highlight(text, max_len=max_len + 80)
+    if not line or _is_dev_only_bullet(line):
+        return ""
+    bullet = _format_positive_bullet(line, max_len=max_len)
+    return bullet.lstrip("＋ ").strip() if bullet.startswith("＋ ") else bullet
 
 
 def overview_to_user_bullets(overview: str, *, max_items: int = 3) -> List[str]:
@@ -348,33 +423,48 @@ def overview_to_user_bullets(overview: str, *, max_items: int = 3) -> List[str]:
     ov = (overview or "").strip()
     if not ov:
         return []
+    ov = _strip_infra_noise(ov)
     ov = re.sub(r"^ブランチ\s+\S+\s+に、?", "", ov)
     ov = re.sub(r"[。．]$", "", ov)
     ov = re.sub(r"、?を実装$", "", ov)
-    chunks = [c.strip() for c in re.split(r"、", ov) if c.strip()]
+    chunks = [c.strip() for c in re.split(r"[、。]", ov) if c.strip()]
     items: List[str] = []
+    seen: set[str] = set()
     for chunk in chunks:
-        cleaned = _soften_for_user_display(chunk)
-        if cleaned and len(cleaned) >= 4:
-            items.append(cleaned)
+        bullet = _format_positive_bullet(chunk)
+        if not bullet or bullet in seen:
+            continue
+        if len(bullet.replace("＋ ", "")) < 4:
+            continue
+        items.append(bullet)
+        seen.add(bullet)
         if len(items) >= max_items:
             break
     return items
 
 
-def _user_friendly_release_label(raw: str, *, max_len: int = 18) -> str:
+def _user_friendly_release_label(raw: str, *, max_len: int = 28) -> str:
     t = (raw or "").strip()
     shortcuts = (
+        (r"AWS/Cloudflare|ステージング展開", "体験の向上"),
+        (r"Concierge|更新履歴", "案内の改善"),
+        (r"Chat Pipeline|障害 UX|CodePipeline", "安定性の向上"),
         (r"CHANGELOG Concierge.*", "案内と画面"),
         (r"Phase 4.*", "会話の振り分け"),
         (r"ローカル DB.*", "安定性と入力ブロック"),
         (r"UX 品質.*", "使いやすさ"),
+        (r"風邪|RECO_", "相談まわり"),
     )
     for pat, label in shortcuts:
         if re.search(pat, t, re.I):
             return label
+    for pat, label in _RELEASE_THEME_LABELS:
+        if re.search(pat, t, re.I):
+            return label
     if "・" in t:
         t = t.split("・", 1)[0]
+    t = re.sub(r"\s*/\s*", "・", t)
+    t = re.sub(r"CI\s*自動化", "自動更新", t, flags=re.I)
     if len(t) > max_len:
         return t[: max_len - 1].rstrip() + "…"
     return t
@@ -439,11 +529,11 @@ def release_user_facing_items(
         return items[:max_items]
     seen = set(items)
     for highlight in release.highlights:
-        softened = _soften_for_user_display(highlight)
-        if not softened or softened in seen:
+        bullet = _format_positive_bullet(highlight)
+        if not bullet or bullet in seen:
             continue
-        items.append(softened)
-        seen.add(softened)
+        items.append(bullet)
+        seen.add(bullet)
         if len(items) >= max_items:
             break
     return items

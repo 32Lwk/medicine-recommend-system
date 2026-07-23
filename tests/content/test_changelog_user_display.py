@@ -43,6 +43,18 @@ def test_build_changelog_ui_sections_uses_overview_not_file_paths():
     assert "doc_changelog" not in joined.lower()
 
 
+def test_build_changelog_ui_sections_positive_user_facing():
+    _, releases = load_changelog_digest(max_releases=2)
+    sections = build_changelog_ui_sections(releases, max_releases=2)
+    assert sections
+    joined = " ".join(item for sec in sections for item in sec["items"])
+    assert "＋" in joined
+    assert ".env" not in joined.lower()
+    assert "env" not in joined.lower()
+    assert "static/" not in joined
+    assert "…" not in joined or len(joined) < 400
+
+
 def test_soften_filters_dev_paths():
     raw = "src/content/changelog_digest.py: CHANGELOG.md から抽出"
     assert _soften_for_user_display(raw) == ""

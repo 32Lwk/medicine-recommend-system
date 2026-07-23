@@ -24,6 +24,11 @@ def use_sage_web_ui(session: Any, sid: str | None) -> bool:
     return bool(sid and is_sage_web_ui(session) and not is_line_session_id(sid))
 
 
+def should_skip_reco_progressive_sse(session: Any, sid: str | None) -> bool:
+    """Sage Web: 推奨 UI は diagnosis 一括返却のため cards/reco_detail 等の途中 SSE を省略。"""
+    return use_sage_web_ui(session, sid)
+
+
 def use_sage_diagnosis_storage(session: Any, sid: str | None) -> bool:
     """bot メッセージを Sage diagnosis v1 + マーカーで永続化するか（Web + LINE 引き継ぎ用）。"""
     from src.handlers.line.line_session import is_line_session_id
