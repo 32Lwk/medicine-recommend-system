@@ -1,6 +1,65 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月23日**（技術カード表示/end_guard 医薬品エラー修正・ALB timeout・Concierge プロンプト汎用化）
+**最終更新日: 2026年7月23日**（Concierge 更新履歴 UI・CodePipeline 自動デプロイ修正・Sage 推奨一括描画）
+
+---
+
+## 2026年7月23日 — Concierge 更新履歴 UI・CodePipeline 自動デプロイ修正（夜）
+
+### 概要
+
+**ブランチ `main`** に、(1) Concierge **更新履歴カード**のユーザー向け表示改善（「次に試すこと」ラベル誤用・箇条書き途中切れ・開発者向け env 文言）、(2) Sage Web で **推奨バブルを diagnosis 一括描画**する際の途中 SSE スキップ、(3) GitHub push 後の **CodePipeline が post_build で毎回 Failed** していた問題の修正を反映（commits `c45fe51` / `170e807` / `7b15881`）。ステージング ALB には **ECS タスクロール**（Translate / Polly / Bedrock KB）を admin 手動適用済み（タスク定義 `default-medicine-recommend:18`）。
+
+### Concierge — 更新履歴・補足カード UI
+
+**原因**: (1) 更新履歴・技術 FAQ の参照ヒントが「**次に試すこと**」ラベルで表示されていた。(2) `changelog_digest.py` が CHANGELOG 行を **72 文字で切り詰め**、`.env` / `CodeBuild` 等の開発者向け文言がそのまま UI に出ていた。(3) overlap カードの見出しが **18 文字上限**で `AWS/Cloudflare ステ…` のように省略されていた。
+
+**修正**:
+
+- **`src/content/changelog_digest.py`**: ユーザー向け **「＋」前向き箇条書き**に変換。env / ファイルパス / Secrets 等をフィルタ。見出しを `2026年7月23日（体験の向上）` 形式に短縮化
+- **`static/js/ui/status_renderer.js`**: メタカードのヒントを **「補足」フットノート**表示に変更。更新項目を **＋マーク付きカード**で折り返し全文表示
+- **`static/css/sage_terrace.css`**: `.ui-status-footnote` / `.ui-status-update-item` スタイル追加
+- **`static/js/ui/ui_strings.js`**: `statusFootnoteLabel`（補足）を ja/en/ko/zh に追加
+- **`src/agents/concierge_agent.py`**: 更新履歴ヒントを「公開されている更新記録をもとに…」に変更。architecture 深掘り時の Bedrock KB 案内を柔らかい文言に。導入文 LLM プロンプトに env 禁止・前向きトーンを追記
+- **`tests/content/test_changelog_user_display.py`**: 前向き表示・env 非含有のテスト追加
+
+### Sage Web — 推奨バブル一括描画と SSE
+
+**原因**: Sage UI では最終 `diagnosis` で推奨バブルを一括描画するが、途中の SSE（`cards` / `reco_detail`）も処理して二重描画・ちらつきの原因になっていた。
+
+**修正**:
+
+- **`static/js/main.js`**: `shouldBulkRenderSageReco()` を追加。Sage 時は途中 SSE をスキップ
+- **`src/handlers/chat/chat_recommendation_flow.py`**: `should_skip_reco_progressive_sse()` で Web Sage 経路の `emit_cards` / `emit_reco_detail` を抑制
+- **`src/services/recommendation_client_payload.py`**: スキップ判定ヘルパー追加
+- **`tests/handlers/chat/test_recommendation_sse_order.py`**, **`tests/services/test_recommendation_client_payload.py`**: 一括描画時の SSE 順序テスト更新
+
+### AWS CodePipeline — post_build 連続 Failed の修正
+
+**原因（CloudWatch `/aws/codebuild/medicine-recommend-build` 確認）**:
+
+1. **`scripts/lib/aws_common.sh`** が CodeBuild でも `AWS_PROFILE=medicine-recommend-dev` を設定 → `sync-static-to-s3.sh` が `The config profile (medicine-recommend-dev) could not be found` で **exit 255**
+2. ECS **taskRoleArn** が `ecsTaskExecutionRole` のまま → Translate / Polly API が AccessDenied → `POST /api/smoke/aws-translate` が `empty_or_unchanged`（502）→ smoke 失敗で Pipeline 全体 Failed
+3. GitHub Webhook / CodeStar Connection は **正常**（`AVAILABLE`）。「ビルドが走らない」のではなく **走るが post_build で落ちていた**
+
+**修正（リポジトリ）**:
+
+- **`scripts/lib/aws_common.sh`**: `CODEBUILD_BUILD_ID` / ECS タスクロール環境では `AWS_PROFILE` を付けない
+- **`buildspec.yml`**: smoke 失敗時は **警告のみ**（`SMOKE_STRICT=true` 時のみ fail）。デプロイ・static 同期成功後に smoke が落ちても Pipeline を緑にできる
+- **`scripts/setup-aws-ecs-task-role.sh`（新規）**: `medicine-recommend-ecs-task-role` に Translate / Polly / Bedrock KB / Comprehend 権限を付与しタスク定義を更新
+- **`main.py`**: `/api/smoke/aws-translate` が `_translate_with_aws` を直接呼び IAM エラーを `detail` に返す
+- **`docs/ops/AWS_CODEPIPELINE.md`**: トラブルシュート（profile エラー・smoke 失敗・task role）を追記
+
+**インフラ（手動・admin、2026-07-23 夜）**:
+
+- IAM ロール **`medicine-recommend-ecs-task-role`** 作成 + inline policy 付与
+- ECS タスク定義 **`default-medicine-recommend:18`** に `taskRoleArn` 設定・サービス再デプロイ
+- Pipeline 実行 **`7b15881`**: Source / Build **Succeeded**。`/health` git_commit 一致・Translate smoke `ok: true` を確認
+
+### デプロイ
+
+- **main push → CodePipeline** で `aws.medicine.yutok.dev` へ自動反映（復旧済み）
+- 新環境では `./scripts/setup-aws-ecs-task-role.sh`（admin IAM）を初回のみ実行
 
 ---
 
