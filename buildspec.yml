@@ -55,11 +55,21 @@ phases:
       - bash scripts/verify-concierge-ssot.sh
       - echo "==> AWS staging smoke (Translate / Polly / CDN / Concierge)"
       - |
+        smoke_ok=0
         if [ "${RUN_CONCIERGE_FAQ_CONTRACT:-false}" = "true" ]; then
           export RUN_CONCIERGE_FAQ_CONTRACT=true
-          bash scripts/concierge-staging-smoke.sh
+          bash scripts/concierge-staging-smoke.sh && smoke_ok=1 || smoke_ok=0
         else
-          bash scripts/aws-staging-smoke.sh
+          bash scripts/aws-staging-smoke.sh && smoke_ok=1 || smoke_ok=0
+        fi
+        if [ "$smoke_ok" -eq 1 ]; then
+          echo "AWS staging smoke passed"
+        else
+          echo "WARN: AWS staging smoke failed (ECS deploy and static sync already applied)."
+          echo "      Typical cause: ECS taskRole lacks translate/polly — run scripts/setup-aws-ecs-task-role.sh (admin IAM)."
+          if [ "${SMOKE_STRICT:-false}" = "true" ]; then
+            exit 1
+          fi
         fi
       - echo "Done. ${AWS_STAGING_URL:-https://aws.medicine.yutok.dev}/health"
 

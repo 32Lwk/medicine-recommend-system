@@ -736,9 +736,9 @@ async def api_smoke_aws_translate():
         return JSONResponse({"error": "not_available"}, status_code=404)
     sample_ja = "頭が痛いです。"
     try:
-        from src.core.translation_service import translate_medicine_recommendation
+        from src.core.translation_service import _translate_with_aws
 
-        translated = translate_medicine_recommendation(sample_ja, "en")
+        translated = _translate_with_aws(sample_ja, "en")
     except Exception as exc:
         logger.exception("AWS Translate smoke failed")
         return JSONResponse(
@@ -746,7 +746,13 @@ async def api_smoke_aws_translate():
             status_code=502,
         )
     if not translated or translated.strip() == sample_ja:
-        return JSONResponse({"error": "empty_or_unchanged"}, status_code=502)
+        return JSONResponse(
+            {
+                "error": "empty_or_unchanged",
+                "detail": "Translate returned the source text unchanged (check ECS task role IAM)",
+            },
+            status_code=502,
+        )
     return {
         "ok": True,
         "target_language": "en",

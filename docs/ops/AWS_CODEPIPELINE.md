@@ -88,7 +88,8 @@ export AWS_PROFILE=medicine-recommend-dev
 | 症状 | 対処 |
 |------|------|
 | push しても Build が走らない | Source の Webhook / CodeStar Connection が **Available** か確認。Console → Pipeline → 実行履歴 |
-| Build は走るが毎回 Failed（post_build） | CloudWatch `/aws/codebuild/medicine-recommend-build` を確認。`AWS_PROFILE medicine-recommend-dev could not be found` → `aws_common.sh` が CodeBuild でも profile を付けていた（修正済み: `CODEBUILD_BUILD_ID` 検出時は IAM ロール使用） |
+| Build は走るが毎回 Failed（post_build） | CloudWatch `/aws/codebuild/medicine-recommend-build` を確認。`AWS_PROFILE medicine-recommend-dev could not be found` → CodeBuild では IAM ロールを使う（`aws_common.sh` 修正済み）。`SMOKE FAIL: POST /api/smoke/aws-translate` → ECS **taskRole** に Translate/Polly 権限なし → `./scripts/setup-aws-ecs-task-role.sh`（admin IAM） |
+| push 後 Pipeline が Failed だが `/health` の commit は新しい | **デプロイ自体は成功**していることが多い。post_build の smoke が advisory（`SMOKE_STRICT` 未設定時は警告のみ）になった。Translate/Polly を本番同等に通すには task role 設定が必要 |
 | Source 失敗 `Connection not available` | GitHub OAuth 未完了 → Connections で Available に |
 | Build 失敗 `Cannot connect to Docker` | CodeBuild `privilegedMode: true` を確認 |
 | Build 成功 / ECS 503 | `/health` を確認。Secrets（OPENAI 等）未設定は別問題 |
@@ -120,6 +121,14 @@ Secrets 投入:
 cp .env.example .env   # OPENAI_API_KEY, DATABASE_URL, SECRET_KEY
 ./scripts/setup-aws-ecs-secrets.sh .env
 ```
+
+ECS タスクロール（Translate / Polly / Bedrock KB — **admin IAM 推奨**）:
+
+```bash
+AWS_PROFILE=admin ./scripts/setup-aws-ecs-task-role.sh
+```
+
+`ecsTaskExecutionRole` のみのままだと `/api/smoke/aws-translate` が `empty_or_unchanged`（AccessDenied）になります。
 
 ## 関連
 
