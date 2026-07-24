@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
 
 from scripts.pmda.common import (  # noqa: E402
     STAGING_SIDE_EFFECTS,
+    extract_otc_ingredients,
     load_json,
     record_live_fetch_session,
     save_json,
@@ -22,15 +23,9 @@ from scripts.pmda.common import (  # noqa: E402
     write_otc_ingredients_json,
 )
 from scripts.pmda.expand_side_effects import expand_side_effects_from_catalog  # noqa: E402
-from scripts.pmda.fetch_interactions import build_unique_ingredient_queue  # noqa: E402
+from scripts.pmda.fetch_interactions import PRIORITY_INGREDIENTS  # noqa: E402
 from scripts.pmda.http_client import PmdaFetchAborted, PmdaLiveSession  # noqa: E402
 from scripts.pmda.normalize import dedupe_side_effects, normalize_side_effect_row  # noqa: E402
-from scripts.pmda.queue import (  # noqa: E402
-    mark_queue_done,
-    mark_queue_failed,
-    pop_queue_batch,
-    restore_queue_pending,
-)
 
 
 def load_fixture_rows(fixture_path: Path) -> List[Dict[str, Any]]:
@@ -50,8 +45,6 @@ def fetch_side_effects(
     min_interval: float = 3.0,
     batch_size: int = 30,
     live_only: bool = False,
-    resume: bool = False,
-    ingredient_batch: int = 10,
 ) -> Dict[str, Any]:
     write_otc_ingredients_json()
     rows: List[Dict[str, Any]] = []
@@ -61,50 +54,28 @@ def fetch_side_effects(
         "errors": 0,
         "mode": "catalog_expansion",
         "abort_reason": "",
-        "queue_done": [],
-        "queue_failed": [],
-        "queue_no_data": [],
     }
 
     if live:
         stats["mode"] = "live"
-        if resume:
-            ingredients = pop_queue_batch("side_effects", max_items=ingredient_batch)
-        else:
-            ingredients = build_unique_ingredient_queue(max_ingredients=limit or ingredient_batch)
+        ingredients = list(PRIORITY_INGREDIENTS)
+        if limit:
+            ingredients = ingredients[:limit]
+        batch_limit = limit or batch_size
+        ingredients = ingredients[:batch_limit]
         stats["requested"] = len(ingredients)
 
         session = PmdaLiveSession(min_interval_sec=min_interval, batch_size=batch_size)
-        done_items: List[str] = []
-        pending_restore: List[str] = list(ingredients)
         try:
             with session:
                 for ingredient in ingredients:
                     if session.aborted:
                         break
-                    pending_restore.remove(ingredient)
                     html = session.fetch_packins_section(ingredient, "11")
-                    if session.stats.aborted:
-                        pending_restore.insert(0, ingredient)
-                        break
                     if html:
-                        parsed = session.parse_side_effects_from_html(html, ingredient)
-                        if parsed:
-                            rows.extend(parsed)
-                        if resume:
-                            done_items.append(ingredient)
-                            if not parsed:
-                                stats["queue_no_data"].append(ingredient)
-                    elif resume:
-                        mark_queue_failed("side_effects", ingredient, "empty_section")
-                        stats["queue_failed"].append(ingredient)
+                        rows.extend(session.parse_side_effects_from_html(html, ingredient))
         except PmdaFetchAborted as exc:
             stats["abort_reason"] = str(exc)
-        if resume and session.stats.aborted and pending_restore:
-            restore_queue_pending("side_effects", pending_restore)
-        if resume and done_items:
-            mark_queue_done("side_effects", done_items)
-            stats["queue_done"] = done_items
         stats["hits"] = session.stats.hits
         stats["errors"] = session.stats.errors
         stats["cache_hits"] = session.stats.cache_hits
@@ -143,8 +114,6 @@ def main() -> int:
     parser.add_argument("--min-interval", type=float, default=3.0)
     parser.add_argument("--live-batch-size", type=int, default=30)
     parser.add_argument("--live-only", action="store_true")
-    parser.add_argument("--resume", action="store_true")
-    parser.add_argument("--ingredient-batch", type=int, default=10)
     args = parser.parse_args()
 
     fixture = args.fixture
@@ -160,8 +129,6 @@ def main() -> int:
         min_interval=args.min_interval,
         batch_size=args.live_batch_size,
         live_only=args.live_only,
-        resume=args.resume,
-        ingredient_batch=args.ingredient_batch,
     )
     print(json.dumps({"staging": str(STAGING_SIDE_EFFECTS), "stats": result["stats"]}, ensure_ascii=False, indent=2))
     return 1 if result["stats"].get("abort_reason") else 0

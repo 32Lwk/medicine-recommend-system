@@ -106,12 +106,18 @@ def load_manifest() -> Dict[str, Any]:
 
 def update_manifest(**sections: Dict[str, Any]) -> Dict[str, Any]:
     manifest = load_manifest()
+    preserved_queue = manifest.get("live_fetch_queue")
+    preserved_live_fetch = manifest.get("live_fetch")
     now = utc_now_iso()
     for key, meta in sections.items():
         entry = dict(manifest.get(key) or {})
         entry.update(meta)
         entry["last_import"] = now
         manifest[key] = entry
+    if preserved_queue is not None:
+        manifest["live_fetch_queue"] = preserved_queue
+    if preserved_live_fetch is not None:
+        manifest["live_fetch"] = preserved_live_fetch
     save_json(MANIFEST_JSON, manifest)
     return manifest
 
@@ -242,6 +248,7 @@ def record_live_fetch_session(
     abort_reason: str = "",
 ) -> None:
     manifest = load_manifest()
+    preserved_queue = manifest.get("live_fetch_queue")
     now = utc_now_iso()
     live_meta = dict(manifest.get("live_fetch") or {})
     live_meta["last_live_fetch_at"] = now
@@ -251,4 +258,6 @@ def record_live_fetch_session(
         live_meta["last_abort_at"] = now
         live_meta["last_abort_reason"] = abort_reason or stats.get("abort_reason") or "aborted"
     manifest["live_fetch"] = live_meta
+    if preserved_queue is not None:
+        manifest["live_fetch_queue"] = preserved_queue
     save_json(MANIFEST_JSON, manifest)

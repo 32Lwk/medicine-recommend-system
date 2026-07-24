@@ -1,0 +1,53 @@
+Traceback (most recent call last):
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 210, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 198, in main
+    result = run_local_fetch(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 116, in run_local_fetch
+    result = process_ingredient(session, ingredient, partners)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/fetch_ingredient_live.py", line 40, in process_ingredient
+    section10, section11 = session.fetch_ingredient_sections(ingredient)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'PmdaLiveSession' object has no attribute 'fetch_ingredient_sections'
+Traceback (most recent call last):
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 210, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 198, in main
+    result = run_local_fetch(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 116, in run_local_fetch
+    result = process_ingredient(session, ingredient, partners)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/fetch_ingredient_live.py", line 40, in process_ingredient
+    section10, section11 = session.fetch_ingredient_sections(ingredient)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'PmdaLiveSession' object has no attribute 'fetch_ingredient_sections'
+Traceback (most recent call last):
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 210, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 198, in main
+    result = run_local_fetch(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 116, in run_local_fetch
+    result = process_ingredient(session, ingredient, partners)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/fetch_ingredient_live.py", line 40, in process_ingredient
+    section10, section11 = session.fetch_ingredient_sections(ingredient)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'PmdaLiveSession' object has no attribute 'fetch_ingredient_sections'
+{"resume_sync": {"interactions_done": 21, "side_effects_done": 21, "side_effects_pending": 1321}}
+{"resume_sync": {"interactions_done": 25, "side_effects_done": 25, "side_effects_pending": 1317}}
+nohup: ./scripts/pmda/start_local_fetch.sh: Permission denied
+{"resume_sync": {"interactions_done": 25, "side_effects_done": 25, "side_effects_pending": 1317}}
+{"resume_sync": {"interactions_done": 30, "side_effects_done": 30, "side_effects_pending": 1312}}
+{"resume_sync": {"interactions_done": 32, "side_effects_done": 32, "side_effects_pending": 1309}}
+{"resume_sync": {"interactions_done": 34, "side_effects_done": 34, "side_effects_pending": 1307}}
+[watch] started pid=43145 2026-07-24T18:58:02+09:00
+[watch] pending=1188 launching fetch 2026-07-24T18:58:02+09:00
+{"resume_sync": {"interactions_done": 76, "side_effects_done": 76, "side_effects_pending": 1206}}
+{"resume_sync": {"interactions_done": 76, "side_effects_done": 76, "side_effects_pending": 1206}}

@@ -1,0 +1,15 @@
+{
+  "samples": [
+    {
+      "product_name": "バファリンA",
+      "search_html": "<html><body><a href=\"/PmdaSearch/otcSearch/detail/001\">バファリンA</a></body></html>",
+      "detail_html": "<html><body>効能・効果 頭痛、歯痛、筋肉痛。用法・用量 1回2錠、1日3回。成分 アセトアミノフェン。年齢制限 15歳未満の小児は服用しないこと。</body></html>",
+      "expected": {
+        "効能効果": "頭痛、歯痛、筋肉痛",
+        "用法用量": "1回2錠、1日3回",
+        "成分": "アセトアミノフェン",
+        "年齢制限": "15歳未満の小児は服用しないこと"
+      }
+    }
+  ]
+}

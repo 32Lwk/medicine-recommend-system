@@ -1,0 +1,27 @@
+{
+  "runs": [
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": "",
+        "queue_done": [],
+        "queue_failed": [],
+        "queue_no_data": []
+      },
+      "staging_count": 251
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "staging_count": 721
+    }
+  ]
+}

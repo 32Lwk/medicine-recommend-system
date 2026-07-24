@@ -7,13 +7,12 @@ import re
 import time
 from dataclasses import dataclass, field
 from html.parser import HTMLParser
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 from urllib.parse import urljoin
 
 import httpx
 
 from scripts.pmda.common import USER_AGENT, normalize_text
-from scripts.pmda.queue import normalize_product_search_name
 
 PMDA_OTC_SEARCH = "https://www.pmda.go.jp/PmdaSearch/otcSearch/"
 PMDA_IYAKU_SEARCH = "https://www.pmda.go.jp/PmdaSearch/iyakuSearch/"
@@ -183,7 +182,7 @@ class PmdaLiveSession:
     def _can_request(self) -> bool:
         if self.stats.aborted:
             return False
-        if self.stats.requested >= self.batch_size:
+        if self.batch_size > 0 and self.stats.requested >= self.batch_size:
             self._abort("batch_size_exceeded")
             return False
         return True
@@ -332,15 +331,13 @@ class PmdaLiveSession:
         self._html_cache[cache_key] = resp.text
         return resp.text
 
-    def fetch_packins_section(self, ingredient: str, section: str) -> str:
-        """ユニーク成分×セクションを 1 回だけ fetch（キャッシュあり）。"""
+    def _fetch_detail_html_for_ingredient(self, ingredient: str) -> str:
         if self.stats.aborted:
             return ""
-        cache_key = f"{normalize_text(ingredient)}::{section}"
+        cache_key = f"ingredient_detail::{normalize_text(ingredient)}"
         if cache_key in self._html_cache:
             self.stats.cache_hits += 1
             return self._html_cache[cache_key]
-
         try:
             result_html = self._fetch_result_list_with_docs(ingredient)
         except PmdaFetchAborted:
@@ -351,8 +348,34 @@ class PmdaLiveSession:
         if not fnames:
             self.stats.empty_html += 1
             return ""
-
         detail_html = self.fetch_iyaku_detail_html(fnames[0])
+        if detail_html:
+            self._html_cache[cache_key] = detail_html
+        return detail_html
+
+    def fetch_ingredient_sections(self, ingredient: str) -> Tuple[str, str]:
+        detail_html = self._fetch_detail_html_for_ingredient(ingredient)
+        if not detail_html:
+            return "", ""
+        section10 = self._extract_section(detail_html, "10")
+        section11 = self._extract_section(detail_html, "11")
+        ing_key = normalize_text(ingredient)
+        if section10:
+            self._html_cache[f"{ing_key}::10"] = section10
+        if section11:
+            self._html_cache[f"{ing_key}::11"] = section11
+        return section10, section11
+
+    def fetch_packins_section(self, ingredient: str, section: str) -> str:
+        """ユニーク成分×セクションを 1 回だけ fetch（キャッシュあり）。"""
+        if self.stats.aborted:
+            return ""
+        cache_key = f"{normalize_text(ingredient)}::{section}"
+        if cache_key in self._html_cache:
+            self.stats.cache_hits += 1
+            return self._html_cache[cache_key]
+
+        detail_html = self._fetch_detail_html_for_ingredient(ingredient)
         if not detail_html:
             return ""
 
@@ -396,13 +419,12 @@ class PmdaLiveSession:
     def fetch_otc_search(self, product_name: str) -> str:
         if not self._can_request():
             return ""
-        query = normalize_product_search_name(product_name) or product_name
         try:
             resp = self._request(
                 "POST",
                 PMDA_OTC_SEARCH,
                 data={
-                    "nameWord": query,
+                    "nameWord": product_name,
                     "howtoMatchRadioValue": "1",
                     "ListRows": "20",
                     "btnA": "検索",
@@ -412,109 +434,10 @@ class PmdaLiveSession:
         except PmdaFetchAborted:
             return ""
         try:
-            self._record_html(html, allow_no_results=True)
+            self._record_html(html)
         except PmdaFetchAborted:
             return ""
         return html
-
-    def fetch_otc_detail_html(self, url: str) -> str:
-        cache_key = f"otc_detail::{url}"
-        if cache_key in self._html_cache:
-            self.stats.cache_hits += 1
-            return self._html_cache[cache_key]
-        if not self._can_request():
-            return ""
-        try:
-            resp = self._request("GET", url)
-        except PmdaFetchAborted:
-            return ""
-        try:
-            self._record_html(resp.text)
-        except PmdaFetchAborted:
-            return ""
-        self._html_cache[cache_key] = resp.text
-        return resp.text
-
-    @staticmethod
-    def match_otc_product_link(
-        html: str,
-        product_name: str,
-        *,
-        prefix_len: int = 6,
-    ) -> Optional[Dict[str, str]]:
-        links = PmdaLiveSession.extract_links(html, PMDA_OTC_SEARCH)
-        if not links:
-            return None
-        raw = normalize_text(product_name)
-        normalized = normalize_product_search_name(product_name)
-        prefix = normalized[:prefix_len] if len(normalized) >= prefix_len else normalized
-
-        def _score(link_text: str) -> int:
-            text = normalize_text(link_text)
-            if raw and raw == text:
-                return 100
-            if normalized and normalized == normalize_product_search_name(text):
-                return 90
-            if normalized and normalized in text:
-                return 80
-            if prefix and len(prefix) >= 4 and text.startswith(prefix):
-                return 60
-            if raw and raw in text:
-                return 50
-            return 0
-
-        best: Optional[Dict[str, str]] = None
-        best_score = 0
-        for link in links:
-            if "pdf" in link["href"].lower():
-                continue
-            score = _score(link["text"])
-            if score > best_score:
-                best_score = score
-                best = link
-        return best if best_score >= 50 else None
-
-    @staticmethod
-    def parse_otc_detail_html(html: str) -> Dict[str, str]:
-        text = PmdaLiveSession.strip_html(html)
-        fields: Dict[str, str] = {}
-
-        def _extract(label: str, aliases: Optional[List[str]] = None) -> str:
-            keys = [label] + (aliases or [])
-            for key in keys:
-                pattern = rf"{re.escape(key)}\s*[:：]?\s*([^。]+(?:。|$))"
-                match = re.search(pattern, text)
-                if match:
-                    return normalize_text(match.group(1))[:500]
-            return ""
-
-        fields["効能効果"] = _extract("効能・効果", ["効能効果", "効能"])
-        fields["用法用量"] = _extract("用法・用量", ["用法用量", "用法"])
-        fields["成分"] = _extract("成分", ["有効成分"])
-        fields["年齢制限"] = _extract("年齢制限", ["使用上の注意", "用法"])
-        if not fields["年齢制限"]:
-            age_match = re.search(r"(\d+\s*歳(?:未満|以上)?(?:の(?:小児|子供|乳幼児))?[^。]{0,40})", text)
-            if age_match:
-                fields["年齢制限"] = normalize_text(age_match.group(1))[:120]
-        return {k: v for k, v in fields.items() if v}
-
-    def fetch_and_parse_otc_product(self, product_name: str) -> Optional[Dict[str, str]]:
-        html = self.fetch_otc_search(product_name)
-        if not html:
-            return None
-        link = self.match_otc_product_link(html, product_name)
-        if not link:
-            return None
-        detail_html = self.fetch_otc_detail_html(link["href"])
-        if not detail_html:
-            return None
-        parsed = self.parse_otc_detail_html(detail_html)
-        if not parsed:
-            return None
-        self.stats.hits += 1
-        parsed["_pmda_title"] = link["text"]
-        parsed["_pmda_url"] = link["href"]
-        return parsed
 
     @staticmethod
     def extract_links(html: str, base_url: str) -> List[Dict[str, str]]:

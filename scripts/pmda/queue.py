@@ -10,6 +10,7 @@ from scripts.pmda.common import (
     OTC_CSV,
     PRIORITY_INGREDIENTS,
     extract_otc_ingredients,
+    load_json,
     load_manifest,
     normalize_text,
     product_key,
@@ -136,9 +137,11 @@ def mark_queue_done(source: str, items: List[str]) -> None:
     done.update(items)
     bucket["done"] = sorted(done)
     failed = dict(bucket.get("failed") or {})
+    item_set = set(items)
     for item in items:
         failed.pop(item, None)
     bucket["failed"] = failed
+    bucket["pending"] = [x for x in (bucket.get("pending") or []) if x not in item_set]
     queue[source] = bucket
     save_live_fetch_queue(queue)
 
@@ -213,8 +216,8 @@ def record_session_today() -> Dict[str, Any]:
     return sessions
 
 
-def check_daily_session_limit(*, max_sessions: int = 2, force: bool = False) -> Tuple[bool, str]:
-    if force:
+def check_daily_session_limit(*, max_sessions: int = 2, force: bool = False, ignore_daily_limit: bool = False) -> Tuple[bool, str]:
+    if force or ignore_daily_limit:
         return True, ""
     sessions = get_sessions_today()
     if sessions["count"] >= max_sessions:
@@ -260,8 +263,8 @@ def check_live_fetch_time_window(*, allow_daytime: bool = False, force: bool = F
     return False, f"outside JST live window (now {now_jst():%H:%M} JST, allowed 22:00-06:00; use --allow-daytime)"
 
 
-def check_live_fetch_session_gap(*, min_hours: float = 4.0, force: bool = False) -> Tuple[bool, str]:
-    if force:
+def check_live_fetch_session_gap(*, min_hours: float = 4.0, force: bool = False, ignore_session_gap: bool = False) -> Tuple[bool, str]:
+    if force or ignore_session_gap:
         return True, ""
     manifest = load_manifest()
     live_meta = manifest.get("live_fetch") or {}
@@ -303,14 +306,20 @@ def check_live_fetch_cooldown_from_manifest(
     return True, ""
 
 
-def check_live_fetch_guards(*, allow_daytime: bool = False, force: bool = False) -> Tuple[bool, str]:
+def check_live_fetch_guards(
+    *,
+    allow_daytime: bool = False,
+    force: bool = False,
+    ignore_session_gap: bool = False,
+    ignore_daily_limit: bool = False,
+) -> Tuple[bool, str]:
     ok, reason = check_live_fetch_time_window(allow_daytime=allow_daytime, force=force)
     if not ok:
         return ok, reason
-    ok, reason = check_live_fetch_session_gap(force=force)
+    ok, reason = check_live_fetch_session_gap(force=force, ignore_session_gap=ignore_session_gap)
     if not ok:
         return ok, reason
-    ok, reason = check_daily_session_limit(force=force)
+    ok, reason = check_daily_session_limit(force=force, ignore_daily_limit=ignore_daily_limit)
     if not ok:
         return ok, reason
     manifest = load_manifest()
@@ -352,3 +361,32 @@ def product_key_to_row(key: str) -> Dict[str, str]:
 def append_live_batch_log(payload: Dict[str, Any]) -> None:
     stamp = datetime.now().strftime("%Y%m%d")
     write_live_fetch_log({"batch": payload, "logged_at": datetime.now(timezone.utc).isoformat()})
+
+
+def sync_side_effects_queue_from_interactions() -> Dict[str, Any]:
+    """interactions done を side_effects に反映（統合 fetch 前の整合）。"""
+    queue = get_live_fetch_queue()
+    ix_done = set(queue["interactions"].get("done") or [])
+    se = queue["side_effects"]
+    se_done = set(se.get("done") or []) | ix_done
+    se_failed = dict(se.get("failed") or {})
+    se_pending = [x for x in (se.get("pending") or []) if x not in se_done and x not in se_failed]
+    se["done"] = sorted(se_done)
+    se["pending"] = se_pending
+    queue["side_effects"] = se
+    save_live_fetch_queue(queue)
+    return {"interactions_done": len(ix_done), "side_effects_done": len(se_done), "side_effects_pending": len(se_pending)}
+
+
+def write_local_ingredients_progress(payload: Dict[str, Any]) -> None:
+    from scripts.pmda.common import LOG_ANALYSIS_DIR
+
+    stamp = datetime.now().strftime("%Y%m%d")
+    path = LOG_ANALYSIS_DIR / f"pmda_local_ingredients_{stamp}.json"
+    existing = load_json(path, {"runs": []}) if path.is_file() else {"runs": []}
+    if not isinstance(existing, dict):
+        existing = {"runs": []}
+    existing.setdefault("runs", []).append(
+        {"logged_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(), **payload}
+    )
+    save_json(path, existing)

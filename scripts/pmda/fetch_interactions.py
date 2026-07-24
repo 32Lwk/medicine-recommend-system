@@ -12,7 +12,6 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.pmda.common import (  # noqa: E402
-    PRIORITY_INGREDIENTS,
     STAGING_INTERACTIONS,
     extract_otc_ingredients,
     load_common_rx_medications,
@@ -27,7 +26,18 @@ from scripts.pmda.common import (  # noqa: E402
 from scripts.pmda.expand_interactions import expand_interactions_from_catalog  # noqa: E402
 from scripts.pmda.http_client import PmdaFetchAborted, PmdaLiveSession  # noqa: E402
 from scripts.pmda.normalize import dedupe_interactions, normalize_interaction_row  # noqa: E402
-from scripts.pmda.queue import mark_queue_done, mark_queue_failed, pop_queue_batch, restore_queue_pending  # noqa: E402
+
+# eval 重要ペア向け優先成分
+PRIORITY_INGREDIENTS = [
+    "ロキソプロフェン",
+    "イブプロフェン",
+    "アスピリン",
+    "アセトアミノフェン",
+    "ジクロフェナク",
+    "メフェナム酸",
+    "ワーファリン",
+    "リチウム",
+]
 
 
 def load_fixture_rows(fixture_path: Path) -> List[Dict[str, Any]]:
@@ -67,8 +77,6 @@ def fetch_interactions(
     min_interval: float = 3.0,
     batch_size: int = 30,
     live_only: bool = False,
-    resume: bool = False,
-    ingredient_batch: int = 30,
 ) -> Dict[str, Any]:
     write_otc_ingredients_json()
     rows: List[Dict[str, Any]] = []
@@ -80,52 +88,26 @@ def fetch_interactions(
         "errors": 0,
         "mode": "catalog_expansion",
         "abort_reason": "",
-        "queue_done": [],
-        "queue_failed": [],
-        "queue_no_data": [],
     }
 
     if live:
         stats["mode"] = "live"
         partners = load_common_rx_medications()
-        if resume:
-            ingredients = pop_queue_batch("interactions", max_items=ingredient_batch)
-        else:
-            ingredients = build_unique_ingredient_queue(max_ingredients=limit or ingredient_batch, max_otc=max_otc)
+        ingredients = build_unique_ingredient_queue(max_ingredients=limit or batch_size, max_otc=max_otc)
         stats["requested_ingredients"] = len(ingredients)
         stats["requested_pairs"] = len(ingredients) * len(partners)
 
         session = PmdaLiveSession(min_interval_sec=min_interval, batch_size=batch_size)
-        done_items: List[str] = []
-        pending_restore: List[str] = list(ingredients)
         try:
             with session:
                 for ingredient in ingredients:
                     if session.aborted:
                         break
-                    pending_restore.remove(ingredient)
                     section_html = session.fetch_packins_section(ingredient, "10")
-                    if session.stats.aborted:
-                        pending_restore.insert(0, ingredient)
-                        break
                     if section_html:
-                        parsed = session.parse_interactions_from_html(section_html, ingredient, partners)
-                        if parsed:
-                            rows.extend(parsed)
-                        if resume:
-                            done_items.append(ingredient)
-                            if not parsed:
-                                stats["queue_no_data"].append(ingredient)
-                    elif resume:
-                        mark_queue_failed("interactions", ingredient, "empty_section")
-                        stats["queue_failed"].append(ingredient)
+                        rows.extend(session.parse_interactions_from_html(section_html, ingredient, partners))
         except PmdaFetchAborted as exc:
             stats["abort_reason"] = str(exc)
-        if resume and session.stats.aborted and pending_restore:
-            restore_queue_pending("interactions", pending_restore)
-        if resume and done_items:
-            mark_queue_done("interactions", done_items)
-            stats["queue_done"] = done_items
         stats["cache_hits"] = session.stats.cache_hits
         stats["hits"] = session.stats.hits
         stats["errors"] = session.stats.errors
@@ -141,9 +123,15 @@ def fetch_interactions(
             rows.extend(load_fixture_rows(fixture_path))
             stats["mode"] = "fixture"
 
-    normalized = dedupe_interactions(
-        [normalize_interaction_row(r) for r in rows if normalize_interaction_row(r)]
-    )
+    if live_only:
+        normalized = dedupe_interactions(
+            [normalize_interaction_row(r) for r in rows if normalize_interaction_row(r)]
+        )
+    else:
+        normalized = dedupe_interactions(
+            [normalize_interaction_row(r) for r in rows if normalize_interaction_row(r)]
+        )
+
     payload = {
         "generated_at": utc_now_iso(),
         "source": stats["mode"],
@@ -165,8 +153,6 @@ def main() -> int:
     parser.add_argument("--min-interval", type=float, default=3.0, help="Min seconds between requests")
     parser.add_argument("--live-batch-size", type=int, default=30, help="Max HTTP requests per session")
     parser.add_argument("--live-only", action="store_true", help="Staging contains live rows only")
-    parser.add_argument("--resume", action="store_true", help="Pop batch from manifest queue")
-    parser.add_argument("--ingredient-batch", type=int, default=10, help="Ingredients per resume session")
     args = parser.parse_args()
 
     fixture = args.fixture
@@ -183,8 +169,6 @@ def main() -> int:
         min_interval=args.min_interval,
         batch_size=args.live_batch_size,
         live_only=args.live_only,
-        resume=args.resume,
-        ingredient_batch=args.ingredient_batch,
     )
     print(json.dumps({"staging": str(STAGING_INTERACTIONS), "stats": result["stats"]}, ensure_ascii=False, indent=2))
     return 1 if result["stats"].get("abort_reason") else 0
