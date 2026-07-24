@@ -41,6 +41,10 @@ bash ./scripts/sync-concierge-kb-to-s3.sh
 # 医薬品 CSV
 bash ./scripts/sync-medicine-kb-to-s3.sh
 
+# PMDA 正本 CSV 更新後の一括反映（reparse → build → sync → ingestion → eval）
+AWS_PROFILE=admin AWS_REGION=ap-northeast-1 ./scripts/reflect_medicine_kb.sh
+# --skip-reparse / --skip-eval
+
 # ingestion（Managed KB — Titan 429 不要）
 aws bedrock-agent start-ingestion-job \
   --knowledge-base-id 2CNAGQ2V4P \
@@ -97,14 +101,16 @@ bash scripts/sync-all-kb-to-s3.sh
 bash scripts/start-managed-kb-ingestion.sh   # 非同期起動のみ
 ```
 
-CodeBuild env（初回は false）:
+CodeBuild env（**Step 5-F 完了 — 2026-07-24**）:
 
-| 変数 | 初回値 | 説明 |
-|------|--------|------|
-| `SYNC_KB_TO_S3` | `false` | Concierge + Medicine を S3 に sync |
-| `KB_INGESTION_ON_PUSH` | `false` | Managed KB ingestion 非同期起動 |
+| 変数 | 値 | 説明 |
+|------|-----|------|
+| `SYNC_KB_TO_S3` | **`true`** | Concierge + Medicine を S3 に sync（Pipeline 検証済） |
+| `KB_INGESTION_ON_PUSH` | **`true`** | Managed KB ingestion 非同期起動 |
 | `RUN_KB_EVAL` | `false` | retrieve eval（push 直後は off 推奨） |
 | `KB_EVAL_STRICT` | `false` | `true` 時 eval 閾値未達で build fail |
+
+`sync-all-kb-to-s3.sh` は CodeBuild 上で **pyenv 無効化 + `/usr/bin/python3.11` + ensurepip**、かつ **aws CLI を PATH に残す**（`/usr/local/bin`）。ローカルは `.venv/bin/python` を使用。
 
 段階的ロールアウト手順は [AWS_CODEPIPELINE.md](./AWS_CODEPIPELINE.md) § KB 自動化。
 
@@ -115,6 +121,8 @@ CodeBuild env（初回は false）:
 | `numberOfDocumentsFailed` ≈ product 件数 | metadata に JSON boolean（`true`/`false`） | `_stringify_metadata_values()` で string 化して rebuild |
 | topic のみ index、product 全滅 | 同上 | `log/analysis/ingestion_failure_summary.md` 参照 |
 | raw CSV が eval に hit | S3 に `raw/` が残存 | `sync-medicine-kb-to-s3.sh --exclude raw/*`、再 ingest |
+| CodeBuild `aws: command not found` | PATH を `/usr/bin:/bin` のみに制限 | `sync-all-kb-to-s3.sh` で aws の dirname を PATH 先頭に追加 |
+| CodeBuild `No module named pip` / pyenv | `.python-version` が pyenv を起動 | `/usr/bin/python3.11` + `ensurepip` + `pip install pandas` |
 
 Bedrock `metadataAttributes` は **string 型のみ**。bool / number は crawl 失敗の原因になる。
 

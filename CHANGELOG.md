@@ -1,6 +1,114 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月24日**（PMDA 正本再生成・raw HTML 永続化・パーサー修正）
+**最終更新日: 2026年7月24日**（PMDA 正本 → Medicine KB 反映・§17 品質フィルタ・CHANGELOG UI 改善・Step 5-F 完了）
+
+---
+
+## 2026年7月24日 — PMDA 正本 → Medicine KB 反映（§17 フィルタ・reflect 実行）
+
+### 概要
+
+§11 副作用パーサーに **§17 臨床成績** 終端を追加し、品質フィルタ **`section17_leak`** で混入行を reject。正本 CSV を再生成後 **`scripts/reflect_medicine_kb.sh`** で Medicine Managed KB へ反映。**ingestion job `OG6SSAO4QN` COMPLETE**、eval **相互作用 5/5**。
+
+### §17 品質改善
+
+| 項目 | 修正前 | 修正後 |
+|------|--------|--------|
+| side_effects PMDA 行 | 238 | **237** |
+| side_effects CSV 合計 | 272 | **271**（手動 34 + PMDA 237） |
+| §17 末尾混入行 | ~6 行 | **0** |
+
+**変更**: `http_client.py`（`_SECTION11_END` + 要約時 §17 切り捨て）、`quality_filter.py`（`section17_leak`）
+
+### KB 反映（job `OG6SSAO4QN`）
+
+| 指標 | 値 |
+|------|-----|
+| scanned | 19,952 |
+| modified | 19,859 |
+| new | 87 |
+| deleted | 318 |
+| failed | 1（`side_effects/グリチルレチン酸.md` — CSV 除外済み stale メタデータ） |
+
+**eval**（`log/analysis/medicine_kb_pmda_eval_20260724.json`）: pass_all **75%**（15/20）/ score_pass **85%** / 相互作用 **5/5**
+
+```bash
+AWS_PROFILE=admin AWS_REGION=ap-northeast-1 ./scripts/reflect_medicine_kb.sh
+```
+
+成果物: `log/analysis/medicine_kb_pmda_reflect_20260724.json`, `pmda_reparse_from_raw_20260724.json`
+
+---
+
+## 2026年7月24日 — Step 5-F 完了（CodePipeline KB 検証）
+
+### 概要
+
+Dual KB RAG Phase 5 の最終検証。**ingestion failed=0**、Medicine / Concierge eval が CI 閾値を満たし、CodePipeline 上の KB sync も成功。
+
+### ingestion（COMPLETE / failed=0）
+
+| KB | Job ID | modified | new |
+|----|--------|----------|-----|
+| Concierge `2CNAGQ2V4P` | `GZJ6TQG4Y0` | 19,873 | 305 |
+| Medicine `30BCEJCJHA` | `K7WQ4I4IZE` | 19,873 | 305 |
+
+metadata boolean → string 修正後、product 7,494 件の failed は **解消済み**。
+
+### eval（Step 5-F-2）
+
+| 対象 | 結果 | 閾値 |
+|------|------|------|
+| Medicine raw | **16/20（80%）** | ≥80% ✅ |
+| Medicine runtime | **17/20（85%）** | — |
+| 相互作用 | **5/5** | hard gate ✅ |
+| Concierge | **9/10（90%）** | ≥80% ✅ |
+
+成果物: `log/analysis/medicine_kb_step5f_20260724.json`, `concierge_kb_step5f_20260724.json`, `codebuild_kb_step5f_complete_20260724.json`
+
+残 NG（任意改善）: `usage-water-amount`, `doping-pseudoephedrine`, `doping-competition-category`, `age-under-15`, Concierge `changelog-phase-q4`
+
+### CodePipeline / CodeBuild
+
+| 項目 | 状態 |
+|------|------|
+| `SYNC_KB_TO_S3` | **`true`**（CodeBuild env） |
+| `KB_INGESTION_ON_PUSH` | **`true`** |
+| `RUN_KB_EVAL` | `false`（ingestion 安定後に週次化可） |
+| Pipeline `14791919` | **Succeeded** — CloudWatch に `All KB sources synced.` |
+
+**CodeBuild 修正**（`scripts/sync-all-kb-to-s3.sh`）:
+
+- pyenv 回避 → `/usr/bin/python3.11` + `ensurepip` + `pip install pandas`
+- PATH 制限時に **`aws` CLI を `/usr/local/bin` から復元**（132643c で aws 不在により sync 失敗していた問題を 138c0ff で修正）
+
+**IAM**: `scripts/setup-aws-codebuild-kb-role.sh` — `StartIngestionJob` + S3 KB bucket
+
+### 新規スクリプト
+
+| ファイル | 用途 |
+|----------|------|
+| `scripts/reflect_medicine_kb.sh` | PMDA 正本 CSV → build → S3 sync → ingestion 待機 → eval の一括反映 |
+
+---
+
+## 2026年7月24日 — CHANGELOG ダイジェスト・ステータス UI 改善
+
+### 概要
+
+Concierge / ステータスパネルの「最近の更新」表示を、開発者向けノイズを減らしユーザー向け文言に整える。
+
+### 変更
+
+| ファイル | 内容 |
+|----------|------|
+| `src/content/changelog_digest.py` | PMDA / KB / eval 系の infra ノイズ除外、positive rewrite ルール追加、箇条書き上限 72 字 |
+| `static/js/ui/status_renderer.js` | `＋` プレフィックス廃止 → ドット箇条書き |
+| `static/css/sage_terrace.css` | `.ui-status-update-item` をミニマルなドット + テキストレイアウトに |
+| `src/agents/concierge_agent.py` | コンパクト表示時の release / item 数を 2 件に抑制 |
+| `tests/content/test_changelog_*.py` | 上記に合わせて更新 |
+
+`scripts/write_changelog_digest.py` → `static/changelog-digest.json` を再生成し Concierge KB / S3 に同梱。
 
 ---
 
@@ -14,17 +122,17 @@ PMDA live fetch で取得した **添付文書 HTML を `data/pmda/raw/` に永�
 
 | 指標 | interactions (PMDA) | side_effects (PMDA) |
 |------|---------------------|---------------------|
-| 行数 | 156 → **107** | 372 → **238** |
+| 行数 | 156 → **107** | 372 → **237** |
 | 品質フィルタ OK 率 | 37.8% → **100%** | 1.3% → **100%** |
 | HTML ボイラープレート | 多数 → **0** | 177 行 → **0** |
-| CSV 合計 | 233 → **180**（手動 73 + PMDA 107） | 414 → **272**（手動 34 + PMDA 238） |
+| CSV 合計 | 233 → **180**（手動 73 + PMDA 107） | 414 → **271**（手動 34 + PMDA 237） |
 
 ### パーサー修正（`scripts/pmda/http_client.py`）
 
 - §10/§11 マーカーの **空白対応**（`10.2 併用注意` vs 旧 `10.2併用注意`）
 - PMDA ページ **ボイラープレート除去**（JavaScript 案内・ヘッダー等）
 - セクション未検出時の **全文フォールバック廃止**（空文字返却）
-- §11 終端に **`18. 薬効`** を追加
+- §11 終端に **`17. 臨床成績` / `18. 薬効`** を追加（後半: §17 要約切り捨て + `section17_leak` フィルタ）
 - interactions: partner 周辺 **最大 500 字**の §10 由来説明
 - side_effects: **§11 要約**（最大 800 字・句点境界で切り詰め）
 
@@ -73,7 +181,8 @@ pytest tests/scripts/test_pmda_parser.py tests/scripts/test_pmda_raw_store.py -q
 
 - **catalog expansion（~2,869 行テンプレート）は復元しない** — RAG/KB 上の情報価値が低く、重複テンプレが多数
 - **live + raw 再パース** が正本の唯一の再生成経路
-- purge → KB 前の残課題: interactions **複数薬剤混在**（~27/107）、side_effects **§17 臨床成績混入**（~6/238）— 次イテレーションでフィルタ追加予定
+- purge → KB 前の残課題: interactions **複数薬剤混在**（~27/107）— 次イテレーションで §10 表行単位パース
+- ~~side_effects §17 臨床成績混入~~ → **§17 終端 + section17_leak で解消**（2026-07-24 後半）
 
 ### ドキュメント
 
@@ -105,11 +214,20 @@ AWS ステージング Managed KB（Concierge `2CNAGQ2V4P` / Medicine `30BCEJCJH
 - metadata **全値 string 化**（Bedrock ingestion 要件）
 - raw CSV は S3 非 sync（`sync-medicine-kb-to-s3.sh --exclude raw/*`）
 
-### Phase 5 — CodePipeline KB 自動化（env 既定 off）
+### Phase 5 — CodePipeline KB 自動化（Step 5-F 完了）
 
-**新規**: **`scripts/sync-all-kb-to-s3.sh`**, **`scripts/start-managed-kb-ingestion.sh`**
+**新規**: **`scripts/sync-all-kb-to-s3.sh`**, **`scripts/start-managed-kb-ingestion.sh`**, **`scripts/setup-aws-codebuild-kb-role.sh`**, **`scripts/reflect_medicine_kb.sh`**
 
-**更新**: **`buildspec.yml`** — post_build に KB sync / ingestion / eval フック（`SYNC_KB_TO_S3` / `KB_INGESTION_ON_PUSH` / `RUN_KB_EVAL` / `KB_EVAL_STRICT` すべて **`false`**）
+**更新**: **`buildspec.yml`** — post_build に KB sync / ingestion / eval フック（env は CodeBuild プロジェクト側で設定。buildspec 内定義は console を上書きするため **削除済み**）
+
+**CodeBuild env（2026-07-24 時点）**:
+
+| 変数 | 値 | 備考 |
+|------|-----|------|
+| `SYNC_KB_TO_S3` | **`true`** | Step 5-F で有効化・Pipeline 検証済 |
+| `KB_INGESTION_ON_PUSH` | **`true`** | 非同期起動（進行中 job があると ConflictException — 正常） |
+| `RUN_KB_EVAL` | `false` | 週次 or 手動パイプライン推奨 |
+| `KB_EVAL_STRICT` | `false` | — |
 
 **eval スクリプト**: **`scripts/eval_medicine_kb.py`**（`--mode both`, `--min-pass-pct`, `--min-interaction-pass`）、**`scripts/eval_concierge_kb.py`**
 
@@ -134,13 +252,16 @@ AWS ステージング Managed KB（Concierge `2CNAGQ2V4P` / Medicine `30BCEJCJH
 
 | ファイル | 結果 |
 |----------|------|
-| `medicine_kb_after_ingestion_fix_20260724.json` | raw 16/20、runtime 17/20、相互作用 5/5 |
+| `medicine_kb_step5f_20260724.json` | raw 16/20、runtime 17/20、相互作用 5/5 |
+| `concierge_kb_step5f_20260724.json` | 9/10（90%） |
+| `codebuild_kb_step5f_complete_20260724.json` | Step 5-F サマリ |
+| `medicine_kb_after_ingestion_fix_20260724.json` | metadata 修正後 eval |
 | `concierge_kb_baseline_20260724.json` | 9/10（90%） |
 | `ingestion_failure_summary.md` | failed 7,494 原因と修正 |
 
 ### 運用メモ
 
-- CodeBuild env 切替は **ユーザー GO 後**（`SYNC_KB_TO_S3=true` → ingestion → eval）
+- push 毎 ingestion は **コスト増** — 運用負荷が高い場合は `KB_INGESTION_ON_PUSH=false` + 手動 `reflect_medicine_kb.sh` も可
 - 推奨順位（`physical_orchestrator.py`）は **変更なし**
 
 ---

@@ -60,6 +60,7 @@ _SECTION11_END = (
     r"13\.\s*過量投与",
     r"14\.\s*適用上の注意",
     r"16\.\s*薬物動態",
+    r"17\.\s*臨床成績",
     r"18\.\s*薬効",
 )
 
@@ -594,6 +595,11 @@ class PmdaLiveSession:
                 cleaned = cleaned[match.start() :]
                 break
         cleaned = re.sub(r"\s+", " ", cleaned).strip()
+        for end_pat in (r"17\.\s*臨床成績", r"18\.\s*薬効"):
+            end_match = re.search(end_pat, cleaned)
+            if end_match:
+                cleaned = cleaned[: end_match.start()].strip()
+                break
         if len(cleaned) > 800:
             cut = cleaned[:800]
             last_space = cut.rfind("。")

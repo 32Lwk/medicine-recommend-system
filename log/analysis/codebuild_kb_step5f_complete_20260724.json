@@ -1,0 +1,50 @@
+{
+  "step": "5-F",
+  "date": "2026-07-24",
+  "ingestion_jobs": {
+    "concierge": {
+      "id": "GZJ6TQG4Y0",
+      "kb": "2CNAGQ2V4P",
+      "status": "COMPLETE",
+      "failed": 0,
+      "modified": 19873,
+      "new": 305
+    },
+    "medicine": {
+      "id": "K7WQ4I4IZE",
+      "kb": "30BCEJCJHA",
+      "status": "COMPLETE",
+      "failed": 0,
+      "modified": 19873,
+      "new": 305
+    }
+  },
+  "eval": {
+    "medicine": {
+      "log": "log/analysis/medicine_kb_step5f_20260724.json",
+      "raw_pass_all": "16/20 (80%)",
+      "runtime_pass_all": "17/20 (85%)",
+      "interaction": "5/5",
+      "ci_threshold_met": true
+    },
+    "concierge": {
+      "log": "log/analysis/concierge_kb_step5f_20260724.json",
+      "pass_all": "9/10 (90%)",
+      "ci_threshold_met": true,
+      "ng": ["changelog-phase-q4"]
+    }
+  },
+  "commits": {
+    "132643c": "fix(ops): AL2023 python3.11 + ensurepip (also included staged PMDA raw work)",
+    "138c0ff": "fix(ops): preserve aws CLI on PATH during CodeBuild KB sync"
+  },
+  "codebuild_env": {
+    "SYNC_KB_TO_S3": "true",
+    "KB_INGESTION_ON_PUSH": "true"
+  },
+  "notes": [
+    "Pipeline 104e7896 (132643c): POST_BUILD succeeded but KB sync failed (aws not on PATH)",
+    "Pipeline 14791919 (138c0ff): POST_BUILD All KB sources synced. — VERIFIED",
+    "Build 9bf7d96f-e7fe-4725-b3aa-90cf2362012d"
+  ]
+}

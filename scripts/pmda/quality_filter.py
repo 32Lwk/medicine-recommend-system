@@ -51,6 +51,8 @@ def reject_reason_side_effect(row: Dict[str, Any]) -> str:
         return "wrong_section"
     if not _SECTION11.search(text):
         return "missing_section11"
+    if re.search(r"17\.\s*臨床成績|17\.1\s", text):
+        return "section17_leak"
     return ""
 
 

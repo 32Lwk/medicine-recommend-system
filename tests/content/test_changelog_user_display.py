@@ -48,11 +48,32 @@ def test_build_changelog_ui_sections_positive_user_facing():
     sections = build_changelog_ui_sections(releases, max_releases=2)
     assert sections
     joined = " ".join(item for sec in sections for item in sec["items"])
-    assert "＋" in joined
+    assert "PMDA live fetch" not in joined
+    assert "data/pmda" not in joined
     assert ".env" not in joined.lower()
-    assert "env" not in joined.lower()
     assert "static/" not in joined
-    assert "…" not in joined or len(joined) < 400
+    assert "Medicine eval" not in joined
+
+
+def test_build_changelog_ui_sections_default_caps_at_three_items():
+    _, releases = load_changelog_digest(max_releases=4)
+    sections = build_changelog_ui_sections(releases, max_releases=4, detailed=False)
+    assert sections
+    assert len(sections[0]["items"]) <= 3
+
+
+def test_pmda_overview_rewrites_to_user_friendly():
+    ov = (
+        "PMDA live fetch の添付文書 HTML を data/pmda/raw/ に永続化（680 件）。"
+        "§マーカー空白不一致・全文フォールバック・merge バグを修正し、raw から正本 CSV を再生成。"
+    )
+    items = overview_to_user_bullets(ov, max_items=3)
+    assert items
+    joined = " ".join(items)
+    assert "PMDA" not in joined
+    assert "data/" not in joined
+    assert "§" not in joined
+    assert "相互作用" in joined or "公的" in joined
 
 
 def test_soften_filters_dev_paths():

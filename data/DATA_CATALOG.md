@@ -20,8 +20,8 @@ git add data/otc_medicine_data.csv   # 未追跡の場合のみ
 |----------|------|
 | `symptom_dictionary.json` | 症状同義語・NLU |
 | `ingredient_dictionary.json` | 成分正規化 |
-| `medicine_side_effects.csv` | 副作用スコア（PMDA live + reparse で更新） |
-| `medicine_interactions.csv` | 相互作用スコア（PMDA live + reparse で更新） |
+| `medicine_side_effects.csv` | 副作用スコア（PMDA live + reparse で更新。**271 行**: 手動 34 + PMDA 237） |
+| `medicine_interactions.csv` | 相互作用スコア（PMDA live + reparse で更新。**180 行**: 手動 73 + PMDA 107） |
 | `pmda/manifest.json` | PMDA import メタ・live fetch キュー |
 | `pmda/raw/ingredients/` | **PMDA 添付文書 HTML 正本**（680 件・reparse 元） |
 | `pmda/raw/index.json` | raw ファイル索引 |

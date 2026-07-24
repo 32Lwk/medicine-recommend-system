@@ -158,6 +158,59 @@
           "live_replace": true
         }
       }
+    },
+    {
+      "ok": true,
+      "stats": {
+        "mode": "reparse_from_raw",
+        "raw_files": {
+          "indexed": 680,
+          "files": 680
+        },
+        "parsed_ingredients": 282,
+        "skipped_no_html": 196,
+        "empty_section": 202,
+        "interactions_raw": 182,
+        "side_effects_raw": 237,
+        "interactions": 107,
+        "side_effects": 237,
+        "filter_interactions": {
+          "accepted": 108,
+          "rejected": 74,
+          "reject_missing_section10": 62,
+          "reject_wrong_section": 12
+        },
+        "filter_side_effects": {
+          "accepted": 237,
+          "rejected": 0
+        }
+      },
+      "validation": {
+        "interactions": {
+          "errors": [],
+          "count": 107
+        },
+        "side_effects": {
+          "errors": [],
+          "count": 237
+        }
+      },
+      "dry_run": false,
+      "backup_dir": "/Users/yuto/medicine recomended/data/pmda/backups/20260724",
+      "merge": {
+        "interactions": {
+          "before": 180,
+          "after": 180,
+          "added": 0,
+          "live_replace": true
+        },
+        "side_effects": {
+          "before": 272,
+          "after": 271,
+          "added": 0,
+          "live_replace": true
+        }
+      }
     }
   ]
 }

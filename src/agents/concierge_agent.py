@@ -807,8 +807,8 @@ def build_changelog_payload(
     detailed = wants_changelog_detail(user_text, history)
     section_specs = build_changelog_ui_sections(
         releases,
-        max_releases=4 if detailed else 3,
-        max_items_per_release=4 if detailed else 3,
+        max_releases=4 if detailed else 2,
+        max_items_per_release=4 if detailed else 2,
         detailed=detailed,
     )
     sections = [

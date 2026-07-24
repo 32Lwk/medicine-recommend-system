@@ -12510,3 +12510,5 @@
 {"timestamp": "2026-07-23T19:47:55.548618", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 18, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "SSE とはこのアプリでは何に使う？"}}
 {"timestamp": "2026-07-23T19:47:59.373493", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-23T19:47:59.373493", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "マルチエージェントの役割分担は？"}}
+{"timestamp": "2026-07-24T22:57:09.697379", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-24T22:57:09.697908", "event_type": "input_validation", "user_id": "ユーザー16", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}

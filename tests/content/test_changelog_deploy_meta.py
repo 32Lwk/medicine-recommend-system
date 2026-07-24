@@ -41,7 +41,7 @@ def test_build_changelog_ui_sections_merges_same_date(monkeypatch):
     if len(first_two_dates) == 1:
         assert len(sections) <= 2
         assert sections[0]["title"] == releases[0].heading.split(" — ", 1)[0]
-        assert len(sections[0]["items"]) >= 4
+        assert 1 <= len(sections[0]["items"]) <= 3
         assert "案内と画面" not in sections[0]["title"]
         assert "安定性と入力ブロック" not in sections[0]["title"]
 

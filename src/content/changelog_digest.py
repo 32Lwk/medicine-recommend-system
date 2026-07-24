@@ -303,7 +303,11 @@ _DEV_BULLET_RE = re.compile(
     r"プロンプト|LLM|intent_router|dispatcher|"
     r"\.env|env\s*ゲート|env\s*未設定|Secrets|buildspec|CodeBuild|CodePipeline|"
     r"config/|Dockerfile|ECS|ECR|WAF|CloudFront|S3|IAM|OAuth|"
-    r"commit\s+[0-9a-f]{6,}|ブランチ\s+\S+",
+    r"commit\s+[0-9a-f]{6,}|ブランチ\s+\S+|"
+    r"data/|Medicine eval|OK 率|\d+/\d+|raw \d+%|ingestion failed|metadata boolean|"
+    r"§\d|live fetch|live_replace|reparse_from_raw|quality_filter|"
+    r"side_effects|interactions PMDA|\d+\.?\d*%→\d+%|"
+    r"catalog expansion|detail_html|live のみ|ingredients/",
     re.I,
 )
 
@@ -341,8 +345,18 @@ _POSITIVE_REWRITE_RULES: tuple[tuple[str, str], ...] = (
     (r"処理中ステータス|マスコット", "処理中の表示が分かりやすくなりました"),
     (r"オンボーディング|はじめの案内", "はじめの案内が見やすくなりました"),
     (r"チャットビューポート|シーズン装飾|季節", "チャット画面の見た目が整いました"),
-    (r"画像.*CDN|R2|OTC 画像", "お薬の画像表示が安定しました"),
+    (r"画像.*CDN|R2|OTC 画像|パッケージ画像", "お薬の画像表示が充実しました"),
     (r"Comprehend Medical|Personalize", "相談内容の理解・おすすめ表示がより賢くなりました"),
+    (
+        r"PMDA live fetch|添付文書 HTML|data/pmda|raw HTML 永続化|680 件 raw",
+        "公的なお薬情報の取り込みがより正確になりました",
+    ),
+    (
+        r"§マーカー|パーサー|merge バグ|全文フォールバック|正本 CSV|CSV を再生成|"
+        r"interactions.*side_effects|品質フィルタ",
+        "相互作用・副作用の案内がより信頼しやすくなりました",
+    ),
+    (r"PMDA 公的情報|市販薬検索|§10|§11", "公的データに基づく案内が強化されました"),
 )
 
 _RELEASE_THEME_LABELS: tuple[tuple[str, str], ...] = (
@@ -367,6 +381,8 @@ def _strip_infra_noise(text: str) -> str:
     line = re.sub(r"（commit\s+[0-9a-f]+\）?", "", line, flags=re.I)
     line = re.sub(r"env ゲート付きで\s*", "", line, flags=re.I)
     line = re.sub(r"env 未設定で\s*", "", line, flags=re.I)
+    line = re.sub(r"`?(?:data|src|static|scripts)/[^\s`、。]+`?", "", line)
+    line = re.sub(r"（\d+\s*件）", "", line)
     return re.sub(r"\s+", " ", line).strip(" 、。")
 
 
@@ -388,7 +404,11 @@ def _positive_rewrite(text: str) -> str:
     line = re.sub(r"^ブランチ\s+\S+\s+に、?", "", line)
     line = re.sub(r"一括 ON", "標準で有効", line)
     line = re.sub(r"\s+", " ", line).strip(" ・、。")
-    if not line or _is_dev_only_bullet(line):
+    if len(line) < 8:
+        return ""
+    if re.match(r"^[にをがはへでと]\s", line):
+        return ""
+    if _is_dev_only_bullet(line):
         return ""
     if re.search(r"問題|不足|エラー|障害|修正|解消|fail|bug", line, re.I):
         line = re.sub(r"(問題|不足|エラー|障害).{0,12}(修正|解消|改善)", "案内が整い", line)
@@ -396,15 +416,14 @@ def _positive_rewrite(text: str) -> str:
     return line
 
 
-def _format_positive_bullet(text: str, *, max_len: int = 96) -> str:
+def _format_positive_bullet(text: str, *, max_len: int = 72) -> str:
     line = _positive_rewrite(text)
     if not line:
         return ""
-    if not line.startswith("＋"):
-        line = f"＋ {line}"
+    line = line.lstrip("＋ ").strip()
     if len(line) > max_len:
         cut = line[: max_len - 1]
-        if "、" in cut[2:]:
+        if "、" in cut:
             cut = cut.rsplit("、", 1)[0]
         line = cut.rstrip(" 、。") + "…"
     return line
@@ -434,7 +453,7 @@ def overview_to_user_bullets(overview: str, *, max_items: int = 3) -> List[str]:
         bullet = _format_positive_bullet(chunk)
         if not bullet or bullet in seen:
             continue
-        if len(bullet.replace("＋ ", "")) < 4:
+        if len(bullet) < 4:
             continue
         items.append(bullet)
         seen.add(bullet)
@@ -576,7 +595,8 @@ def build_changelog_ui_sections(
                 bucket["commit"] = deploy_commit
             grouped.append(bucket)
 
-        cap = max_items_per_release * int(bucket.get("_sources") or 1)
+        raw_cap = max_items_per_release * int(bucket.get("_sources") or 1)
+        cap = raw_cap if detailed else min(raw_cap, 3)
         seen = set(bucket["items"])
         for item in items:
             if item in seen:

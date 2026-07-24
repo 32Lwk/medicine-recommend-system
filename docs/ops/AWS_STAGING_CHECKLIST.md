@@ -134,19 +134,19 @@ PERSONALIZE_TRACKING_ID=...
 | Translate 2 回目 | Redis 有効時に高速化 |
 | Personalize | キャンペーン ACTIVE 後に順序変化（冷スタート時はルール順） |
 
-## Phase 5 — KB 自動化（CodePipeline）
+## Phase 5 — KB 自動化（CodePipeline）— Step 5-F 完了
 
-buildspec に KB sync / ingestion / eval フック追加（初回 merge 時 env すべて `false`）。
+buildspec に KB sync / ingestion / eval フック追加。CodeBuild env は Step 5-F で sync + ingestion を有効化済み。
 
-| 確認 | 期待 |
-|------|------|
-| `SYNC_KB_TO_S3=false` | merge 時デフォルト（5-0b 完了後に true） |
-| `KB_INGESTION_ON_PUSH=false` | ingestion failed=0 確認後に true |
-| `RUN_KB_EVAL=false` | 週次 or 手動パイプライン |
-| ローカル sync | `bash scripts/sync-all-kb-to-s3.sh` 成功 |
-| ingestion | `start-managed-kb-ingestion.sh` → failed ≈ 0 |
-| Medicine eval | ≥ 17/20（80%）、相互作用 5/5 |
-| Concierge eval | ≥ 8/10（80%） |
+| 確認 | 期待 | 状態 |
+|------|------|------|
+| `SYNC_KB_TO_S3=true` | Pipeline post_build で KB sync | ✅ `All KB sources synced.` |
+| `KB_INGESTION_ON_PUSH=true` | 非同期 ingestion 起動 | ✅ failed=0 |
+| `RUN_KB_EVAL=false` | 週次 or 手動パイプライン | ⏳ 未設定 |
+| ローカル sync | `bash scripts/sync-all-kb-to-s3.sh` 成功 | ✅ |
+| ingestion | failed ≈ 0 | ✅ job `K7WQ4I4IZE` 等 |
+| Medicine eval | ≥ 16/20（80%）、相互作用 5/5 | ✅ 16/20 raw, 17/20 runtime |
+| Concierge eval | ≥ 8/10（80%） | ✅ 9/10 |
 
 詳細: [AWS_CODEPIPELINE.md](./AWS_CODEPIPELINE.md) § KB 自動化、[GCP_RAG_MIGRATION_ADR.md](./GCP_RAG_MIGRATION_ADR.md)
 

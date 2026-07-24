@@ -2017,26 +2017,26 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
 .ui-status-section__list--updates {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  margin: 0;
 }
 
 .ui-status-update-item {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #f8fbf9 0%, #fff 100%);
-  border: 1px solid rgba(74, 124, 98, 0.12);
-  line-height: 1.55;
+  gap: 10px;
+  padding: 0 2px;
+  line-height: 1.65;
 }
 
 .ui-status-update-item__mark {
   flex-shrink: 0;
-  width: 1.1em;
-  font-weight: 800;
-  color: var(--ui-primary, #5ab8a8);
-  text-align: center;
+  width: 6px;
+  height: 6px;
+  margin-top: 0.58em;
+  border-radius: 50%;
+  background: var(--ui-primary, #5ab8a8);
+  box-shadow: 0 0 0 2px rgba(90, 184, 168, 0.16);
 }
 
 .ui-status-update-item__text {
@@ -2044,6 +2044,7 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
   min-width: 0;
   word-break: break-word;
   color: var(--ui-text);
+  font-size: 0.96em;
 }
 
 .ui-status-actions {

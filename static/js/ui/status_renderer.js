@@ -338,17 +338,14 @@
   }
 
   function formatChangelogListItem(item) {
-    var text = String(item || '').trim();
+    var text = String(item || '').trim().replace(/^＋\s*/, '');
     if (!text) return '';
-    if (text.indexOf('＋') === 0) {
-      return (
-        '<li class="ui-status-update-item">' +
-          '<span class="ui-status-update-item__mark" aria-hidden="true">＋</span>' +
-          '<span class="ui-status-update-item__text">' + esc(text.replace(/^＋\s*/, '')) + '</span>' +
-        '</li>'
-      );
-    }
-    return '<li>' + esc(text) + '</li>';
+    return (
+      '<li class="ui-status-update-item">' +
+        '<span class="ui-status-update-item__mark" aria-hidden="true"></span>' +
+        '<span class="ui-status-update-item__text">' + esc(text) + '</span>' +
+      '</li>'
+    );
   }
 
   function sectionsHtml(sections, variant, kind) {

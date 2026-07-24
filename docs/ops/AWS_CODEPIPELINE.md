@@ -130,27 +130,27 @@ AWS_PROFILE=admin ./scripts/setup-aws-ecs-task-role.sh
 
 `ecsTaskExecutionRole` のみのままだと `/api/smoke/aws-translate` が `empty_or_unchanged`（AccessDenied）になります。
 
-## KB 自動化（Phase 5）
+## KB 自動化（Phase 5 — Step 5-F 完了）
 
-`buildspec.yml` post_build に KB sync / ingestion / eval フックを追加（初回 merge 時は env すべて `false`）。
+`buildspec.yml` post_build に KB sync / ingestion / eval フックを追加。env は **CodeBuild プロジェクト**で設定（buildspec 内定義は console を上書きするため buildspec からは削除）。
 
-### CodeBuild env 変数
+### CodeBuild env 変数（2026-07-24 時点）
 
-| 変数 | 既定 | 説明 |
-|------|------|------|
-| `SYNC_KB_TO_S3` | `false` | `sync-all-kb-to-s3.sh` |
-| `KB_INGESTION_ON_PUSH` | `false` | `start-managed-kb-ingestion.sh`（非同期、待機なし） |
+| 変数 | 値 | 説明 |
+|------|-----|------|
+| `SYNC_KB_TO_S3` | **`true`** | `sync-all-kb-to-s3.sh` — Pipeline `14791919` で `All KB sources synced.` 確認済 |
+| `KB_INGESTION_ON_PUSH` | **`true`** | `start-managed-kb-ingestion.sh`（非同期、待機なし） |
 | `RUN_KB_EVAL` | `false` | Medicine + Concierge retrieve eval |
 | `KB_EVAL_STRICT` | `false` | `true` で eval 閾値未達時 build fail |
 
-### 段階的ロールアウト（ユーザー作業）
+### 段階的ロールアウト（完了状況）
 
-| 順序 | env | 条件 |
+| 順序 | env | 状態 |
 |------|-----|------|
-| 1 | すべて `false` | buildspec merge のみ |
-| 2 | `SYNC_KB_TO_S3=true` | Step 5-0b 完了 + ローカル sync OK |
-| 3 | `KB_INGESTION_ON_PUSH=true` | ingestion failed=0 確認後 |
-| 4 | `RUN_KB_EVAL=true` | 週次 or 手動パイプライン |
+| 1 | すべて `false` | ✅ buildspec merge |
+| 2 | `SYNC_KB_TO_S3=true` | ✅ Step 5-F（Pipeline KB sync 成功） |
+| 3 | `KB_INGESTION_ON_PUSH=true` | ✅ ingestion failed=0 確認後に有効化 |
+| 4 | `RUN_KB_EVAL=true` | ⏳ 週次 or 手動パイプライン（未設定） |
 
 CodeBuild コンソール → `medicine-recommend-build` → Environment → Additional configuration → Environment variables。
 
@@ -168,9 +168,16 @@ export AWS_PROFILE=admin
 - `bedrock:StartIngestionJob` / `bedrock-agent:StartIngestionJob` on Concierge / Medicine KB
 - `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket` on `medicine-recommend-kb-source-290780119994`
 
-CodeBuild post_build で `build_medicine_kb_documents.py` を実行するため **pandas** が必要（`buildspec.yml` / `sync-all-kb-to-s3.sh` で `pip3 install pandas`）。
+CodeBuild post_build で `build_medicine_kb_documents.py` を実行するため **pandas** が必要（`sync-all-kb-to-s3.sh` 内で `python -m pip install pandas` — CodeBuild は `/usr/bin/python3.11` + ensurepip）。
 
-### eval 閾値（CI）
+### eval 閾値（CI — Step 5-F 達成）
+
+| 対象 | 結果（2026-07-24） | 閾値 |
+|------|-------------------|------|
+| Medicine raw | 16/20（80%） | ≥80% |
+| Medicine runtime | 17/20（85%） | — |
+| 相互作用 | 5/5 | hard gate |
+| Concierge | 9/10（90%） | ≥80% |
 
 ```bash
 .venv/bin/python scripts/eval_medicine_kb.py \

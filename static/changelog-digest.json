@@ -1,20 +1,49 @@
 {
   "source": "CHANGELOG.md",
-  "header_date": "2026年7月24日（PMDA 正本再生成・raw HTML 永続化・パーサー修正）",
+  "header_date": "2026年7月24日（PMDA 正本 → Medicine KB 反映・§17 品質フィルタ・CHANGELOG UI 改善・Step 5-F 完了）",
   "releases": [
     {
-      "heading": "2026年7月24日 — PMDA 正本再生成（raw HTML 永続化・パーサー修正・品質フィルタ）",
-      "overview": "PMDA live fetch の添付文書 HTML を data/pmda/raw/ に永続化（680 件）。§マーカー空白不一致・全文フォールバック・merge バグを修正し、raw から正本 CSV を再生成。interactions PMDA 品質 OK 率 37.8%→100%、side_effects 1.3%→100%。方針は live のみ（catalog expansion 復元なし）。",
+      "heading": "2026年7月24日 — PMDA 正本 → Medicine KB 反映（§17 フィルタ・reflect 実行）",
+      "overview": "§11 副作用パーサーに §17 臨床成績 終端を追加し、品質フィルタ section17_leak で混入行を reject。正本 CSV を再生成後 scripts/reflect_medicine_kb.sh で Medicine Managed KB へ反映。ingestion job OG6SSAO4QN COMPLETE、eval 相互作用 5/5。",
+      "highlights": []
+    },
+    {
+      "heading": "2026年7月24日 — Step 5-F 完了（CodePipeline KB 検証）",
+      "overview": "Dual KB RAG Phase 5 の最終検証。ingestion failed=0、Medicine / Concierge eval が CI 閾値を満たし、CodePipeline 上の KB sync も成功。",
       "highlights": [
-        "data/pmda/raw/ingredients/ に detail_html 永続化（680 件）",
-        "reparse_from_raw.py: raw → staging → CSV merge（--dry-run 可）",
-        "quality_filter.py: HTML ボイラープレート・§18 誤抽出を merge 前 reject",
-        "merge live_replace バグ修正: 旧 PMDA 行が残る問題を解消",
-        "http_client.py: §10/§11 空白マーカー対応・ボイラープレート除去",
-        "正本 CSV: interactions 180（PMDA 107）/ side_effects 272（PMDA 238）",
-        "手動 curated 行（出典空欄）は保持",
-        "docs/ops/PMDA_DATA_IMPORT.md / data/DATA_CATALOG.md 更新",
-        "tests/scripts/test_pmda_parser.py / test_pmda_raw_store.py 追加"
+        "pyenv 回避 → /usr/bin/python3.11 + ensurepip + pip install pandas",
+        "PATH 制限時に aws CLI を /usr/local/bin から復元（132643c で aws 不在により sync 失敗していた問題を 138c0ff で修正）"
+      ]
+    },
+    {
+      "heading": "2026年7月24日 — CHANGELOG ダイジェスト・ステータス UI 改善",
+      "overview": "Concierge / ステータスパネルの「最近の更新」表示を、開発者向けノイズを減らしユーザー向け文言に整える。",
+      "highlights": []
+    },
+    {
+      "heading": "2026年7月24日 — PMDA 正本再生成（raw HTML 永続化・パーサー修正・品質フィルタ）",
+      "overview": "PMDA live fetch で取得した 添付文書 HTML を data/pmda/raw/ に永続化し、パーサー根本原因（§マーカー空白不一致・全文フォールバック・merge バグ）を修正。680 件 raw から正本 CSV を再生成。方針は live のみ（catalog expansion 復元なし）。手動 curated 行（出典空欄）は保持。",
+      "highlights": [
+        "§10/§11 マーカーの 空白対応（10.2 併用注意 vs 旧 10.2併用注意）",
+        "PMDA ページ ボイラープレート除去（JavaScript 案内・ヘッダー等）",
+        "セクション未検出時の 全文フォールバック廃止（空文字返却）",
+        "§11 終端に 17. 臨床成績 / 18. 薬効 を追加（後半: §17 要約切り捨て + section17_leak フィルタ）",
+        "interactions: partner 周辺 最大 500 字の §10 由来説明",
+        "side_effects: §11 要約（最大 800 字・句点境界で切り詰め）",
+        "live_replace=True 時、旧 PMDA 行が残り続ける OR 条件バグを修正",
+        "正しい挙動: 手動行（出典空欄）のみ保持 + 新 PMDA 行で全置換",
+        "680 ファイル（detail_html あり 484 / empty_section 196）",
+        "fetch 時 fetch_ingredient_live.py が save_ingredient_raw() を呼び出し",
+        "再パースは detail_html から（保存済み section10_text は使わない）",
+        "catalog expansion（~2,869 行テンプレート）は復元しない — RAG/KB 上の情報価値が低く、重複テンプレが多数",
+        "live + raw 再パース が正本の唯一の再生成経路",
+        "purge → KB 前の残課題: interactions 複数薬剤混在（~27/107）— 次イテレーションで §10 表行単位パース",
+        "~~side_effects §17 臨床成績混入~~ → §17 終端 + section17_leak で解消（2026-07-24 後半）",
+        "docs/ops/PMDA_DATA_IMPORT.md: raw 永続化・reparse・品質ゲート・正本評価を追記",
+        "data/DATA_CATALOG.md: pmda/raw/ を追記",
+        "pmda_canonical_eval_report.json — before/after 品質メトリクス",
+        "pmda_bedrock_eval.json — Bedrock 評価（クォータ時は error 記録）",
+        "bedrock_eval_samples.json — 評価用サンプル行"
       ]
     },
     {
@@ -36,13 +65,13 @@
         "docs/ops/AWS_CODEPIPELINE.md: KB env 段階ロールアウト・IAM 要件",
         "docs/ops/AWS_STAGING_CHECKLIST.md: Phase 5 KB 自動化チェック",
         "docs/ops/GCP_RAG_MIGRATION_ADR.md: Option C 推奨（staging Bedrock / GCP 本番レガシー）",
-        "CodeBuild env 切替は ユーザー GO 後（SYNC_KB_TO_S3=true → ingestion → eval）",
+        "push 毎 ingestion は コスト増 — 運用負荷が高い場合は KB_INGESTION_ON_PUSH=false + 手動 reflect_medicine_kb.sh も可",
         "推奨順位（physical_orchestrator.py）は 変更なし"
       ]
     },
     {
       "heading": "2026年7月24日 — PMDA データ取り込み拡張（live fetch・CSV merge）",
-      "overview": "PMDA 公的情報（市販薬検索・添付文書 §10 相互作用・§11 副作用）を data/*.csv 正本へ取り込むパイプラインを拡張。初版は catalog expansion ベースだが、正本再生成以降は live + raw 再パースが正本。CodePipeline / AWS IP からの live fetch は 禁止（ローカル回線のみ）。",
+      "overview": "PMDA 公的情報（市販薬検索・添付文書 §10 相互作用・§11 副作用）を data/*.csv 正本へ取り込むパイプラインを拡張。初版は catalog expansion を正本としたが、2026-07-24 夜の正本再生成以降は live + raw 再パースが正本（catalog 復元なし）。CodePipeline / AWS IP からの live fetch は 禁止（ローカル回線のみ）。",
       "highlights": [
         "リクエスト間隔 2.5–5.0 秒、1 セッション 30 件上限",
         "403 / 429×3 / empty HTML×3 で abort → 24h クールダウン",
@@ -104,108 +133,6 @@
         "Pipeline 実行 7b15881: Source / Build Succeeded。/health git_commit 一致・Translate smoke ok: true を確認",
         "main push → CodePipeline で aws.medicine.yutok.dev へ自動反映（復旧済み）",
         "新環境では ./scripts/setup-aws-ecs-task-role.sh（admin IAM）を初回のみ実行"
-      ]
-    },
-    {
-      "heading": "2026年7月23日 — 技術カード・AWS 医薬品相談エラー・プロンプト改善（夕）",
-      "overview": "AWS ステージング（aws.medicine.yutok.dev）で、(1) Concierge 技術カードの本文が質問に答えず「補足」セクションに正答が入る、(2) 医薬品相談（例: 「頭痛が痛い」）が成功後も 一時的なエラー カードになる、という 2 件を修正。あわせて LLM プロンプトの 特定トピック過剰指定 をやめ、ユーザー意図に沿う 汎用方針 に統一した。",
-      "highlights": [
-        "src/services/concierge_templates.py: _rebalance_architecture_deep_display() を追加。質問意図に合うセクション内容を本文へ昇格し、一般論は「このサービスの概要」/「その他」へ退避。user_text を…",
-        "static/js/ui/status_renderer.js: 技術セクションのバッジ（GCP / AWS / デプロイ）を改善",
-        "src/agents/concierge_agent.py: architecture 深掘りプロンプトを 【ユーザーの質問】の主題に直接答える 汎用方針に変更（GCP/CodePipeline 等の例示を削除）",
-        "src/content/concierge_tech_reference.py: 参照ブロック指示を「質問の主題優先」に統一",
-        "src/dialogue/routing/intent_router_llm.py: 技術ルート判定文言を汎用化",
-        "src/handlers/chat/chat_pipeline_end_guard.py: mark_pipeline_turn_bot_appended() / _turn_produced_bot_reply() を追加。DB 保存後に messages を消す経路でも e…",
-        "src/handlers/chat/chat_recommendation_flow.py, src/services/chat_response_service.py, src/handlers/chat/chat_question_route.py: messages 削除…",
-        "ステージング ALB: idle_timeout.timeout_seconds を 300 秒 に変更済み（2026-07-23 手動反映）",
-        "scripts/tune-aws-ecs-performance.sh: 上記 ALB 調整ステップをワンショットスクリプトに追加",
-        "scripts/concierge_staging_chat_probe.py（新規）: ステージング混合シナリオ簡易プローブ（挨拶 / 症状 / 技術 FAQ / 更新履歴 / redirect 等）",
-        "本修正は main push → CodePipeline 後に aws.medicine.yutok.dev へ反映。ALB timeout のみ先行反映済み。"
-      ]
-    },
-    {
-      "heading": "2026年7月23日 — AWS/Cloudflare ステージング展開・CI 自動化・Concierge 改善",
-      "overview": "ブランチ main に、GCP 本番（medicine.yutok.dev）を変更せず AWS ステージング（aws.medicine.yutok.dev）で Translate / Polly / Bedrock KB(RAG) / Comprehend Medical / ElastiCache / Personalize / CloudFront static CDN / Cloudflare R2 画像を env ゲート付きで一括導入（commit 74b7fde）。あわせて CodeBuild で push 毎の static S3 同期 + CloudFront invalidation + Translate/Polly smoke を自動化し、Concierge の 更新履歴（doc_changelog）表示不足 と AWS 環境での技術質問が GCP 前提で答える問題 を修正した。",
-      "highlights": [
-        "config/aws_features.py（新規）: TRANSLATION_PROVIDER（deepl | translate）、TTS_PROVIDER（webspeech | polly）、CONCIERGE_RAG_PROVIDER（local | bedrock_…",
-        ".env.example: AWS ステージング向け env 例を追記",
-        "docs/ops/AWS_FEATURES_ROLLOUT.md（新規）: ロールアウト方針・env 一覧",
-        "docs/medicine.md: Bedrock KB / AWS ステージング構成の説明を更新",
-        "scripts/setup-aws-infra.sh（新規）: Phase 1 一括（CloudWatch / WAF / CloudFront）",
-        "scripts/setup-aws-waf.sh（新規）: ALB 向け WAF（Rate limit + AWSManagedRulesCommonRuleSet）",
-        "scripts/setup-aws-cloudfront.sh（新規）: S3 オリジン + CloudFront 配信（STATIC_CDN_BASE_URL）",
-        "scripts/setup-aws-cloudwatch.sh（新規）: Log Group /ecs/medicine-recommend + アラーム雛形",
-        "scripts/sync-static-to-s3.sh（新規）: static/ → S3 + 任意 CloudFront invalidation",
-        "scripts/lib/aws_common.sh（新規）: AWS CLI 共通（プロファイル medicine-recommend-dev 既定、Git Bash MSYS 対策）",
-        "docs/ops/AWS_INFRA.md（新規）: 構成・手順",
-        "src/core/translation_service.py: TRANSLATION_PROVIDER=translate 時 Amazon Translate + Redis/メモリキャッシュ",
-        "src/services/polly_tts.py（新規）: Amazon Polly MP3 合成",
-        "main.py: POST /api/tts（Polly ON 時）、GET /health/aws（機能フラグ smoke 用）、POST /api/smoke/aws-translate（CI smoke 用）",
-        "static/js/main.js: TTS_PROVIDER=polly 時 /api/tts 経由の読み上げ",
-        "templates/index.html: window.__TTS_PROVIDER__ を注入",
-        "src/services/medicine_image_urls.py（新規）: MEDICINE_IMAGE_CDN_BASE（R2/CDN）URL 解決",
-        "static/js/ui/medicine_mapper.js / medicine_card.js / src/handlers/line/flex_messages.py: 画像 URL 統一 + onerror プレースホルダー",
-        "scripts/upload-r2-otc-image.sh / upload_r2_otc_image.py（新規）: R2 へ OTC 画像アップロード",
-        "docs/ops/CLOUDFLARE_R2_IMAGES.md（新規）: R2 + images.yutok.dev 運用",
-        "scripts/setup-aws-bedrock-kb.sh / create-aws-bedrock-kb.sh / sync-concierge-kb-to-s3.sh / sync-aws-bedrock-kb-ingestion.sh / start_bedrock_…",
-        "**scripts/setup-aws-opensearch-kb-collection.sh / setup-aws-aoss-vector-index.sh / create_aoss_vector_index.py / update-aoss-kb-*-policy.sh…",
-        "src/services/bedrock_kb_retrieve.py（新規）: Bedrock KB retrieve + Redis キャッシュ + Concierge 参照ブロック追記",
-        "src/agents/concierge_agent.py: augment_reference_with_kb() で architecture 等に KB チャンク注入"
-      ]
-    },
-    {
-      "heading": "2026年7月22日 — Chat Pipeline v2 本番デフォルト ON・障害 UX・AWS CodePipeline / ECS",
-      "overview": "ブランチ main に、Chat Pipeline v2 / IntentRouter PRIMARY / レガシー経路 TRIM を本番・dev とも env 未設定で 一括 ON に変更。OPENAI 未設定・パイプライン無応答時の Sage 障害カード UX を v2 経路でも復元。あわせて GitHub main push → CodeBuild → ECR → ECS Express（aws.medicine.yutok.dev）の CI/CD を追加し、デプロイ・ビルドの遅延要因を調査・改善した。",
-      "highlights": [
-        "config/llm_flags.py: CHAT_PIPELINE_V2 / INTENT_ROUTER_PRIMARY / LEGACY_FALLBACK_TRIM を本番・dev で env 未設定 = ON。pytest 実行中のみ OFF（既存テストの決定論を維持）。…",
-        "ALLOWLIST 削除: CHAT_PIPELINE_V2_ALLOWLIST / PRIMARY_ALLOWLIST を削除。DENYLIST のみセッション単位ロールバック用に残存",
-        "docs/dev/CHAT_PIPELINE_V2.md, .env.example, scripts/cloudrun_v2_env.example, scripts/verify_v2_canary_flags.py: カナリア env 不要・本番一括 ON の運用に合わせ…",
-        "src/services/llm_unavailability.py: is_openai_configured() / is_llm_configuration_error_text() を追加。インフラ系 triage 判定を拡張。try_respond_when_open…",
-        "src/handlers/chat/chat_post_pipeline.py: POST 直後の OPENAI 未設定ガード",
-        "src/handlers/chat/chat_symptom_route.py: レガシー {\"error\": True} JSON を廃止 → Sage カード（llm_unavailable / system_error の使い分け）",
-        "src/handlers/chat/chat_pipeline_end_guard.py: パイプライン終了時に bot 応答が無い場合、system_error Sage カードを自動追加（fail loud）",
-        "方針: インフラ障害 = llm_unavailable、その他 = system_error。LLM_AGENT_ENABLED は固定 ON 想定だが env は緊急キルスイッチとして残す",
-        "buildspec.yml（新規）: GitHub main → CodeBuild（linux/amd64 Docker build → ECR push → ecs update-service --force-new-deployment）。ビルド失敗時は ECS デプロ…",
-        "scripts/setup-aws-codepipeline.sh（新規）: Pipeline medicine-recommend-main、CodeBuild medicine-recommend-build、CodeStar Connection、IAM ロールの初回セッ…",
-        "scripts/deploy-aws-ecs.sh（新規）: Pipeline なしの手動ビルド・プッシュ・再デプロイ",
-        "scripts/setup-aws-ecs-secrets.sh（新規）: .env から Secrets Manager（OPENAI / DATABASE_URL / SECRET_KEY 等）を投入し、タスク定義を更新して再デプロイ",
-        "docs/ops/AWS_CODEPIPELINE.md（新規）: 構成・初回 OAuth・手動実行・トラブルシュート",
-        "Dockerfile: CodeBuild の Docker Hub 429 回避のため public.ecr.aws/docker/library/python:3.11-slim ベースイメージに変更（commit 3357e54）",
-        "本番 URL: https://aws.medicine.yutok.dev/health（git_commit でデプロイ revision を確認）",
-        "scripts/tune-aws-ecs-performance.sh（新規）: CANARY bake 短縮・GUNICORN ワーカー数・CodeBuild キャッシュを一括適用",
-        "Secrets 投入（ユーザー側）: cp .env.example .env → OPENAI_API_KEY / DATABASE_URL / SECRET_KEY を記入 → ./scripts/setup-aws-ecs-secrets.sh .env",
-        "SECRET_KEY: 管理画面 Cookie HMAC 署名用（src/services/admin_auth.py）。Flask セッション用ではない",
-        "GCP 本番（medicine.yutok.dev）は従来どおり Cloud Run。AWS はステージング / デモ用途"
-      ]
-    },
-    {
-      "heading": "2026年7月4日 — 風邪＋水泳推奨改善・RECO_* 本番一括展開",
-      "overview": "「風邪ですが、水泳大会なので使える薬を教えて」のような初回相談が no_recommendation に落ちる問題を修正。直接原因だった年齢未入力時の chat 側フィルタ（15歳以上薬 3 件 → 0 件）と、no_candidates / escalation_required より前に実行される早期 empty fallback を解消し、sage_reco で候補を表示するようにした。 あわせて、RECO_AGE_POLICY_V2 / RECO_COLD_NLU_V2 / RECO_SPORTS_DOPING_FILTER は本番カナリア用 env を不要化し、本番・dev とも env 未設定で一括 ON に変更。明示 false のみ個別ロールバックとして扱う。pytest 実行中は未設定時 OFF を維持し、既存テストの決定論を保つ。",
-      "highlights": [
-        "config/llm_flags.py: RECO_* 専用の _reco_rollout_flag() を追加。本番・dev は未設定で ON、pytest は未設定で OFF、明示 false でロールバック可能",
-        "src/handlers/chat/chat_recommendation_flow.py: RECO_AGE_POLICY_V2 ON 時は _filter_medicines_when_age_unknown() が 12歳以上表記薬を除外せずそのまま返す。小児文脈（例:…",
-        "src/handlers/chat/chat_recommendation_flow.py: 早期 _build_empty_recommendation_fallback() を status 分岐後へ移動。status=no_candidates は no_candidat…",
-        "src/core/recommendation/age_policy.py: build_age_unknown_warnings() / apply_age_unknown_policy_to_result() を追加。年齢未入力かつ 12歳以上制限薬が含まれる場合、age_…",
-        "src/services/recommendation_diagnosis_builder.py / src/schemas/recommendation_diagnosis_v1.py: age_policy_notice を DiagnosisV1 に反映し、制限薬名を a…",
-        "static/js/ui/recommendation_renderer.js / static/js/ui/medicine_mapper.js / static/js/ui/medicine_card.js / static/js/main.js: sage_reco 上部…",
-        "src/handlers/line/line_web_handoff.py: LINE Web handoff 時にも age_policy_notice を保持",
-        "ログ: pipeline_perf に reco_age_policy_v2、pre_age_filter_count、post_age_filter_count、empty_fallback_trigger を記録",
-        "src/core/recommendation/cold_symptom_expansion.py: 「風邪」入力に対して発熱、咳、のどの痛み、鼻水、鼻づまり、頭痛、関節痛をルール展開。症状 0–1 件で曖昧な場合は展開せず症状チップへ誘導",
-        "src/services/medicine_context_routing.py: cold_symptom_chip_prompt ルートを追加。cold_vague_only は症状チップ、cold_cold_swim_meet は cold_start_recommend…",
-        "src/handlers/chat/medicine_context_handlers.py / src/dialogue/dispatcher.py / src/handlers/chat/chat_post_pipeline.py / src/handlers/chat/c…",
-        "src/schemas/status_diagnosis_v1.py / static/js/ui/status_renderer.js / static/css/sage_terrace.css / static/js/main.js: suggested_symptoms…",
-        "src/handlers/line/flex_messages.py: cold_symptom_chip_prompt に LINE quickReply を付与し、Web と LINE の parity を確保",
-        "src/core/recommendation/final_score_calculator.py: 「風邪」文脈で風邪薬系、のど・鼻の外用候補にスコアボーナスを付与（閾値は変更なし）",
-        "src/core/influenza_detector.py: インフル疑い判定に高熱必須条件を追加し、誤検知を抑制",
-        "src/core/recommendation/medicine_type_resolver.py: 風邪薬 hint を小関数に抽出し、推奨タイプ解決をテスト可能にした",
-        "src/core/rule_based_recommendation.py: 競技文脈かつ RECO_SPORTS_DOPING_FILTER ON の場合、推奨候補から doping_prohibited == \"禁止物質あり\" を除外。除外後 0 件なら escalatio…",
-        "src/services/medicine_discovery_routing.py: 競技文脈キーワードに「水泳」「泳ぐ」「プール」「競泳」を追加",
-        "src/core/explanation_generator.py / src/services/chat_response_service.py: 競技・大会前後の使用可否、ドーピング規定への配慮を説明文に必ず含める指示を追加",
-        "scripts/cloudrun_v2_env.example: 風邪水泳推奨改善 Phase 1–3 は本番・dev とも未設定で ON と明記。問題時のみ RECO_AGE_POLICY_V2=false、RECO_COLD_NLU_V2=false、RECO_SPORTS…",
-        "本番カナリア用の RECO_* = true 設定は不要。一括デプロイで全セッションに適用",
-        "Live 統合: scripts/test_medicine_context_live.py で 10/10 PASS。cold_start_cold_swim は render=sage_reco",
-        "レポート: log/analysis/2026-07-04T021159Z_medicine_context_live.json",
-        "CI 修正: medicine_context gate を発熱・緊急判定の後へ移動し、guards が fever_flow を上書きしないよう修正（IntentRouter contract / gate テスト）"
       ]
     }
   ]

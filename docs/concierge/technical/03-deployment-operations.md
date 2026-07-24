@@ -40,7 +40,7 @@
 
 - **正本**: `data/otc_medicine_data.csv`, `data/medicine_interactions.csv`, `data/medicine_side_effects.csv`
 - **パイプライン**: `scripts/pmda/run_pmda_import.py`（live fetch は **ローカル回線のみ**）
-- **KB 反映**: `scripts/build_medicine_kb_documents.py` → `sync-medicine-kb-to-s3.sh` → re-ingest
+- **KB 反映**: `scripts/reflect_medicine_kb.sh`（reparse → build → S3 sync → ingestion → eval）または手動で `build_medicine_kb_documents.py` → `sync-medicine-kb-to-s3.sh` → re-ingest
 - **詳細**: `docs/ops/PMDA_DATA_IMPORT.md`
 
 ## Bedrock Knowledge Base（Concierge RAG）— 旧記載

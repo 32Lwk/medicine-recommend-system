@@ -1,0 +1,23 @@
+{
+    "ingestionJob": {
+        "knowledgeBaseId": "30BCEJCJHA",
+        "dataSourceId": "0ZCBZWSQ7N",
+        "ingestionJobId": "OG6SSAO4QN",
+        "status": "COMPLETE",
+        "statistics": {
+            "numberOfDocumentsScanned": 19952,
+            "numberOfMetadataDocumentsScanned": 19922,
+            "numberOfNewDocumentsIndexed": 87,
+            "numberOfModifiedDocumentsIndexed": 19859,
+            "numberOfMetadataDocumentsModified": 19861,
+            "numberOfDocumentsDeleted": 318,
+            "numberOfDocumentsFailed": 1,
+            "numberOfDocumentsSkipped": 0
+        },
+        "failureReasons": [
+            "[\"The S3 path provided (s3://medicine-recommend-kb-source-290780119994/medicine/side_effects/グリチルレチン酸.md) could not be found. Please make sure the S3 path provided exists.\"]"
+        ],
+        "startedAt": "2026-07-24T13:08:41.171285+00:00",
+        "updatedAt": "2026-07-24T13:55:05.258136+00:00"
+    }
+}

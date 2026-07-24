@@ -67,12 +67,12 @@ PMDA 公的情報（市販薬検索・添付文書相互作用・副作用）を
 | CSV | 合計 | PMDA | 品質フィルタ |
 |-----|------|------|--------------|
 | interactions | 180 | 107 | 100% OK |
-| side_effects | 272 | 238 | 100% OK |
+| side_effects | **271** | **237** | 100% OK |
 
 ### 既知の残課題（purge 前に認識）
 
 - interactions: **複数薬剤が 1 行に混在**（~27/107）— §10 表行単位パースが次改善
-- side_effects: **§17 臨床成績の末尾混入**（~6/238）— 終端マーカー追加予定
+- side_effects: ~~§17 臨床成績の末尾混入~~ → **2026-07-24 後半: §17 終端 + section17_leak フィルタで解消**（237 行）
 
 ---
 
@@ -139,6 +139,7 @@ data/pmda/raw/
 | side_effects キーワード列挙 | §11 要約（最大 800 字） |
 | interactions 240 字スニペット | partner 周辺 500 字 |
 | merge `live_replace` バグ | 旧 PMDA 行が OR 条件で残る問題を修正 |
+| §17 臨床成績の §11 末尾混入 | `_SECTION11_END` に `17. 臨床成績` 追加 + `section17_leak` フィルタ |
 
 ---
 
@@ -187,7 +188,7 @@ log/analysis/pmda_*.json
 ## 品質ゲート
 
 - `validate_pmda_import.py` — 必須列・重複ペア
-- `quality_filter.py` — HTML ボイラープレート / §18 誤抽出 / 短すぎ行を reject
+- `quality_filter.py` — HTML ボイラープレート / §18 誤抽出 / §17 混入 / 短すぎ行を reject
 - import 前 `data/pmda/backups/` に CSV 退避
 - merge 後: `pytest tests/scripts/test_pmda_import.py tests/scripts/test_pmda_parser.py`
 - 正本評価: `log/analysis/pmda_canonical_eval_report.json`
@@ -195,17 +196,46 @@ log/analysis/pmda_*.json
 
 ## KB 反映（Phase 2）
 
+PMDA 正本 CSV 更新後、Medicine Managed KB へ一括反映:
+
 ```bash
-python scripts/build_medicine_kb_documents.py
-AWS_PROFILE=admin ./scripts/sync-medicine-kb-to-s3.sh
-# Bedrock data source 0ZCBZWSQ7N re-ingest
-AWS_PROFILE=admin python scripts/eval_medicine_kb.py \
-  --phase phase2_kb \
-  --output log/analysis/medicine_kb_phase2_YYYYMMDD.json
-pytest tests/integration/test_golden_regression.py -q
+AWS_PROFILE=admin ./scripts/reflect_medicine_kb.sh
+# --skip-reparse  既に reparse 済みの場合
+# --skip-eval     ingestion 後 eval を省略
 ```
 
-### Phase 2 結果（2026-07-24）
+手動ステップ:
+
+```bash
+.venv/bin/python scripts/pmda/reparse_from_raw.py
+python scripts/build_medicine_kb_documents.py --clean
+AWS_PROFILE=admin ./scripts/sync-medicine-kb-to-s3.sh
+AWS_PROFILE=admin python scripts/start_bedrock_kb_ingestion.py 30BCEJCJHA 0ZCBZWSQ7N --skip-preflight
+```
+
+### PMDA 正本 → KB 反映結果（2026-07-24 後半）
+
+**ジョブ**: `OG6SSAO4QN`（kb `30BCEJCJHA` / ds `0ZCBZWSQ7N`）— **COMPLETE**
+
+| 指標 | 値 |
+|------|-----|
+| scanned | 19,952 |
+| modified | 19,859 |
+| new | 87 |
+| deleted | 318 |
+| failed | 1（`side_effects/グリチルレチン酸.md` — CSV から section17_leak で除外済みの stale メタデータ） |
+
+**eval**（`log/analysis/medicine_kb_pmda_eval_20260724.json`）:
+
+| 指標 | 値 |
+|------|-----|
+| pass_all (raw) | 75%（15/20） |
+| score_pass | 85%（17/20） |
+| 相互作用 | **5/5** |
+
+詳細: `log/analysis/medicine_kb_pmda_reflect_20260724.json`
+
+### Phase 2 結果（2026-07-24 前半・ingestion fix）
 
 | 指標 | Before (baseline) | After (Phase 2) | After (ingestion fix) |
 |------|-------------------|-----------------|------------------------|

@@ -6,12 +6,12 @@
   },
   "medicine_interactions": {
     "row_count": 180,
-    "last_import": "2026-07-24T12:39:17+00:00",
+    "last_import": "2026-07-24T13:08:50+00:00",
     "pair_policy": "otc_plus_common_rx"
   },
   "medicine_side_effects": {
-    "row_count": 272,
-    "last_import": "2026-07-24T12:39:17+00:00"
+    "row_count": 271,
+    "last_import": "2026-07-24T13:08:50+00:00"
   },
   "live_fetch": {
     "last_live_fetch_at": "2026-07-24T12:24:28+00:00",
