@@ -527,6 +527,15 @@ MAJOR_ANALGESIC_MEDICINES = [
     'ブファリン', 'バファリン', 'バファリンA'
 ]
 
+# 推奨候補から除外する製品（otc_medicine_data.csv には残す）
+# ジェネリック名のみ・EC 未掲載・商品画像なし等、消費者向け推奨に不向きな品目
+RECOMMENDATION_EXCLUDED_PRODUCTS = [
+    'イブプロフェン錠２００Ｓ',
+    'イブプロフェン錠200S',
+    'イブプロフェン錠２００ＳＣ',
+    'イブプロフェン錠200SC',
+]
+
 # 解熱鎮痛薬の成分優先順位
 ANALGESIC_PRIORITY = {
     "高優先度（胃に優しい）": {"ingredients": ["アセトアミノフェン", "パラセタモール", "タイレノール"], "boost": 0.15},

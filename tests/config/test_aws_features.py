@@ -78,6 +78,17 @@ def test_static_cdn_uses_remote_when_not_local(monkeypatch):
     )
 
 
+def test_static_cdn_uses_remote_on_development_when_not_loopback(monkeypatch):
+    monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.setenv("STATIC_CDN_BASE_URL", "https://d111111.cloudfront.net/static")
+    from config.aws_features import resolve_static_asset_url
+
+    assert (
+        resolve_static_asset_url("js/main.js")
+        == "https://d111111.cloudfront.net/static/js/main.js"
+    )
+
+
 def test_aws_staging_flags(monkeypatch):
     monkeypatch.setenv("TRANSLATION_PROVIDER", "translate")
     monkeypatch.setenv("TTS_PROVIDER", "polly")

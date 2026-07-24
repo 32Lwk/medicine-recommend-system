@@ -42,6 +42,7 @@ from src.core.recommendation_constants import (
 from src.core.scoring_utils import normalize_text, normalize_medicine_name_to_hankaku, is_word_match, TANN_FALSE_POSITIVE_BLACKLIST
 from src.core.medicine_classifiers import (
     is_specific_use_medicine,
+    is_recommendation_excluded_product,
     _is_pediatric_specific,
     _has_motion_sickness_symptom,
     _is_motion_sickness_medicine,
@@ -783,6 +784,10 @@ def get_candidate_medicines(
         key = (product_name, manufacturer)
 
         if not product_name and not manufacturer:
+            return
+        if is_recommendation_excluded_product({'product_name': product_name}):
+            if _DEBUG_MODE or logger.level <= logging.DEBUG:
+                logger.debug(f"推奨除外リストのため候補から除外: {product_name}")
             return
         if key in existing_keys:
             return

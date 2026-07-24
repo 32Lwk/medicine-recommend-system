@@ -10,7 +10,7 @@
 #   CHAT_PIPELINE_V2_INTENT_ROUTER_PRIMARY=false
 #   CHAT_PIPELINE_V2_LEGACY_FALLBACK_TRIM=false
 
-APP_ENV=production
+APP_ENV=development
 
 # 通常は以下を設定不要（未設定 = ON）。問題時のみ false を明示。
 # CHAT_PIPELINE_V2=false

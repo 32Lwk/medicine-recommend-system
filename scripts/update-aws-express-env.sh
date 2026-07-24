@@ -25,6 +25,7 @@ if [[ -n "$ENV_FILE" && -f "$ENV_FILE" ]]; then
 import sys
 from pathlib import Path
 allowed = {
+    "APP_ENV",
     "MEDICINE_IMAGE_CDN_BASE", "STATIC_CDN_BASE_URL", "TRANSLATION_PROVIDER",
     "TTS_PROVIDER", "CONCIERGE_RAG_PROVIDER", "COMPREHEND_MEDICAL_ENABLED",
     "AWS_REGION", "AWS_DEFAULT_REGION", "REDIS_URL", "PERSONALIZE_CAMPAIGN_ARN",
@@ -60,6 +61,7 @@ export MEDICINE_RAG_PROVIDER="${MEDICINE_RAG_PROVIDER:-bedrock_kb}"
 export BEDROCK_KB_SEARCH_MODE="${BEDROCK_KB_SEARCH_MODE:-managed}"
 
 MERGE_KEYS=(
+  APP_ENV
   MEDICINE_IMAGE_CDN_BASE
   STATIC_CDN_BASE_URL
   TRANSLATION_PROVIDER
@@ -97,6 +99,7 @@ env_list = list(primary.get("environment") or [])
 env_map = {e["name"]: e["value"] for e in env_list if e.get("name")}
 
 keys = [
+    "APP_ENV",
     "MEDICINE_IMAGE_CDN_BASE",
     "STATIC_CDN_BASE_URL",
     "TRANSLATION_PROVIDER",

@@ -92,7 +92,7 @@ for sk in secret_keys:
 env_map.update({k: v for k, v in file_map.items() if v})
 
 env_map.setdefault("MEDICINE_IMAGE_CDN_BASE", "https://images.yutok.dev/otc/")
-env_map.setdefault("APP_ENV", "production")
+env_map.setdefault("APP_ENV", "development")
 env_map.setdefault("PUBLIC_SITE_URL", "https://aws.medicine.yutok.dev")
 
 print(json.dumps({"secrets": secrets_out, "environment": env_map}))

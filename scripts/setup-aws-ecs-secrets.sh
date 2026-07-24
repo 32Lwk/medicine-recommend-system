@@ -75,7 +75,7 @@ for k in ("taskDefinitionArn", "revision", "status", "requiresAttributes", "comp
     td.pop(k, None)
 c = td["containerDefinitions"][0]
 base = {e["name"]: e["value"] for e in c.get("environment") or []}
-base.setdefault("APP_ENV", "production")
+base.setdefault("APP_ENV", "development")
 base.setdefault("PUBLIC_SITE_URL", "https://aws.medicine.yutok.dev")
 base.setdefault("GUNICORN_WORKERS", "2")
 base.setdefault("GUNICORN_WORKER_CLASS", "uvicorn.workers.UvicornWorker")

@@ -12,12 +12,20 @@ from typing import Dict
 from src.core.recommendation_constants import (
     PEDIATRIC_KEYWORDS,
     PEDIATRIC_USAGE_KEYWORDS,
+    RECOMMENDATION_EXCLUDED_PRODUCTS,
     SPECIFIC_USE_EXCLUSION_KEYWORDS,
     COMPOUND_MEDICINE_INDICATORS,
 )
+from src.core.scoring_utils import normalize_medicine_name_to_hankaku
 
 logger = logging.getLogger(__name__)
 _DEBUG_MODE = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
+
+_EXCLUDED_PRODUCT_NAMES_NORM = frozenset(
+    normalize_medicine_name_to_hankaku(name)
+    for name in RECOMMENDATION_EXCLUDED_PRODUCTS
+    if name
+)
 
 MOTION_SICKNESS_SYMPTOM_KEYWORDS = [
     "乗り物酔い", "車酔い", "船酔い", "バス酔い", "酔い", "乗り物に酔う",
@@ -27,6 +35,14 @@ MOTION_SICKNESS_SYMPTOM_KEYWORDS = [
 MOTION_SICKNESS_MEDICINE_KEYWORDS = [
     "乗り物酔い", "乗物酔い", "乗り物酔い止め", "乗物酔い止め"
 ]
+
+
+def is_recommendation_excluded_product(candidate: Dict) -> bool:
+    """推奨候補から除外する製品かどうか（CSV カタログには残す）。"""
+    product_name = str(candidate.get('product_name', candidate.get('製品名', '')))
+    if not product_name:
+        return False
+    return normalize_medicine_name_to_hankaku(product_name) in _EXCLUDED_PRODUCT_NAMES_NORM
 
 
 def is_specific_use_medicine(candidate: Dict) -> bool:

@@ -182,6 +182,7 @@ from src.core.candidate_scoring import (
     _is_kakkonto_medicine,
     _is_motion_sickness_medicine,
     _is_pediatric_specific,
+    is_recommendation_excluded_product,
     is_specific_use_medicine,
     is_comprehensive_cold_medicine,
     _is_symptom_matching_specific_use,
@@ -929,7 +930,17 @@ def rule_based_recommendation(
             }
         elif before_filter != after_filter:
             logger.info(f"年齢未入力のため小児専用製品を{before_filter - after_filter}件除外しました")
-    
+
+    # 推奨除外製品（CSV には残すが候補に載せない）
+    if candidates:
+        before_excluded = len(candidates)
+        candidates = [c for c in candidates if not is_recommendation_excluded_product(c)]
+        after_excluded = len(candidates)
+        if before_excluded != after_excluded:
+            logger.info(
+                f"推奨除外リストのため候補を{before_excluded - after_excluded}件除外しました"
+            )
+
     # 乗り物酔い薬のフィルタリング（乗り物酔いの症状がない場合は除外）
     if candidates:
         has_motion_sickness = _has_motion_sickness_symptom(nlu_result, user_text)

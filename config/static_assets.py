@@ -4,8 +4,6 @@ from __future__ import annotations
 import contextvars
 import os
 
-from config.app_config import is_development_runtime
-
 _prefer_local_static: contextvars.ContextVar[bool] = contextvars.ContextVar(
     "prefer_local_static",
     default=False,
@@ -30,9 +28,9 @@ def reset_prefer_local_static(token: contextvars.Token[bool]) -> None:
 
 
 def should_prefer_local_static_assets() -> bool:
-    """ローカル開発時は CloudFront ではなくアプリ同梱の /static/ を使う。"""
-    if is_development_runtime():
+    """localhost リクエスト時のみ CloudFront ではなく /static/ を使う（middleware が設定）。"""
+    if bool(_prefer_local_static.get()):
         return True
     if os.getenv("LOCAL_STATIC_ASSETS", "").strip().lower() in ("1", "true", "yes", "on"):
         return True
-    return bool(_prefer_local_static.get())
+    return False
