@@ -1,31 +1,70 @@
 {
-  "timestamp": "2026-07-24T11:20:00+00:00",
-  "phase": "step_5_f_1_initial",
-  "pipeline_execution_id": "34597e50-69fc-432d-aeba-8007919f69c1",
-  "codebuild_id": "medicine-recommend-build:ff06a3c9-b624-4cc9-84a9-74e8513cc995",
-  "codebuild_status": "SUCCEEDED",
+  "timestamp": "2026-07-24T11:50:00+00:00",
+  "phase": "step_5_f_summary",
   "codebuild_env": {
     "SYNC_KB_TO_S3": "true",
-    "KB_INGESTION_ON_PUSH": "true"
+    "KB_INGESTION_ON_PUSH": "true",
+    "set_via": "aws codebuild update-project (medicine-recommend-dev CLI)"
   },
-  "kb_sync": {
-    "concierge_partial": true,
-    "medicine_build": false,
-    "overall": false,
-    "errors": [
-      "ModuleNotFoundError: No module named 'pandas' in build_medicine_kb_documents.py"
-    ]
-  },
-  "kb_ingestion": {
-    "concierge_started": false,
-    "medicine_started": false,
-    "errors": [
-      "AccessDeniedException: bedrock:StartIngestionJob on medicine-recommend-codebuild-role"
-    ]
-  },
-  "remediation": [
-    "pip3 install pandas in buildspec/sync-all-kb-to-s3.sh",
-    "scripts/setup-aws-codebuild-kb-role.sh (admin IAM applied 2026-07-24)"
+  "pipeline_runs": [
+    {
+      "build_id": "ff06a3c9-b624-4cc9-84a9-74e8513cc995",
+      "commit": "88d14b0",
+      "kb_sync": false,
+      "kb_ingestion": false,
+      "errors": ["pandas ModuleNotFoundError", "AccessDenied StartIngestionJob"]
+    },
+    {
+      "build_id": "9c9ae14d-1947-4af3-9fb1-bac8ae1fd16a",
+      "commit": "4a2ffb8",
+      "kb_sync": false,
+      "kb_ingestion": true,
+      "ingestion_jobs": {
+        "CONCIERGE": "FFRSQVQEQO",
+        "MEDICINE": "KXWIQWMKIN"
+      },
+      "errors": ["pyenv 3.11.9 not installed on build host"]
+    },
+    {
+      "build_id": "4a0540dc-2ce6-4fb1-a934-e3448d0114e3",
+      "commit": "d090734",
+      "kb_sync": false,
+      "errors": ["pyenv pip3 command not found"]
+    },
+    {
+      "build_id": "cb9de14a-f81c-408e-82c0-718ecfc84883",
+      "commit": "6edd504",
+      "kb_sync": false,
+      "errors": ["/usr/bin/python3: No module named pip"]
+    },
+    {
+      "expected_next": "0068938",
+      "fix": "select python3.11 with pip on CodeBuild"
+    }
   ],
-  "next": "re-run pipeline after fix commit ff06a3c9+"
+  "remediation_commits": ["4a2ffb8", "d090734", "6edd504", "0068938"],
+  "iam": {
+    "script": "scripts/setup-aws-codebuild-kb-role.sh",
+    "applied": true,
+    "profile": "admin"
+  },
+  "ingestion_jobs_codebuild": {
+    "CONCIERGE": {
+      "job_id": "FFRSQVQEQO",
+      "status": "IN_PROGRESS",
+      "failed": 0
+    },
+    "MEDICINE": {
+      "job_id": "KXWIQWMKIN",
+      "status": "IN_PROGRESS",
+      "failed": 0
+    }
+  },
+  "step_5_f_1": "partial — Concierge S3 sync OK; Medicine build pending fix 0068938",
+  "step_5_f_2": "partial — ingestion started from build 9c9ae14d; failed=0 at last check",
+  "next_actions": [
+    "Confirm pipeline 0068938 post_build shows 'All KB sources synced.'",
+    "After ingestion COMPLETE, run eval_medicine_kb.py + eval_concierge_kb.py",
+    "Update log with final failed counts"
+  ]
 }
