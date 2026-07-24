@@ -89,6 +89,31 @@ S3 API エンドポイント（ユーザー向け URL ではない）:
 
 `https://2a1ac0678cd0b207ca4fa5681a9a0690.r2.cloudflarestorage.com/medicine-recommend-otc-images`
 
+## マツキヨ未掲載品 — 公式サイト等からの手動アップロード
+
+マツキヨココカラ online に掲載がない OTC でも、**製造販売元の公式商品画像**があれば R2 へ手動配置できる。スラッグは `slugify_product_name()` と同一（`src/services/medicine_image_urls.py`）。
+
+### 例: トキワイブプロエースＡ（2026-07-25）
+
+| 項目 | 値 |
+|------|-----|
+| ソース | `https://www.tokiwayakuhin.co.jp/img/goods/L/H177300.jpg` |
+| スラッグ | `トキワイブプロエースA` |
+| 公開 URL | `https://images.yutok.dev/otc/トキワイブプロエースA.webp` |
+
+```bash
+# 公式 JPG を取得 → WebP 変換 → R2 PUT（.env の R2_* 必須）
+curl -sL -o /tmp/tokiwa.jpg 'https://www.tokiwayakuhin.co.jp/img/goods/L/H177300.jpg'
+py -3.11 scripts/upload_r2_otc_image.py トキワイブプロエースA /tmp/tokiwa.jpg
+curl -sI 'https://images.yutok.dev/otc/トキワイブプロエースA.webp'
+```
+
+候補画像の調査ログ: `log/analysis/otc_image_candidates/`
+
+### 画像が見つからない品目
+
+**イブプロフェン錠200S** 等、公式 EC・ドラッグ EC にパッケージ写真がなく R2 未配置の品目は、推奨画面に載せない運用とする（[RECOMMENDATION_PRODUCT_FILTERS.md](./RECOMMENDATION_PRODUCT_FILTERS.md)）。添付文書 PDF の刷り込みは UI 向きではない。
+
 ## 関連
 
 - 一括計画: [.cursor/plans/aws_cloudflare_一括改善_afd2b593.plan.md](../../.cursor/plans/aws_cloudflare_一括改善_afd2b593.plan.md)

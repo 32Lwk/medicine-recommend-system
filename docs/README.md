@@ -40,6 +40,9 @@ Concierge 用のお問い合わせ文面: [concierge/お問い合わせ・試験
 | [MANUAL_QA_PREFERENCES.md](ops/MANUAL_QA_PREFERENCES.md) | 嗜好 NLU 手動 QA |
 | [PREFERENCE_NLU_DEV_REVIEW.md](ops/PREFERENCE_NLU_DEV_REVIEW.md) | 嗜好 NLU レビュー |
 | [CAPACITY_PLANNING.md](ops/CAPACITY_PLANNING.md) | キャパシティ |
+| [CLOUDFLARE_R2_IMAGES.md](ops/CLOUDFLARE_R2_IMAGES.md) | OTC 商品画像 R2 / CDN |
+| [RECOMMENDATION_PRODUCT_FILTERS.md](ops/RECOMMENDATION_PRODUCT_FILTERS.md) | 推奨候補の製品除外リスト |
+| [AWS_FEATURES_ROLLOUT.md](ops/AWS_FEATURES_ROLLOUT.md) | AWS 機能 env ゲート |
 
 ## LLM（`llm/`） / セキュリティ（`security/`） / UI（`ui/`）
 

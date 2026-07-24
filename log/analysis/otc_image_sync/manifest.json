@@ -3,9 +3,9 @@
   "source_store": "https://www.matsukiyococokara-online.com/store",
   "limit": 200,
   "dry_run": false,
-  "uploaded": 71,
-  "resolved": 71,
-  "not_found": 129,
+  "uploaded": 72,
+  "resolved": 72,
+  "not_found": 128,
   "errors": 0,
   "items": [
     {
@@ -29,10 +29,10 @@
       "slug": "トキワイブプロエースA",
       "matsukiyo_jan": "",
       "matsukiyo_name": "",
-      "source_image_url": "",
-      "r2_url": "",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "source_image_url": "https://www.tokiwayakuhin.co.jp/img/goods/L/H177300.jpg",
+      "r2_url": "https://images.yutok.dev/otc/トキワイブプロエースA.webp",
+      "status": "uploaded",
+      "note": "matsukiyo: not_found; uploaded from tokiwayakuhin official (2026-07-25)"
     },
     {
       "product_name": "タイレノールＡ",
@@ -149,7 +149,7 @@
       "source_image_url": "",
       "r2_url": "",
       "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "note": "matsukiyo search: no match; recommendation excluded 2026-07-25 (no package image)"
     },
     {
       "product_name": "ベンザブロックトローチ",

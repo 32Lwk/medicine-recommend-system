@@ -1,6 +1,6 @@
 ﻿product_name,manufacturer,medicine_type,recommendation_count,slug,matsukiyo_jan,matsukiyo_name,source_image_url,r2_url,status,note
 カロナールＡ,第一三共ヘルスケア,解熱鎮痛薬,795,カロナールA,4987107634115,カロナールＡ １２錠 第一三共ヘルスケア 【第2類医薬品】,https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987107634115_01_7ec33082a85ac55750d6c9dfe6f62b15.jpg,https://images.yutok.dev/otc/カロナールA.webp,uploaded,query=カロナールＡ 第一三共
-トキワイブプロエースＡ,常盤薬品工業,解熱鎮痛薬,790,トキワイブプロエースA,,,,,not_found,matsukiyo search: no match
+トキワイブプロエースＡ,常盤薬品工業,解熱鎮痛薬,790,トキワイブプロエースA,https://www.tokiwayakuhin.co.jp/img/goods/L/H177300.jpg,https://images.yutok.dev/otc/トキワイブプロエースA.webp,,uploaded,tokiwa official (2026-07-25)
 タイレノールＡ,東亜薬品,解熱鎮痛薬,518,タイレノールA,4987910002705,タイレノールＡＳ ３０錠 アリナミン製薬 【第2類医薬品】,https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987910002705_01_37e548414abd87ea7cec2d4c43f5d67b.jpg,https://images.yutok.dev/otc/タイレノールA.webp,uploaded,query=タイレノールＡ
 イブロックフィルムプラスター,帝國製薬,外用薬（皮膚）,260,イブロックフィルムプラスター,4987373080760,matsukiyo イブロックフィルムプラスター ３０枚 【第3類医薬品】,https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987373080760_01_d796762c140f5bc982a50b8ee0b497e6.jpg,https://images.yutok.dev/otc/イブロックフィルムプラスター.webp,uploaded,query=イブロックフィルムプラスター 帝國
 スカイブブロンのどスプレー,福地製薬,外用薬（のど）,197,スカイブブロンのどスプレー,,,,,not_found,matsukiyo search: no match
@@ -9,7 +9,7 @@
 タクトプラスローション,佐藤製薬,外用薬（皮膚）,126,タクトプラスローション,4987316015071,タクトプラスクリーム ２０ｇ 佐藤製薬 【指定第2類医薬品】,https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987316015071_01_f08d666c09654f607bd9ce50a85f8fab.jpg,https://images.yutok.dev/otc/タクトプラスローション.webp,uploaded,query=タクトプラスローション 佐藤
 サロンパス３０,久光製薬,外用薬（皮膚）,123,サロンパス30,4987188171172,ら・サロンパス ３０枚 久光製薬 【第3類医薬品】,https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987188171172_01_4af2e2535844e1eecaa2dcf165eab988.jpg,https://images.yutok.dev/otc/サロンパス30.webp,uploaded,query=サロンパス３０ 久光
 マキセリン「コタロー」,小太郎漢方製薬,風邪薬,119,マキセリンコタロー,,,,,not_found,matsukiyo search: no match
-イブプロフェン錠２００Ｓ,奥田製薬,解熱鎮痛薬,118,イブプロフェン錠200S,,,,,not_found,matsukiyo search: no match
+イブプロフェン錠２００Ｓ,奥田製薬,解熱鎮痛薬,118,イブプロフェン錠200S,,,,,not_found,matsukiyo search: no match; recommendation excluded 2026-07-25
 ベンザブロックトローチ,アリナミン製薬,風邪薬,116,ベンザブロックトローチ,4987123139588,ベンザブロックトローチ ２４錠 アリナミン製薬 【第2類医薬品】,https://www.matsukiyococokara-online.com/store/media/catalog/product/4/9/4987123139588_01_d8df7032c6090f742a4740f4b8ca881c.jpg,https://images.yutok.dev/otc/ベンザブロックトローチ.webp,uploaded,query=ベンザブロックトローチ アリナミン
 新エスベナントローチ,日野薬品工業,風邪薬,115,新エスベナントローチ,,,,,not_found,matsukiyo search: no match
 イブプロフェンソフトカプセル２００「キョーワ」,協和薬品工業,解熱鎮痛薬,108,イブプロフェンソフトカプセル200キョーワ,,,,,not_found,matsukiyo search: no match

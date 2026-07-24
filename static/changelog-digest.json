@@ -1,7 +1,22 @@
 {
   "source": "CHANGELOG.md",
-  "header_date": "2026年7月24日（PMDA 正本 → Medicine KB 反映・§17 品質フィルタ・CHANGELOG UI 改善・Step 5-F 完了）",
+  "header_date": "2026年7月25日（OTC 画像・推奨除外・TTS/UI 改善・localhost 静的アセット）",
   "releases": [
+    {
+      "heading": "2026年7月25日 — OTC 画像（トキワ公式）・推奨除外・TTS/UI・静的アセット",
+      "overview": "マツキヨ未掲載の トキワイブプロエースＡ を常盤薬品公式画像で R2 に配置。イブプロフェン錠200S / 200SC は OTC CSV に残しつつ推奨候補から除外（EC 未掲載・画像なし・ジェネリック名で購入特定が困難なため）。あわせて Sage UI の CHANGELOG 表示・TTS（Polly SSML / Web Speech） と localhost 限定の /static/ 配信を改善。",
+      "highlights": [
+        "localhost / 127.0.0.1 リクエスト時のみ middleware が prefer_local_static を立て、CDN の代わりに /static/ を返す",
+        "LOCAL_STATIC_ASSETS=1 環境変数でも強制可能",
+        "dev ホスト（aws.medicine.yutok.dev）は CloudFront を継続利用",
+        "docs/ops/CLOUDFLARE_R2_IMAGES.md: マツキヨ未掲載品の公式ソース手動アップロード手順",
+        "docs/ops/RECOMMENDATION_PRODUCT_FILTERS.md（新規）: 推奨除外リストの運用",
+        "docs/ops/AWS_FEATURES_ROLLOUT.md: localhost 静的アセット・APP_ENV dev 手順追記",
+        "イブプロフェン錠200S のパッケージ画像（JAN 判明時 or ユーザー提供素材）",
+        "RECOMMENDATION_EXCLUDED_PRODUCTS の設定ファイル化（CSV / YAML）",
+        "マツキヨ未掲載品の公式ソース一括取り込みスクリプト"
+      ]
+    },
     {
       "heading": "2026年7月24日 — PMDA 正本 → Medicine KB 反映（§17 フィルタ・reflect 実行）",
       "overview": "§11 副作用パーサーに §17 臨床成績 終端を追加し、品質フィルタ section17_leak で混入行を reject。正本 CSV を再生成後 scripts/reflect_medicine_kb.sh で Medicine Managed KB へ反映。ingestion job OG6SSAO4QN COMPLETE、eval 相互作用 5/5。",
@@ -108,31 +123,7 @@
         "--log-only（ログ推奨品目のみ対象）",
         "data/otc_image_jan_overrides.csv による JAN 手動上書き",
         "マッチ品質レビュー（例: タイレノールＡ → ＡS バリアント等）",
-        "マツキヨ未掲載品（トキワイブプロエースＡ 等）の別ソース検討"
-      ]
-    },
-    {
-      "heading": "2026年7月23日 — Concierge 更新履歴 UI・CodePipeline 自動デプロイ修正（夜）",
-      "overview": "ブランチ main に、(1) Concierge 更新履歴カードのユーザー向け表示改善（「次に試すこと」ラベル誤用・箇条書き途中切れ・開発者向け env 文言）、(2) Sage Web で 推奨バブルを diagnosis 一括描画する際の途中 SSE スキップ、(3) GitHub push 後の CodePipeline が post_build で毎回 Failed していた問題の修正を反映（commits c45fe51 / 170e807 / 7b15881）。ステージング ALB には ECS タスクロール（Translate / Polly / Bedrock KB）を admin 手動適用済み（タスク定義 default-medicine-recommend:18）。",
-      "highlights": [
-        "src/content/changelog_digest.py: ユーザー向け 「＋」前向き箇条書きに変換。env / ファイルパス / Secrets 等をフィルタ。見出しを 2026年7月23日（体験の向上） 形式に短縮化",
-        "static/js/ui/status_renderer.js: メタカードのヒントを 「補足」フットノート表示に変更。更新項目を ＋マーク付きカードで折り返し全文表示",
-        "static/css/sage_terrace.css: .ui-status-footnote / .ui-status-update-item スタイル追加",
-        "static/js/ui/ui_strings.js: statusFootnoteLabel（補足）を ja/en/ko/zh に追加",
-        "src/agents/concierge_agent.py: 更新履歴ヒントを「公開されている更新記録をもとに…」に変更。architecture 深掘り時の Bedrock KB 案内を柔らかい文言に。導入文 LLM プロンプトに env 禁止・前向きトーンを追記",
-        "static/js/main.js: shouldBulkRenderSageReco() を追加。Sage 時は途中 SSE をスキップ",
-        "src/handlers/chat/chat_recommendation_flow.py: should_skip_reco_progressive_sse() で Web Sage 経路の emit_cards / emit_reco_detail を抑制",
-        "src/services/recommendation_client_payload.py: スキップ判定ヘルパー追加",
-        "scripts/lib/aws_common.sh: CODEBUILD_BUILD_ID / ECS タスクロール環境では AWS_PROFILE を付けない",
-        "buildspec.yml: smoke 失敗時は 警告のみ（SMOKE_STRICT=true 時のみ fail）。デプロイ・static 同期成功後に smoke が落ちても Pipeline を緑にできる",
-        "scripts/setup-aws-ecs-task-role.sh（新規）: medicine-recommend-ecs-task-role に Translate / Polly / Bedrock KB / Comprehend 権限を付与しタスク定義を更新",
-        "main.py: /api/smoke/aws-translate が _translate_with_aws を直接呼び IAM エラーを detail に返す",
-        "docs/ops/AWS_CODEPIPELINE.md: トラブルシュート（profile エラー・smoke 失敗・task role）を追記",
-        "IAM ロール medicine-recommend-ecs-task-role 作成 + inline policy 付与",
-        "ECS タスク定義 default-medicine-recommend:18 に taskRoleArn 設定・サービス再デプロイ",
-        "Pipeline 実行 7b15881: Source / Build Succeeded。/health git_commit 一致・Translate smoke ok: true を確認",
-        "main push → CodePipeline で aws.medicine.yutok.dev へ自動反映（復旧済み）",
-        "新環境では ./scripts/setup-aws-ecs-task-role.sh（admin IAM）を初回のみ実行"
+        "マツキヨ未掲載品（トキワイブプロエースＡ 等）の別ソース検討 → 2026-07-25 トキワ公式画像を R2 配置済み（CHANGELOG 2026-07-25）"
       ]
     }
   ]

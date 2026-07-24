@@ -1,6 +1,100 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月24日**（PMDA 正本 → Medicine KB 反映・§17 品質フィルタ・CHANGELOG UI 改善・Step 5-F 完了）
+**最終更新日: 2026年7月25日**（OTC 画像・推奨除外・TTS/UI 改善・localhost 静的アセット）
+
+---
+
+## 2026年7月25日 — OTC 画像（トキワ公式）・推奨除外・TTS/UI・静的アセット
+
+### 概要
+
+マツキヨ未掲載の **トキワイブプロエースＡ** を常盤薬品公式画像で R2 に配置。**イブプロフェン錠200S / 200SC** は OTC CSV に残しつつ推奨候補から除外（EC 未掲載・画像なし・ジェネリック名で購入特定が困難なため）。あわせて Sage UI の **CHANGELOG 表示・TTS（Polly SSML / Web Speech）** と **localhost 限定の `/static/` 配信**を改善。
+
+### OTC 商品画像 — トキワイブプロエースＡ（公式ソース → R2）
+
+| 項目 | 値 |
+|------|-----|
+| ソース | `https://www.tokiwayakuhin.co.jp/img/goods/L/H177300.jpg` |
+| R2 キー | `otc/トキワイブプロエースA.webp` |
+| 公開 URL | `https://images.yutok.dev/otc/トキワイブプロエースA.webp` |
+| マツキヨ | 未掲載（JAN `4987156250120` でもヒットなし） |
+
+手動アップロード例:
+
+```bash
+py -3.11 scripts/upload_r2_otc_image.py トキワイブプロエースA \
+  log/analysis/otc_image_candidates/トキワイブプロエースA_tokiwa_L.jpg
+```
+
+### 推奨除外 — イブプロフェン錠200S / 200SC
+
+**方針**: `data/otc_medicine_data.csv` からは**削除しない**（JAPIC/KEGG 上は実在する正本データ）。**ルールベース推奨の候補プールのみ除外**。
+
+| 製品 | 除外理由 | 代替推奨 |
+|------|----------|----------|
+| イブプロフェン錠２００Ｓ（奥田製薬） | ジェネリック名・EC 未掲載・画像なし | トキワイブプロエースＡ、イブ/EVE 系 |
+| イブプロフェン錠２００ＳＣ（セントラル製薬） | 同上 | 同上 |
+
+**実装**:
+
+| ファイル | 内容 |
+|----------|------|
+| `src/core/recommendation_constants.py` | `RECOMMENDATION_EXCLUDED_PRODUCTS` リスト追加 |
+| `src/core/medicine_classifiers.py` | `is_recommendation_excluded_product()` |
+| `src/core/candidate_scoring.py` | `get_candidate_medicines()` の `append_candidate` で除外 |
+| `src/core/rule_based_recommendation.py` | 候補フィルタ段でも二重除外 |
+| `tests/core/test_recommendation_excluded_products.py` | 除外・類似品非除外のテスト |
+
+詳細: [docs/ops/RECOMMENDATION_PRODUCT_FILTERS.md](docs/ops/RECOMMENDATION_PRODUCT_FILTERS.md)
+
+### UI / TTS / CHANGELOG 表示（commit `ff956ac`）
+
+| ファイル | 内容 |
+|----------|------|
+| `src/content/changelog_digest.py` | ユーザー向け文言サニタイズ・前向きリライト強化 |
+| `static/js/ui/status_renderer.js` | ステータス/更新履歴バブルの表示改善 |
+| `static/js/ui/tts_builder.js` | バブル単位 TTS テキスト構築 |
+| `static/js/ui/recommendation_renderer.js` | 推奨カード読み上げ連携 |
+| `src/services/polly_ssml.py`（新規） | Polly 向け SSML（句読・日付見出しに `<break>`） |
+| `src/services/polly_tts.py` | SSML 合成パス追加（`POLLY_SSML` で OFF 可） |
+| `static/css/sage_terrace.css` / `main.css` | 音声ボタン SVG・レイアウト調整 |
+
+### 静的アセット — localhost のみ `/static/` 優先
+
+**問題**: `APP_ENV=development` の dev 環境全体で CloudFront ではなくローカル `/static/` を使うと、`aws.medicine.yutok.dev` 等でも CDN がバイパスされ古い JS が読み込まれる。
+
+**修正** (`config/static_assets.py`):
+
+- **localhost / 127.0.0.1 リクエスト時のみ** middleware が `prefer_local_static` を立て、CDN の代わりに `/static/` を返す
+- `LOCAL_STATIC_ASSETS=1` 環境変数でも強制可能
+- dev ホスト（`aws.medicine.yutok.dev`）は **CloudFront を継続利用**
+
+**テスト**: `tests/config/test_aws_features.py` — development + 非 loopback で CDN URL を返すケース追加
+
+### AWS / GCP dev — `APP_ENV=development` 統一
+
+| ファイル | 内容 |
+|----------|------|
+| `scripts/set-dev-app-env.sh`（新規） | AWS ECS Express + GCP Cloud Run の `APP_ENV` を一括 `development` に |
+| `scripts/update-aws-express-env.sh` | `APP_ENV` を merge キーに追加 |
+| `scripts/setup-aws-ecs-secrets.sh` 等 | 未設定時デフォルトを `development` に |
+
+```bash
+./scripts/set-dev-app-env.sh          # AWS + GCP
+./scripts/set-dev-app-env.sh aws      # AWS のみ
+```
+
+### ドキュメント
+
+- **`docs/ops/CLOUDFLARE_R2_IMAGES.md`**: マツキヨ未掲載品の公式ソース手動アップロード手順
+- **`docs/ops/RECOMMENDATION_PRODUCT_FILTERS.md`（新規）**: 推奨除外リストの運用
+- **`docs/ops/AWS_FEATURES_ROLLOUT.md`**: localhost 静的アセット・`APP_ENV` dev 手順追記
+
+### 今後の改善候補（未実装）
+
+- イブプロフェン錠200S のパッケージ画像（JAN 判明時 or ユーザー提供素材）
+- `RECOMMENDATION_EXCLUDED_PRODUCTS` の設定ファイル化（CSV / YAML）
+- マツキヨ未掲載品の公式ソース一括取り込みスクリプト
 
 ---
 
@@ -374,7 +468,7 @@ MEDICINE_IMAGE_CDN_BASE=http://127.0.0.1:5000/static/otc/
 - `--log-only`（ログ推奨品目のみ対象）
 - `data/otc_image_jan_overrides.csv` による JAN 手動上書き
 - マッチ品質レビュー（例: タイレノールＡ → ＡS バリアント等）
-- マツキヨ未掲載品（トキワイブプロエースＡ 等）の別ソース検討
+- マツキヨ未掲載品（トキワイブプロエースＡ 等）の別ソース検討 → **2026-07-25 トキワ公式画像を R2 配置済み**（[CHANGELOG 2026-07-25](../CHANGELOG.md)）
 
 ---
 
