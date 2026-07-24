@@ -68,13 +68,7 @@ def merge_interactions(
     ]
     if live_replace:
         incoming_pmda = [r for r in incoming if r.get("出典") in PMDA_LIVE_SOURCE_LABELS]
-        incoming_keys = {pair_key(r["成分A"], r["成分B"]) for r in incoming_pmda}
-        kept = [
-            r
-            for r in existing_norm
-            if pair_key(r["成分A"], r["成分B"]) not in incoming_keys
-            or r.get("出典") in PMDA_LIVE_SOURCE_LABELS
-        ]
+        kept = [r for r in existing_norm if r.get("出典") not in PMDA_LIVE_SOURCE_LABELS]
         merged = dedupe_interactions(kept + incoming_pmda)
     else:
         merged = dedupe_interactions(existing_norm + incoming)
@@ -98,13 +92,7 @@ def merge_side_effects(
     incoming = [normalize_side_effect_row(r) for r in rows if normalize_side_effect_row(r)]
     if live_replace:
         incoming_pmda = [r for r in incoming if r.get("出典") in PMDA_LIVE_SOURCE_LABELS]
-        incoming_keys = {normalize_text(r["成分名"]) for r in incoming_pmda}
-        kept = [
-            r
-            for r in existing_norm
-            if normalize_text(r["成分名"]) not in incoming_keys
-            or r.get("出典") in PMDA_LIVE_SOURCE_LABELS
-        ]
+        kept = [r for r in existing_norm if r.get("出典") not in PMDA_LIVE_SOURCE_LABELS]
         merged = dedupe_side_effects(kept + incoming_pmda)
     else:
         merged = dedupe_side_effects(existing_norm + incoming)

@@ -1,0 +1,41 @@
+{
+  "ok": true,
+  "elapsed_sec": 1405.5,
+  "pmda_rows": {
+    "interactions": 220,
+    "side_effects": 489
+  },
+  "queue_interactions": {
+    "source": "interactions",
+    "pending": 0,
+    "done": 483,
+    "failed": 829,
+    "total": 1312,
+    "pct_done": 36.8
+  },
+  "queue_side_effects": {
+    "source": "side_effects",
+    "pending": 10,
+    "done": 483,
+    "failed": 829,
+    "total": 1322,
+    "pct_done": 36.5
+  },
+  "http_requested": 1143,
+  "http_errors": 0,
+  "aborted": false,
+  "abort_reason": "",
+  "processed": 594,
+  "done": 398,
+  "failed": 196,
+  "no_data_ix": 332,
+  "no_data_se": 0,
+  "merge_runs": 12,
+  "raw_saved": 594,
+  "fast_backfill": true,
+  "sync": {
+    "interactions_done": 81,
+    "side_effects_done": 81,
+    "side_effects_pending": 608
+  }
+}

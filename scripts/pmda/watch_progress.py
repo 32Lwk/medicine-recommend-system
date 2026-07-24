@@ -26,6 +26,7 @@ from scripts.pmda.queue import queue_stats  # noqa: E402
 from scripts.pmda.raw_store import raw_stats  # noqa: E402
 
 SEC_PER_INGREDIENT = 3.9
+SEC_PER_INGREDIENT_FAST = 2.2
 
 
 def _fetch_running() -> bool:
@@ -52,7 +53,7 @@ def _pmda_row_counts() -> tuple[int, int]:
     return ix, se
 
 
-def render_progress(*, prev_pending: int | None = None) -> tuple[str, int]:
+def render_progress(*, prev_pending: int | None = None, fast: bool = False) -> tuple[str, int]:
     st = queue_stats("interactions")
     pending = st["pending"]
     done = st["done"]
@@ -60,7 +61,8 @@ def render_progress(*, prev_pending: int | None = None) -> tuple[str, int]:
     total = st["total"]
     processed = done + failed
     pct = 100.0 * processed / total if total else 0.0
-    eta_min = pending * SEC_PER_INGREDIENT / 60.0
+    sec_per = SEC_PER_INGREDIENT_FAST if fast else SEC_PER_INGREDIENT
+    eta_min = pending * sec_per / 60.0
     running = _fetch_running()
     ix, se = _pmda_row_counts()
     raw = raw_stats()
@@ -83,13 +85,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Watch PMDA local fetch progress")
     parser.add_argument("--interval", type=int, default=30, help="Refresh seconds (default 30)")
     parser.add_argument("--once", action="store_true", help="Print once and exit")
+    parser.add_argument("--fast", action="store_true", help="ETA for --fast-backfill jitter")
     args = parser.parse_args()
 
     prev: int | None = None
     while True:
         if not args.once:
             print("\033[2J\033[H", end="")  # clear screen
-        text, prev = render_progress(prev_pending=prev)
+        text, prev = render_progress(prev_pending=prev, fast=args.fast)
         print(text)
         if args.once:
             return 0

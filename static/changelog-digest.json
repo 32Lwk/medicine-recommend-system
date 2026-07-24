@@ -1,7 +1,22 @@
 {
   "source": "CHANGELOG.md",
-  "header_date": "2026年7月24日（Dual KB RAG Phase 5・PMDA データ取り込み拡張）",
+  "header_date": "2026年7月24日（PMDA 正本再生成・raw HTML 永続化・パーサー修正）",
   "releases": [
+    {
+      "heading": "2026年7月24日 — PMDA 正本再生成（raw HTML 永続化・パーサー修正・品質フィルタ）",
+      "overview": "PMDA live fetch の添付文書 HTML を data/pmda/raw/ に永続化（680 件）。§マーカー空白不一致・全文フォールバック・merge バグを修正し、raw から正本 CSV を再生成。interactions PMDA 品質 OK 率 37.8%→100%、side_effects 1.3%→100%。方針は live のみ（catalog expansion 復元なし）。",
+      "highlights": [
+        "data/pmda/raw/ingredients/ に detail_html 永続化（680 件）",
+        "reparse_from_raw.py: raw → staging → CSV merge（--dry-run 可）",
+        "quality_filter.py: HTML ボイラープレート・§18 誤抽出を merge 前 reject",
+        "merge live_replace バグ修正: 旧 PMDA 行が残る問題を解消",
+        "http_client.py: §10/§11 空白マーカー対応・ボイラープレート除去",
+        "正本 CSV: interactions 180（PMDA 107）/ side_effects 272（PMDA 238）",
+        "手動 curated 行（出典空欄）は保持",
+        "docs/ops/PMDA_DATA_IMPORT.md / data/DATA_CATALOG.md 更新",
+        "tests/scripts/test_pmda_parser.py / test_pmda_raw_store.py 追加"
+      ]
+    },
     {
       "heading": "2026年7月24日 — Dual KB RAG Phase 1.5–5（ingestion 修正・パイプライン・Ask sanitize）",
       "overview": "AWS ステージング Managed KB（Concierge 2CNAGQ2V4P / Medicine 30BCEJCJHA）の RAG 品質向上と運用自動化の骨格を実装。Medicine eval: raw 80%（16/20）/ runtime 85%（17/20）、相互作用 5/5 hard gate。ingestion failed 7,494 → 0（metadata boolean → string 修正）。",
@@ -27,7 +42,7 @@
     },
     {
       "heading": "2026年7月24日 — PMDA データ取り込み拡張（live fetch・CSV merge）",
-      "overview": "PMDA 公的情報（市販薬検索・添付文書 §10 相互作用・§11 副作用）を data/*.csv 正本へ取り込むパイプラインを拡張。catalog expansion を正本とし、live fetch は PMDA 原文取得成功分のみ差し替え。CodePipeline / AWS IP からの live fetch は 禁止（ローカル回線のみ）。",
+      "overview": "PMDA 公的情報（市販薬検索・添付文書 §10 相互作用・§11 副作用）を data/*.csv 正本へ取り込むパイプラインを拡張。初版は catalog expansion ベースだが、正本再生成以降は live + raw 再パースが正本。CodePipeline / AWS IP からの live fetch は 禁止（ローカル回線のみ）。",
       "highlights": [
         "リクエスト間隔 2.5–5.0 秒、1 セッション 30 件上限",
         "403 / 429×3 / empty HTML×3 で abort → 24h クールダウン",

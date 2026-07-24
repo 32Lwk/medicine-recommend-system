@@ -976,6 +976,228 @@
         "side_effects_done": 77,
         "side_effects_pending": 1205
       }
+    },
+    {
+      "logged_at": "2026-07-24T12:06:03+00:00",
+      "queue_interactions": {
+        "source": "interactions",
+        "pending": 471,
+        "done": 208,
+        "failed": 633,
+        "total": 1312,
+        "pct_done": 15.9
+      },
+      "queue_side_effects": {
+        "source": "side_effects",
+        "pending": 481,
+        "done": 208,
+        "failed": 633,
+        "total": 1322,
+        "pct_done": 15.7
+      },
+      "pmda_rows": {
+        "interactions": 158,
+        "side_effects": 380
+      },
+      "raw_files": {
+        "indexed": 209,
+        "files": 209
+      },
+      "http_requested": 239,
+      "http_errors": 0,
+      "http_hits": 165,
+      "aborted": false,
+      "abort_reason": "",
+      "processed": 123,
+      "done": 123,
+      "failed": 0,
+      "no_data_ix": 105,
+      "no_data_se": 0,
+      "merge_runs": 2,
+      "raw_saved": 123,
+      "fast_backfill": true,
+      "sync": {
+        "interactions_done": 81,
+        "side_effects_done": 81,
+        "side_effects_pending": 608
+      }
+    },
+    {
+      "logged_at": "2026-07-24T12:11:05+00:00",
+      "queue_interactions": {
+        "source": "interactions",
+        "pending": 342,
+        "done": 337,
+        "failed": 633,
+        "total": 1312,
+        "pct_done": 25.7
+      },
+      "queue_side_effects": {
+        "source": "side_effects",
+        "pending": 352,
+        "done": 337,
+        "failed": 633,
+        "total": 1322,
+        "pct_done": 25.5
+      },
+      "pmda_rows": {
+        "interactions": 177,
+        "side_effects": 394
+      },
+      "raw_files": {
+        "indexed": 338,
+        "files": 338
+      },
+      "http_requested": 478,
+      "http_errors": 0,
+      "http_hits": 342,
+      "aborted": false,
+      "abort_reason": "",
+      "processed": 252,
+      "done": 252,
+      "failed": 0,
+      "no_data_ix": 218,
+      "no_data_se": 0,
+      "merge_runs": 5,
+      "raw_saved": 252,
+      "fast_backfill": true,
+      "sync": {
+        "interactions_done": 81,
+        "side_effects_done": 81,
+        "side_effects_pending": 608
+      }
+    },
+    {
+      "logged_at": "2026-07-24T12:16:06+00:00",
+      "queue_interactions": {
+        "source": "interactions",
+        "pending": 208,
+        "done": 414,
+        "failed": 690,
+        "total": 1312,
+        "pct_done": 31.6
+      },
+      "queue_side_effects": {
+        "source": "side_effects",
+        "pending": 218,
+        "done": 414,
+        "failed": 690,
+        "total": 1322,
+        "pct_done": 31.3
+      },
+      "pmda_rows": {
+        "interactions": 186,
+        "side_effects": 412
+      },
+      "raw_files": {
+        "indexed": 472,
+        "files": 472
+      },
+      "http_requested": 733,
+      "http_errors": 0,
+      "http_hits": 459,
+      "aborted": false,
+      "abort_reason": "",
+      "processed": 386,
+      "done": 329,
+      "failed": 57,
+      "no_data_ix": 278,
+      "no_data_se": 0,
+      "merge_runs": 7,
+      "raw_saved": 386,
+      "fast_backfill": true,
+      "sync": {
+        "interactions_done": 81,
+        "side_effects_done": 81,
+        "side_effects_pending": 608
+      }
+    },
+    {
+      "logged_at": "2026-07-24T12:21:08+00:00",
+      "queue_interactions": {
+        "source": "interactions",
+        "pending": 85,
+        "done": 455,
+        "failed": 772,
+        "total": 1312,
+        "pct_done": 34.7
+      },
+      "queue_side_effects": {
+        "source": "side_effects",
+        "pending": 95,
+        "done": 455,
+        "failed": 772,
+        "total": 1322,
+        "pct_done": 34.4
+      },
+      "pmda_rows": {
+        "interactions": 198,
+        "side_effects": 461
+      },
+      "raw_files": {
+        "indexed": 595,
+        "files": 595
+      },
+      "http_requested": 976,
+      "http_errors": 0,
+      "http_hits": 510,
+      "aborted": false,
+      "abort_reason": "",
+      "processed": 509,
+      "done": 370,
+      "failed": 139,
+      "no_data_ix": 311,
+      "no_data_se": 0,
+      "merge_runs": 10,
+      "raw_saved": 509,
+      "fast_backfill": true,
+      "sync": {
+        "interactions_done": 81,
+        "side_effects_done": 81,
+        "side_effects_pending": 608
+      }
+    },
+    {
+      "logged_at": "2026-07-24T12:24:28+00:00",
+      "ok": true,
+      "elapsed_sec": 1405.5,
+      "pmda_rows": {
+        "interactions": 220,
+        "side_effects": 489
+      },
+      "queue_interactions": {
+        "source": "interactions",
+        "pending": 0,
+        "done": 483,
+        "failed": 829,
+        "total": 1312,
+        "pct_done": 36.8
+      },
+      "queue_side_effects": {
+        "source": "side_effects",
+        "pending": 10,
+        "done": 483,
+        "failed": 829,
+        "total": 1322,
+        "pct_done": 36.5
+      },
+      "http_requested": 1143,
+      "http_errors": 0,
+      "aborted": false,
+      "abort_reason": "",
+      "processed": 594,
+      "done": 398,
+      "failed": 196,
+      "no_data_ix": 332,
+      "no_data_se": 0,
+      "merge_runs": 12,
+      "raw_saved": 594,
+      "fast_backfill": true,
+      "sync": {
+        "interactions_done": 81,
+        "side_effects_done": 81,
+        "side_effects_pending": 608
+      }
     }
   ]
 }

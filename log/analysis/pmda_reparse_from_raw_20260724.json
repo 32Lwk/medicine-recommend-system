@@ -1,0 +1,163 @@
+{
+  "runs": [
+    {
+      "ok": true,
+      "stats": {
+        "mode": "reparse_from_raw",
+        "raw_files": {
+          "indexed": 680,
+          "files": 680
+        },
+        "parsed_ingredients": 282,
+        "skipped_no_html": 196,
+        "empty_section": 202,
+        "interactions_raw": 182,
+        "side_effects_raw": 238,
+        "interactions": 107,
+        "side_effects": 238,
+        "filter_interactions": {
+          "accepted": 108,
+          "rejected": 74,
+          "reject_missing_section10": 62,
+          "reject_wrong_section": 12
+        },
+        "filter_side_effects": {
+          "accepted": 238,
+          "rejected": 0
+        }
+      },
+      "validation": {
+        "interactions": {
+          "errors": [],
+          "count": 107
+        },
+        "side_effects": {
+          "errors": [],
+          "count": 238
+        }
+      },
+      "dry_run": false,
+      "backup_dir": "/Users/yuto/medicine recomended/data/pmda/backups/20260724",
+      "merge": {
+        "interactions": {
+          "before": 295,
+          "after": 305,
+          "added": 10,
+          "live_replace": true
+        },
+        "side_effects": {
+          "before": 526,
+          "after": 530,
+          "added": 4,
+          "live_replace": true
+        }
+      }
+    },
+    {
+      "ok": true,
+      "stats": {
+        "mode": "reparse_from_raw",
+        "raw_files": {
+          "indexed": 680,
+          "files": 680
+        },
+        "parsed_ingredients": 282,
+        "skipped_no_html": 196,
+        "empty_section": 202,
+        "interactions_raw": 182,
+        "side_effects_raw": 238,
+        "interactions": 107,
+        "side_effects": 238,
+        "filter_interactions": {
+          "accepted": 108,
+          "rejected": 74,
+          "reject_missing_section10": 62,
+          "reject_wrong_section": 12
+        },
+        "filter_side_effects": {
+          "accepted": 238,
+          "rejected": 0
+        }
+      },
+      "validation": {
+        "interactions": {
+          "errors": [],
+          "count": 107
+        },
+        "side_effects": {
+          "errors": [],
+          "count": 238
+        }
+      },
+      "dry_run": false,
+      "backup_dir": "/Users/yuto/medicine recomended/data/pmda/backups/20260724",
+      "merge": {
+        "interactions": {
+          "before": 305,
+          "after": 180,
+          "added": 0,
+          "live_replace": true
+        },
+        "side_effects": {
+          "before": 530,
+          "after": 530,
+          "added": 0,
+          "live_replace": true
+        }
+      }
+    },
+    {
+      "ok": true,
+      "stats": {
+        "mode": "reparse_from_raw",
+        "raw_files": {
+          "indexed": 680,
+          "files": 680
+        },
+        "parsed_ingredients": 282,
+        "skipped_no_html": 196,
+        "empty_section": 202,
+        "interactions_raw": 182,
+        "side_effects_raw": 238,
+        "interactions": 107,
+        "side_effects": 238,
+        "filter_interactions": {
+          "accepted": 108,
+          "rejected": 74,
+          "reject_missing_section10": 62,
+          "reject_wrong_section": 12
+        },
+        "filter_side_effects": {
+          "accepted": 238,
+          "rejected": 0
+        }
+      },
+      "validation": {
+        "interactions": {
+          "errors": [],
+          "count": 107
+        },
+        "side_effects": {
+          "errors": [],
+          "count": 238
+        }
+      },
+      "dry_run": false,
+      "backup_dir": "/Users/yuto/medicine recomended/data/pmda/backups/20260724",
+      "merge": {
+        "interactions": {
+          "before": 180,
+          "after": 180,
+          "added": 0,
+          "live_replace": true
+        },
+        "side_effects": {
+          "before": 272,
+          "after": 272,
+          "added": 0,
+          "live_replace": true
+        }
+      }
+    }
+  ]
+}

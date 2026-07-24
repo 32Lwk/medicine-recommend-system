@@ -77,6 +77,7 @@ def run_local_fetch(
     allow_daytime: bool = True,
     ignore_daily_limit: bool = True,
     ignore_session_gap: bool = True,
+    fast_backfill: bool = False,
 ) -> Dict[str, Any]:
     import importlib
     import scripts.pmda.http_client as http_client_mod
@@ -97,7 +98,11 @@ def run_local_fetch(
 
     sync_info = sync_side_effects_queue_from_interactions()
     partners = load_common_rx_medications()
-    session = http_client_mod.PmdaLiveSession(min_interval_sec=min_interval, batch_size=0)
+    session = http_client_mod.PmdaLiveSession(
+        min_interval_sec=min_interval,
+        batch_size=0,
+        fast_backfill=fast_backfill,
+    )
     started = time.time()
     last_progress = started
 
@@ -111,6 +116,7 @@ def run_local_fetch(
         "no_data_se": 0,
         "merge_runs": 0,
         "raw_saved": 0,
+        "fast_backfill": fast_backfill,
         "sync": sync_info,
     }
 
@@ -210,6 +216,11 @@ def main() -> int:
     parser.add_argument("--ignore-daily-limit", action="store_true", default=True)
     parser.add_argument("--ignore-session-gap", action="store_true", default=True)
     parser.add_argument("--resume", action="store_true", help="Resume from manifest queue (sync side_effects done)")
+    parser.add_argument(
+        "--fast-backfill",
+        action="store_true",
+        help="Raw backfill: jitter 0.8-1.5s/request (default 2.5-5.0s). Watch for HTTP 403/429.",
+    )
     args = parser.parse_args()
 
     if args.resume:
@@ -222,6 +233,7 @@ def main() -> int:
         allow_daytime=args.allow_daytime,
         ignore_daily_limit=args.ignore_daily_limit,
         ignore_session_gap=args.ignore_session_gap,
+        fast_backfill=args.fast_backfill,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result.get("ok") else 1

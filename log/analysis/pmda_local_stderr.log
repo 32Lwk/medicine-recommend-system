@@ -5,3 +5,250 @@
 {"resume_sync": {"interactions_done": 0, "side_effects_done": 0, "side_effects_pending": 689}}
 {"resume_sync": {"interactions_done": 8, "side_effects_done": 8, "side_effects_pending": 681}}
 {"resume_sync": {"interactions_done": 6, "side_effects_done": 6, "side_effects_pending": 683}}
+Traceback (most recent call last):
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 231, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 219, in main
+    result = run_local_fetch(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 128, in run_local_fetch
+    result = process_ingredient(session, ingredient, partners)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/fetch_ingredient_live.py", line 42, in process_ingredient
+    section10, section11, raw_meta = session.fetch_ingredient_sections(ingredient)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 368, in fetch_ingredient_sections
+    detail_html, detail_fname, result_list_html = self._fetch_detail_html_for_ingredient(ingredient)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 349, in _fetch_detail_html_for_ingredient
+    result_html = self._fetch_result_list_with_docs(ingredient)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 288, in _fetch_result_list_with_docs
+    resp = self._request("POST", PMDA_IYAKU_SEARCH, data=payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 212, in _request
+    self._sleep_jitter()
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 179, in _sleep_jitter
+    time.sleep(delay - elapsed)
+KeyboardInterrupt
+{"resume_sync": {"interactions_done": 25, "side_effects_done": 25, "side_effects_pending": 664}}
+Traceback (most recent call last):
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 231, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 219, in main
+    result = run_local_fetch(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 128, in run_local_fetch
+    result = process_ingredient(session, ingredient, partners)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/fetch_ingredient_live.py", line 42, in process_ingredient
+    section10, section11, raw_meta = session.fetch_ingredient_sections(ingredient)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 368, in fetch_ingredient_sections
+    detail_html, detail_fname, result_list_html = self._fetch_detail_html_for_ingredient(ingredient)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 349, in _fetch_detail_html_for_ingredient
+    result_html = self._fetch_result_list_with_docs(ingredient)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 288, in _fetch_result_list_with_docs
+    resp = self._request("POST", PMDA_IYAKU_SEARCH, data=payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 212, in _request
+    self._sleep_jitter()
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 179, in _sleep_jitter
+    time.sleep(delay - elapsed)
+KeyboardInterrupt
+{"resume_sync": {"interactions_done": 26, "side_effects_done": 26, "side_effects_pending": 663}}
+Traceback (most recent call last):
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 231, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 219, in main
+    result = run_local_fetch(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 128, in run_local_fetch
+    result = process_ingredient(session, ingredient, partners)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/fetch_ingredient_live.py", line 42, in process_ingredient
+    section10, section11, raw_meta = session.fetch_ingredient_sections(ingredient)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 368, in fetch_ingredient_sections
+    detail_html, detail_fname, result_list_html = self._fetch_detail_html_for_ingredient(ingredient)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 349, in _fetch_detail_html_for_ingredient
+    result_html = self._fetch_result_list_with_docs(ingredient)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 288, in _fetch_result_list_with_docs
+    resp = self._request("POST", PMDA_IYAKU_SEARCH, data=payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 212, in _request
+    self._sleep_jitter()
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 179, in _sleep_jitter
+    time.sleep(delay - elapsed)
+KeyboardInterrupt
+{"resume_sync": {"interactions_done": 26, "side_effects_done": 26, "side_effects_pending": 663}}
+{"resume_sync": {"interactions_done": 38, "side_effects_done": 38, "side_effects_pending": 651}}
+Traceback (most recent call last):
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 243, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 230, in main
+    result = run_local_fetch(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 134, in run_local_fetch
+    result = process_ingredient(session, ingredient, partners)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/fetch_ingredient_live.py", line 42, in process_ingredient
+    section10, section11, raw_meta = session.fetch_ingredient_sections(ingredient)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 378, in fetch_ingredient_sections
+    detail_html, detail_fname, result_list_html = self._fetch_detail_html_for_ingredient(ingredient)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 370, in _fetch_detail_html_for_ingredient
+    detail_html = self.fetch_iyaku_detail_html(fnames[0])
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 334, in fetch_iyaku_detail_html
+    resp = self._request("GET", url)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 226, in _request
+    resp = self._client.request(method, url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpx/_client.py", line 827, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpx/_client.py", line 1015, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpx/_transports/default.py", line 233, in handle_request
+    resp = self._pool.handle_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpcore/_sync/connection.py", line 103, in handle_request
+    return self._connection.handle_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 136, in handle_request
+    raise exc
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 106, in handle_request
+    ) = self._receive_response_headers(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 177, in _receive_response_headers
+    event = self._receive_event(timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpcore/_sync/http11.py", line 217, in _receive_event
+    data = self._network_stream.read(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/.venv/lib/python3.12/site-packages/httpcore/_backends/sync.py", line 128, in read
+    return self._sock.recv(max_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1232, in recv
+    return self.read(buflen)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.12/3.12.13_4/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ssl.py", line 1105, in read
+    return self._sslobj.read(len)
+           ^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+{"resume_sync": {"interactions_done": 52, "side_effects_done": 52, "side_effects_pending": 637}}
+Traceback (most recent call last):
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 243, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 230, in main
+    result = run_local_fetch(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 134, in run_local_fetch
+    result = process_ingredient(session, ingredient, partners)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/fetch_ingredient_live.py", line 42, in process_ingredient
+    section10, section11, raw_meta = session.fetch_ingredient_sections(ingredient)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 378, in fetch_ingredient_sections
+    detail_html, detail_fname, result_list_html = self._fetch_detail_html_for_ingredient(ingredient)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 370, in _fetch_detail_html_for_ingredient
+    detail_html = self.fetch_iyaku_detail_html(fnames[0])
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 334, in fetch_iyaku_detail_html
+    resp = self._request("GET", url)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 222, in _request
+    self._sleep_jitter()
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 189, in _sleep_jitter
+    time.sleep(delay - elapsed)
+KeyboardInterrupt
+{"resume_sync": {"interactions_done": 56, "side_effects_done": 56, "side_effects_pending": 633}}
+Traceback (most recent call last):
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 243, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 230, in main
+    result = run_local_fetch(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 134, in run_local_fetch
+    result = process_ingredient(session, ingredient, partners)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/fetch_ingredient_live.py", line 42, in process_ingredient
+    section10, section11, raw_meta = session.fetch_ingredient_sections(ingredient)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 378, in fetch_ingredient_sections
+    detail_html, detail_fname, result_list_html = self._fetch_detail_html_for_ingredient(ingredient)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 359, in _fetch_detail_html_for_ingredient
+    result_html = self._fetch_result_list_with_docs(ingredient)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 298, in _fetch_result_list_with_docs
+    resp = self._request("POST", PMDA_IYAKU_SEARCH, data=payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 222, in _request
+    self._sleep_jitter()
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 189, in _sleep_jitter
+    time.sleep(delay - elapsed)
+KeyboardInterrupt
+{"resume_sync": {"interactions_done": 56, "side_effects_done": 56, "side_effects_pending": 633}}
+usage: run_live_fetch_local.py [-h] [--min-interval MIN_INTERVAL]
+                               [--merge-every MERGE_EVERY] [--allow-daytime]
+                               [--ignore-daily-limit] [--ignore-session-gap]
+                               [--resume] [--fast-backfill]
+run_live_fetch_local.py: error: unrecognized arguments: --resume~
+{"resume_sync": {"interactions_done": 81, "side_effects_done": 81, "side_effects_pending": 608}}
+Traceback (most recent call last):
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 243, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 230, in main
+    result = run_local_fetch(
+             ^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/run_live_fetch_local.py", line 134, in run_local_fetch
+    result = process_ingredient(session, ingredient, partners)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/fetch_ingredient_live.py", line 42, in process_ingredient
+    section10, section11, raw_meta = session.fetch_ingredient_sections(ingredient)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 378, in fetch_ingredient_sections
+    detail_html, detail_fname, result_list_html = self._fetch_detail_html_for_ingredient(ingredient)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 359, in _fetch_detail_html_for_ingredient
+    result_html = self._fetch_result_list_with_docs(ingredient)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 298, in _fetch_result_list_with_docs
+    resp = self._request("POST", PMDA_IYAKU_SEARCH, data=payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 222, in _request
+    self._sleep_jitter()
+  File "/Users/yuto/medicine recomended/scripts/pmda/http_client.py", line 189, in _sleep_jitter
+    time.sleep(delay - elapsed)
+KeyboardInterrupt

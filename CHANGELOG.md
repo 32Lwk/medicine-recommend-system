@@ -1,6 +1,90 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月24日**（Dual KB RAG Phase 5・PMDA データ取り込み拡張）
+**最終更新日: 2026年7月24日**（PMDA 正本再生成・raw HTML 永続化・パーサー修正）
+
+---
+
+## 2026年7月24日 — PMDA 正本再生成（raw HTML 永続化・パーサー修正・品質フィルタ）
+
+### 概要
+
+PMDA live fetch で取得した **添付文書 HTML を `data/pmda/raw/` に永続化**し、パーサー根本原因（§マーカー空白不一致・全文フォールバック・merge バグ）を修正。**680 件 raw から正本 CSV を再生成**。方針は **live のみ（catalog expansion 復元なし）**。手動 curated 行（出典空欄）は保持。
+
+### 品質（修正前 git HEAD → 再パース後）
+
+| 指標 | interactions (PMDA) | side_effects (PMDA) |
+|------|---------------------|---------------------|
+| 行数 | 156 → **107** | 372 → **238** |
+| 品質フィルタ OK 率 | 37.8% → **100%** | 1.3% → **100%** |
+| HTML ボイラープレート | 多数 → **0** | 177 行 → **0** |
+| CSV 合計 | 233 → **180**（手動 73 + PMDA 107） | 414 → **272**（手動 34 + PMDA 238） |
+
+### パーサー修正（`scripts/pmda/http_client.py`）
+
+- §10/§11 マーカーの **空白対応**（`10.2 併用注意` vs 旧 `10.2併用注意`）
+- PMDA ページ **ボイラープレート除去**（JavaScript 案内・ヘッダー等）
+- セクション未検出時の **全文フォールバック廃止**（空文字返却）
+- §11 終端に **`18. 薬効`** を追加
+- interactions: partner 周辺 **最大 500 字**の §10 由来説明
+- side_effects: **§11 要約**（最大 800 字・句点境界で切り詰め）
+
+### 新規スクリプト・モジュール
+
+| ファイル | 用途 |
+|----------|------|
+| `scripts/pmda/raw_store.py` | 成分別 raw JSON 保存・`index.json` 更新 |
+| `scripts/pmda/reparse_from_raw.py` | raw 680 件 → staging → CSV merge（`--dry-run` 可） |
+| `scripts/pmda/quality_filter.py` | merge 前ノイズ reject（HTML/§18/短すぎ等） |
+| `scripts/pmda/requeue_missing_raw.py` | raw 未保存の done 成分を pending に戻す |
+| `scripts/eval_pmda_bedrock.py` | 改善・正本の Bedrock 独立評価（任意） |
+| `tests/scripts/test_pmda_parser.py` | §抽出・品質フィルタの単体テスト |
+| `tests/scripts/test_pmda_raw_store.py` | raw 保存の単体テスト |
+
+### merge バグ修正（`scripts/pmda/merge_into_csv.py`）
+
+- `live_replace=True` 時、**旧 PMDA 行が残り続ける** OR 条件バグを修正
+- 正しい挙動: **手動行（出典空欄）のみ保持 + 新 PMDA 行で全置換**
+
+### raw 正本（`data/pmda/raw/`）
+
+```
+data/pmda/raw/
+  index.json              # by_ingredient → ファイル名マップ（680 件）
+  ingredients/{hash}.json # detail_html, section10/11 テキスト, fetched_at
+```
+
+- **680 ファイル**（`detail_html` あり 484 / `empty_section` 196）
+- fetch 時 `fetch_ingredient_live.py` が `save_ingredient_raw()` を呼び出し
+- **再パースは `detail_html` から**（保存済み `section10_text` は使わない）
+
+### 再パース手順
+
+```bash
+# staging + validate のみ
+.venv/bin/python scripts/pmda/reparse_from_raw.py --dry-run
+
+# バックアップ → CSV merge（live_replace）
+.venv/bin/python scripts/pmda/reparse_from_raw.py
+
+pytest tests/scripts/test_pmda_parser.py tests/scripts/test_pmda_raw_store.py -q
+```
+
+### 方針変更
+
+- **catalog expansion（~2,869 行テンプレート）は復元しない** — RAG/KB 上の情報価値が低く、重複テンプレが多数
+- **live + raw 再パース** が正本の唯一の再生成経路
+- purge → KB 前の残課題: interactions **複数薬剤混在**（~27/107）、side_effects **§17 臨床成績混入**（~6/238）— 次イテレーションでフィルタ追加予定
+
+### ドキュメント
+
+- **`docs/ops/PMDA_DATA_IMPORT.md`**: raw 永続化・reparse・品質ゲート・正本評価を追記
+- **`data/DATA_CATALOG.md`**: `pmda/raw/` を追記
+
+### 成果物（`log/analysis/`）
+
+- `pmda_canonical_eval_report.json` — before/after 品質メトリクス
+- `pmda_bedrock_eval.json` — Bedrock 評価（クォータ時は error 記録）
+- `bedrock_eval_samples.json` — 評価用サンプル行
 
 ---
 
@@ -65,7 +149,7 @@ AWS ステージング Managed KB（Concierge `2CNAGQ2V4P` / Medicine `30BCEJCJH
 
 ### 概要
 
-PMDA 公的情報（市販薬検索・添付文書 §10 相互作用・§11 副作用）を `data/*.csv` 正本へ取り込むパイプラインを拡張。**catalog expansion を正本とし、live fetch は PMDA 原文取得成功分のみ差し替え**。CodePipeline / AWS IP からの live fetch は **禁止**（ローカル回線のみ）。
+PMDA 公的情報（市販薬検索・添付文書 §10 相互作用・§11 副作用）を `data/*.csv` 正本へ取り込むパイプラインを拡張。**初版は catalog expansion を正本としたが、2026-07-24 夜の正本再生成以降は live + raw 再パースが正本**（catalog 復元なし）。CodePipeline / AWS IP からの live fetch は **禁止**（ローカル回線のみ）。
 
 ### パイプライン
 

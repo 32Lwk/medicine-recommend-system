@@ -23,13 +23,45 @@ PMDA_LIVE_SOURCE_LABELS = frozenset({"PMDA iyakuSearch", "PMDA PackinsSearch"})
 
 JITTER_MIN_SEC = 2.5
 JITTER_MAX_SEC = 5.0
+FAST_BACKFILL_JITTER_MIN_SEC = 0.8
+FAST_BACKFILL_JITTER_MAX_SEC = 1.5
 BACKOFF_429_SEC = (60, 120, 300)
 MAX_EMPTY_HTML_STREAK = 3
 
 PARTNER_ALIASES: Dict[str, List[str]] = {
     "ワーファリン": ["ワーファリン", "ワルファリン"],
-    "クマリン系抗凝血薬": ["クマリン", "クマリン系"],
+    "クマリン系抗凝血薬": ["クマリン", "クマリン系", "クマリン系抗凝血剤", "クマリン系抗凝固剤"],
 }
+
+_PMDA_BOILERPLATE_PATTERNS = (
+    r"当ウェブサイトを快適にご覧いただくには、ブラウザのJavaScript設定を有効\(オン\)にしていただく必要がございます。",
+    r"Pmda\s*独立行政法人\s*医薬品医療機器総合機構",
+    r"標準\s*大\s*特大\s*医療用医薬品\s*詳細表示",
+    r"処方せん医薬品(?:以外の医薬品)?",
+    r"添付文書番号\s*企業コード\s*作成又は改訂年月",
+)
+
+_SECTION10_START = (
+    r"10\.2\s*併用注意",
+    r"10\.1\s*併用禁忌",
+    r"10\.\s*相互作用",
+)
+_SECTION10_END = (
+    r"11\.\s*副作用",
+    r"11\.1\s*重大な副作用",
+)
+_SECTION11_START = (
+    r"11\.1\s*重大な副作用",
+    r"11\.2\s*その他の副作用",
+    r"11\.\s*副作用",
+)
+_SECTION11_END = (
+    r"12\.\s*臨床検査",
+    r"13\.\s*過量投与",
+    r"14\.\s*適用上の注意",
+    r"16\.\s*薬物動態",
+    r"18\.\s*薬効",
+)
 
 
 class PmdaFetchAborted(Exception):
@@ -134,9 +166,17 @@ class PmdaLiveSession:
         min_interval_sec: float = 3.0,
         batch_size: int = 30,
         timeout_sec: float = 30.0,
+        fast_backfill: bool = False,
     ) -> None:
         self.min_interval_sec = min_interval_sec
         self.batch_size = batch_size
+        if fast_backfill:
+            self._jitter_min = FAST_BACKFILL_JITTER_MIN_SEC
+            self._jitter_max = FAST_BACKFILL_JITTER_MAX_SEC
+        else:
+            self._jitter_min = JITTER_MIN_SEC
+            self._jitter_max = JITTER_MAX_SEC
+        self.fast_backfill = fast_backfill
         self.stats = PmdaLiveStats()
         self._client = httpx.Client(
             timeout=timeout_sec,
@@ -172,7 +212,7 @@ class PmdaLiveSession:
         self.stats.abort_reason = reason
 
     def _sleep_jitter(self) -> None:
-        delay = random.uniform(JITTER_MIN_SEC, JITTER_MAX_SEC)
+        delay = random.uniform(self._jitter_min, self._jitter_max)
         delay = max(delay, self.min_interval_sec)
         elapsed = time.time() - self._last_request_at
         if elapsed < delay:
@@ -404,36 +444,41 @@ class PmdaLiveSession:
         return section_html
 
     @staticmethod
-    def _extract_section(html: str, section: str) -> str:
-        text = PmdaLiveSession.strip_html(html)
+    def strip_pmda_boilerplate(text: str) -> str:
+        cleaned = text or ""
+        for pattern in _PMDA_BOILERPLATE_PATTERNS:
+            cleaned = re.sub(pattern, " ", cleaned)
+        return normalize_text(cleaned)
+
+    @staticmethod
+    def extract_section_from_html(html: str, section: str) -> str:
+        text = PmdaLiveSession.strip_pmda_boilerplate(PmdaLiveSession.strip_html(html))
         if section == "10":
-            start_markers = ["10.2併用注意", "10.1併用禁忌", "10.相互作用"]
-            end_markers = ["11.副作用", "11.1重大な副作用"]
+            start_patterns = _SECTION10_START
+            end_patterns = _SECTION10_END
         elif section == "11":
-            start_markers = ["11.1重大な副作用", "11.2その他の副作用", "11.副作用"]
-            end_markers = ["12.臨床検査", "14.適用上の注意"]
+            start_patterns = _SECTION11_START
+            end_patterns = _SECTION11_END
         else:
-            return text
+            return ""
 
         best = ""
-        for marker in start_markers:
-            start = 0
-            while True:
-                idx = text.find(marker, start)
-                if idx < 0:
-                    break
+        for start_pattern in start_patterns:
+            for match in re.finditer(start_pattern, text):
+                start = match.start()
                 end = len(text)
-                for end_marker in end_markers:
-                    end_idx = text.find(end_marker, idx + len(marker))
-                    if end_idx >= 0:
-                        end = min(end, end_idx)
-                chunk = text[idx:end]
+                for end_pattern in end_patterns:
+                    end_match = re.search(end_pattern, text[match.end() :])
+                    if end_match:
+                        end = min(end, match.end() + end_match.start())
+                chunk = normalize_text(text[start:end])
                 if len(chunk) > len(best):
                     best = chunk
-                start = idx + len(marker)
-        if len(best) >= 80:
-            return best
-        return text
+        return best if len(best) >= 25 else ""
+
+    @staticmethod
+    def _extract_section(html: str, section: str) -> str:
+        return PmdaLiveSession.extract_section_from_html(html, section)
 
     def fetch_otc_search(self, product_name: str) -> str:
         if not self._can_request():
@@ -480,21 +525,35 @@ class PmdaLiveSession:
         aliases = PARTNER_ALIASES.get(partner, [partner])
         return any(alias in text for alias in aliases)
 
+    @staticmethod
+    def _interaction_description(text: str, partner: str, idx: int) -> str:
+        aliases = PARTNER_ALIASES.get(partner, [partner])
+        start = max(0, idx - 20)
+        end = min(len(text), idx + 420)
+        snippet = normalize_text(text[start:end])
+        for alias in aliases:
+            alias_idx = snippet.find(alias)
+            if alias_idx >= 0:
+                snippet = snippet[alias_idx:]
+                break
+        snippet = re.sub(r"^[\s、,.]+", "", snippet)
+        snippet = re.sub(r"\s+", " ", snippet).strip()
+        return snippet[:500]
+
     def parse_interactions_from_html(
         self,
         html: str,
         ingredient_a: str,
         partners: List[str],
     ) -> List[Dict[str, str]]:
-        text = self.strip_html(html) if "<" in html else html
+        text = self.strip_pmda_boilerplate(self.strip_html(html) if "<" in html else html)
         if not text:
             return []
         rows: List[Dict[str, str]] = []
-        level_default = "中"
-        if "併用禁忌" in text:
-            level_default = "高"
+        level_default = "高" if "併用禁忌" in text else "中"
+        seen_partners: Set[str] = set()
         for partner in partners:
-            if not partner or not self._partner_in_text(partner, text):
+            if not partner or partner in seen_partners:
                 continue
             idx = -1
             for alias in PARTNER_ALIASES.get(partner, [partner]):
@@ -503,36 +562,60 @@ class PmdaLiveSession:
                     break
             if idx < 0:
                 continue
-            snippet = text[max(0, idx - 80) : idx + 180]
+            seen_partners.add(partner)
+            snippet = self._interaction_description(text, partner, idx)
+            if len(snippet) < 30:
+                continue
             level = "高" if "併用禁忌" in snippet or partner in ("ワーファリン", "MAO阻害薬") else level_default
             rows.append(
                 {
                     "成分A": ingredient_a,
                     "成分B": partner,
                     "相互作用レベル": level,
-                    "説明": snippet[:240],
+                    "説明": snippet,
                     "出典": PMDA_SOURCE_LABEL,
                 }
             )
             self.stats.hits += 1
         return rows
 
+    @staticmethod
+    def _summarize_side_effects(text: str) -> str:
+        cleaned = normalize_text(text)
+        if not cleaned:
+            return ""
+        for pattern in (
+            r"11\.1\s*重大な副作用",
+            r"11\.2\s*その他の副作用",
+            r"11\.\s*副作用",
+        ):
+            match = re.search(pattern, cleaned)
+            if match:
+                cleaned = cleaned[match.start() :]
+                break
+        cleaned = re.sub(r"\s+", " ", cleaned).strip()
+        if len(cleaned) > 800:
+            cut = cleaned[:800]
+            last_space = cut.rfind("。")
+            if last_space >= 400:
+                cut = cut[: last_space + 1]
+            cleaned = cut
+        return cleaned
+
     def parse_side_effects_from_html(self, html: str, ingredient: str) -> List[Dict[str, str]]:
-        text = self.strip_html(html) if "<" in html else html
+        text = self.strip_pmda_boilerplate(self.strip_html(html) if "<" in html else html)
         if not text:
             return []
-        level = "高" if "重大な副作用" in text else "中"
-        symptoms: List[str] = []
-        for marker in ("眠気", "発疹", "ショック", "胃", "吐", "めまい", "下痢", "肝"):
-            if marker in text:
-                symptoms.append(marker)
-        snippet = "、".join(symptoms[:5]) if symptoms else text[:200]
+        summary = self._summarize_side_effects(text)
+        if len(summary) < 50:
+            return []
+        level = "高" if "重大な副作用" in summary or "11.1" in summary else "中"
         self.stats.hits += 1
         return [
             {
                 "成分名": ingredient,
                 "副作用レベル": level,
-                "副作用症状": snippet[:240],
+                "副作用症状": summary,
                 "禁忌条件": "",
                 "出典": PMDA_SOURCE_LABEL,
             }

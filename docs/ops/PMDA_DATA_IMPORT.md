@@ -22,7 +22,7 @@ PMDA 公的情報（市販薬検索・添付文書相互作用・副作用）を
 | 一括ダウンロード API | **なし** |
 | info.pmda PackinsSearch | GET パラメータのみではエラー。Bot 対策（cookie/fingerprint）あり。**GO/NO-GO テスト必須** |
 | 副作用等報告データセット | 簡易パスワード必須。**自動一括 DL は不可** |
-| 推奨 | catalog expansion を正本とし、live は **PMDA 原文取得成功分のみ差し替え** |
+| 推奨 | **live + raw 再パース** を正本とする。catalog expansion はテンプレート重複が多く **復元しない** |
 
 ## live fetch ポリシー（Phase B 以降）
 
@@ -52,6 +52,111 @@ PMDA 公的情報（市販薬検索・添付文書相互作用・副作用）を
 2. `python scripts/pmda/run_pmda_import.py --sources interactions --dry-run`
 3. 問題なければ merge（`--live` なし）
 
+## 正本ポリシー（2026-07-24 更新）
+
+| 項目 | 方針 |
+|------|------|
+| 正本 | **`data/medicine_interactions.csv` / `data/medicine_side_effects.csv`** |
+| 再生成元 | **`data/pmda/raw/ingredients/*.json` の `detail_html`**（680 件） |
+| catalog expansion | **復元しない**（~2,869 行テンプレートは RAG 品質を下げる） |
+| 手動 curated | 出典空欄行（ix ~73 / se ~34）は **常に保持** |
+| PMDA 行 | `live_replace=True` で **全置換**（旧 PMDA 行は残さない） |
+
+### 正本品質（再パース後）
+
+| CSV | 合計 | PMDA | 品質フィルタ |
+|-----|------|------|--------------|
+| interactions | 180 | 107 | 100% OK |
+| side_effects | 272 | 238 | 100% OK |
+
+### 既知の残課題（purge 前に認識）
+
+- interactions: **複数薬剤が 1 行に混在**（~27/107）— §10 表行単位パースが次改善
+- side_effects: **§17 臨床成績の末尾混入**（~6/238）— 終端マーカー追加予定
+
+---
+
+## raw HTML 永続化
+
+fetch 成功時に **プロセス内メモリだけでなくディスクへ保存**。パーサー修正後も **HTTP 再取得なし**で正本を再生成できる。
+
+### 保存先
+
+```
+data/pmda/raw/
+  index.json                 # count, by_ingredient → ファイル名
+  ingredients/{sha20}.json   # 成分ごとの raw
+```
+
+### JSON スキーマ
+
+```json
+{
+  "ingredient": "成分名",
+  "fetched_at": "ISO8601 UTC",
+  "status": "ok | empty_section",
+  "detail_html": "<html>…</html>",
+  "section10_text": "（参考・再パースでは使わない）",
+  "section11_text": "（参考・再パースでは使わない）"
+}
+```
+
+### 関連スクリプト
+
+| スクリプト | 用途 |
+|-----------|------|
+| `raw_store.py` | `save_ingredient_raw()` / `raw_stats()` |
+| `fetch_ingredient_live.py` | fetch 後に raw 保存 |
+| `requeue_missing_raw.py` | raw 欠損の done を pending に戻す |
+| `reparse_from_raw.py` | **680 raw → staging → CSV** |
+| `quality_filter.py` | merge 前 reject |
+
+---
+
+## 正本再生成（reparse）
+
+```bash
+# 1. dry-run（staging + validate のみ）
+.venv/bin/python scripts/pmda/reparse_from_raw.py --dry-run
+
+# 2. 本番（data/pmda/backups/YYYYMMDD/ に CSV 退避 → merge）
+.venv/bin/python scripts/pmda/reparse_from_raw.py
+
+# 3. テスト
+.venv/bin/pytest tests/scripts/test_pmda_parser.py tests/scripts/test_pmda_raw_store.py -q
+```
+
+**重要:** 再パースは **`detail_html` から §10/§11 を再抽出**。保存済み `section10_text` / `section11_text` は旧パーサー出力のため使わない。
+
+---
+
+## パーサー修正概要（2026-07-24）
+
+| 問題 | 修正 |
+|------|------|
+| `10.2併用注意` と `10.2 併用注意` の不一致 | 正規表現で空白許容 |
+| セクション未検出 → 全文返却 | **空文字**（§18/HTML 混入防止） |
+| side_effects キーワード列挙 | §11 要約（最大 800 字） |
+| interactions 240 字スニペット | partner 周辺 500 字 |
+| merge `live_replace` バグ | 旧 PMDA 行が OR 条件で残る問題を修正 |
+
+---
+
+## Bedrock 評価（任意）
+
+改善内容・正本 CSV を **独立に** LLM 評価する場合:
+
+```bash
+export AWS_BEARER_TOKEN_BEDROCK='(短期キー)'
+export AWS_REGION=us-east-1
+.venv/bin/python scripts/eval_pmda_bedrock.py
+# → log/analysis/pmda_bedrock_eval.json
+```
+
+日次トークン上限（Throttling）時は error を JSON に記録。正本生成自体は **ルールベース**（Bedrock 不要）。
+
+---
+
 ## パイプライン
 
 ```bash
@@ -68,8 +173,9 @@ PMDA 公的情報（市販薬検索・添付文書相互作用・副作用）を
 ## ディレクトリ
 
 ```
-scripts/pmda/          # fetch / normalize / validate / merge
+scripts/pmda/          # fetch / normalize / validate / merge / raw / reparse
 data/pmda/
+  raw/ingredients/     # 成分別 detail HTML（正本の種・680 件）
   staging/             # interactions.json, side_effects.json, otc_products.json
   backups/YYYYMMDD/    # import 前 CSV 退避
   manifest.json
@@ -81,8 +187,10 @@ log/analysis/pmda_*.json
 ## 品質ゲート
 
 - `validate_pmda_import.py` — 必須列・重複ペア
+- `quality_filter.py` — HTML ボイラープレート / §18 誤抽出 / 短すぎ行を reject
 - import 前 `data/pmda/backups/` に CSV 退避
-- merge 後: `pytest tests/scripts/test_pmda_import.py`
+- merge 後: `pytest tests/scripts/test_pmda_import.py tests/scripts/test_pmda_parser.py`
+- 正本評価: `log/analysis/pmda_canonical_eval_report.json`
 - 推奨順位: `tests/integration/test_golden_regression.py`
 
 ## KB 反映（Phase 2）

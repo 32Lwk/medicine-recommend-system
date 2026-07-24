@@ -1,0 +1,106 @@
+{
+  "before_backup": {
+    "interactions": {
+      "total": 180,
+      "manual": 73,
+      "pmda": 107,
+      "quality": {
+        "ok": 107
+      },
+      "avg_len": 354.8,
+      "min_len": 64,
+      "max_len": 420
+    },
+    "side_effects": {
+      "total": 272,
+      "manual": 34,
+      "pmda": 238,
+      "quality": {
+        "ok": 238
+      },
+      "avg_len": 293.6,
+      "min_len": 50,
+      "max_len": 800
+    }
+  },
+  "after_current": {
+    "interactions": {
+      "total": 180,
+      "manual": 73,
+      "pmda": 107,
+      "quality": {
+        "ok": 107
+      },
+      "ok_rate": 100.0,
+      "avg_len": 354.8
+    },
+    "side_effects": {
+      "total": 272,
+      "manual": 34,
+      "pmda": 238,
+      "quality": {
+        "ok": 238
+      },
+      "ok_rate": 100.0,
+      "avg_len": 293.6
+    }
+  },
+  "staging_stats": {
+    "interactions": {
+      "requested_ingredients": 0,
+      "requested_pairs": 0,
+      "cache_hits": 0,
+      "hits": 0,
+      "errors": 0,
+      "mode": "fixture",
+      "abort_reason": ""
+    },
+    "side_effects": {
+      "requested": 0,
+      "hits": 0,
+      "errors": 0,
+      "mode": "fixture",
+      "abort_reason": ""
+    }
+  },
+  "improvements": {
+    "parser_fixes": [
+      "§マーカー空白対応 (10.2 併用注意 vs 10.2併用注意)",
+      "PMDAボイラープレート除去",
+      "全文フォールバック廃止",
+      "§11終端に18.薬効追加",
+      "side_effects: §11全文要約 (800字上限)",
+      "interactions: partner周辺500字抽出",
+      "quality_filter.py 追加",
+      "live_replace mergeバグ修正 (旧PMDA行残留)",
+      "reparse_from_raw.py 追加"
+    ]
+  },
+  "before_git_head": {
+    "interactions": {
+      "total": 233,
+      "manual": 77,
+      "pmda": 156,
+      "quality": {
+        "wrong_section": 35,
+        "ok": 59,
+        "missing_section10": 62
+      },
+      "ok_rate": 37.8,
+      "avg_len": 239.9
+    },
+    "side_effects": {
+      "total": 414,
+      "manual": 42,
+      "pmda": 372,
+      "quality": {
+        "truncated_keywords": 177,
+        "html_boilerplate": 177,
+        "too_short": 13,
+        "ok": 5
+      },
+      "ok_rate": 1.3,
+      "avg_len": 101.5
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "model_id": "us.anthropic.claude-sonnet-4-6",
+  "region": "us-east-1",
+  "error": "ThrottlingException: An error occurred (ThrottlingException) when calling the Converse operation (reached max retries: 4): Too many tokens per day, please wait before trying again."
+}
