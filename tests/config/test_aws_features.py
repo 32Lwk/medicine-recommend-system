@@ -39,6 +39,7 @@ def test_defaults_are_legacy():
 
 
 def test_static_cdn_url_resolution(monkeypatch):
+    monkeypatch.setenv("APP_ENV", "production")
     monkeypatch.setenv("STATIC_CDN_BASE_URL", "https://d111111.cloudfront.net/static")
     from config.aws_features import resolve_static_asset_url
 
@@ -51,6 +52,30 @@ def test_static_cdn_unset_uses_local_path(monkeypatch):
     from config.aws_features import resolve_static_asset_url
 
     assert resolve_static_asset_url("css/main.css") == "/static/css/main.css"
+
+
+def test_static_cdn_prefers_local_on_loopback_request(monkeypatch):
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("STATIC_CDN_BASE_URL", "https://d111111.cloudfront.net/static")
+    from config.static_assets import reset_prefer_local_static, set_prefer_local_static
+    from config.aws_features import resolve_static_asset_url
+
+    token = set_prefer_local_static(True)
+    try:
+        assert resolve_static_asset_url("js/main.js") == "/static/js/main.js"
+    finally:
+        reset_prefer_local_static(token)
+
+
+def test_static_cdn_uses_remote_when_not_local(monkeypatch):
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("STATIC_CDN_BASE_URL", "https://d111111.cloudfront.net/static")
+    from config.aws_features import resolve_static_asset_url
+
+    assert (
+        resolve_static_asset_url("js/main.js")
+        == "https://d111111.cloudfront.net/static/js/main.js"
+    )
 
 
 def test_aws_staging_flags(monkeypatch):

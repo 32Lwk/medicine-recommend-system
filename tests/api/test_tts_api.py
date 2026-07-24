@@ -10,13 +10,15 @@ def client():
     return TestClient(app)
 
 
-def test_tts_not_available_by_default(client):
+def test_tts_not_available_by_default(client, monkeypatch):
+    monkeypatch.setenv("TTS_PROVIDER", "webspeech")
     r = client.post("/api/tts", json={"text": "hello", "lang": "ja"})
     assert r.status_code == 404
 
 
 def test_tts_polly_mock(client, monkeypatch):
     monkeypatch.setenv("TTS_PROVIDER", "polly")
+    monkeypatch.setattr("src.services.polly_tts.polly_credentials_available", lambda: True)
 
     def _fake(text, lang="ja"):
         assert text == "テスト"

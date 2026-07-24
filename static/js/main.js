@@ -17,6 +17,7 @@
             doctorConsultation: "医師にご相談ください",
             feedbackPositive: "👍 適切",
             feedbackNegative: "👎 不適切",
+            voiceReadCompactAria: "音声で読み上げる",
             reportBug: "🐛 不具合報告",
             age: "年齢",
             gender: "性別",
@@ -1533,6 +1534,9 @@
         if (!message || message.type !== 'bot') {
             return false;
         }
+        if (isSageDiagnosisMessage(message) && resolveDiagnosisForSageMount(message)) {
+            return false;
+        }
         const content = String(message.content || '');
         return content.includes('recommendation-result') || content.includes('chat-status-card');
     }
@@ -1576,14 +1580,88 @@
             return '';
         }
         const meds = Array.isArray(diag.recommended_medicines) ? diag.recommended_medicines.length : 0;
+        const chromeV = (window.StatusRenderer && window.StatusRenderer.SAGE_STATUS_CHROME_VERSION) || '';
         return [
             messageKey || '',
             String(diag.render || ''),
             String(diag.show_feedback),
             String(diag.feedback_completed),
             String(meds),
+            String(chromeV),
         ].join('|');
     }
+
+    function findStoredDiagnosisForNode(node) {
+        if (!node) {
+            return null;
+        }
+        if (node.__messageDiagnosis) {
+            return node.__messageDiagnosis;
+        }
+        const messageKey = node.getAttribute('data-message-id') || '';
+        if (!messageKey) {
+            return null;
+        }
+        const messages = loadChatCache(getSidFromCookie());
+        if (!Array.isArray(messages) || messages.length === 0) {
+            return null;
+        }
+        for (let i = messages.length - 1; i >= 0; i -= 1) {
+            const message = messages[i];
+            if (!message || message.type !== 'bot') {
+                continue;
+            }
+            if (stableMessageKey(message) !== messageKey) {
+                continue;
+            }
+            const diag = resolveDiagnosisForSageMount(message);
+            if (!diag) {
+                return null;
+            }
+            return applyFeedbackStateToDiagnosis(diag, messageKey);
+        }
+        return null;
+    }
+
+    function refreshAllStatusBubbleChrome(root) {
+        const chatMessages = root || document.getElementById('chatMessages');
+        if (!chatMessages) {
+            return;
+        }
+        chatMessages.querySelectorAll('.message.bot').forEach(function (node) {
+            if (!node.querySelector('.ui-bubble--status, .ui-bubble--qa')) {
+                return;
+            }
+            let diag = findStoredDiagnosisForNode(node);
+            if (window.StatusRenderer && typeof window.StatusRenderer.ensureStatusFeedbackVoice === 'function') {
+                window.StatusRenderer.ensureStatusFeedbackVoice(node, diag);
+            }
+            if (window.StatusRenderer && typeof window.StatusRenderer.patchStatusBubbleChrome === 'function') {
+                window.StatusRenderer.patchStatusBubbleChrome(node, diag);
+            }
+            const needsVoice = !node.querySelector('.voice-read-compact-btn')
+                && (!diag || diag.show_feedback !== false);
+            const chromeV = window.StatusRenderer && window.StatusRenderer.SAGE_STATUS_CHROME_VERSION;
+            const needsRemount = needsVoice
+                || (chromeV && node.getAttribute('data-sage-chrome-v') !== chromeV);
+            if (needsRemount && window.StatusRenderer && typeof window.StatusRenderer.mountSageStatus === 'function') {
+                if (!diag) {
+                    patchStatusVoiceReadButtons(node);
+                    return;
+                }
+                const messageKey = node.getAttribute('data-message-id') || '';
+                node.removeAttribute('data-sage-chrome-v');
+                node.__sageMountFingerprint = '';
+                window.StatusRenderer.mountSageStatus(node, { diagnosis: diag }, {
+                    mountFingerprint: buildSageMountFingerprint(messageKey, diag),
+                });
+                node.__messageDiagnosis = diag;
+            }
+            patchStatusVoiceReadButtons(node);
+        });
+    }
+
+    window.refreshAllStatusBubbleChrome = refreshAllStatusBubbleChrome;
 
     /** @returns {boolean} true のとき DOM を実際に更新した */
     function mountSageBotMessage(messageDiv, message) {
@@ -1603,10 +1681,24 @@
         }
         diag = applyFeedbackStateToDiagnosis(diag, messageKey);
         const mountFingerprint = buildSageMountFingerprint(messageKey, diag);
+        const chromeVersion = window.StatusRenderer && window.StatusRenderer.SAGE_STATUS_CHROME_VERSION;
+        const needsChromeRefresh = chromeVersion
+            && (
+                messageDiv.getAttribute('data-sage-chrome-v') !== chromeVersion
+                || (diag.show_feedback !== false && !messageDiv.querySelector('.voice-read-compact-btn'))
+            );
         if (
             isSageBubbleMountedInNode(messageDiv)
             && messageDiv.__sageMountFingerprint === mountFingerprint
+            && !needsChromeRefresh
         ) {
+            if (window.StatusRenderer && typeof window.StatusRenderer.patchStatusBubbleChrome === 'function') {
+                window.StatusRenderer.patchStatusBubbleChrome(messageDiv, diag);
+            }
+            if (window.StatusRenderer && typeof window.StatusRenderer.ensureStatusFeedbackVoice === 'function') {
+                window.StatusRenderer.ensureStatusFeedbackVoice(messageDiv, diag);
+            }
+            patchStatusVoiceReadButtons(messageDiv);
             return false;
         }
         const mountMessage = Object.assign({}, message, { diagnosis: diag });
@@ -1620,6 +1712,13 @@
             if (statusMounted) {
                 messageDiv.__messageDiagnosis = diag;
                 messageDiv.__sageMountFingerprint = mountFingerprint;
+            }
+            patchStatusVoiceReadButtons(messageDiv);
+            if (window.StatusRenderer && typeof window.StatusRenderer.patchStatusBubbleChrome === 'function') {
+                window.StatusRenderer.patchStatusBubbleChrome(messageDiv, diag);
+            }
+            if (window.StatusRenderer && typeof window.StatusRenderer.ensureStatusFeedbackVoice === 'function') {
+                window.StatusRenderer.ensureStatusFeedbackVoice(messageDiv, diag);
             }
             return statusMounted;
         }
@@ -5740,6 +5839,87 @@
         }
     }
 
+    // ステータスバブル: 音声読み上げボタンを常に挿入（StatusRenderer のキャッシュ有無に依存しない）
+    function patchStatusVoiceReadButtons(root) {
+        if (window.StatusRenderer && typeof window.StatusRenderer.ensureStatusFeedbackVoice === 'function') {
+            const scope = root && root.querySelector ? root : document;
+            scope.querySelectorAll('.message.bot').forEach(function (node) {
+                if (node.querySelector('.ui-bubble--status, .ui-bubble--qa')) {
+                    window.StatusRenderer.ensureStatusFeedbackVoice(node, node.__messageDiagnosis);
+                }
+            });
+            return;
+        }
+        const scope = root && root.querySelector ? root : document;
+        const locale = typeof getLocale === 'function' ? getLocale() : {};
+        const voiceLabel = locale.voiceReadCompactAria || '音声で読み上げる';
+        const bubbles = scope.querySelectorAll('.ui-bubble--status, .ui-bubble--qa');
+        bubbles.forEach(function (bubble) {
+            const block = bubble.querySelector('.ui-status-block');
+            if (!block) {
+                return;
+            }
+            let feedbackRow = block.querySelector('.ui-feedback-compact.feedback-buttons');
+            let actions;
+            if (!feedbackRow) {
+                feedbackRow = document.createElement('div');
+                feedbackRow.className = 'ui-feedback-compact feedback-buttons ui-feedback-compact--voice-only';
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'ui-feedback-compact__label';
+                labelSpan.textContent = voiceLabel;
+                actions = document.createElement('div');
+                actions.className = 'ui-feedback-compact__actions';
+                feedbackRow.appendChild(labelSpan);
+                feedbackRow.appendChild(actions);
+                block.appendChild(feedbackRow);
+            }
+            actions = actions || feedbackRow.querySelector('.ui-feedback-compact__actions');
+            if (!actions) {
+                actions = document.createElement('div');
+                actions.className = 'ui-feedback-compact__actions';
+                feedbackRow.appendChild(actions);
+            }
+            const looseBtns = feedbackRow.querySelectorAll(
+                ':scope > .feedback-btn-positive, :scope > .feedback-btn-negative, :scope > [data-feedback]'
+            );
+            looseBtns.forEach(function (btn) {
+                actions.appendChild(btn);
+            });
+            if (actions.querySelector('.voice-read-compact-btn')) {
+                return;
+            }
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'ui-feedback-compact__btn ui-feedback-compact__btn--voice voice-read-main-btn voice-read-compact-btn';
+            btn.setAttribute('aria-label', voiceLabel);
+            btn.innerHTML = (window.StatusRenderer && window.StatusRenderer.buildVoiceIconHtml)
+                ? window.StatusRenderer.buildVoiceIconHtml(false)
+                : '🔊';
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof window.toggleVoiceRead === 'function') {
+                    window.toggleVoiceRead(btn);
+                }
+            });
+            actions.insertBefore(btn, actions.firstChild);
+        });
+    }
+
+    function patchAllStatusBubbleChrome(root) {
+        const scope = root && root.querySelector ? root : document;
+        if (window.StatusRenderer && typeof window.StatusRenderer.patchStatusBubbleChrome === 'function') {
+            scope.querySelectorAll('.message.bot').forEach(function (node) {
+                if (node.querySelector('.ui-bubble--status, .ui-bubble--qa')) {
+                    window.StatusRenderer.patchStatusBubbleChrome(node);
+                }
+            });
+        }
+    }
+
+    window.patchStatusVoiceReadButtons = patchStatusVoiceReadButtons;
+    window.patchAllStatusBubbleChrome = patchAllStatusBubbleChrome;
+
     // ページ読み込み時に言語設定を適用
     function bindFeedbackDelegation() {
         const chatMessages = document.getElementById('chatMessages');
@@ -5792,18 +5972,36 @@
         applySeasonDecorationVisibility();
         createSeasonalParticles();
         window.addEventListener('resize', handleResize);
+
+        const chatMessages = document.getElementById('chatMessages');
+        refreshAllStatusBubbleChrome(chatMessages);
+        patchStatusVoiceReadButtons(chatMessages);
+        patchAllStatusBubbleChrome(chatMessages);
+        if (chatMessages && window.StatusRenderer && typeof window.StatusRenderer.patchStatusBubbleChrome === 'function') {
+            chatMessages.querySelectorAll('.message.bot.message--sage-status, .message.bot .ui-bubble--status').forEach(function (node) {
+                const root = node.classList && node.classList.contains('message') ? node : node.closest('.message.bot');
+                if (root) {
+                    window.StatusRenderer.patchStatusBubbleChrome(root, root.__messageDiagnosis);
+                }
+            });
+        }
         
         // MutationObserver: チャット DOM 変化時に落下距離用 CSS 変数だけ更新する。
         // 粒子の createSeasonalParticles はここで呼ばない（innerHTML 全消しで毎回ちらつくため）。
-        const chatMessages = document.getElementById('chatMessages');
         if (chatMessages) {
             let mutationLayoutTimeout;
+            let mutationVoicePatchTimeout;
             const observer = new MutationObserver(() => {
                 clearTimeout(mutationLayoutTimeout);
                 mutationLayoutTimeout = setTimeout(() => {
                     syncChatInputHeight();
                     updateSnowContainerHeight();
                 }, 500);
+                clearTimeout(mutationVoicePatchTimeout);
+                mutationVoicePatchTimeout = setTimeout(() => {
+                    patchStatusVoiceReadButtons(chatMessages);
+                    patchAllStatusBubbleChrome(chatMessages);
+                }, 40);
             });
 
             observer.observe(chatMessages, {
@@ -8798,6 +8996,7 @@
             if (turnRendered && infraRendered) {
                 updateSessionSafetyBanners(sessionData);
                 refreshSageSafetyRail((sessionData && sessionData.user_attributes) || {});
+                refreshAllStatusBubbleChrome();
                 if (opts.suppressTypingIndicator && !processingBubbleLocked && !shouldKeepProcessingBubble(merged)) {
                     scheduleTypingIndicatorRemoval(merged);
                 }
@@ -8835,6 +9034,7 @@
             && !(processingBubbleLocked || isProcessingInFlight())
         ) {
             updateSessionSafetyBanners(sessionData);
+            refreshAllStatusBubbleChrome();
             return;
         }
         if ((processingBubbleLocked || isProcessingInFlight()) && !postResponseResolved) {
@@ -9469,8 +9669,28 @@
         const shortThanks = (window.UiStrings && window.UiStrings.t('feedbackThanksShort'))
             || 'ありがとうございました';
         const thanksText = message && message.length > 24 ? shortThanks : (message || shortThanks);
+        const voiceBtn = container.querySelector('.voice-read-compact-btn');
+        const voiceLabel = (typeof getLocale === 'function' ? getLocale() : {}).voiceReadCompactAria || '音声で読み上げる';
         container.classList.add('ui-feedback-compact--done');
-        container.innerHTML = '<span class="ui-feedback-compact__thanks" aria-live="polite">✓ ' + thanksText + '</span>';
+        if (voiceBtn) {
+            container.innerHTML =
+                '<span class="ui-feedback-compact__thanks" aria-live="polite">✓ ' + thanksText + '</span>' +
+                '<div class="ui-feedback-compact__actions">' + voiceBtn.outerHTML + '</div>';
+            const freshVoice = container.querySelector('.voice-read-compact-btn');
+            if (freshVoice) {
+                freshVoice.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (typeof window.toggleVoiceRead === 'function') {
+                        window.toggleVoiceRead(freshVoice);
+                    }
+                });
+                freshVoice.setAttribute('aria-label', voiceLabel);
+            }
+        } else {
+            container.innerHTML = '<span class="ui-feedback-compact__thanks" aria-live="polite">✓ ' + thanksText + '</span>';
+        }
+        patchStatusVoiceReadButtons(messageNode || container.closest('#chatMessages'));
     }
 
     function handlePositiveFeedback(source, triggerEl) {
@@ -13026,6 +13246,7 @@ function appendQaDelta(text, section) {
                 periodicFp === lastRenderedMessagesFingerprint
                 && isSessionRenderStable(messages)
             ) {
+                refreshAllStatusBubbleChrome(chatMessages);
                 return;
             }
         }
@@ -13371,6 +13592,7 @@ function appendQaDelta(text, section) {
         });
         upgradeAllSageRecommendationMessages(messages, chatMessages);
         syncOptimisticUserMessage(messages);
+        refreshAllStatusBubbleChrome(chatMessages);
 
         // 装飾レイヤーは常に先頭（メッセージ並べ替えの影響を受けない）
         if (snowContainer && snowContainer.parentNode === chatMessages && chatMessages.firstChild !== snowContainer) {
@@ -13397,6 +13619,10 @@ function appendQaDelta(text, section) {
         
         // 折りたたみ機能を初期化
         initCollapsibleSections();
+        
+        // ステータスバブル: 🔊 ボタンとリスト chrome を確実に反映
+        patchStatusVoiceReadButtons(chatMessages);
+        patchAllStatusBubbleChrome(chatMessages);
         
         // 音声読み上げボタンを表示（推奨結果がある場合）
         checkAndShowVoiceReadButton();
@@ -13864,6 +14090,101 @@ function appendQaDelta(text, section) {
         }
     }
 
+    function speakViaWebSpeech(text) {
+        if (!text || !String(text).trim()) {
+            alert('読み上げる内容がありません。');
+            updateVoiceReadButtonState(false);
+            hideVoiceReadProgress();
+            isReading = false;
+            return;
+        }
+        if (typeof speechSynthesis === 'undefined' || !speechSynthesis) {
+            alert('お使いのブラウザは音声読み上げ機能に対応していません。');
+            updateVoiceReadButtonState(false);
+            hideVoiceReadProgress();
+            isReading = false;
+            return;
+        }
+
+        speechSynthesis.cancel();
+        stopPollyAudio();
+        updateVoiceReadButtonState(true);
+        showVoiceReadProgress();
+        isReading = true;
+
+        const utterance = new SpeechSynthesisUtterance(String(text).trim());
+        const langCode = (typeof currentLanguage !== 'undefined' && currentLanguage) || 'ja';
+        const langMap = { ja: 'ja-JP', en: 'en-US', ko: 'ko-KR', zh: 'zh-CN' };
+        utterance.lang = langMap[langCode] || 'ja-JP';
+        utterance.rate = voiceReadSpeed;
+        utterance.volume = 1.0;
+        utterance.pitch = 1.0;
+
+        utterance.onstart = function () {
+            voiceReadProgress = 0;
+            updateVoiceReadProgress(0);
+        };
+
+        let progressInterval = setInterval(function () {
+            if (isReading && voiceReadProgress < 95) {
+                voiceReadProgress += 2;
+                updateVoiceReadProgress(voiceReadProgress);
+            } else if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+        }, 500);
+
+        utterance.onend = function () {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+            updateVoiceReadProgress(100);
+            setTimeout(function () {
+                updateVoiceReadButtonState(false);
+                hideVoiceReadProgress();
+                isReading = false;
+                voiceReadProgress = 0;
+            }, 300);
+        };
+
+        utterance.onerror = function (event) {
+            console.error('音声読み上げエラー:', event);
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+            updateVoiceReadButtonState(false);
+            hideVoiceReadProgress();
+            isReading = false;
+            voiceReadProgress = 0;
+        };
+
+        const speakWhenReady = function () {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+            try {
+                currentUtterance = utterance;
+                speechSynthesis.speak(utterance);
+            } catch (error) {
+                console.error('音声読み上げの開始に失敗:', error);
+                updateVoiceReadButtonState(false);
+                hideVoiceReadProgress();
+                isReading = false;
+            }
+        };
+
+        if (speechSynthesis.getVoices().length === 0) {
+            speechSynthesis.onvoiceschanged = function () {
+                speakWhenReady();
+            };
+        } else {
+            speakWhenReady();
+        }
+    }
+
     function speakViaPolly(text, lang) {
         const basePath = window.APP_BASE_PATH || '';
         updateVoiceReadButtonState(true);
@@ -13886,6 +14207,7 @@ function appendQaDelta(text, section) {
                 pollyAudio = new Audio(URL.createObjectURL(blob));
                 pollyAudio.onplay = function () {
                     isReading = true;
+                    updateVoiceReadButtonState(true);
                 };
                 pollyAudio.onended = function () {
                     stopPollyAudio();
@@ -13899,21 +14221,18 @@ function appendQaDelta(text, section) {
                     updateVoiceReadButtonState(false);
                     hideVoiceReadProgress();
                     isReading = false;
-                    alert('音声読み上げでエラーが発生しました。');
+                    speakViaWebSpeech(text);
                 };
                 return pollyAudio.play();
             })
             .catch(function (err) {
-                console.error('Polly TTS error:', err);
-                updateVoiceReadButtonState(false);
-                hideVoiceReadProgress();
-                isReading = false;
-                alert('音声読み上げの開始に失敗しました。');
+                console.warn('Polly TTS unavailable, falling back to Web Speech:', err);
+                speakViaWebSpeech(text);
             });
     }
     
     // 音声読み上げのトグル機能
-    function toggleVoiceRead() {
+    function toggleVoiceRead(fromButton) {
         if (isReading) {
             speechSynthesis.cancel();
             stopPollyAudio();
@@ -13921,18 +14240,18 @@ function appendQaDelta(text, section) {
             hideVoiceReadProgress();
             isReading = false;
         } else {
-            // 停止中 → 開始
-            speakFullRecommendation();
+            speakFullRecommendation(fromButton);
             updateVoiceReadButtonState(true);
             showVoiceReadProgress();
             isReading = true;
         }
     }
+    window.toggleVoiceRead = toggleVoiceRead;
     
     // ボタンの状態を更新
     function updateVoiceReadButtonState(reading) {
-        const buttons = document.querySelectorAll('.voice-read-main-btn');
-        buttons.forEach(button => {
+        const mainButtons = document.querySelectorAll('.voice-read-main-btn:not(.voice-read-compact-btn)');
+        mainButtons.forEach(button => {
             if (reading) {
                 button.innerHTML = '■ 読み上げを停止';
                 button.classList.add('playing');
@@ -13943,26 +14262,67 @@ function appendQaDelta(text, section) {
                 button.setAttribute('aria-label', '推奨結果を音声で読み上げる');
             }
         });
+        const compactButtons = document.querySelectorAll('.voice-read-compact-btn');
+        const voiceIconHtml = window.StatusRenderer && typeof window.StatusRenderer.buildVoiceIconHtml === 'function'
+            ? window.StatusRenderer.buildVoiceIconHtml.bind(window.StatusRenderer)
+            : null;
+        compactButtons.forEach(button => {
+            if (reading) {
+                button.innerHTML = voiceIconHtml ? voiceIconHtml(true) : '■';
+                button.classList.add('playing');
+                button.setAttribute('aria-label', '読み上げを停止する');
+            } else {
+                button.innerHTML = voiceIconHtml ? voiceIconHtml(false) : '🔊';
+                button.classList.remove('playing');
+                button.setAttribute('aria-label', '音声で読み上げる');
+            }
+        });
     }
     
+    function resolveVoiceReadRoot(fromButton) {
+        if (window.TtsBuilder && typeof window.TtsBuilder.resolveVoiceBubbleRoot === 'function') {
+            const fromBtn = window.TtsBuilder.resolveVoiceBubbleRoot(fromButton);
+            if (fromBtn) {
+                return fromBtn;
+            }
+        }
+        if (fromButton && fromButton.closest) {
+            const bubble = fromButton.closest('.ui-bubble--status, .ui-bubble--qa, .ui-bubble--reco, .recommendation-result');
+            if (bubble) {
+                return bubble;
+            }
+        }
+        const chatMessages = document.getElementById('chatMessages');
+        const lastBot = chatMessages && chatMessages.querySelector('.message.bot:last-of-type');
+        if (lastBot) {
+            return lastBot.querySelector('.ui-bubble--status, .ui-bubble--qa, .ui-bubble--reco, .recommendation-result');
+        }
+        return getLatestRecommendationRoot();
+    }
+
+    function buildVoiceReadText(fromButton) {
+        const root = resolveVoiceReadRoot(fromButton);
+        if (root && window.TtsBuilder && typeof window.TtsBuilder.buildFromVisibleBubble === 'function') {
+            const visible = window.TtsBuilder.buildFromVisibleBubble(root);
+            if (visible) {
+                return visible;
+            }
+        }
+        if (root) {
+            return (root.innerText || root.textContent || '').replace(/\s+/g, ' ').trim();
+        }
+        const messageNode = fromButton && fromButton.closest
+            ? fromButton.closest('.message.bot')
+            : null;
+        if (messageNode && messageNode.__messageDiagnosis && window.TtsBuilder) {
+            return window.TtsBuilder.buildFromDiagnosis(messageNode.__messageDiagnosis);
+        }
+        return '';
+    }
+
     // 全文読み上げ
-    function speakFullRecommendation() {
-        const recommendationResult = getLatestRecommendationRoot();
-        let text = '';
-        if (window.TtsBuilder) {
-            const chatMessages = document.getElementById('chatMessages');
-            const lastBot = chatMessages && chatMessages.querySelector('.message.bot:last-of-type');
-            const diagNode = lastBot && lastBot.querySelector('.ui-bubble--reco, .ui-bubble--status');
-            if (lastBot && lastBot.__messageDiagnosis) {
-                text = window.TtsBuilder.buildFromDiagnosis(lastBot.__messageDiagnosis);
-            }
-            if (!text && recommendationResult) {
-                text = window.TtsBuilder.buildFromElement(recommendationResult);
-            }
-        }
-        if (!text && recommendationResult) {
-            text = (recommendationResult.innerText || recommendationResult.textContent || '').replace(/\s+/g, ' ').trim();
-        }
+    function speakFullRecommendation(fromButton) {
+        let text = buildVoiceReadText(fromButton);
         if (!text || text.trim().length === 0) {
             alert('読み上げる内容がありません。');
             return;
@@ -13975,102 +14335,8 @@ function appendQaDelta(text, section) {
             speakViaPolly(text, (typeof currentLanguage !== 'undefined' && currentLanguage) || 'ja');
             return;
         }
-        
-        // 既存の読み上げを停止
-        
-        // 新しい読み上げを開始
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'ja-JP';
-        utterance.rate = voiceReadSpeed;
-        utterance.volume = 1.0;
-        utterance.pitch = 1.0;
-        
-        // 進行状況の更新
-        utterance.onstart = function() {
-            voiceReadProgress = 0;
-            updateVoiceReadProgress(0);
-        };
-        
-        // 進行状況をシミュレート（実際の進行状況は取得できないため）
-        let progressInterval = null;
-        progressInterval = setInterval(() => {
-            if (isReading && voiceReadProgress < 95) {
-                voiceReadProgress += 2;
-                updateVoiceReadProgress(voiceReadProgress);
-            } else {
-                if (progressInterval) {
-                    clearInterval(progressInterval);
-                    progressInterval = null;
-                }
-            }
-        }, 500);
-        
-        // 読み上げ終了時に100%に更新
-        utterance.onend = function() {
-            if (progressInterval) {
-                clearInterval(progressInterval);
-                progressInterval = null;
-            }
-            updateVoiceReadProgress(100);
-            setTimeout(() => {
-                updateVoiceReadButtonState(false);
-                hideVoiceReadProgress();
-                isReading = false;
-                voiceReadProgress = 0;
-            }, 300); // 100%表示を少し見せるため300ms待機
-        };
-        
-        utterance.onerror = function(event) {
-            console.error('音声読み上げエラー:', event);
-            if (progressInterval) {
-                clearInterval(progressInterval);
-                progressInterval = null;
-            }
-            updateVoiceReadButtonState(false);
-            hideVoiceReadProgress();
-            isReading = false;
-            voiceReadProgress = 0;
-            alert('音声読み上げでエラーが発生しました。ブラウザの音声読み上げ機能が有効か確認してください。');
-        };
-        
-        // 音声読み上げの準備ができているか確認
-        if (typeof speechSynthesis === 'undefined' || !speechSynthesis) {
-            alert('お使いのブラウザは音声読み上げ機能に対応していません。');
-            updateVoiceReadButtonState(false);
-            hideVoiceReadProgress();
-            isReading = false;
-            return;
-        }
-        
-        // 音声が利用可能になるまで待機
-        const speakWhenReady = () => {
-            if (speechSynthesis.speaking) {
-                // 既に読み上げ中の場合は停止
-                speechSynthesis.cancel();
-            }
-            
-            try {
-                currentUtterance = utterance;
-                speechSynthesis.speak(utterance);
-                console.log('音声読み上げを開始しました');
-            } catch (error) {
-                console.error('音声読み上げの開始に失敗:', error);
-                alert('音声読み上げの開始に失敗しました。ブラウザの音声読み上げ機能を確認してください。');
-                updateVoiceReadButtonState(false);
-                hideVoiceReadProgress();
-                isReading = false;
-            }
-        };
-        
-        // 音声が利用可能か確認
-        if (speechSynthesis.getVoices().length === 0) {
-            // 音声リストがまだ読み込まれていない場合、イベントを待つ
-            speechSynthesis.onvoiceschanged = () => {
-                speakWhenReady();
-            };
-        } else {
-            speakWhenReady();
-        }
+
+        speakViaWebSpeech(text);
     }
     
     // 進行状況表示の更新

@@ -5,6 +5,7 @@ from src.content.changelog_digest import (
     build_changelog_ui_sections,
     load_changelog_digest,
     overview_to_user_bullets,
+    sanitize_changelog_intro_for_user,
     _soften_for_user_display,
 )
 from src.utils.sage_message_plain import strip_concierge_prompt_leakage
@@ -79,3 +80,46 @@ def test_pmda_overview_rewrites_to_user_friendly():
 def test_soften_filters_dev_paths():
     raw = "src/content/changelog_digest.py: CHANGELOG.md から抽出"
     assert _soften_for_user_display(raw) == ""
+
+
+def test_build_changelog_ui_sections_filters_ingestion_job_noise():
+    from src.content.changelog_digest import _keep_user_facing_bullet
+
+    assert _keep_user_facing_bullet("相互作用・副作用の案内がより信頼しやすくなりました")
+    assert not _keep_user_facing_bullet("ingestion job OG6SSAO4QN COMPLETE")
+    _, releases = load_changelog_digest(max_releases=2)
+    sections = build_changelog_ui_sections(releases, max_releases=2)
+    joined = " ".join(item for sec in sections for item in sec["items"])
+    assert "ingestion job" not in joined.lower()
+    assert "OG6SSAO4QN" not in joined
+
+
+def test_sanitize_changelog_intro_removes_pmda_dev_terms():
+    leaked = (
+        "最近の更新では、PMDA 正本の反映や品質フィルタの強化が進み、"
+        "より正確にご案内できるようになりました。"
+        "あわせて、更新内容の表示も見直し、全体としてより使いやすくなりました。"
+    )
+    cleaned = sanitize_changelog_intro_for_user(leaked)
+    assert "PMDA" not in cleaned
+    assert "正本" not in cleaned
+    assert "品質フィルタ" not in cleaned
+    assert "使いやすく" in cleaned or "アップデート" in cleaned
+
+
+def test_sanitize_changelog_intro_removes_meta_ui_dev_talk():
+    _, releases = load_changelog_digest(max_releases=1)
+    leaked = (
+        "最近の更新では、医薬品情報の反映精度がさらに整い、より使いやすくなりました。"
+        "画面の「最近の更新」も、開発者向けの情報をできるだけ減らして、見やすい表示に整えています。"
+        "あわせて、更新の確認や案内の流れも、より安心して使える形になりました。"
+    )
+    cleaned = sanitize_changelog_intro_for_user(
+        leaked,
+        header_date="2026年7月24日",
+        releases=releases,
+    )
+    assert "開発者向け" not in cleaned
+    assert "反映精度" not in cleaned
+    assert "最近の更新」も" not in cleaned
+    assert "アップデート" in cleaned or "改善" in cleaned or "使いやす" in cleaned

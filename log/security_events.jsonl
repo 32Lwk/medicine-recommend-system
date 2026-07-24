@@ -12512,3 +12512,37 @@
 {"timestamp": "2026-07-23T19:47:59.373493", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "マルチエージェントの役割分担は？"}}
 {"timestamp": "2026-07-24T22:57:09.697379", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-24T22:57:09.697908", "event_type": "input_validation", "user_id": "ユーザー16", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-24T23:15:45.841299", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-24T23:15:45.842337", "event_type": "input_validation", "user_id": "ユーザー18", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-24T23:24:09.791343", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-24T23:24:09.791582", "event_type": "input_validation", "user_id": "ユーザー18", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-24T23:28:10.107067", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-24T23:28:10.108322", "event_type": "input_validation", "user_id": "ユーザー16", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです。"}}
+{"timestamp": "2026-07-24T23:28:28.079609", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-24T23:42:22.420939", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-24T23:42:22.422376", "event_type": "input_validation", "user_id": "ユーザー18", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-24T23:42:50.868387", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-24T23:42:50.869136", "event_type": "input_validation", "user_id": "ユーザー16", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-24T23:44:07.564475", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-24T23:44:07.565737", "event_type": "input_validation", "user_id": "ユーザー18", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-24T23:51:54.753029", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-24T23:51:54.753495", "event_type": "input_validation", "user_id": "ユーザー19", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-24T23:53:02.972944", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-24T23:53:02.973588", "event_type": "input_validation", "user_id": "ユーザー20", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-24T23:58:56.783315", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-24T23:58:56.783884", "event_type": "input_validation", "user_id": "ユーザー20", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-24T23:59:33.937535", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-24T23:59:33.939173", "event_type": "input_validation", "user_id": "ユーザー21", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-25T00:02:16.799786", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-25T00:02:16.800080", "event_type": "input_validation", "user_id": "ユーザー20", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-25T00:07:22.698292", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-25T00:07:22.698792", "event_type": "input_validation", "user_id": "ユーザー16", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-25T00:07:55.831562", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-25T00:07:55.832358", "event_type": "input_validation", "user_id": "ユーザー19", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-25T00:21:42.505435", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-25T00:21:42.505693", "event_type": "input_validation", "user_id": "ユーザー19", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-25T00:23:36.136395", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-25T00:23:36.137045", "event_type": "input_validation", "user_id": "ユーザー20", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-25T00:39:26.871965", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-25T00:39:26.872392", "event_type": "input_validation", "user_id": "ユーザー16", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-07-25T00:39:47.956134", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}

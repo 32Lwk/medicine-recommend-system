@@ -40,6 +40,27 @@ _side_effects_df = None
 _interactions_df = None
 
 
+def _safe_csv_cell(value: Any) -> str:
+    """CSVセル値を安全に文字列化（NaN/None/float対応）"""
+    if value is None:
+        return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except (TypeError, ValueError):
+        pass
+    if isinstance(value, float):
+        return "" if value != value else str(value).strip()
+    return str(value).strip()
+
+
+def _split_csv_cell_list(value: Any) -> List[str]:
+    text = _safe_csv_cell(value)
+    if not text:
+        return []
+    return [part.strip() for part in text.split(",") if part.strip()]
+
+
 def normalize_medicine_name_to_hankaku(text: str) -> str:
     """医薬品名の数字・アルファベットを半角に統一（比較・検索用）
 
@@ -816,8 +837,8 @@ def calculate_side_effect_risk_score(candidate: Dict, user_info: Dict) -> float:
         ]
         
         for _, row in matching_rows.iterrows():
-            side_effect_level = row.get('副作用レベル', '')
-            contraindications = row.get('禁忌条件', '')
+            side_effect_level = _safe_csv_cell(row.get('副作用レベル', ''))
+            contraindications = _safe_csv_cell(row.get('禁忌条件', ''))
             
             # 副作用レベルを数値に変換
             level_score = 0.0
@@ -831,7 +852,8 @@ def calculate_side_effect_risk_score(candidate: Dict, user_info: Dict) -> float:
             # 禁忌条件のチェック
             if contraindications and user_info:
                 # ユーザーの既往症や状態をチェック
-                if any(condition in str(user_info) for condition in contraindications.split(',')):
+                contra_parts = _split_csv_cell_list(contraindications)
+                if any(condition in str(user_info) for condition in contra_parts):
                     level_score *= 2  # 禁忌条件に該当する場合はリスクを倍増
             
             # 妊娠中・授乳中の場合は追加減点

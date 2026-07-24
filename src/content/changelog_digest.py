@@ -307,7 +307,9 @@ _DEV_BULLET_RE = re.compile(
     r"data/|Medicine eval|OK 率|\d+/\d+|raw \d+%|ingestion failed|metadata boolean|"
     r"§\d|live fetch|live_replace|reparse_from_raw|quality_filter|"
     r"side_effects|interactions PMDA|\d+\.?\d*%→\d+%|"
-    r"catalog expansion|detail_html|live のみ|ingredients/",
+    r"catalog expansion|detail_html|live のみ|ingredients/|"
+    r"ingestion job|[A-Z0-9]{10,}\s+COMPLETE|Bedrock ingestion|"
+    r"/usr/local|aws CLI|PATH 制限|[0-9a-f]{6,}\s+で",
     re.I,
 )
 
@@ -558,6 +560,21 @@ def release_user_facing_items(
     return items
 
 
+def _keep_user_facing_bullet(text: str) -> bool:
+    line = (text or "").strip()
+    if not line or len(line) < 4:
+        return False
+    if _is_dev_only_bullet(line):
+        return False
+    if re.search(
+        r"ingestion job|[A-Z0-9]{8,}\s+COMPLETE|/usr/local|aws CLI|PATH 制限|OG6SSAO4QN",
+        line,
+        re.I,
+    ):
+        return False
+    return True
+
+
 def build_changelog_ui_sections(
     releases: Tuple[ChangelogRelease, ...],
     *,
@@ -591,7 +608,7 @@ def build_changelog_ui_sections(
                 "title": release_user_section_title(release.heading),
                 "items": [],
             }
-            if idx == 0 and deploy_commit:
+            if idx == 0 and deploy_commit and detailed:
                 bucket["commit"] = deploy_commit
             grouped.append(bucket)
 
@@ -600,6 +617,8 @@ def build_changelog_ui_sections(
         seen = set(bucket["items"])
         for item in items:
             if item in seen:
+                continue
+            if not _keep_user_facing_bullet(item):
                 continue
             if len(bucket["items"]) >= cap:
                 break
@@ -610,7 +629,9 @@ def build_changelog_ui_sections(
     for bucket in grouped:
         bucket.pop("_date_key", None)
         bucket.pop("_sources", None)
-        if bucket.get("items"):
+        items = [i for i in (bucket.get("items") or []) if _keep_user_facing_bullet(i)]
+        if items:
+            bucket["items"] = items
             sections.append(bucket)
     return sections
 
@@ -651,6 +672,59 @@ def changelog_unavailable_user_message() -> str:
             detail.append(f"ビルド {commit}")
         lines.insert(1, "（" + " / ".join(detail) + "）")
     return "\n\n".join(lines)
+
+
+_DEV_INTRO_RE = re.compile(
+    r"PMDA|正本|品質フィルタ|quality_filter|ingestion job|data/pmda|"
+    r"CHANGELOG|doc_changelog|build-meta|CodeBuild|Bedrock ingestion|"
+    r"§\d|reparse_from_raw|live fetch|"
+    r"開発者向け|developer.?facing|"
+    r"画面の[「『]?最近の更新|最近の更新.[」』]?も|"
+    r"反映精度|見やすい表示に整え|案内の流れも、より安心",
+    re.I,
+)
+
+
+def _intro_sentence_user_facing(sentence: str) -> bool:
+    line = (sentence or "").strip().lstrip("・").strip()
+    if len(line) < 6:
+        return False
+    if _DEV_INTRO_RE.search(line):
+        return False
+    if _is_dev_only_bullet(line):
+        return False
+    return True
+
+
+def sanitize_changelog_intro_for_user(
+    intro: str,
+    *,
+    header_date: str = "",
+    releases: Tuple[ChangelogRelease, ...] = (),
+) -> str:
+    """LLM 導入文から開発者向け語を除去し、利用者向けに整える。"""
+    text = re.sub(r"\s+", " ", (intro or "").strip())
+    if not text:
+        return changelog_fallback_intro(header_date, releases)
+
+    if not _DEV_INTRO_RE.search(text) and not _is_dev_only_bullet(text):
+        return text
+
+    sentences: List[str] = []
+    for chunk in re.split(r"(?<=[。．!！?？])\s*", text):
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        if not chunk.endswith(("。", "．", "!", "！", "?", "？")):
+            chunk += "。"
+        if _intro_sentence_user_facing(chunk):
+            sentences.append(chunk)
+
+    if len(sentences) >= 2:
+        return "".join(sentences[:3])
+    if len(sentences) == 1 and len(sentences[0]) >= 18:
+        return sentences[0]
+    return changelog_fallback_intro(header_date, releases)
 
 
 def changelog_fallback_intro(header_date: str, releases: Tuple[ChangelogRelease, ...]) -> str:

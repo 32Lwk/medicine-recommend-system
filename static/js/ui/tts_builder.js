@@ -51,6 +51,33 @@
     return (root.innerText || root.textContent || '').replace(/\s+/g, ' ').trim();
   }
 
+  /** 画面上の Sage バブルから読み上げ用テキスト（フィードバック行は除外） */
+  function buildFromVisibleBubble(bubbleEl) {
+    if (!bubbleEl) return '';
+    var root = bubbleEl;
+    if (typeof document !== 'undefined' && bubbleEl.cloneNode) {
+      var clone = bubbleEl.cloneNode(true);
+      var removeSel = [
+        '.ui-feedback-compact',
+        '.feedback-buttons',
+        '.ui-status-actions',
+        '.ui-reco-voice',
+        '#voice-read-progress',
+        '#voice-read-progress-inline'
+      ].join(',');
+      clone.querySelectorAll(removeSel).forEach(function (node) {
+        node.remove();
+      });
+      root = clone;
+    }
+    return buildFromElement(root);
+  }
+
+  function resolveVoiceBubbleRoot(fromButton) {
+    if (!fromButton || !fromButton.closest) return null;
+    return fromButton.closest('.ui-bubble--status, .ui-bubble--qa, .ui-bubble--reco, .recommendation-result');
+  }
+
   function buildFromLastBotMessage(messages) {
     if (!Array.isArray(messages)) return '';
     for (var i = messages.length - 1; i >= 0; i--) {
@@ -66,6 +93,8 @@
   global.TtsBuilder = {
     buildFromDiagnosis: buildFromDiagnosis,
     buildFromElement: buildFromElement,
+    buildFromVisibleBubble: buildFromVisibleBubble,
+    resolveVoiceBubbleRoot: resolveVoiceBubbleRoot,
     buildFromLastBotMessage: buildFromLastBotMessage,
     stripHtml: stripHtml
   };

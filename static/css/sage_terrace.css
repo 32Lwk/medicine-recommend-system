@@ -173,8 +173,10 @@ body[data-ui-variant="sage"] {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 8px !important;
+  margin-top: 6px !important;
   padding: 5px 10px !important;
+  line-height: 1.2 !important;
+  font-size: 0.88em !important;
   background: #f6f8fa !important;
   border: 1px solid var(--ui-border) !important;
   border-radius: 999px !important;
@@ -204,8 +206,8 @@ body[data-ui-variant="sage"] {
 [data-ui-variant="sage"] .ui-feedback-compact__label {
   color: var(--ui-text-muted);
   font-weight: 500;
-  font-size: inherit !important;
-  line-height: 1.3;
+  font-size: 0.92em !important;
+  line-height: 1.2;
   flex: 1;
   min-width: 0;
 }
@@ -214,12 +216,14 @@ body[data-ui-variant="sage"] {
   display: flex;
   gap: 6px;
   flex-shrink: 0;
+  align-items: center;
 }
 
 [data-ui-variant="sage"] .ui-feedback-compact__btn {
-  width: 28px;
-  height: 28px;
+  width: 29px;
+  height: 29px;
   min-height: 0;
+  min-width: 0;
   padding: 0;
   border-radius: 50%;
   border: 1px solid var(--ui-border);
@@ -862,17 +866,79 @@ body[data-ui-variant="sage"] {
 [data-ui-variant="sage"] .ui-bubble--reco .ui-feedback-compact .feedback-btn-positive,
 [data-ui-variant="sage"] .ui-bubble--reco .ui-feedback-compact .feedback-btn-negative,
 [data-ui-variant="sage"] .ui-feedback-compact .feedback-btn-positive,
-[data-ui-variant="sage"] .ui-feedback-compact .feedback-btn-negative {
+[data-ui-variant="sage"] .ui-feedback-compact .feedback-btn-negative,
+[data-ui-variant="sage"] .ui-bubble--status .ui-feedback-compact__actions .ui-feedback-compact__btn,
+[data-ui-variant="sage"] .ui-bubble--qa .ui-feedback-compact__actions .ui-feedback-compact__btn,
+[data-ui-variant="sage"] .ui-bubble--reco .ui-feedback-compact__actions .ui-feedback-compact__btn {
+  box-sizing: border-box !important;
   min-height: 0 !important;
   min-width: 0 !important;
   background: #fff !important;
   color: inherit !important;
   border-radius: 50% !important;
-  width: 28px !important;
-  height: 28px !important;
+  width: 29px !important;
+  height: 29px !important;
   padding: 0 !important;
   font-size: 0.85rem !important;
   font-weight: 400 !important;
+  line-height: 1 !important;
+  border: 1px solid var(--ui-border) !important;
+}
+
+[data-ui-variant="sage"] .ui-bubble--status .ui-feedback-compact__actions .voice-read-main-btn,
+[data-ui-variant="sage"] .ui-bubble--qa .ui-feedback-compact__actions .voice-read-main-btn,
+[data-ui-variant="sage"] .ui-bubble--reco .ui-feedback-compact__actions .voice-read-main-btn {
+  width: 29px !important;
+  min-width: 29px !important;
+  min-height: 29px !important;
+  max-width: 29px !important;
+  height: 29px !important;
+  background: #fff !important;
+  color: var(--ui-primary-dark, #3d5a73) !important;
+  transform: none;
+}
+
+[data-ui-variant="sage"] .ui-bubble--status .ui-feedback-compact__actions .voice-read-compact-btn.playing,
+[data-ui-variant="sage"] .ui-bubble--qa .ui-feedback-compact__actions .voice-read-compact-btn.playing,
+[data-ui-variant="sage"] .ui-bubble--reco .ui-feedback-compact__actions .voice-read-compact-btn.playing {
+  background: #dc3545 !important;
+  border-color: #c82333 !important;
+  color: #fff !important;
+}
+
+[data-ui-variant="sage"] .ui-bubble--status .ui-feedback-compact__actions .voice-read-compact-btn.playing .ui-feedback-voice-icon svg,
+[data-ui-variant="sage"] .ui-bubble--qa .ui-feedback-compact__actions .voice-read-compact-btn.playing .ui-feedback-voice-icon svg,
+[data-ui-variant="sage"] .ui-bubble--reco .ui-feedback-compact__actions .voice-read-compact-btn.playing .ui-feedback-voice-icon svg {
+  stroke: #fff;
+  fill: #fff;
+}
+
+[data-ui-variant="sage"] .ui-feedback-voice-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  line-height: 0;
+}
+
+[data-ui-variant="sage"] .ui-feedback-voice-icon svg {
+  display: block;
+}
+
+[data-ui-variant="sage"] .ui-bubble--status .ui-feedback-compact__actions .voice-read-main-btn:hover,
+[data-ui-variant="sage"] .ui-bubble--qa .ui-feedback-compact__actions .voice-read-main-btn:hover,
+[data-ui-variant="sage"] .ui-bubble--reco .ui-feedback-compact__actions .voice-read-main-btn:hover {
+  background: #f6f8fa !important;
+  border-color: var(--ui-primary) !important;
+  transform: scale(1.04);
+}
+
+[data-ui-variant="sage"] .ui-bubble--status .ui-feedback-compact__actions .voice-read-compact-btn.playing:hover,
+[data-ui-variant="sage"] .ui-bubble--qa .ui-feedback-compact__actions .voice-read-compact-btn.playing:hover,
+[data-ui-variant="sage"] .ui-bubble--reco .ui-feedback-compact__actions .voice-read-compact-btn.playing:hover {
+  background: #c82333 !important;
+  border-color: #bd2130 !important;
 }
 
 /* Feedback buttons (legacy full-size) */
@@ -1678,7 +1744,7 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
 [data-ui-variant="sage"] .message.bot > .ui-bubble--status,
 [data-ui-variant="sage"] .message.bot > .ui-bubble--qa {
   max-width: 96%;
-  padding: 0.55rem 0.65rem;
+  padding: 0.8rem 0.9rem;
   border-radius: 18px 18px 12px 18px;
   border: 1px solid var(--ui-border);
   background: #fff;
@@ -1731,7 +1797,12 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
 .ui-status-block--pro {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+}
+
+.ui-bubble--status .ui-status-block--pro,
+.ui-bubble--qa .ui-status-block--pro {
+  gap: 5px;
 }
 
 .ui-status-block--compact {
@@ -1832,7 +1903,7 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
 }
 
 .ui-status-intro {
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .ui-status-intro__title {
@@ -1852,13 +1923,17 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
 }
 
 .ui-status-advice__text {
-  margin: 0;
+  margin: 0 0 4px;
   color: var(--ui-text);
+}
+
+.ui-status-advice__text:last-child {
+  margin-bottom: 0;
 }
 
 .ui-bubble--status .ui-status-last-updated,
 .ui-bubble--qa .ui-status-last-updated {
-  margin: 10px 2px 4px;
+  margin: 4px 0 8px;
   padding: 0;
 }
 
@@ -1880,7 +1955,7 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
 .ui-status-sections {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .ui-status-section-card .ui-followup-list {
@@ -1980,8 +2055,8 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
 }
 
 .ui-status-footnote {
-  margin: 4px 2px 0;
-  padding: 10px 12px;
+  margin: 4px 0 0;
+  padding: 6px 10px;
   border-radius: 12px;
   border: 1px solid rgba(90, 184, 168, 0.22);
   background: linear-gradient(180deg, rgba(250, 248, 243, 0.95) 0%, #fff 100%);
@@ -2017,34 +2092,40 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
 .ui-status-section__list--updates {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 5px;
   margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.ui-status-update-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 0 2px;
-  line-height: 1.65;
+.ui-status-section__list--updates > li {
+  position: relative;
+  padding-left: 14px;
+  line-height: 1.45;
+  word-break: break-word;
+  color: var(--ui-text);
+  font-size: 0.96em;
 }
 
-.ui-status-update-item__mark {
-  flex-shrink: 0;
+.ui-status-section__list--updates > li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.58em;
   width: 6px;
   height: 6px;
-  margin-top: 0.58em;
   border-radius: 50%;
   background: var(--ui-primary, #5ab8a8);
   box-shadow: 0 0 0 2px rgba(90, 184, 168, 0.16);
 }
 
+.ui-status-update-item {
+  padding: 0;
+}
+
+.ui-status-update-item__mark,
 .ui-status-update-item__text {
-  flex: 1 1 auto;
-  min-width: 0;
-  word-break: break-word;
-  color: var(--ui-text);
-  font-size: 0.96em;
+  display: inline;
 }
 
 .ui-status-actions {
@@ -2324,4 +2405,40 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+/* Status bubble chrome — セクション余白・フィードバック行（ui-bubble 直結） */
+.ui-bubble--status .ui-status-sections,
+.ui-bubble--qa .ui-status-sections {
+  gap: 5px;
+  margin-top: 0;
+}
+
+.ui-bubble--status .ui-status-section-card.ui-overlap-card,
+.ui-bubble--qa .ui-status-section-card.ui-overlap-card {
+  margin-top: 0;
+}
+
+.ui-bubble--status .ui-status-section-card .ui-overlap-card__head,
+.ui-bubble--qa .ui-status-section-card .ui-overlap-card__head {
+  padding: 5px 10px;
+  gap: 6px;
+}
+
+.ui-bubble--status .ui-status-section-card .ui-overlap-card__body,
+.ui-bubble--qa .ui-status-section-card .ui-overlap-card__body {
+  padding: 4px 10px 6px;
+}
+
+.ui-bubble--status .ui-status-footnote,
+.ui-bubble--qa .ui-status-footnote {
+  margin-top: 0;
+  padding: 6px 10px;
+}
+
+.ui-bubble--status .feedback-buttons.ui-feedback-compact,
+.ui-bubble--qa .feedback-buttons.ui-feedback-compact {
+  margin-top: 6px;
+  padding: 5px 10px;
+  line-height: 1.2;
 }

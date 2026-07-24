@@ -906,9 +906,17 @@
 
 
 
+  function compactVoiceIconHtml(playing) {
+    if (global.StatusRenderer && typeof global.StatusRenderer.buildVoiceIconHtml === 'function') {
+      return global.StatusRenderer.buildVoiceIconHtml(!!playing);
+    }
+    return playing ? '■' : '🔊';
+  }
+
   function buildCompactFeedbackHtml(questionKey) {
 
     var qKey = questionKey || 'feedbackQuestionShort';
+    var voiceLabel = t('voiceReadCompactAria') || '音声で読み上げる';
 
     return (
 
@@ -917,6 +925,9 @@
         '<span class="ui-feedback-compact__label">' + esc(t(qKey)) + '</span>' +
 
         '<div class="ui-feedback-compact__actions">' +
+
+          '<button type="button" class="ui-feedback-compact__btn ui-feedback-compact__btn--voice voice-read-main-btn voice-read-compact-btn"' +
+            ' onclick="toggleVoiceRead(this)" aria-label="' + esc(voiceLabel) + '">' + compactVoiceIconHtml(false) + '</button>' +
 
           '<button type="button" class="feedback-btn-positive ui-feedback-compact__btn" data-feedback="positive" aria-label="' + esc(t('feedbackPositive')) + '">👍</button>' +
 
@@ -939,6 +950,13 @@
       '<div class="ui-feedback-compact feedback-buttons ui-feedback-compact--done">' +
 
         '<span class="ui-feedback-compact__thanks" aria-live="polite">✓ ' + esc(t('feedbackThanksShort')) + '</span>' +
+
+        '<div class="ui-feedback-compact__actions">' +
+
+          '<button type="button" class="ui-feedback-compact__btn ui-feedback-compact__btn--voice voice-read-main-btn voice-read-compact-btn"' +
+            ' onclick="toggleVoiceRead(this)" aria-label="' + esc(t('voiceReadCompactAria') || '音声で読み上げる') + '">' + compactVoiceIconHtml(false) + '</button>' +
+
+        '</div>' +
 
       '</div>'
 

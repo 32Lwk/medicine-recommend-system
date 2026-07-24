@@ -16,6 +16,53 @@
     return document.body && document.body.getAttribute('data-ui-variant') === 'sage';
   }
 
+  /** DOM 再描画スキップ時も chrome 更新を検知する（フィードバック 🔊・余白・リストドット） */
+  var SAGE_STATUS_CHROME_VERSION = '9';
+
+  var CHANGELOG_DEV_INTRO_RE = /PMDA|正本|品質フィルタ|quality_filter|ingestion job|data\/pmda|CHANGELOG|doc_changelog|build-meta|CodeBuild|Bedrock ingestion|§\d|reparse_from_raw|live fetch|開発者向け|developer.?facing|画面の[「『]?最近の更新|反映精度|見やすい表示に整え|案内の流れも、より安心/i;
+
+  function isChangelogKind(kind) {
+    return kind === 'concierge_doc_changelog' || kind === 'doc_changelog';
+  }
+
+  function sanitizeChangelogIntroText(message) {
+    var text = cleanStatusText(message || '');
+    if (!text) return '';
+    if (!CHANGELOG_DEV_INTRO_RE.test(text)) return text;
+    var sentences = text.split(/(?<=[。．!！?？])\s*/).filter(function (chunk) {
+      chunk = String(chunk || '').trim();
+      if (!chunk) return false;
+      if (!/[。．!！?？]$/.test(chunk)) chunk += '。';
+      return chunk.length >= 6 && !CHANGELOG_DEV_INTRO_RE.test(chunk);
+    });
+    if (sentences.length >= 2) {
+      return sentences.slice(0, 3).join('');
+    }
+    if (sentences.length === 1 && sentences[0].length >= 18) {
+      return sentences[0];
+    }
+    return '最近のアップデートをまとめました。画面の案内やお薬情報の表示が、より分かりやすくなっています。';
+  }
+
+  function sanitizeChangelogDiagnosis(diag) {
+    if (!diag || !isChangelogKind(diag.kind)) return diag;
+    var next = Object.assign({}, diag);
+    next.message = sanitizeChangelogIntroText(next.message || '');
+    if (next.sections && next.sections.length) {
+      next.sections = next.sections.map(function (sec) {
+        return Object.assign({}, sec, {
+          items: (sec.items || []).filter(function (item) {
+            var line = String(item || '').trim();
+            return line.length >= 4 && !CHANGELOG_DEV_INTRO_RE.test(line);
+          })
+        });
+      }).filter(function (sec) {
+        return sec.items && sec.items.length;
+      });
+    }
+    return next;
+  }
+
   var PLAIN_LAYOUT_KINDS = {
     concierge_greeting: true,
     concierge_thanks: true,
@@ -272,7 +319,7 @@
   }
 
   function sectionBadgeLabel(variant, title, kind) {
-    if (kind === 'concierge_doc_changelog') return t('statusBadgeUpdate') || '更新';
+    if (isChangelogKind(kind)) return t('statusBadgeUpdate') || '更新';
     if (/^\d{4}年\d{1,2}月\d{1,2}日/.test(title || '')) return t('statusBadgeUpdate') || '更新';
     if (/^GCP/.test(title || '')) return 'GCP';
     if (/^AWS/.test(title || '')) return 'AWS';
@@ -340,18 +387,102 @@
   function formatChangelogListItem(item) {
     var text = String(item || '').trim().replace(/^＋\s*/, '');
     if (!text) return '';
+    return '<li class="ui-status-update-item">' + esc(text) + '</li>';
+  }
+
+  function buildVoiceIconHtml(playing) {
+    if (playing) {
+      return (
+        '<span class="ui-feedback-voice-icon ui-feedback-voice-icon--stop" aria-hidden="true">' +
+          '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">' +
+            '<rect x="6" y="6" width="12" height="12" rx="1.5"/>' +
+          '</svg>' +
+        '</span>'
+      );
+    }
     return (
-      '<li class="ui-status-update-item">' +
-        '<span class="ui-status-update-item__mark" aria-hidden="true"></span>' +
-        '<span class="ui-status-update-item__text">' + esc(text) + '</span>' +
-      '</li>'
+      '<span class="ui-feedback-voice-icon" aria-hidden="true">' +
+        '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<path d="M11 5 6 9H3v6h3l5 4V5z"/>' +
+          '<path d="M15.5 8.5a4.5 4.5 0 0 1 0 7"/>' +
+          '<path d="M18.5 5.5a8 8 0 0 1 0 13"/>' +
+        '</svg>' +
+      '</span>'
     );
+  }
+
+  function buildVoiceReadBtnHtml() {
+    var label = t('voiceReadCompactAria') || '音声で読み上げる';
+    return (
+      '<button type="button" class="ui-feedback-compact__btn ui-feedback-compact__btn--voice voice-read-main-btn voice-read-compact-btn"' +
+        ' onclick="toggleVoiceRead(this)" aria-label="' + esc(label) + '" title="' + esc(label) + '">' +
+        buildVoiceIconHtml(false) +
+      '</button>'
+    );
+  }
+
+  function statusBubbleHasVoiceButton(messageDiv) {
+    return !!(messageDiv && messageDiv.querySelector && messageDiv.querySelector('.voice-read-compact-btn'));
+  }
+
+  function ensureStatusFeedbackVoice(messageDiv, diag) {
+    if (!messageDiv || !messageDiv.querySelector) return;
+    if (diag && diag.show_feedback === false) {
+      messageDiv.setAttribute('data-sage-chrome-v', SAGE_STATUS_CHROME_VERSION);
+      return;
+    }
+    var block = messageDiv.querySelector('.ui-bubble--status .ui-status-block, .ui-bubble--qa .ui-status-block');
+    if (!block) return;
+
+    var feedbackRow = block.querySelector('.ui-feedback-compact.feedback-buttons');
+    if (!feedbackRow) {
+      var tmp = document.createElement('div');
+      tmp.innerHTML = buildCompactFeedbackHtml('feedbackQuestionShort');
+      feedbackRow = tmp.firstElementChild;
+      if (feedbackRow) block.appendChild(feedbackRow);
+    }
+    if (!feedbackRow) return;
+
+    var actions = feedbackRow.querySelector('.ui-feedback-compact__actions');
+    if (!actions) {
+      actions = document.createElement('div');
+      actions.className = 'ui-feedback-compact__actions';
+      var looseBtns = feedbackRow.querySelectorAll(
+        ':scope > .feedback-btn-positive, :scope > .feedback-btn-negative, :scope > [data-feedback]'
+      );
+      feedbackRow.appendChild(actions);
+      looseBtns.forEach(function (btn) { actions.appendChild(btn); });
+    }
+
+    if (!actions.querySelector('.voice-read-compact-btn')) {
+      var label = t('voiceReadCompactAria') || '音声で読み上げる';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ui-feedback-compact__btn ui-feedback-compact__btn--voice voice-read-main-btn voice-read-compact-btn';
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('title', label);
+      btn.innerHTML = buildVoiceIconHtml(false);
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof global.toggleVoiceRead === 'function') {
+          global.toggleVoiceRead(btn);
+        }
+      });
+      actions.insertBefore(btn, actions.firstChild);
+    }
+
+    if (statusBubbleHasVoiceButton(messageDiv)) {
+      messageDiv.setAttribute('data-sage-chrome-v', SAGE_STATUS_CHROME_VERSION);
+    } else {
+      messageDiv.removeAttribute('data-sage-chrome-v');
+    }
   }
 
   function sectionsHtml(sections, variant, kind) {
     if (!sections || !sections.length) return '';
     var sev = variantOverlapSeverity(variant || 'notice');
-    var isChangelog = kind === 'concierge_doc_changelog';
+    var isChangelog = isChangelogKind(kind);
     return (
       '<div class="ui-status-sections">' +
         sections.map(function (sec) {
@@ -379,7 +510,7 @@
               '<div class="ui-overlap-card__head">' +
                 '<span class="ui-overlap-card__badge">' + esc(sectionBadgeLabel(variant, title, kind)) + '</span>' +
                 '<span class="ui-overlap-card__title">' + esc(title) + '</span>' +
-                (kind === 'concierge_doc_changelog' ? sectionCommitHtml(sec.commit) : '') +
+                (isChangelogKind(kind) ? sectionCommitHtml(sec.commit) : '') +
               '</div>' +
               '<div class="ui-overlap-card__body">' + body + '</div>' +
             '</div>'
@@ -478,6 +609,7 @@
       '<div class="ui-feedback-compact feedback-buttons">' +
         '<span class="ui-feedback-compact__label">' + esc(t(qKey)) + '</span>' +
         '<div class="ui-feedback-compact__actions">' +
+          buildVoiceReadBtnHtml() +
           '<button type="button" class="feedback-btn-positive ui-feedback-compact__btn" data-feedback="positive" aria-label="' + esc(t('feedbackPositive')) + '">👍</button>' +
           '<button type="button" class="feedback-btn-negative ui-feedback-compact__btn" data-feedback="negative" aria-label="' + esc(t('feedbackNegative')) + '">👎</button>' +
         '</div>' +
@@ -489,6 +621,9 @@
     return (
       '<div class="ui-feedback-compact feedback-buttons ui-feedback-compact--done">' +
         '<span class="ui-feedback-compact__thanks" aria-live="polite">✓ ' + esc(t('feedbackThanksShort')) + '</span>' +
+        '<div class="ui-feedback-compact__actions">' +
+          buildVoiceReadBtnHtml() +
+        '</div>' +
       '</div>'
     );
   }
@@ -531,7 +666,7 @@
     if (isAbsoluteBlockStatus(diag)) {
       return statusMessagePlainHtml(diag);
     }
-    var isChangelog = diag && diag.kind === 'concierge_doc_changelog';
+    var isChangelog = diag && isChangelogKind(diag.kind);
     var subtitle = cleanStatusText(diag.subtitle || '');
     var message = cleanStatusText(diag.message || '');
     if (!subtitle && !message) return '';
@@ -578,12 +713,11 @@
 
   function resolveDiagnosis(diag) {
     if (global.UiStrings && global.UiStrings.applyDiagnosisI18n) {
-      return global.UiStrings.applyDiagnosisI18n(diag);
+      diag = global.UiStrings.applyDiagnosisI18n(diag);
+    } else if (global.RecommendationRenderer && global.RecommendationRenderer.applyDiagnosisI18n) {
+      diag = global.RecommendationRenderer.applyDiagnosisI18n(diag);
     }
-    if (global.RecommendationRenderer && global.RecommendationRenderer.applyDiagnosisI18n) {
-      return global.RecommendationRenderer.applyDiagnosisI18n(diag);
-    }
-    return diag;
+    return sanitizeChangelogDiagnosis(diag);
   }
 
   function buildPlainChatBubbleHtml(diag) {
@@ -607,6 +741,25 @@
     return '<div class="ui-bubble ' + bubbleClass + '">' + buildStatusBlockHtml(diag) + '</div>';
   }
 
+  function patchStatusBubbleChrome(messageDiv, diag) {
+    if (!messageDiv || !messageDiv.querySelector) return;
+    messageDiv.querySelectorAll('.ui-status-section__list--updates > li').forEach(function (li) {
+      if (!li.classList.contains('ui-status-update-item')) {
+        li.classList.add('ui-status-update-item');
+      }
+    });
+    ensureStatusFeedbackVoice(messageDiv, diag || messageDiv.__messageDiagnosis);
+  }
+
+  function needsStatusChromeRefresh(messageDiv, diag) {
+    if (!messageDiv) return true;
+    if (messageDiv.getAttribute('data-sage-chrome-v') !== SAGE_STATUS_CHROME_VERSION) {
+      return true;
+    }
+    if (diag && diag.show_feedback === false) return false;
+    return !statusBubbleHasVoiceButton(messageDiv);
+  }
+
   function mountSageStatus(messageDiv, message, options) {
     options = options || {};
     if (!messageDiv || !isSageUi() || !message || !message.diagnosis) return false;
@@ -614,20 +767,34 @@
     if (diag.render !== 'sage_status' && diag.render !== 'sage_qa') return false;
     var mountFingerprint = options.mountFingerprint || '';
     var bubbleSelector = diag.render === 'sage_qa' ? '.ui-bubble--qa' : '.ui-bubble--status';
-    if (
+    var alreadyMounted = !!(
       mountFingerprint
       && messageDiv.__sageMountFingerprint === mountFingerprint
       && messageDiv.querySelector(bubbleSelector)
-    ) {
-      return false;
+      && !needsStatusChromeRefresh(messageDiv, diag)
+    );
+    if (!alreadyMounted) {
+      var html = buildSageStatusBubbleHtml(diag);
+      if (!html) return false;
+      messageDiv.innerHTML = html;
+      messageDiv.classList.add(isPlainLayout(diag) ? 'message--sage-chat' : 'message--sage-status');
+      messageDiv.__messageDiagnosis = diag;
+      if (mountFingerprint) {
+        messageDiv.__sageMountFingerprint = mountFingerprint;
+      }
+    } else {
+      messageDiv.__messageDiagnosis = diag;
     }
-    var html = buildSageStatusBubbleHtml(diag);
-    if (!html) return false;
-    messageDiv.innerHTML = html;
-    messageDiv.classList.add(isPlainLayout(diag) ? 'message--sage-chat' : 'message--sage-status');
-    messageDiv.__messageDiagnosis = diag;
-    if (mountFingerprint) {
-      messageDiv.__sageMountFingerprint = mountFingerprint;
+    patchStatusBubbleChrome(messageDiv, diag);
+    if (!statusBubbleHasVoiceButton(messageDiv) && diag.show_feedback !== false) {
+      messageDiv.removeAttribute('data-sage-chrome-v');
+      messageDiv.__sageMountFingerprint = '';
+      messageDiv.innerHTML = buildSageStatusBubbleHtml(diag);
+      messageDiv.__messageDiagnosis = diag;
+      if (mountFingerprint) {
+        messageDiv.__sageMountFingerprint = mountFingerprint;
+      }
+      patchStatusBubbleChrome(messageDiv, diag);
     }
     return true;
   }
@@ -638,6 +805,10 @@
     isCompactLayout: isCompactLayout,
     buildStatusBlockHtml: buildStatusBlockHtml,
     buildSageStatusBubbleHtml: buildSageStatusBubbleHtml,
-    mountSageStatus: mountSageStatus
+    mountSageStatus: mountSageStatus,
+    patchStatusBubbleChrome: patchStatusBubbleChrome,
+    ensureStatusFeedbackVoice: ensureStatusFeedbackVoice,
+    buildVoiceIconHtml: buildVoiceIconHtml,
+    SAGE_STATUS_CHROME_VERSION: SAGE_STATUS_CHROME_VERSION
   };
 })(typeof window !== 'undefined' ? window : globalThis);

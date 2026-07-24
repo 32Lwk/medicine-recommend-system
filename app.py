@@ -78,8 +78,16 @@ if __name__ == '__main__':
 
     _prepare_local_database()
     port = _resolve_port()
-    # 既定は reload OFF（Windows でチャット中に再起動すると全 API がハングするため）
-    reload = os.getenv('UVICORN_RELOAD', '').strip().lower() in ('1', 'true', 'yes')
+    from config.app_config import is_development_runtime
+
+    # 開発時は reload 既定 ON（Windows でチャット中に再起動するとハングするため UVICORN_RELOAD=0 で無効化可）
+    reload_env = os.getenv('UVICORN_RELOAD', '').strip().lower()
+    if reload_env in ('1', 'true', 'yes'):
+        reload = True
+    elif reload_env in ('0', 'false', 'no'):
+        reload = False
+    else:
+        reload = is_development_runtime()
     host = os.getenv('ASGI_HOST', '0.0.0.0')
     logger.info(f"🚀 Starting FastAPI (uvicorn) on port {port} (reload={reload})...")
     logger.info(

@@ -116,8 +116,12 @@ def get_static_cdn_base_url() -> str:
 
 
 def resolve_static_asset_url(filename: str) -> str:
-    """Jinja url_for('static') 互換。STATIC_CDN_BASE_URL 設定時は CloudFront 直リンク。"""
+    """Jinja url_for('static') 互換。CDN 設定時も localhost では /static/ を優先。"""
     fn = (filename or "").lstrip("/")
+    from config.static_assets import should_prefer_local_static_assets
+
+    if should_prefer_local_static_assets():
+        return f"/static/{fn}"
     base = get_static_cdn_base_url()
     if base:
         return f"{base}/{fn}"

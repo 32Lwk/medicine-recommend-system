@@ -697,6 +697,7 @@ def generate_changelog_intro_text(
         format_build_meta_block,
         format_changelog_llm_reference,
         load_changelog_digest,
+        sanitize_changelog_intro_for_user,
     )
     from src.utils.sage_message_plain import strip_concierge_prompt_leakage
 
@@ -753,11 +754,25 @@ def generate_changelog_intro_text(
             (resp.choices[0].message.content or "").strip()
         )
         if text:
-            return text, True
+            return (
+                sanitize_changelog_intro_for_user(
+                    text,
+                    header_date=header_date,
+                    releases=releases,
+                ),
+                True,
+            )
     except Exception as exc:
         logger.warning("Concierge changelog intro LLM failed: %s", exc)
 
-    return changelog_fallback_intro(header_date, releases), False
+    return (
+        sanitize_changelog_intro_for_user(
+            changelog_fallback_intro(header_date, releases),
+            header_date=header_date,
+            releases=releases,
+        ),
+        False,
+    )
 
 
 def build_changelog_payload(

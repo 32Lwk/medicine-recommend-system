@@ -267,6 +267,26 @@ app.add_middleware(
     allow_credentials=allow_credentials,
 )
 
+
+@app.middleware("http")
+async def _local_static_assets_middleware(request: Request, call_next):
+    """127.0.0.1 / localhost では APP_ENV=production でも CDN ではなく同梱 static を配信。"""
+    from config.static_assets import (
+        is_loopback_host,
+        reset_prefer_local_static,
+        set_prefer_local_static,
+    )
+
+    host = request.headers.get("host") or ""
+    client_host = request.client.host if request.client else ""
+    prefer_local = is_loopback_host(host) or is_loopback_host(client_host)
+    token = set_prefer_local_static(prefer_local)
+    try:
+        return await call_next(request)
+    finally:
+        reset_prefer_local_static(token)
+
+
 # Static
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -299,6 +319,34 @@ def _normalized_app_version_env() -> str | None:
     if _PLACEHOLDER_APP_VERSION.match(s) or "{{" in s:
         return None
     return s
+
+
+_DEV_STATIC_ASSET_PATHS = (
+    "static/js/main.js",
+    "static/js/ui/status_renderer.js",
+    "static/js/ui/recommendation_renderer.js",
+    "static/css/sage_terrace.css",
+    "src/content/changelog_digest.py",
+)
+
+
+def _resolve_template_version() -> str:
+    """テンプレート ?v= 用。開発時は主要静的ファイルの mtime でキャッシュを無効化。"""
+    nv = _normalized_app_version_env()
+    if nv is not None:
+        return nv
+    root = Path(__file__).resolve().parent
+    from config.static_assets import should_prefer_local_static_assets
+
+    if is_development_runtime() or should_prefer_local_static_assets():
+        mtimes: list[int] = []
+        for rel in _DEV_STATIC_ASSET_PATHS:
+            path = root / rel
+            if path.is_file():
+                mtimes.append(int(path.stat().st_mtime))
+        if mtimes:
+            return str(max(mtimes))
+    return str(int(time.time()))
 
 
 _HEX_COMMIT_RE = re.compile(r"^[0-9a-f]{7,40}$", re.IGNORECASE)
@@ -542,8 +590,7 @@ def _tts_provider() -> str:
 
 def _render_index(request: Request, sid: str, app_base_path: str, status_code: int = 200) -> HTMLResponse:
     # VERSION は毎プロセスで固定（キャッシュバスティング用）
-    nv = _normalized_app_version_env()
-    version = nv if nv is not None else str(int(time.time()))
+    version = _resolve_template_version()
     session_like = {"_id": sid} if sid else {}
     decoration_images, image_version = _get_decoration_images(session_like, version)
     particle_profile_json = _particle_profile_json()
@@ -673,8 +720,7 @@ def _render_about_page(
         bundle["body_html_safe"] = mirrored
 
     chat_href = _public_chat_root_url(request) + "/"
-    nv = _normalized_app_version_env()
-    version = nv if nv is not None else str(int(time.time()))
+    version = _resolve_template_version()
 
     ctx: dict = {
         "lang": lang,
@@ -783,9 +829,14 @@ async def api_tts(request: Request):
         return JSONResponse({"error": "text_required"}, status_code=400)
     if len(text) > 3000:
         text = text[:3000]
-    try:
-        from src.services.polly_tts import synthesize_speech_mp3
+    from src.services.polly_tts import polly_credentials_available, synthesize_speech_mp3
 
+    if not polly_credentials_available():
+        return JSONResponse(
+            {"error": "no_credentials", "fallback": "webspeech"},
+            status_code=503,
+        )
+    try:
         audio = synthesize_speech_mp3(text, lang)
     except Exception as exc:
         logger.exception("Polly TTS failed")
@@ -1619,8 +1670,7 @@ def admin_logout():
 def admin_page(request: Request, creds: HTTPBasicCredentials | None = Depends(security_basic)):
     if not _require_admin(request, creds):
         return RedirectResponse(url="/admin/login", status_code=302)
-    nv = _normalized_app_version_env()
-    version = nv if nv is not None else str(int(time.time()))
+    version = _resolve_template_version()
     return templates.TemplateResponse(request, "admin_chat.html", {"version": version})
 
 
