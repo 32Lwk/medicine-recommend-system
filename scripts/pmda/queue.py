@@ -378,6 +378,61 @@ def sync_side_effects_queue_from_interactions() -> Dict[str, Any]:
     return {"interactions_done": len(ix_done), "side_effects_done": len(se_done), "side_effects_pending": len(se_pending)}
 
 
+def requeue_done_missing_raw(*, include_failed: bool = False) -> Dict[str, Any]:
+    """raw 未保存の done（必要なら failed）を pending 先頭へ戻す。"""
+    from scripts.pmda.raw_store import has_raw
+
+    queue = get_live_fetch_queue()
+    ix = queue["interactions"]
+    done = list(ix.get("done") or [])
+    pending = list(ix.get("pending") or [])
+    failed = dict(ix.get("failed") or {})
+
+    requeued: List[str] = []
+    kept_done: List[str] = []
+    for item in done:
+        if not has_raw(item):
+            requeued.append(item)
+        else:
+            kept_done.append(item)
+
+    failed_requeued: List[str] = []
+    if include_failed:
+        for item, meta in list(failed.items()):
+            if has_raw(item):
+                continue
+            if (meta.get("reason") or "") != "empty_section":
+                continue
+            failed_requeued.append(item)
+            del failed[item]
+
+    requeued_set = set(requeued) | set(failed_requeued)
+    new_pending = requeued + failed_requeued + [x for x in pending if x not in requeued_set]
+
+    ix["done"] = sorted(kept_done)
+    ix["pending"] = new_pending
+    ix["failed"] = failed
+    queue["interactions"] = ix
+
+    se = queue["side_effects"]
+    se_failed = dict(se.get("failed") or {})
+    for item in requeued_set:
+        se_failed.pop(item, None)
+    se["done"] = sorted(kept_done)
+    se["pending"] = [x for x in new_pending if x not in se_failed]
+    se["failed"] = se_failed
+    queue["side_effects"] = se
+
+    save_live_fetch_queue(queue)
+    return {
+        "requeued_from_done": requeued,
+        "requeued_from_failed": failed_requeued,
+        "requeued_total": len(requeued_set),
+        "kept_done": len(kept_done),
+        "pending_total": len(new_pending),
+    }
+
+
 def write_local_ingredients_progress(payload: Dict[str, Any]) -> None:
     from scripts.pmda.common import LOG_ANALYSIS_DIR
 

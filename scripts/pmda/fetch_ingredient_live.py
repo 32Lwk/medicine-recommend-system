@@ -13,6 +13,7 @@ from scripts.pmda.common import (
 )
 from scripts.pmda.http_client import PmdaFetchAborted, PmdaLiveSession
 from scripts.pmda.normalize import dedupe_interactions, dedupe_side_effects, normalize_interaction_row, normalize_side_effect_row
+from scripts.pmda.raw_store import save_ingredient_raw
 from scripts.pmda.queue import (
     mark_queue_done,
     mark_queue_failed,
@@ -35,9 +36,10 @@ def process_ingredient(
         "reason": "",
         "no_data_ix": False,
         "no_data_se": False,
+        "raw_saved": False,
     }
     try:
-        section10, section11 = session.fetch_ingredient_sections(ingredient)
+        section10, section11, raw_meta = session.fetch_ingredient_sections(ingredient)
     except PmdaFetchAborted as exc:
         result["status"] = "aborted"
         result["reason"] = str(exc)
@@ -47,6 +49,18 @@ def process_ingredient(
         result["status"] = "aborted"
         result["reason"] = session.stats.abort_reason
         return result
+
+    save_ingredient_raw(
+        ingredient,
+        detail_html=raw_meta.get("detail_html") or "",
+        detail_fname=raw_meta.get("detail_fname") or "",
+        result_list_html=raw_meta.get("result_list_html") or "",
+        section10=section10,
+        section11=section11,
+        status="ok" if (section10 or section11) else "empty_section",
+        reason="" if (section10 or section11) else "empty_section",
+    )
+    result["raw_saved"] = True
 
     if not section10 and not section11:
         result["status"] = "failed"

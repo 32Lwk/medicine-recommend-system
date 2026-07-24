@@ -28,6 +28,7 @@ MANIFEST_JSON = PMDA_DIR / "manifest.json"
 STAGING_INTERACTIONS = STAGING_DIR / "interactions.json"
 STAGING_SIDE_EFFECTS = STAGING_DIR / "side_effects.json"
 STAGING_OTC = STAGING_DIR / "otc_products.json"
+RAW_INGREDIENTS_DIR = PMDA_DIR / "raw" / "ingredients"
 
 USER_AGENT = "medicine-recommend-pmda-import/1.0 (research; +https://github.com/)"
 
@@ -65,6 +66,7 @@ def save_json(path: Path, data: Any) -> None:
 def ensure_pmda_dirs() -> None:
     STAGING_DIR.mkdir(parents=True, exist_ok=True)
     BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    RAW_INGREDIENTS_DIR.mkdir(parents=True, exist_ok=True)
     LOG_ANALYSIS_DIR.mkdir(parents=True, exist_ok=True)
 
 

@@ -23,6 +23,7 @@ from scripts.pmda.common import INTERACTIONS_CSV, SIDE_EFFECTS_CSV, read_csv_row
 from scripts.pmda.http_client import PMDA_LIVE_SOURCE_LABELS  # noqa: E402
 from scripts.pmda.normalize import normalize_interaction_row, normalize_side_effect_row  # noqa: E402
 from scripts.pmda.queue import queue_stats  # noqa: E402
+from scripts.pmda.raw_store import raw_stats  # noqa: E402
 
 SEC_PER_INGREDIENT = 3.9
 
@@ -62,6 +63,7 @@ def render_progress(*, prev_pending: int | None = None) -> tuple[str, int]:
     eta_min = pending * SEC_PER_INGREDIENT / 60.0
     running = _fetch_running()
     ix, se = _pmda_row_counts()
+    raw = raw_stats()
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     delta = ""
@@ -72,6 +74,7 @@ def render_progress(*, prev_pending: int | None = None) -> tuple[str, int]:
         f"[{now}] fetch: {'RUNNING' if running else 'STOPPED'}",
         f"pending {pending}{delta} | done {done} | failed {failed} | {processed}/{total} ({pct:.1f}%)",
         f"ETA ~{eta_min:.0f} min (~{eta_min / 60:.1f} h) | PMDA iyakuSearch ix/se: {ix}/{se}",
+        f"raw HTML saved: {raw.get('indexed', 0)} files",
     ]
     return "\n".join(lines), pending
 

@@ -35,6 +35,7 @@ from scripts.pmda.queue import (  # noqa: E402
     sync_side_effects_queue_from_interactions,
     write_local_ingredients_progress,
 )
+from scripts.pmda.raw_store import raw_stats  # noqa: E402
 
 
 def _count_pmda_rows() -> Dict[str, int]:
@@ -59,6 +60,7 @@ def _progress_payload(session: PmdaLiveSession, run_stats: Dict[str, Any]) -> Di
         "queue_interactions": queue_stats("interactions"),
         "queue_side_effects": queue_stats("side_effects"),
         "pmda_rows": pmda,
+        "raw_files": raw_stats(),
         "http_requested": session.stats.requested,
         "http_errors": session.stats.errors,
         "http_hits": session.stats.hits,
@@ -108,6 +110,7 @@ def run_local_fetch(
         "no_data_ix": 0,
         "no_data_se": 0,
         "merge_runs": 0,
+        "raw_saved": 0,
         "sync": sync_info,
     }
 
@@ -134,6 +137,8 @@ def run_local_fetch(
 
                 if result["status"] == "done":
                     run_stats["done"] += 1
+                    if result.get("raw_saved"):
+                        run_stats["raw_saved"] += 1
                     if result.get("no_data_ix"):
                         run_stats["no_data_ix"] += 1
                     if result.get("no_data_se"):
@@ -142,6 +147,8 @@ def run_local_fetch(
                     se_buffer.extend(result["se_rows"])
                 else:
                     run_stats["failed"] += 1
+                    if result.get("raw_saved"):
+                        run_stats["raw_saved"] += 1
 
                 if run_stats["processed"] % merge_every == 0 and (ix_buffer or se_buffer):
                     write_staging_batch(ix_buffer, se_buffer, {"mode": "live", "batch": merge_every})

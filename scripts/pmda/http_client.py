@@ -331,32 +331,49 @@ class PmdaLiveSession:
         self._html_cache[cache_key] = resp.text
         return resp.text
 
-    def _fetch_detail_html_for_ingredient(self, ingredient: str) -> str:
+    def _fetch_detail_html_for_ingredient(self, ingredient: str) -> Tuple[str, str, str]:
+        """Returns (detail_html, detail_fname, result_list_html)."""
         if self.stats.aborted:
-            return ""
+            return "", "", ""
         cache_key = f"ingredient_detail::{normalize_text(ingredient)}"
         if cache_key in self._html_cache:
             self.stats.cache_hits += 1
-            return self._html_cache[cache_key]
+            cached = self._html_cache[cache_key]
+            meta_key = f"ingredient_meta::{normalize_text(ingredient)}"
+            meta = self._html_cache.get(meta_key, "")
+            parts = meta.split("\x1f", 2) if meta else ["", ""]
+            fname = parts[0] if parts else ""
+            result_html = parts[1] if len(parts) > 1 else ""
+            return cached, fname, result_html
         try:
             result_html = self._fetch_result_list_with_docs(ingredient)
         except PmdaFetchAborted:
-            return ""
+            return "", "", ""
         if not result_html:
-            return ""
+            return "", "", ""
         fnames = self._extract_detail_fnames(result_html)
         if not fnames:
             self.stats.empty_html += 1
-            return ""
+            meta_key = f"ingredient_meta::{normalize_text(ingredient)}"
+            self._html_cache[meta_key] = f"\x1f{result_html}"
+            return "", "", result_html
         detail_html = self.fetch_iyaku_detail_html(fnames[0])
         if detail_html:
             self._html_cache[cache_key] = detail_html
-        return detail_html
+            meta_key = f"ingredient_meta::{normalize_text(ingredient)}"
+            self._html_cache[meta_key] = f"{fnames[0]}\x1f{result_html}"
+        return detail_html, fnames[0], result_html
 
-    def fetch_ingredient_sections(self, ingredient: str) -> Tuple[str, str]:
-        detail_html = self._fetch_detail_html_for_ingredient(ingredient)
+    def fetch_ingredient_sections(self, ingredient: str) -> Tuple[str, str, Dict[str, str]]:
+        detail_html, detail_fname, result_list_html = self._fetch_detail_html_for_ingredient(ingredient)
+        meta = {
+            "ingredient": normalize_text(ingredient),
+            "detail_html": detail_html,
+            "detail_fname": detail_fname,
+            "result_list_html": result_list_html,
+        }
         if not detail_html:
-            return "", ""
+            return "", "", meta
         section10 = self._extract_section(detail_html, "10")
         section11 = self._extract_section(detail_html, "11")
         ing_key = normalize_text(ingredient)
@@ -364,7 +381,9 @@ class PmdaLiveSession:
             self._html_cache[f"{ing_key}::10"] = section10
         if section11:
             self._html_cache[f"{ing_key}::11"] = section11
-        return section10, section11
+        meta["section10"] = section10
+        meta["section11"] = section11
+        return section10, section11, meta
 
     def fetch_packins_section(self, ingredient: str, section: str) -> str:
         """ユニーク成分×セクションを 1 回だけ fetch（キャッシュあり）。"""
@@ -375,7 +394,7 @@ class PmdaLiveSession:
             self.stats.cache_hits += 1
             return self._html_cache[cache_key]
 
-        detail_html = self._fetch_detail_html_for_ingredient(ingredient)
+        detail_html, _, _ = self._fetch_detail_html_for_ingredient(ingredient)
         if not detail_html:
             return ""
 
