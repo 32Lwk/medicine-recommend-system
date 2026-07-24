@@ -17,8 +17,12 @@ else
   _KB_PY="$(command -v python3)"
 fi
 if [[ -n "${CODEBUILD_BUILD_ID:-}" ]]; then
-  export PATH="/usr/bin:/bin"
+  _AWS_BIN="$(command -v aws 2>/dev/null || true)"
   unset PYENV_VERSION PYENV_ROOT PYENV_SHELL
+  export PATH="/usr/bin:/bin"
+  if [[ -n "$_AWS_BIN" ]]; then
+    export PATH="$(dirname "$_AWS_BIN"):$PATH"
+  fi
   _KB_PY=""
   for cand in /usr/bin/python3.11 /usr/bin/python3; do
     if [[ -x "$cand" ]]; then
