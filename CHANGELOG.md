@@ -1,6 +1,6 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月25日**（OTC 画像・推奨除外・TTS/UI 改善・localhost 静的アセット）
+**最終更新日: 2026年7月25日**（OTC 上位50画像 R2 完備・推奨除外・TTS/UI・localhost 静的アセット）
 
 ---
 
@@ -9,6 +9,41 @@
 ### 概要
 
 マツキヨ未掲載の **トキワイブプロエースＡ** を常盤薬品公式画像で R2 に配置。**イブプロフェン錠200S / 200SC** は OTC CSV に残しつつ推奨候補から除外（EC 未掲載・画像なし・ジェネリック名で購入特定が困難なため）。あわせて Sage UI の **CHANGELOG 表示・TTS（Polly SSML / Web Speech）** と **localhost 限定の `/static/` 配信**を改善。
+
+### OTC 商品画像 — 上位50品目一括同期（推奨ログ + Amazon 定番 → R2）
+
+推奨ログ頻度上位と Amazon 健康・パーソナルケア定番 OTC を統合した **50 品目**のパッケージ画像を R2 に配置。**2026-07-25 時点で 50/50 CDN 確認済み**（`https://images.yutok.dev/otc/{slug}.webp`）。
+
+| 項目 | 値 |
+|------|-----|
+| 選定 | 推奨ログ TOP（`recommendation_detail_log.jsonl` 等）+ Amazon 定番（イブ・バファリン・パブロン・ルル等） |
+| マツキヨ | 掲載あり → `sync_otc_images_from_matsukiyo` 経由 / 未掲載 → 公式 or 薬局 EC フォールバック |
+| 審査 | 解像度・ファイルサイズ・製品名一致（`verify_image_match`、スコア ≥55） |
+| スクリプト | `scripts/sync_top50_otc_images.py` |
+| 計画・成果物 | `log/analysis/otc_image_sync_top50/top50_plan.json` / `top50_results.json` / `results_batch*.json` |
+
+```bash
+# 計画に基づき未取得分を取得・審査・アップロード（.env の R2_* 必須）
+.venv/bin/python scripts/sync_top50_otc_images.py --batch 0 --upload
+
+# バッチ分割（12件ずつ）
+.venv/bin/python scripts/sync_top50_otc_images.py --batch 1 --batch-size 12 --upload
+
+# バッチ結果の統合サマリー
+.venv/bin/python scripts/sync_top50_otc_images.py --merge-only
+```
+
+**ソース内訳（50品）**:
+
+| 区分 | 件数 | 主な取得元 |
+|------|------|------------|
+| 推奨ログ頻出（マツキヨ掲載） | 15 | マツキヨココカラ online |
+| Amazon 定番 OTC | 11 | メーカー公式（SSP microcms、Lion AEM、大正 catalog 等） |
+| 推奨ログ頻出（マツキヨ未掲載） | 24 | 公式（all-p.co.jp 等）+ 楽天薬局 CDN（`shop.r10s.jp`）+ Yahoo ショッピング |
+
+審査で却下された画像は `static/otc/review_rejected/{slug}.webp` に退避（今回 **review_rejected 0 件**）。
+
+詳細: [docs/ops/CLOUDFLARE_R2_IMAGES.md](docs/ops/CLOUDFLARE_R2_IMAGES.md#上位50品目一括同期)
 
 ### OTC 商品画像 — トキワイブプロエースＡ（公式ソース → R2）
 
@@ -86,7 +121,7 @@ py -3.11 scripts/upload_r2_otc_image.py トキワイブプロエースA \
 
 ### ドキュメント
 
-- **`docs/ops/CLOUDFLARE_R2_IMAGES.md`**: マツキヨ未掲載品の公式ソース手動アップロード手順
+- **`docs/ops/CLOUDFLARE_R2_IMAGES.md`**: マツキヨ未掲載品の公式ソース手動アップロード手順、**上位50一括同期**手順
 - **`docs/ops/RECOMMENDATION_PRODUCT_FILTERS.md`（新規）**: 推奨除外リストの運用
 - **`docs/ops/AWS_FEATURES_ROLLOUT.md`**: localhost 静的アセット・`APP_ENV` dev 手順追記
 
@@ -94,7 +129,7 @@ py -3.11 scripts/upload_r2_otc_image.py トキワイブプロエースA \
 
 - イブプロフェン錠200S のパッケージ画像（JAN 判明時 or ユーザー提供素材）
 - `RECOMMENDATION_EXCLUDED_PRODUCTS` の設定ファイル化（CSV / YAML）
-- マツキヨ未掲載品の公式ソース一括取り込みスクリプト
+- 上位50以外の推奨頻度品目の継続同期（`sync_otc_images_from_matsukiyo --limit 200` の定期実行）
 
 ---
 

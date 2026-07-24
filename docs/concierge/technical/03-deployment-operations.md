@@ -57,9 +57,12 @@
 
 ## Cloudflare R2（医薬品画像）
 
-- **URL**: `https://images.yutok.dev/otc/{id}.webp`
-- **アップロード**: `scripts/upload-r2-otc-image.sh`
+- **URL**: `https://images.yutok.dev/otc/{slug}.webp`
+- **一括同期（推奨200件）**: `scripts/sync_otc_images_from_matsukiyo.py`
+- **上位50品目同期**: `scripts/sync_top50_otc_images.py`（計画: `log/analysis/otc_image_sync_top50/`）
+- **単品アップロード**: `scripts/upload-r2-otc-image.sh` / `scripts/upload_r2_otc_image.py`
 - **アプリ**: `src/services/medicine_image_urls.py` + カード `onerror` プレースホルダー
+- **運用ドキュメント**: [docs/ops/CLOUDFLARE_R2_IMAGES.md](../../ops/CLOUDFLARE_R2_IMAGES.md)
 
 ## ロールバック
 

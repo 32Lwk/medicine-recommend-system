@@ -1,6 +1,6 @@
 {
   "source": "CHANGELOG.md",
-  "header_date": "2026年7月25日（OTC 画像・推奨除外・TTS/UI 改善・localhost 静的アセット）",
+  "header_date": "2026年7月25日（OTC 上位50画像 R2 完備・推奨除外・TTS/UI・localhost 静的アセット）",
   "releases": [
     {
       "heading": "2026年7月25日 — OTC 画像（トキワ公式）・推奨除外・TTS/UI・静的アセット",
@@ -9,12 +9,12 @@
         "localhost / 127.0.0.1 リクエスト時のみ middleware が prefer_local_static を立て、CDN の代わりに /static/ を返す",
         "LOCAL_STATIC_ASSETS=1 環境変数でも強制可能",
         "dev ホスト（aws.medicine.yutok.dev）は CloudFront を継続利用",
-        "docs/ops/CLOUDFLARE_R2_IMAGES.md: マツキヨ未掲載品の公式ソース手動アップロード手順",
+        "docs/ops/CLOUDFLARE_R2_IMAGES.md: マツキヨ未掲載品の公式ソース手動アップロード手順、上位50一括同期手順",
         "docs/ops/RECOMMENDATION_PRODUCT_FILTERS.md（新規）: 推奨除外リストの運用",
         "docs/ops/AWS_FEATURES_ROLLOUT.md: localhost 静的アセット・APP_ENV dev 手順追記",
         "イブプロフェン錠200S のパッケージ画像（JAN 判明時 or ユーザー提供素材）",
         "RECOMMENDATION_EXCLUDED_PRODUCTS の設定ファイル化（CSV / YAML）",
-        "マツキヨ未掲載品の公式ソース一括取り込みスクリプト"
+        "上位50以外の推奨頻度品目の継続同期（sync_otc_images_from_matsukiyo --limit 200 の定期実行）"
       ]
     },
     {

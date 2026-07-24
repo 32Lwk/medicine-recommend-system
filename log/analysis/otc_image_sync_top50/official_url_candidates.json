@@ -1,0 +1,68 @@
+{
+  "イブＡ錠": {
+    "url": "https://www.ssp.co.jp/eve/products/evea/",
+    "status": 200,
+    "candidates": [
+      "https://images.microcms-assets.io/assets/5cd0cfb38d8449fe993f92b8c6c2c085/9e30fb2234f345649638cecdd9a94b3f/eve_products_evea_img_features01.png?fm=webp",
+      "https://images.microcms-assets.io/assets/5cd0cfb38d8449fe993f92b8c6c2c085/5c1fa3636a4a41af83c0153e0a7aef92/eve_products_evea_img_features02.png?fm=webp",
+      "https://images.microcms-assets.io/assets/5cd0cfb38d8449fe993f92b8c6c2c085/42600412d6674361847690254168ad61/eve_products_evea_img_features03.png?fm=webp",
+      "https://images.microcms-assets.io/assets/5cd0cfb38d8449fe993f92b8c6c2c085/c2c4436437c04a85bef0d18aebd2d236/eve_products_evea_og.jpg",
+      "https://images.microcms-assets.io/assets/5cd0cfb38d8449fe993f92b8c6c2c085/c2c4436437c04a85bef0d18aebd2d236/eve_products_evea_og.jpg"
+    ]
+  },
+  "イブＡ錠ＥＸ": {
+    "url": "https://www.ssp.co.jp/eve/products/eveaex/",
+    "status": 200,
+    "candidates": [
+      "https://images.microcms-assets.io/assets/5cd0cfb38d8449fe993f92b8c6c2c085/cda0340b60c141d8907fc5177dd6721b/eve_products_eveaex_28_img_features01-pc.jpg?fm=webp",
+      "https://images.microcms-assets.io/assets/5cd0cfb38d8449fe993f92b8c6c2c085/180ceabdd9f84d97a5d8246422f3d73e/eve_products_eve3sp_01.png?fm=webp",
+      "https://images.microcms-assets.io/assets/5cd0cfb38d8449fe993f92b8c6c2c085/0376e9e67ef94d9dbaa56a94a46ea2df/eve_products_eveqdx_01.png?fm=webp",
+      "https://images.microcms-assets.io/assets/5cd0cfb38d8449fe993f92b8c6c2c085/59b2223faf96412580a194662f3ed4db/eve_products_eveq_01.png?fm=webp",
+      "https://images.microcms-assets.io/assets/5cd0cfb38d8449fe993f92b8c6c2c085/eef64a41d39046c3badfee23f67baee7/eve_products_evea_01.png?fm=webp"
+    ]
+  },
+  "イブクイック頭痛薬": {
+    "url": "https://www.ssp.co.jp/eve/products/evequickheadache/",
+    "status": 404,
+    "candidates": [
+      "https://images.microcms-assets.io/assets/5cd0cfb38d8449fe993f92b8c6c2c085/e8400b0f9c644c818433609a9dfd8ebc/brand-eve-img_middle.jpg",
+      "https://images.microcms-assets.io/assets/5cd0cfb38d8449fe993f92b8c6c2c085/75ff546eec9849f9ae75b35142162d1d/brand-alesion-img_middle.jpg",
+      "https://images.microcms-assets.io/assets/5cd0cfb38d8449fe993f92b8c6c2c085/f7275cb1dc27458bb256a7bc243d4bf1/brand-hythiol-img_middle.jpg"
+    ]
+  },
+  "バファリンＡ": {
+    "url": "https://www.lion.co.jp/ja/products/119/detail",
+    "status": 404,
+    "candidates": []
+  },
+  "バファリンプレミアム": {
+    "url": "https://www.lion.co.jp/ja/products/317/detail",
+    "status": 404,
+    "candidates": []
+  },
+  "セデス・ハイ": {
+    "url": "https://www.shionogi-hc.co.jp/products/sedes/",
+    "status": 404,
+    "candidates": []
+  },
+  "リングルアイビー": {
+    "url": "https://www.sato.co.jp/products/ringl/ivy/",
+    "status": 404,
+    "candidates": []
+  },
+  "小中学生用ノーシンピュア": {
+    "url": "https://www.arax.co.jp/norsin/",
+    "status": 200,
+    "candidates": []
+  },
+  "ストナのどスプレー": {
+    "url": "https://www.sato.co.jp/products/stona/spray/",
+    "status": 404,
+    "candidates": []
+  },
+  "ルルアタックＴＲ": {
+    "url": "https://www.daiichisankyo-hc.co.jp/products/lulu/lineup/attack_tr/",
+    "status": 404,
+    "candidates": []
+  }
+}

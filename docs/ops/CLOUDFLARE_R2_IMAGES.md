@@ -110,6 +110,37 @@ curl -sI 'https://images.yutok.dev/otc/トキワイブプロエースA.webp'
 
 候補画像の調査ログ: `log/analysis/otc_image_candidates/`
 
+## 上位50品目一括同期（推奨ログ + Amazon 定番 → R2）
+
+推奨ログ頻度上位と Amazon 健康・パーソナルケア定番 OTC を統合した **50 品目**を [scripts/sync_top50_otc_images.py](../../scripts/sync_top50_otc_images.py) で取得・審査・アップロードする（2026-07-25 時点 **50/50 CDN 確認済み**）。
+
+```bash
+# 計画ファイル（品目・スラッグ・R2 状態）
+log/analysis/otc_image_sync_top50/top50_plan.json
+
+# 未取得分を一括同期（マツキヨ → 公式URL → 審査 → R2）
+.venv/bin/python scripts/sync_top50_otc_images.py --batch 0 --upload
+
+# 12件ずつバッチ実行
+.venv/bin/python scripts/sync_top50_otc_images.py --batch 1 --batch-size 12 --upload
+
+# バッチ結果の統合
+.venv/bin/python scripts/sync_top50_otc_images.py --merge-only
+```
+
+| 成果物 | 内容 |
+|--------|------|
+| `top50_plan.json` | 50品目リスト（推奨回数・スラッグ・`r2_status`） |
+| `top50_results.json` | 同期サマリー（`r2_exists` / `missing_products`） |
+| `results_batch*.json` / `results_all.json` | バッチ別の取得・審査・アップロード結果 |
+| `official_url_candidates.json` | 公式サイト画像 URL 調査メモ |
+
+**取得優先順位**: ① R2 既存スキップ → ② `OFFICIAL_IMAGE_URLS` / 計画の `official_url` → ③ マツキヨ検索（`MatsukiyoClient`、Referer 必須）
+
+**審査** (`verify_image_match`): 最小解像度・ファイルサイズ・製品名/メーカー名のラベル一致。却下時は `static/otc/review_rejected/{slug}.webp` に保存。
+
+**マツキヨ未掲載24品**はメーカー公式（例: all-p.co.jp）または薬局 EC（楽天 `shop.r10s.jp`、Yahoo ショッピング）のパッケージ画像を `OFFICIAL_IMAGE_URLS` に登録して取得。
+
 ### 画像が見つからない品目
 
 **イブプロフェン錠200S** 等、公式 EC・ドラッグ EC にパッケージ写真がなく R2 未配置の品目は、推奨画面に載せない運用とする（[RECOMMENDATION_PRODUCT_FILTERS.md](./RECOMMENDATION_PRODUCT_FILTERS.md)）。添付文書 PDF の刷り込みは UI 向きではない。
