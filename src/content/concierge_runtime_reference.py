@@ -52,7 +52,7 @@ def format_public_runtime_reference_block() -> str:
         if get_tts_provider() == "polly":
             lines.append("- 読み上げ: Amazon Polly を利用")
         if use_bedrock_kb_rag():
-            lines.append("- Concierge ナレッジ検索: Bedrock KB 設定済み（全文同期は準備中の場合あり）")
+            lines.append("- Concierge ナレッジ検索: Bedrock KB 設定済み")
         cdn = get_static_cdn_base_url()
         if cdn:
             lines.append(f"- static アセット CDN: {cdn}")

@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-07-24T06:29:00+00:00",
+  "endpoint": "https://aws.medicine.yutok.dev/health/aws",
+  "status": "ok",
+  "checks": {
+    "medicine_kb_rag": true,
+    "bedrock_kb_rag": true,
+    "bedrock_kb_id": "2CNAGQ2V4P",
+    "bedrock_medicine_kb_id": "30BCEJCJHA",
+    "comprehend_medical": true
+  },
+  "raw": {
+    "translation_provider": "translate",
+    "tts_provider": "polly",
+    "bedrock_kb_rag": true,
+    "bedrock_kb_id": "2CNAGQ2V4P",
+    "medicine_kb_rag": true,
+    "bedrock_medicine_kb_id": "30BCEJCJHA",
+    "comprehend_medical": true,
+    "static_cdn_base": "https://d1hux8767tyzd1.cloudfront.net/static",
+    "medicine_image_cdn_base": "https://images.yutok.dev/otc/"
+  },
+  "note": "ECS env 手動反映済み — Step 1 Phase 0 ヘルス確認"
+}

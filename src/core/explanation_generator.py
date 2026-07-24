@@ -338,6 +338,44 @@ def generate_usage_notes(medicine_name: str, medicine_info: dict, user_info: dic
         return "使用上の注意の生成に失敗しました。薬剤師または登録販売者にご相談ください。"
 
 
+def _kb_citation_for_explanation(
+    candidate: Dict,
+    nlu_result: Dict,
+    user_info: Dict,
+) -> str:
+    """方式 A: retrieve 結果から citation 1–2 文を返す（LLM 追加呼び出しなし）。"""
+    from src.services.bedrock_kb_retrieve import retrieve_medicine_context
+
+    user_text = str(
+        (user_info or {}).get("user_text")
+        or (user_info or {}).get("user_message")
+        or ""
+    ).strip()
+    query_parts = [user_text] if user_text else []
+    product = str(candidate.get("product_name") or "").strip()
+    if product:
+        query_parts.append(product)
+    query = " ".join(query_parts).strip() or product
+    if not query:
+        return ""
+
+    result = retrieve_medicine_context(
+        query,
+        recommended_medicines=[candidate],
+        nlu_result=nlu_result,
+        use_cache=True,
+    )
+    chunks = result.get("chunks") or []
+    if not chunks:
+        return ""
+    snippet = chunks[0][:200].strip().replace("\n", " ")
+    uris = result.get("source_uris") or []
+    cite = f"KB参照: {snippet}"
+    if uris:
+        cite += f"（{uris[0].split('/')[-1]}）"
+    return cite
+
+
 def generate_explanation(candidate: Dict, nlu_result: Dict, safety_result: Dict, user_info: Dict) -> str:
     """
     推奨理由の説明を生成（スコア内訳に基づく詳細版）
@@ -430,7 +468,11 @@ def generate_explanation(candidate: Dict, nlu_result: Dict, safety_result: Dict,
         for warning in safety_result['warnings']:
             explanation_parts.append(f"⚠️ {warning}")
 
-    return " | ".join(explanation_parts)
+    explanation = " | ".join(explanation_parts)
+    citation = _kb_citation_for_explanation(candidate, nlu_result, user_info)
+    if citation:
+        explanation = f"{explanation} | 📚 {citation}"
+    return explanation
 
 
 def generate_individual_usage_notes_with_gpt(
@@ -476,6 +518,14 @@ def generate_individual_usage_notes_with_gpt(
 - 服用方法（＜○○の服用方法＞）
 - 一般的な注意（用法用量を厳守、など）
 """
+    from src.services.bedrock_kb_retrieve import augment_medicine_prompt_with_kb
+
+    query = str(medicine.get("product_name") or "").strip()
+    prompt = augment_medicine_prompt_with_kb(
+        query,
+        prompt,
+        recommended_medicines=[medicine],
+    )
 
     try:
         from src.core.llm_client import chat_completion_create

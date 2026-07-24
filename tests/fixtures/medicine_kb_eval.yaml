@@ -1,0 +1,138 @@
+# Medicine Managed KB retrieve 評価セット（Phase 0 baseline / Phase 1 再計測用）
+# 実行: AWS_PROFILE=admin python scripts/eval_medicine_kb.py
+#
+# Phase 1 再計測: category 別 expected_source_prefix
+# interaction -> medicine/interactions/
+# side_effect -> medicine/side_effects/
+# usage / doping / age -> medicine/products/
+
+kb_id: "30BCEJCJHA"
+search_mode: managed
+region: ap-northeast-1
+
+scenarios:
+  # --- 相互作用 5 ---
+  - id: interaction-loxoprofen-warfarin
+    query: "ロキソプロフェンとワーファリンを一緒に飲んでも大丈夫？ 推奨医薬品: ロキソニン"
+    category: interaction
+    expected_source_prefix: "medicine/interactions/"
+    min_score: 0.5
+    notes: "medicine_interactions.csv 高リスク行"
+
+  - id: interaction-ibuprofen-aspirin
+    query: "イブプロフェンとアスピリンの併用は？"
+    category: interaction
+    expected_source_prefix: "medicine/interactions/"
+    min_score: 0.5
+
+  - id: interaction-acetaminophen-alcohol
+    query: "アセトアミノフェンをお酒と一緒に飲むと？"
+    category: interaction
+    expected_source_prefix: "medicine/interactions/"
+    min_score: 0.5
+
+  - id: interaction-dextromethorphan-ssri
+    query: "デキストロメトルファンと SSRI の併用リスクは？"
+    category: interaction
+    expected_source_prefix: "medicine/interactions/"
+    min_score: 0.5
+
+  - id: interaction-caffeine-ephedrine
+    query: "カフェインとエフェドリンを同時に取ると？"
+    category: interaction
+    expected_source_prefix: "medicine/interactions/"
+    min_score: 0.5
+
+  # --- 用法 5 ---
+  - id: usage-after-meal
+    query: "頭痛薬は食後に飲むべき？ 推奨医薬品: カロナールA"
+    category: usage
+    expected_source_prefix: "medicine/products/"
+    min_score: 0.5
+
+  - id: usage-dose-interval
+    query: "解熱鎮痛薬は何時間おきに飲める？"
+    category: usage
+    expected_source_prefix: "medicine/products/"
+    min_score: 0.5
+
+  - id: usage-how-many-times
+    query: "風邪薬は1日何回まで？"
+    category: usage
+    expected_source_prefix: "medicine/products/"
+    min_score: 0.5
+
+  - id: usage-empty-stomach
+    query: "胃が弱い人は空腹時に飲んでもいい？"
+    category: usage
+    expected_source_prefix: "medicine/products/"
+    min_score: 0.5
+
+  - id: usage-water-amount
+    query: "錠剤は水と一緒に飲む必要がある？"
+    category: usage
+    expected_source_prefix: "medicine/products/"
+    min_score: 0.5
+
+  # --- 副作用 3 ---
+  - id: sideeffect-loxoprofen-sleepiness
+    query: "ロキソプロフェンで眠くなる？"
+    category: side_effect
+    expected_source_prefix: "medicine/side_effects/"
+    min_score: 0.5
+
+  - id: sideeffect-chlorpheniramine-drowsy
+    query: "クロルフェニラミンの副作用で眠気は？"
+    category: side_effect
+    expected_source_prefix: "medicine/side_effects/"
+    min_score: 0.5
+
+  - id: sideeffect-ibuprofen-stomach
+    query: "イブプロフェンで胃が痛くなることはある？"
+    category: side_effect
+    expected_source_prefix: "medicine/side_effects/"
+    min_score: 0.5
+
+  # --- ドーピング 3 ---
+  - id: doping-pseudoephedrine
+    query: "プソイドエフェドリンはドーピング禁止？"
+    category: doping
+    expected_source_prefix: "medicine/products/"
+    min_score: 0.5
+
+  - id: doping-competition-category
+    query: "競技会区分 S6A とは何？ 推奨医薬品: バファリン"
+    category: doping
+    expected_source_prefix: "medicine/products/"
+    min_score: 0.5
+
+  - id: doping-prohibited-substance
+    query: "禁止物質ありの市販薬は競技前に注意？"
+    category: doping
+    expected_source_prefix: "medicine/products/"
+    min_score: 0.5
+
+  # --- 年齢 4 ---
+  - id: age-under-15
+    query: "15歳未満は解熱鎮痛薬を飲める？"
+    category: age
+    expected_source_prefix: "medicine/products/"
+    min_score: 0.5
+
+  - id: age-restriction-product
+    query: "この頭痛薬の年齢制限は？ 推奨医薬品: タイレノールA"
+    category: age
+    expected_source_prefix: "medicine/products/"
+    min_score: 0.5
+
+  - id: age-child-cold
+    query: "小児用の風邪薬の年齢制限"
+    category: age
+    expected_source_prefix: "medicine/products/"
+    min_score: 0.5
+
+  - id: age-elderly-nsaid
+    query: "高齢者が NSAID を使うときの注意"
+    category: age
+    expected_source_prefix: "medicine/products/"
+    min_score: 0.5

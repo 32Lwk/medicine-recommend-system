@@ -1,0 +1,41 @@
+{
+  "timestamp": "2026-07-24T07:53:00+00:00",
+  "endpoint": "pmda.go.jp/PmdaSearch/iyakuSearch",
+  "go_no_go": {
+    "result": "GO",
+    "ingredients": 5,
+    "http_requests": 11,
+    "empty_html": 0,
+    "errors": 0,
+    "abort": false
+  },
+  "sessions": [
+    {
+      "source": "interactions",
+      "ingredients": 8,
+      "http_requests": 17,
+      "hits": 29,
+      "staging_rows": 27,
+      "csv_merge": {"before": 2622, "after": 2630, "live_replace": true}
+    },
+    {
+      "source": "side_effects",
+      "ingredients": 8,
+      "http_requests": 17,
+      "hits": 7,
+      "staging_rows": 7,
+      "csv_merge": {"before": 251, "after": 252}
+    },
+    {
+      "source": "otc",
+      "products": 10,
+      "http_requests": 10,
+      "hits": 0,
+      "note": "product name text match needs improvement"
+    }
+  ],
+  "total_http_requests": 55,
+  "total_errors": 10,
+  "error_rate_pct": 18.2,
+  "abort_sessions": 0
+}

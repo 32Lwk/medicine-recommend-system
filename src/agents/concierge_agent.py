@@ -1715,7 +1715,9 @@ def _invoke_meta_concierge_llm(
         )
     from src.services.bedrock_kb_retrieve import augment_reference_with_kb
 
-    reference = augment_reference_with_kb(user_text, reference)
+    reference = augment_reference_with_kb(
+        user_text, reference, intent=intent, deep=deep
+    )
     prompt = f"""{get_policy_snippet()}
 
 {reference}
@@ -1864,8 +1866,7 @@ def _architecture_response_hints(
 
         if is_aws_staging_site():
             hints.append(
-                "技術的な説明は公開資料をもとにしています。"
-                "ナレッジベースの全文同期は現在準備中です。"
+                "技術的な説明は公開資料とナレッジベースをもとにしています。"
             )
     except Exception:
         pass

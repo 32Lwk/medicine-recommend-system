@@ -554,6 +554,11 @@ def chat_with_medicine_context(
 
 上記を踏まえ、ユーザーへの直接的な回答のみを200字以内で自然な日本語で書いてください。JSONや見出しは不要です。
 """
+            answer_prompt = augment_medicine_prompt_with_kb(
+                user_message,
+                answer_prompt,
+                recommended_medicines=recommended_medicines,
+            )
             streamed_answer = chat_completion_stream(
                 client,
                 model_role="explain",

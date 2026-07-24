@@ -1,0 +1,260 @@
+{
+  "runs": [
+    {
+      "source": "interactions",
+      "stats": {
+        "requested_ingredients": 30,
+        "requested_pairs": 600,
+        "cache_hits": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "live",
+        "abort_reason": "consecutive_empty_html",
+        "requested": 3,
+        "empty_html": 3
+      }
+    },
+    {
+      "stage": "fetch_complete",
+      "sources": [
+        "interactions"
+      ],
+      "fetch_stats": {
+        "interactions": {
+          "requested_ingredients": 30,
+          "requested_pairs": 600,
+          "cache_hits": 0,
+          "hits": 0,
+          "errors": 0,
+          "mode": "live",
+          "abort_reason": "consecutive_empty_html",
+          "requested": 3,
+          "empty_html": 3
+        }
+      }
+    },
+    {
+      "source": "interactions",
+      "stats": {
+        "requested_ingredients": 5,
+        "requested_pairs": 100,
+        "cache_hits": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "live",
+        "abort_reason": "consecutive_empty_html",
+        "requested": 3,
+        "empty_html": 3
+      }
+    },
+    {
+      "source": "interactions",
+      "stats": {
+        "requested_ingredients": 5,
+        "requested_pairs": 100,
+        "cache_hits": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "live",
+        "abort_reason": "",
+        "requested": 11,
+        "empty_html": 0
+      }
+    },
+    {
+      "source": "interactions",
+      "stats": {
+        "requested_ingredients": 8,
+        "requested_pairs": 160,
+        "cache_hits": 0,
+        "hits": 29,
+        "errors": 0,
+        "mode": "live",
+        "abort_reason": "",
+        "requested": 17,
+        "empty_html": 1
+      }
+    },
+    {
+      "source": "interactions",
+      "stats": {
+        "requested_ingredients": 8,
+        "requested_pairs": 160,
+        "cache_hits": 0,
+        "hits": 29,
+        "errors": 0,
+        "mode": "live",
+        "abort_reason": "",
+        "requested": 17,
+        "empty_html": 1
+      }
+    },
+    {
+      "source": "side_effects",
+      "stats": {
+        "requested": 8,
+        "hits": 7,
+        "errors": 0,
+        "mode": "live",
+        "abort_reason": "",
+        "cache_hits": 0,
+        "empty_html": 1,
+        "http_requests": 17
+      }
+    },
+    {
+      "batch": {
+        "source": "interactions",
+        "ok": false,
+        "stage": "guard",
+        "fetch_stats": null,
+        "merge_stats": null,
+        "queue_before": {
+          "source": "interactions",
+          "pending": 1334,
+          "done": 8,
+          "failed": 0,
+          "total": 1342,
+          "pct_done": 0.6
+        },
+        "queue_after": {
+          "source": "interactions",
+          "pending": 1334,
+          "done": 8,
+          "failed": 0,
+          "total": 1342,
+          "pct_done": 0.6
+        },
+        "pmda_rows_before": 40,
+        "pmda_rows_after": 40,
+        "sessions_remaining_est": 134,
+        "abort": false
+      },
+      "logged_at": "2026-07-24T08:04:41.659179+00:00"
+    },
+    {
+      "source": "interactions",
+      "stats": {
+        "requested_ingredients": 10,
+        "requested_pairs": 200,
+        "cache_hits": 0,
+        "hits": 1,
+        "errors": 0,
+        "mode": "live",
+        "abort_reason": "",
+        "queue_done": [
+          "カフェイン水和物"
+        ],
+        "queue_failed": [
+          "アミノ安息香酸エチル",
+          "アロエ末",
+          "クロルフェニラミンマレイン酸塩",
+          "チアミン塩化物塩酸塩",
+          "ニコチン酸アミド",
+          "パパベリン塩酸塩",
+          "リボフラビン",
+          "カッコン",
+          "カンゾウ"
+        ],
+        "requested": 21,
+        "empty_html": 0
+      }
+    },
+    {
+      "stage": "fetch_complete",
+      "sources": [
+        "interactions"
+      ],
+      "fetch_stats": {
+        "interactions": {
+          "requested_ingredients": 10,
+          "requested_pairs": 200,
+          "cache_hits": 0,
+          "hits": 1,
+          "errors": 0,
+          "mode": "live",
+          "abort_reason": "",
+          "queue_done": [
+            "カフェイン水和物"
+          ],
+          "queue_failed": [
+            "アミノ安息香酸エチル",
+            "アロエ末",
+            "クロルフェニラミンマレイン酸塩",
+            "チアミン塩化物塩酸塩",
+            "ニコチン酸アミド",
+            "パパベリン塩酸塩",
+            "リボフラビン",
+            "カッコン",
+            "カンゾウ"
+          ],
+          "requested": 21,
+          "empty_html": 0
+        }
+      }
+    },
+    {
+      "batch": {
+        "source": "interactions",
+        "ok": true,
+        "stage": null,
+        "fetch_stats": {
+          "interactions": {
+            "requested_ingredients": 10,
+            "requested_pairs": 200,
+            "cache_hits": 0,
+            "hits": 1,
+            "errors": 0,
+            "mode": "live",
+            "abort_reason": "",
+            "queue_done": [
+              "カフェイン水和物"
+            ],
+            "queue_failed": [
+              "アミノ安息香酸エチル",
+              "アロエ末",
+              "クロルフェニラミンマレイン酸塩",
+              "チアミン塩化物塩酸塩",
+              "ニコチン酸アミド",
+              "パパベリン塩酸塩",
+              "リボフラビン",
+              "カッコン",
+              "カンゾウ"
+            ],
+            "requested": 21,
+            "empty_html": 0
+          }
+        },
+        "merge_stats": {
+          "interactions": {
+            "before": 2630,
+            "after": 2630,
+            "added": 0,
+            "live_replace": true
+          }
+        },
+        "queue_before": {
+          "source": "interactions",
+          "pending": 1334,
+          "done": 8,
+          "failed": 0,
+          "total": 1342,
+          "pct_done": 0.6
+        },
+        "queue_after": {
+          "source": "interactions",
+          "pending": 1324,
+          "done": 9,
+          "failed": 9,
+          "total": 1342,
+          "pct_done": 0.7
+        },
+        "pmda_rows_before": 40,
+        "pmda_rows_after": 41,
+        "sessions_remaining_est": 133,
+        "abort": false
+      },
+      "logged_at": "2026-07-24T08:06:53.752245+00:00"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "samples": [
+    {
+      "product_name": "バファリンA",
+      "search_html": "<html><body><a href=\"/PmdaSearch/otcSearch/detail/001\">バファリンA</a></body></html>",
+      "detail_html": "<html><body>効能・効果 頭痛、歯痛、筋肉痛。用法・用量 1回2錠、1日3回。成分 アセトアミノフェン。年齢制限 15歳未満の小児は服用しないこと。</body></html>",
+      "expected": {
+        "効能効果": "頭痛、歯痛、筋肉痛",
+        "用法用量": "1回2錠、1日3回",
+        "成分": "アセトアミノフェン",
+        "年齢制限": "15歳未満の小児は服用しないこと"
+      }
+    },
+    {
+      "product_name": "イブA錠 12錠",
+      "search_html": "<html><body><a href=\"/detail/002\">イブA錠</a></body></html>",
+      "detail_html": "<html><body>効能効果 発熱、頭痛。用法・用量 1回1錠。成分 イブプロフェン。</body></html>",
+      "expected": {
+        "効能効果": "発熱、頭痛",
+        "成分": "イブプロフェン"
+      }
+    },
+    {
+      "product_name": "ムヒのこども",
+      "search_html": "<html><body><a href=\"/detail/003\">ムヒのこども軟膏</a></body></html>",
+      "detail_html": "<html><body>効能・効果 かゆみ、虫さされ。用法・用量 適量を塗布。成分 ジフェンヒドラミン。7歳未満は医師に相談。</body></html>",
+      "expected": {
+        "効能効果": "かゆみ、虫さされ",
+        "成分": "ジフェンヒドラミン"
+      }
+    }
+  ]
+}

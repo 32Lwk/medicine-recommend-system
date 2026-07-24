@@ -1,0 +1,19 @@
+{
+  "phase": "PMDA Phase 0-1",
+  "completed_at": "2026-07-24",
+  "dry_run": {
+    "interactions_staging": 2620,
+    "side_effects_staging": 251,
+    "otc_staging": 101
+  },
+  "merge": {
+    "medicine_interactions.csv": {"before": 82, "after": 2620},
+    "medicine_side_effects.csv": {"before": 50, "after": 251},
+    "otc_medicine_data.csv": {"before": 7494, "after": 7495}
+  },
+  "notes": [
+    "Phase 0 pipeline: scripts/pmda/* + docs/ops/PMDA_DATA_IMPORT.md",
+    "Catalog expansion from existing CSV + OTC ingredient aliases (live PMDA fetch optional via --live)",
+    "OTC merge preserves duplicate product keys (7494->7495, not deduped)"
+  ]
+}

@@ -1,7 +1,34 @@
 {
   "source": "CHANGELOG.md",
-  "header_date": "2026年7月23日（Concierge 更新履歴 UI・CodePipeline 自動デプロイ修正・Sage 推奨一括描画）",
+  "header_date": "2026年7月24日（OTC 商品画像 R2 一括同期・ローカル export・UI 表示開始）",
   "releases": [
+    {
+      "heading": "2026年7月24日 — OTC 商品画像 R2 一括同期・ローカル export",
+      "overview": "推奨ログ頻度上位の OTC 医薬品について、マツキヨココカラ online から商品画像を取得し Cloudflare R2（https://images.yutok.dev/otc/）へ一括アップロードするパイプラインを追加。初回実行で 71 / 200 件 を R2 に配置（ログ推奨 117 件のうち 41 件）。UI は MEDICINE_IMAGE_CDN_BASE 経由で アップロード済み品目のパッケージ画像 を表示（未配置は従来どおりプレースホルダー）。",
+      "highlights": [
+        "推奨ログ（recommendation_detail_log.jsonl / recommendation_log.jsonl / counseling_detail_log.jsonl）から推奨頻度を集計",
+        "上位 117 品目を優先し、不足分を data/otc_medicine_data.csv で 200 件まで補完",
+        "マツキヨ検索: セッション Cookie 取得後 search_keyword パラメータで /store/catalogsearch/result/ を検索（?q= は不可）",
+        "商品ページ（JAN）から _01_ パック画像を取得 → WebP 変換 → R2 otc/{slug}.webp へ PUT",
+        "スラッグは src/services/medicine_image_urls.py の slugify_product_name() と同一規則",
+        "フラグ: --dry-run / --upload / --resume / --limit / --delay / --local-dir / --no-local",
+        "成果物: log/analysis/otc_image_sync/manifest.json / candidates.csv / run.log",
+        "manifest.json の uploaded 行を CDN から static/otc/{slug}.webp へ一括ダウンロード",
+        "static/otc/index.json にファイル一覧を出力",
+        "同期スクリプト --upload 時も --local-dir static/otc（既定）で同時保存可能",
+        "ローカル .env / GCP 本番（cloudbuild.yaml）/ AWS ステージングは MEDICINE_IMAGE_CDN_BASE=https://images.yutok.dev/otc/ 設定済み",
+        "src/services/recommendation_client_payload.py → enrich_medicine_image_url() が API ペイロードに image_url を付与",
+        "フロント: static/js/ui/medicine_mapper.js / medicine_card.js — 404 時 onerror でプレースホルダー",
+        "71 枚 WebP 合計 約 5.7 MB（200 枚でも ~50 MB 想定）",
+        "Cloudflare R2 無料枠: 10 GB ストレージ / egress 無料 → 十分余裕",
+        "docs/ops/CLOUDFLARE_R2_IMAGES.md: 一括同期・ローカル export・オフライン env の手順を追記",
+        ".gitignore: static/otc/*.webp / static/otc/index.json を生成物として除外（static/otc/.gitkeep のみ追跡）",
+        "--log-only（ログ推奨品目のみ対象）",
+        "data/otc_image_jan_overrides.csv による JAN 手動上書き",
+        "マッチ品質レビュー（例: タイレノールＡ → ＡS バリアント等）",
+        "マツキヨ未掲載品（トキワイブプロエースＡ 等）の別ソース検討"
+      ]
+    },
     {
       "heading": "2026年7月23日 — Concierge 更新履歴 UI・CodePipeline 自動デプロイ修正（夜）",
       "overview": "ブランチ main に、(1) Concierge 更新履歴カードのユーザー向け表示改善（「次に試すこと」ラベル誤用・箇条書き途中切れ・開発者向け env 文言）、(2) Sage Web で 推奨バブルを diagnosis 一括描画する際の途中 SSE スキップ、(3) GitHub push 後の CodePipeline が post_build で毎回 Failed していた問題の修正を反映（commits c45fe51 / 170e807 / 7b15881）。ステージング ALB には ECS タスクロール（Translate / Polly / Bedrock KB）を admin 手動適用済み（タスク定義 default-medicine-recommend:18）。",
@@ -177,34 +204,6 @@
         "templates/admin_chat.html: sage_terrace.css 適用、data-ui-variant=\"sage\"。ヘッダーをアイコンボタン群に再構成。セッション管理モーダル・ログクリア確認モーダル追加。チャットメッセージ複数選択削除 UI",
         "static/css/admin_chat.css: Sage Terrace トークン準拠の全面スタイル刷新（レイアウト・モーダル・セッションカード・チャットバブル）",
         "static/css/scrollbar.css: #session-management-list 等の新スクロール領域を app-scrollbar グループに追加"
-      ]
-    },
-    {
-      "heading": "2026年7月3日 — Phase 4（4a–4b）IntentRouter primary 化・dev 展開",
-      "overview": "ブランチ feature/chat-pipeline-v2 に Phase 4a（dispatch handler 追撃・shadow mismatch 分類）および Phase 4b（Router PRIMARY / orch-trim / shadow exempt / LEGACY_FALLBACK_TRIM）を実装。config/llm_flags.py の _ux_rollout_flag により、APP_ENV=development のみで v2 / PRIMARY / TRIM / Phase 2–4b UX 十二種が env 未設定でも自動 ON（LATENCY_* は対象外・既定 OFF のまま）。本番は env 明示 ON + ALLOWLIST 限定（カナリア 1 は dev 24h Go 待ち）。",
-      "highlights": [
-        "src/dialogue/dispatcher.py: SessionOps / Concierge / Store / Physical 等の dispatch handler 拡充。handler None を 0 件に是正",
-        "src/dialogue/routing/shadow_mismatch.py（新規）: regression / gate_improvement / exempt 分類。counseling follow-up（2週間くらいです 等）の exempt 再分類",
-        "src/dialogue/routing/shadow.py / metrics.py: mismatch_kind 出力、shadow_regression / shadow_exempt KPI",
-        "src/utils/structured_logger.py: emit_dialogue_route_shadow に mismatch_kind",
-        "scripts/measure_intent_router_shadow.py / local_v2_chat_test_runner.py: IntentRouter KPI セクション、--failed-only / --resume / checkpoint",
-        "config/llm_flags.py: _ux_rollout_flag() — 開発ランタイム（APP_ENV=development）で UX 十二種 + PRIMARY/TRIM を自動 ON。LATENCY_* は従来どおり明示 ON のみ",
-        "src/dialogue/routing/intent_router.py / intent_router_llm.py: PRIMARY 切替（triage map 降格）",
-        "src/handlers/chat_orchestrator.py: dispatch 成功 route では meta_triage / SessionAgent / Concierge / Store 再判定をスキップ（orch-trim）",
-        "src/handlers/chat/chat_post_pipeline.py: LEGACY_FALLBACK_TRIM 観測ログ",
-        "src/services/concierge_orchestrator.py / store_inquiry_handler.py / session_ops.py: _intent_router_dispatch 連携",
-        "scripts/verify_v2_canary_flags.py（新規）: dev auto-on / 本番 ALLOWLIST パターン検証",
-        "scripts/canary_sim_smoke.py（新規）: 固定 sid 手動スモーク",
-        "scripts/cloudrun_v2_env.example: 本番カナリア用 env 一覧更新",
-        "背景: dev は env 手動投入済み（rev 00142-ln2）だがコードは 37da58c 相当で Phase 4b 実装未反映",
-        "APP_ENV タイポ developmen 修正（development に統一）",
-        "冗長 env（PRIMARY / TRIM / Phase 3 八種 / Phase 2 四種）を 削除可能（コード自動 ON で代替）",
-        "監視 t0 をコード反映時刻に リセット（log/analysis/2026-07-03_dev_p4b-rollout_monitoring.json）",
-        "log/analysis/: p4a-dispatch-final / p4a-gate* / p4b2〜p4b5a / p3-followup-hotfix* / dev_p4b-rollout_monitoring",
-        "log/raw/archive/2026-07-02_pre-p4a2-dispatch/: dispatch/shadow ログアーカイブ",
-        "p4-unify: legacy 物理削除・本番全面展開（plan 上は pending）",
-        "e2e p95 < 5s: Phase 1/1b レイテンシ（4b スコープ外）",
-        "concierge-followup-04/07: Sage / rule キーワード揺れ（既知・未対応）"
       ]
     }
   ]

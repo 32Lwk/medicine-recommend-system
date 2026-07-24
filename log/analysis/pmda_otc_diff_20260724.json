@@ -1,0 +1,196 @@
+{
+  "runs": [
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture"
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture"
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture"
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture"
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture"
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture"
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture"
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture"
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture"
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture"
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture"
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture"
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 10,
+        "hits": 0,
+        "errors": 10,
+        "mode": "live"
+      },
+      "diff_count": 10,
+      "staging_count": 0
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture"
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": "",
+        "queue_done": [],
+        "queue_failed": []
+      },
+      "diff_count": 0,
+      "staging_count": 1
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": "",
+        "queue_done": [],
+        "queue_failed": []
+      },
+      "diff_count": 0,
+      "staging_count": 1
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": "",
+        "queue_done": [],
+        "queue_failed": []
+      },
+      "diff_count": 0,
+      "staging_count": 1
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": "",
+        "queue_done": [],
+        "queue_failed": []
+      },
+      "diff_count": 0,
+      "staging_count": 1
+    }
+  ]
+}
