@@ -10,12 +10,20 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=lib/aws_common.sh
 source "$ROOT/scripts/lib/aws_common.sh"
 
-# CodeBuild: repo .python-version (3.11.9) が pyenv を起動するが未インストール → system python を直接使う
+# CodeBuild: repo .python-version が pyenv を起動する → pip 付き system python を選ぶ
+_KB_PY="$(command -v python3)"
 if [[ -n "${CODEBUILD_BUILD_ID:-}" ]]; then
   export PATH="/usr/local/bin:/usr/bin:/bin"
   unset PYENV_VERSION PYENV_ROOT PYENV_SHELL
+  _KB_PY=""
+  for cand in /usr/local/bin/python3.11 /usr/local/bin/python3 /usr/bin/python3.11 /usr/bin/python3; do
+    if [[ -x "$cand" ]] && "$cand" -m pip --version >/dev/null 2>&1; then
+      _KB_PY="$cand"
+      break
+    fi
+  done
+  _KB_PY="${_KB_PY:-/usr/local/bin/python3}"
 fi
-_KB_PY="$(command -v python3)"
 
 _kb_python() {
   "$_KB_PY" "$@"
