@@ -1,6 +1,106 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月24日**（OTC 商品画像 R2 一括同期・ローカル export・UI 表示開始）
+**最終更新日: 2026年7月24日**（Dual KB RAG Phase 5・PMDA データ取り込み拡張）
+
+---
+
+## 2026年7月24日 — Dual KB RAG Phase 1.5–5（ingestion 修正・パイプライン・Ask sanitize）
+
+### 概要
+
+AWS ステージング Managed KB（Concierge `2CNAGQ2V4P` / Medicine `30BCEJCJHA`）の RAG 品質向上と運用自動化の骨格を実装。**Medicine eval: raw 80%（16/20）/ runtime 85%（17/20）、相互作用 5/5 hard gate**。ingestion **failed 7,494 → 0**（metadata boolean → string 修正）。
+
+### Phase 1.5 — Medicine KB 品質パッチ
+
+**新規 / 更新**: **`scripts/build_medicine_kb_documents.py`**
+
+- 7,494 製品 MD + interactions / side_effects / kanpo / efficacy
+- **トピックガイド**: `medicine/topics/`（服用間隔・年齢制限・NSAID 高齢者）
+- **ドーピングガイド**: `medicine/doping/pseudoephedrine.md`
+- product MD 固定見出し（用法・用量 / 年齢制限 / ドーピング）
+- metadata **全値 string 化**（Bedrock ingestion 要件）
+- raw CSV は S3 非 sync（`sync-medicine-kb-to-s3.sh --exclude raw/*`）
+
+### Phase 5 — CodePipeline KB 自動化（env 既定 off）
+
+**新規**: **`scripts/sync-all-kb-to-s3.sh`**, **`scripts/start-managed-kb-ingestion.sh`**
+
+**更新**: **`buildspec.yml`** — post_build に KB sync / ingestion / eval フック（`SYNC_KB_TO_S3` / `KB_INGESTION_ON_PUSH` / `RUN_KB_EVAL` / `KB_EVAL_STRICT` すべて **`false`**）
+
+**eval スクリプト**: **`scripts/eval_medicine_kb.py`**（`--mode both`, `--min-pass-pct`, `--min-interaction-pass`）、**`scripts/eval_concierge_kb.py`**
+
+**fixture**: **`tests/fixtures/medicine_kb_eval.yaml`**（20 問）、**`tests/fixtures/concierge_kb_eval.yaml`**（10 問）
+
+### RAG 配線（Phase 2–4 分）
+
+- **`src/services/bedrock_kb_retrieve.py`**: `build_medicine_retrieval_query()` / `build_concierge_retrieval_query()` 拡張
+- **`src/core/medicine/medicine_response_builder.py`**: KB augment + **Ask sanitize**
+- **`src/core/explanation_generator.py`**: Explanation KB citation（方式 A）
+- **`src/agents/concierge_agent.py`**: Managed KB 接続
+- **`src/services/concierge_output_sanitize.py`**: `sanitize_medicine_ask_output()`
+
+### ドキュメント
+
+- **`docs/ops/AWS_BEDROCK_KB.md`**: raw 除外・ingestion トラブルシュート（boolean metadata）
+- **`docs/ops/AWS_CODEPIPELINE.md`**: KB env 段階ロールアウト・IAM 要件
+- **`docs/ops/AWS_STAGING_CHECKLIST.md`**: Phase 5 KB 自動化チェック
+- **`docs/ops/GCP_RAG_MIGRATION_ADR.md`**: Option C 推奨（staging Bedrock / GCP 本番レガシー）
+
+### eval 成果物（`log/analysis/`）
+
+| ファイル | 結果 |
+|----------|------|
+| `medicine_kb_after_ingestion_fix_20260724.json` | raw 16/20、runtime 17/20、相互作用 5/5 |
+| `concierge_kb_baseline_20260724.json` | 9/10（90%） |
+| `ingestion_failure_summary.md` | failed 7,494 原因と修正 |
+
+### 運用メモ
+
+- CodeBuild env 切替は **ユーザー GO 後**（`SYNC_KB_TO_S3=true` → ingestion → eval）
+- 推奨順位（`physical_orchestrator.py`）は **変更なし**
+
+---
+
+## 2026年7月24日 — PMDA データ取り込み拡張（live fetch・CSV merge）
+
+### 概要
+
+PMDA 公的情報（市販薬検索・添付文書 §10 相互作用・§11 副作用）を `data/*.csv` 正本へ取り込むパイプラインを拡張。**catalog expansion を正本とし、live fetch は PMDA 原文取得成功分のみ差し替え**。CodePipeline / AWS IP からの live fetch は **禁止**（ローカル回線のみ）。
+
+### パイプライン
+
+**`scripts/pmda/`** — fetch / normalize / validate / merge / queue
+
+| スクリプト | 用途 |
+|-----------|------|
+| `run_pmda_import.py` | dry-run / merge 実行 |
+| `fetch_interactions.py` / `fetch_side_effects.py` | §10 / §11 live fetch |
+| `fetch_ingredient_live.py` | 成分単位 live 連続 fetch |
+| `run_live_fetch_local.py` | ローカル完走用（§10+§11 統合） |
+| `start_local_fetch.sh` / `watch_progress.py` | 起動・進捗監視 |
+
+### live fetch ポリシー
+
+- リクエスト間隔 **2.5–5.0 秒**、1 セッション **30 件**上限
+- 403 / 429×3 / empty HTML×3 で abort → **24h クールダウン**
+- GO/NO-GO: `fetch_interactions.py --live --limit 5`
+
+### データ更新
+
+- **`data/medicine_interactions.csv`** / **`data/medicine_side_effects.csv`**: PMDA 出典行の merge
+- **`data/ingredient_dictionary.json`**: PMDA import 由来の成分同義語拡張
+- **`data/pmda/manifest.json`**: import メタ・クールダウン
+- **`data/pmda/staging/`**: 手動フォールバック用 staging JSON
+
+### ドキュメント・テスト
+
+- **`docs/ops/PMDA_DATA_IMPORT.md`**: 運用手順・robots 調査・abort 時フォールバック
+- **`data/DATA_CATALOG.md`**: PMDA ソース追記
+- **`tests/scripts/test_pmda_import.py`**: import / normalize / merge テスト拡張
+
+### 成果物（`log/analysis/pmda_*`）
+
+import / diff / local fetch 実行ログを追跡（プロジェクト方針）。
 
 ---
 

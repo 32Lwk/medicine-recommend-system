@@ -77,6 +77,51 @@ aws bedrock-agent-runtime retrieve \
 
 推奨ランキング（rule_based）は **変更なし**。
 
+## Phase 1.5 — raw CSV の KB 除外
+
+`sync-medicine-kb-to-s3.sh` は **`raw/` を S3 に載せない**（`--exclude "raw/*"`）。
+生 CSV はローカル `build/medicine/raw/data/` にのみ退避。
+
+将来、Managed KB data source の inclusion prefix を以下に限定する案:
+
+- `medicine/products/`, `medicine/interactions/`, `medicine/side_effects/`
+- `medicine/topics/`, `medicine/doping/`, `medicine/kanpo/`, `medicine/efficacy/`
+
+現状 data source `0ZCBZWSQ7N` は `medicine/` 全体。raw を S3 から外すことで index ノイズを低減。
+
+## 一括 sync + ingestion（Phase 5）
+
+```bash
+export AWS_PROFILE=admin
+bash scripts/sync-all-kb-to-s3.sh
+bash scripts/start-managed-kb-ingestion.sh   # 非同期起動のみ
+```
+
+CodeBuild env（初回は false）:
+
+| 変数 | 初回値 | 説明 |
+|------|--------|------|
+| `SYNC_KB_TO_S3` | `false` | Concierge + Medicine を S3 に sync |
+| `KB_INGESTION_ON_PUSH` | `false` | Managed KB ingestion 非同期起動 |
+| `RUN_KB_EVAL` | `false` | retrieve eval（push 直後は off 推奨） |
+| `KB_EVAL_STRICT` | `false` | `true` 時 eval 閾値未達で build fail |
+
+段階的ロールアウト手順は [AWS_CODEPIPELINE.md](./AWS_CODEPIPELINE.md) § KB 自動化。
+
+## ingestion failed トラブルシュート
+
+| 症状 | 原因 | 対処 |
+|------|------|------|
+| `numberOfDocumentsFailed` ≈ product 件数 | metadata に JSON boolean（`true`/`false`） | `_stringify_metadata_values()` で string 化して rebuild |
+| topic のみ index、product 全滅 | 同上 | `log/analysis/ingestion_failure_summary.md` 参照 |
+| raw CSV が eval に hit | S3 に `raw/` が残存 | `sync-medicine-kb-to-s3.sh --exclude raw/*`、再 ingest |
+
+Bedrock `metadataAttributes` は **string 型のみ**。bool / number は crawl 失敗の原因になる。
+
+## Guardrails（調査メモ）
+
+Bedrock Guardrails は Converse API / エージェント経由で適用可能。Managed KB retrieve 結果を LLM に渡す Ask 経路では、**出力 sanitize**（`concierge_output_sanitize.py` パターン）を先に適用する方針。Guardrails 本番適用は Support / クォータ確認後。
+
 ## 旧 Customer-managed KB（参考）
 
 | エラー | 原因 |

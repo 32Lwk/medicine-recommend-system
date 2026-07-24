@@ -1,0 +1,20 @@
+{
+    "ingestionJob": {
+        "knowledgeBaseId": "30BCEJCJHA",
+        "dataSourceId": "0ZCBZWSQ7N",
+        "ingestionJobId": "YRKIVGBVZR",
+        "status": "COMPLETE",
+        "statistics": {
+            "numberOfDocumentsScanned": 19671,
+            "numberOfMetadataDocumentsScanned": 19641,
+            "numberOfNewDocumentsIndexed": 4,
+            "numberOfModifiedDocumentsIndexed": 19637,
+            "numberOfMetadataDocumentsModified": 12143,
+            "numberOfDocumentsDeleted": 0,
+            "numberOfDocumentsFailed": 0,
+            "numberOfDocumentsSkipped": 0
+        },
+        "startedAt": "2026-07-24T09:58:55.991854+00:00",
+        "updatedAt": "2026-07-24T10:42:53.623077+00:00"
+    }
+}

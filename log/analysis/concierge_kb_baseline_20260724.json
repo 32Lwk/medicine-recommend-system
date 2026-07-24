@@ -1,0 +1,213 @@
+{
+  "timestamp": "2026-07-24T08:32:07.257864+00:00",
+  "phase": "phase4_concierge",
+  "kb_id": "2CNAGQ2V4P",
+  "search_mode": "managed",
+  "region": "ap-northeast-1",
+  "fixture": "tests/fixtures/concierge_kb_eval.yaml",
+  "summary": {
+    "total": 10,
+    "pass_all": 9,
+    "pass_all_pct": 90.0,
+    "score_pass": 9,
+    "score_pass_pct": 90.0
+  },
+  "results": [
+    {
+      "id": "changelog-recent-aws",
+      "intent": "doc_changelog",
+      "query": "最近の更新履歴 AWS",
+      "retrieval_query": "最近の更新履歴 AWS 更新履歴 CHANGELOG AWS ステージング",
+      "min_score": 0.5,
+      "expected_source_prefix": "content/changelog-digest.json",
+      "chunk_count": 5,
+      "top_score": 0.6259,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/content/CHANGELOG.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/content/changelog-digest.json"
+      ],
+      "kb_retrieve_ms": 1064.11,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb"
+    },
+    {
+      "id": "changelog-phase-q4",
+      "intent": "doc_changelog",
+      "query": "Phase Q4 変更",
+      "retrieval_query": "Phase Q4 変更 更新履歴 CHANGELOG AWS ステージング",
+      "min_score": 0.5,
+      "expected_source_prefix": "content/",
+      "chunk_count": 5,
+      "top_score": 0.4889,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/content/CHANGELOG.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/content/changelog-digest.json"
+      ],
+      "kb_retrieve_ms": 825.49,
+      "score_pass": false,
+      "prefix_pass": true,
+      "pass": false,
+      "provider": "bedrock_kb"
+    },
+    {
+      "id": "architecture-codepipeline",
+      "intent": "architecture",
+      "query": "CodePipeline デプロイの流れ",
+      "retrieval_query": "CodePipeline デプロイの流れ インフラ デプロイ ECS CodePipeline Cloud Run",
+      "min_score": 0.5,
+      "expected_source_prefix": "ops/",
+      "chunk_count": 5,
+      "top_score": 0.7216,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/ops/AWS_CODEPIPELINE.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/concierge/technical/03-deployment-operations.md"
+      ],
+      "kb_retrieve_ms": 858.68,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb"
+    },
+    {
+      "id": "architecture-ecs",
+      "intent": "architecture",
+      "query": "ECS Express Gateway とは",
+      "retrieval_query": "ECS Express Gateway とは インフラ デプロイ ECS CodePipeline Cloud Run",
+      "min_score": 0.5,
+      "expected_source_prefix": "ops/",
+      "chunk_count": 5,
+      "top_score": 0.6932,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/ops/AWS_CODEPIPELINE.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/content/CHANGELOG.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/concierge/technical/03-deployment-operations.md"
+      ],
+      "kb_retrieve_ms": 865.05,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb"
+    },
+    {
+      "id": "architecture-bedrock-kb",
+      "intent": "architecture",
+      "query": "Bedrock Knowledge Base 設定",
+      "retrieval_query": "Bedrock Knowledge Base 設定 インフラ デプロイ ECS CodePipeline Cloud Run",
+      "min_score": 0.5,
+      "expected_source_prefix": "ops/",
+      "chunk_count": 5,
+      "top_score": 0.6177,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/concierge/technical/07-observability-ops.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/ops/AWS_BEDROCK_KB.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/ops/AWS_CODEPIPELINE.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/concierge/technical/03-deployment-operations.md"
+      ],
+      "kb_retrieve_ms": 800.12,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb"
+    },
+    {
+      "id": "capabilities-overview",
+      "intent": "capabilities",
+      "query": "このツールでできること",
+      "retrieval_query": "このツールでできること 機能 できること 制限",
+      "min_score": 0.4,
+      "expected_source_prefix": "concierge/",
+      "chunk_count": 2,
+      "top_score": 0.7563,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/content/concierge_knowledge.ja.json",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/public/%E5%85%8D%E8%B2%AC%E4%BA%8B%E9%A0%85%E3%83%BB%E5%88%A9%E7%94%A8%E8%A6%8F%E7%B4%84.md"
+      ],
+      "kb_retrieve_ms": 705.98,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb"
+    },
+    {
+      "id": "cloud-run-gcp",
+      "intent": "architecture",
+      "query": "GCP Cloud Run 本番",
+      "retrieval_query": "GCP Cloud Run 本番 インフラ デプロイ ECS CodePipeline Cloud Run",
+      "min_score": 0.4,
+      "expected_source_prefix": "concierge/",
+      "chunk_count": 5,
+      "top_score": 0.6378,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/concierge/technical/03-deployment-operations.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/concierge/technical/07-observability-ops.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/concierge/technical/01-cross-cloud-architecture.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/ops/AWS_CODEPIPELINE.md"
+      ],
+      "kb_retrieve_ms": 833.58,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb"
+    },
+    {
+      "id": "changelog-md",
+      "intent": "doc_changelog",
+      "query": "CHANGELOG 更新",
+      "retrieval_query": "CHANGELOG 更新 更新履歴 CHANGELOG AWS ステージング",
+      "min_score": 0.5,
+      "expected_source_prefix": "content/CHANGELOG",
+      "chunk_count": 5,
+      "top_score": 0.725,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/content/CHANGELOG.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/content/changelog-digest.json"
+      ],
+      "kb_retrieve_ms": 732.35,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb"
+    },
+    {
+      "id": "infra-aws",
+      "intent": "architecture",
+      "query": "AWS インフラ構成",
+      "retrieval_query": "AWS インフラ構成 インフラ デプロイ ECS CodePipeline Cloud Run",
+      "min_score": 0.5,
+      "expected_source_prefix": "ops/AWS",
+      "chunk_count": 5,
+      "top_score": 0.6674,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/ops/AWS_CODEPIPELINE.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/ops/AWS_INFRA.md"
+      ],
+      "kb_retrieve_ms": 696.84,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb"
+    },
+    {
+      "id": "public-overview",
+      "intent": "architecture",
+      "query": "企業向け概要",
+      "retrieval_query": "企業向け概要 インフラ デプロイ ECS CodePipeline Cloud Run",
+      "min_score": 0.4,
+      "expected_source_prefix": "public/",
+      "chunk_count": 5,
+      "top_score": 0.5265,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/public/%E4%BC%81%E6%A5%AD%E5%90%91%E3%81%91%E7%B0%A1%E7%95%A5%E7%89%88%E6%A6%82%E8%A6%81%E8%B3%87%E6%96%99.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/public/%E4%BC%9A%E7%A4%BE%E5%90%91%E3%81%91%E6%A6%82%E8%A6%81%E6%9B%B8%E9%A1%9E.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/ops/AWS_CODEPIPELINE.md"
+      ],
+      "kb_retrieve_ms": 707.9,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb"
+    }
+  ]
+}

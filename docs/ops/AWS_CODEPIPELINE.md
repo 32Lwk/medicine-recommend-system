@@ -130,6 +130,47 @@ AWS_PROFILE=admin ./scripts/setup-aws-ecs-task-role.sh
 
 `ecsTaskExecutionRole` のみのままだと `/api/smoke/aws-translate` が `empty_or_unchanged`（AccessDenied）になります。
 
+## KB 自動化（Phase 5）
+
+`buildspec.yml` post_build に KB sync / ingestion / eval フックを追加（初回 merge 時は env すべて `false`）。
+
+### CodeBuild env 変数
+
+| 変数 | 既定 | 説明 |
+|------|------|------|
+| `SYNC_KB_TO_S3` | `false` | `sync-all-kb-to-s3.sh` |
+| `KB_INGESTION_ON_PUSH` | `false` | `start-managed-kb-ingestion.sh`（非同期、待機なし） |
+| `RUN_KB_EVAL` | `false` | Medicine + Concierge retrieve eval |
+| `KB_EVAL_STRICT` | `false` | `true` で eval 閾値未達時 build fail |
+
+### 段階的ロールアウト（ユーザー作業）
+
+| 順序 | env | 条件 |
+|------|-----|------|
+| 1 | すべて `false` | buildspec merge のみ |
+| 2 | `SYNC_KB_TO_S3=true` | Step 5-0b 完了 + ローカル sync OK |
+| 3 | `KB_INGESTION_ON_PUSH=true` | ingestion failed=0 確認後 |
+| 4 | `RUN_KB_EVAL=true` | 週次 or 手動パイプライン |
+
+CodeBuild コンソール → `medicine-recommend-build` → Environment → Additional configuration → Environment variables。
+
+### IAM 要件（CodeBuild ロール）
+
+`medicine-recommend-codebuild-role` に不足がある場合、admin で追加:
+
+- `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket` on `medicine-recommend-kb-source-290780119994`
+- `bedrock-agent:StartIngestionJob` on Concierge / Medicine KB data sources
+
+Agent は IAM を変更しない — 不足時は admin 適用を依頼。
+
+### eval 閾値（CI）
+
+```bash
+.venv/bin/python scripts/eval_medicine_kb.py \
+  --mode both --min-pass-pct 80 --min-interaction-pass 5
+.venv/bin/python scripts/eval_concierge_kb.py --min-pass-pct 80
+```
+
 ## 関連
 
 - **Phase 1 インフラ**: [AWS_INFRA.md](./AWS_INFRA.md)（CloudWatch / WAF / CloudFront）

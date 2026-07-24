@@ -11,6 +11,10 @@ env:
     ECS_SERVICE: "medicine-recommend"
     SYNC_STATIC_TO_S3: "true"
     AWS_STAGING_URL: "https://aws.medicine.yutok.dev"
+    # SYNC_KB_TO_S3 / KB_INGESTION_ON_PUSH — CodeBuild プロジェクト env で設定（buildspec 内だと console を上書きするためここでは定義しない）
+    RUN_KB_EVAL: "false"
+    KB_EVAL_STRICT: "false"
+    SMOKE_STRICT: "false"
 
 phases:
   pre_build:
@@ -50,6 +54,25 @@ phases:
         if [ "${SYNC_STATIC_TO_S3:-false}" = "true" ]; then
           echo "==> sync static/ to S3 (CloudFront origin)"
           bash scripts/sync-static-to-s3.sh --invalidate
+        fi
+      - |
+        if [ "${SYNC_KB_TO_S3:-false}" = "true" ]; then
+          echo "==> sync KB sources (Concierge + Medicine)"
+          bash scripts/sync-all-kb-to-s3.sh || echo "WARN: KB S3 sync failed"
+        fi
+      - |
+        if [ "${KB_INGESTION_ON_PUSH:-false}" = "true" ]; then
+          echo "==> start Managed KB ingestion (async, no wait)"
+          bash scripts/start-managed-kb-ingestion.sh || echo "WARN: KB ingestion start failed"
+        fi
+      - |
+        if [ "${RUN_KB_EVAL:-false}" = "true" ]; then
+          echo "==> KB retrieve eval"
+          .venv/bin/python scripts/eval_medicine_kb.py \
+            --mode both --min-pass-pct 80 --min-interaction-pass 5 \
+            || { echo "WARN: medicine KB eval below threshold"; [ "${KB_EVAL_STRICT:-false}" = "true" ] && exit 1 || true; }
+          .venv/bin/python scripts/eval_concierge_kb.py --min-pass-pct 80 \
+            || echo "WARN: concierge KB eval below threshold"
         fi
       - echo "==> Concierge SSOT verify"
       - bash scripts/verify-concierge-ssot.sh

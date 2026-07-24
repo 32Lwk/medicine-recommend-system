@@ -69,6 +69,18 @@ def _collapse_whitespace(text: str) -> str:
     return result.strip()
 
 
+def sanitize_medicine_ask_output(text: str) -> str:
+    """Ask 回答から env 名・内部パス等を除去（Concierge と同パターン）。"""
+    result = strip_internal_llm_prefix((text or "").strip())
+    if not result:
+        return result
+    result = _replace_env_assignments(result)
+    result = _replace_env_names(result)
+    result = _strip_internal_paths(result)
+    result = _collapse_whitespace(result)
+    return strip_concierge_prompt_leakage(result)
+
+
 def sanitize_concierge_meta_output(
     text: str,
     *,

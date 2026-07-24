@@ -237,6 +237,27 @@ def _append_physical_handoff_hint(result: dict, user_message: str) -> None:
         result["consultation_advice"] = f"{advice}\n\n{extra}".strip() if advice else extra
 
 
+def _sanitize_qa_result(result: dict) -> dict:
+    """Ask 回答の文字列フィールドから内部表現を除去。"""
+    from src.services.concierge_output_sanitize import sanitize_medicine_ask_output
+
+    if not isinstance(result, dict):
+        return result
+    out = dict(result)
+    for key in (
+        "answer",
+        "medicine_details",
+        "interactions",
+        "doping_check",
+        "side_effects",
+        "consultation_advice",
+    ):
+        val = out.get(key)
+        if isinstance(val, str) and val.strip():
+            out[key] = sanitize_medicine_ask_output(val)
+    return out
+
+
 def _build_structured_qa_from_stream(
     user_message: str,
     recommended_medicines: list,
@@ -275,7 +296,7 @@ def _build_structured_qa_from_stream(
             "のどスプレー単剤など代替も検討し、登録販売者にご確認ください。"
         )
 
-    return {
+    return _sanitize_qa_result({
         "answer": answer or "お近くの登録販売者にご相談ください。",
         "medicine_details": "".join(md_parts) if md_parts else "詳細は登録販売者にご確認ください。",
         "interactions": (
@@ -290,7 +311,7 @@ def _build_structured_qa_from_stream(
         "consultation_advice": (
             "持病・妊娠・授乳・他の薬の服用がある場合、競技前の使用については登録販売者または医師にご相談ください。"
         ),
-    }
+    })
 
 
 def chat_with_medicine_context(
@@ -554,6 +575,11 @@ def chat_with_medicine_context(
 
 上記を踏まえ、ユーザーへの直接的な回答のみを200字以内で自然な日本語で書いてください。JSONや見出しは不要です。
 """
+            answer_prompt = augment_medicine_prompt_with_kb(
+                user_message,
+                answer_prompt,
+                recommended_medicines=recommended_medicines,
+            )
             streamed_answer = chat_completion_stream(
                 client,
                 model_role="explain",
@@ -621,7 +647,7 @@ def chat_with_medicine_context(
                 elif stream_active and session_id:
                     emit_qa_sections_from_response(parsed_result, session_id)
                 _append_physical_handoff_hint(parsed_result, user_message)
-                return parsed_result
+                return _sanitize_qa_result(parsed_result)
             else:
                 fallback = {
                     "answer": result,
@@ -635,17 +661,17 @@ def chat_with_medicine_context(
                     if streamed_answer:
                         fallback["answer"] = streamed_answer
                     emit_qa_sections_from_response(fallback, session_id)
-                return fallback
+                return _sanitize_qa_result(fallback)
         except json.JSONDecodeError as e:
             print(f"JSON解析エラー: {e}")
-            return {
+            return _sanitize_qa_result({
                 "answer": result,
                 "medicine_details": "詳細情報を取得できませんでした",
                 "interactions": "飲み合わせ情報を取得できませんでした",
                 "doping_check": "ドーピング規制の確認ができませんでした",
                 "side_effects": "副作用情報を取得できませんでした",
                 "consultation_advice": "お近くの登録販売者にご相談ください",
-            }
+            })
     except Exception as e:
         print(f"ChatGPT API呼び出しエラー: {e}")
         return {

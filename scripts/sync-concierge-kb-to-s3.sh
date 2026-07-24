@@ -34,6 +34,14 @@ for rel in docs/ops/AWS_FEATURES_ROLLOUT.md docs/ops/AWS_INFRA.md docs/ops/AWS_C
   fi
 done
 aws s3 cp "$(to_win_path "$ROOT/CHANGELOG.md")" "s3://${BUCKET}/content/CHANGELOG.md" --region "$AWS_REGION"
+echo "==> Refresh changelog digest (static/changelog-digest.json)"
+python3 "$ROOT/scripts/write_changelog_digest.py"
+if [[ -f "$ROOT/static/changelog-digest.json" ]]; then
+  aws s3 cp "$(to_win_path "$ROOT/static/changelog-digest.json")" \
+    "s3://${BUCKET}/content/changelog-digest.json" --region "$AWS_REGION"
+else
+  echo "WARN: static/changelog-digest.json missing — skip upload" >&2
+fi
 aws s3 cp "$(to_win_path "$ROOT/src/content/concierge_knowledge.ja.json")" "s3://${BUCKET}/content/concierge_knowledge.ja.json" --region "$AWS_REGION"
 
 echo "KB source synced to s3://${BUCKET}/"

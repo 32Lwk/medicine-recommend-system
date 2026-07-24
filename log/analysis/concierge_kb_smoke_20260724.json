@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-07-24T08:35:00+00:00",
+  "phase": "phase4_concierge_smoke",
+  "concierge_ingestion_job_id": "RK9C6WE1Y9",
+  "concierge_ingestion_status": "COMPLETE",
+  "concierge_indexed": 22344,
+  "medicine_ingestion_job_id": "6KITANBIHV",
+  "medicine_ingestion_status": "COMPLETE",
+  "retrieve_smoke": {
+    "changelog_digest_hit": true,
+    "changelog_digest_query": "最近の更新履歴 AWS",
+    "changelog_digest_top_score": 0.6259,
+    "changelog_digest_uri_contains": "content/changelog-digest.json",
+    "architecture_ops_hit": true,
+    "architecture_ops_query": "CodePipeline デプロイの流れ",
+    "architecture_ops_top_score": 0.7216,
+    "architecture_ops_uri_prefix": "ops/"
+  },
+  "eval_summary": {
+    "concierge_kb_eval": "9/10 pass (90%)",
+    "concierge_eval_path": "log/analysis/concierge_kb_baseline_20260724.json",
+    "medicine_kb_eval_path": "log/analysis/medicine_kb_after_metadata_20260724.json"
+  }
+}

@@ -1,0 +1,67 @@
+# Concierge Managed KB retrieve 評価（Phase 4）
+# 実行: AWS_PROFILE=admin .venv/bin/python scripts/eval_concierge_kb.py
+
+kb_id: "2CNAGQ2V4P"
+search_mode: managed
+region: ap-northeast-1
+
+scenarios:
+  - id: changelog-recent-aws
+    query: "最近の更新履歴 AWS"
+    intent: doc_changelog
+    expected_source_prefix: "content/changelog-digest.json"
+    min_score: 0.5
+
+  - id: changelog-phase-q4
+    query: "Phase Q4 変更"
+    intent: doc_changelog
+    expected_source_prefix: "content/"
+    min_score: 0.5
+
+  - id: architecture-codepipeline
+    query: "CodePipeline デプロイの流れ"
+    intent: architecture
+    expected_source_prefix: "ops/"
+    min_score: 0.5
+
+  - id: architecture-ecs
+    query: "ECS Express Gateway とは"
+    intent: architecture
+    expected_source_prefix: "ops/"
+    min_score: 0.5
+
+  - id: architecture-bedrock-kb
+    query: "Bedrock Knowledge Base 設定"
+    intent: architecture
+    expected_source_prefix: "ops/"
+    min_score: 0.5
+
+  - id: capabilities-overview
+    query: "このツールでできること"
+    intent: capabilities
+    expected_source_prefix: "concierge/"
+    min_score: 0.4
+
+  - id: cloud-run-gcp
+    query: "GCP Cloud Run 本番"
+    intent: architecture
+    expected_source_prefix: "concierge/"
+    min_score: 0.4
+
+  - id: changelog-md
+    query: "CHANGELOG 更新"
+    intent: doc_changelog
+    expected_source_prefix: "content/CHANGELOG"
+    min_score: 0.5
+
+  - id: infra-aws
+    query: "AWS インフラ構成"
+    intent: architecture
+    expected_source_prefix: "ops/AWS"
+    min_score: 0.5
+
+  - id: public-overview
+    query: "企業向け概要"
+    intent: architecture
+    expected_source_prefix: "public/"
+    min_score: 0.4

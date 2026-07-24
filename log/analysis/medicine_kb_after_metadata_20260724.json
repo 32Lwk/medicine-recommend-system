@@ -1,0 +1,429 @@
+{
+  "timestamp": "2026-07-24T09:07:02.577400+00:00",
+  "phase": "after_metadata",
+  "kb_id": "30BCEJCJHA",
+  "search_mode": "managed",
+  "region": "ap-northeast-1",
+  "fixture": "tests/fixtures/medicine_kb_eval.yaml",
+  "summary": {
+    "total": 20,
+    "pass_all": 15,
+    "pass_all_pct": 75.0,
+    "score_pass": 15,
+    "score_pass_pct": 75.0,
+    "target_pass_pct": 80.0
+  },
+  "results": [
+    {
+      "id": "interaction-loxoprofen-warfarin",
+      "category": "interaction",
+      "query": "ロキソプロフェンとワーファリンを一緒に飲んでも大丈夫？ 推奨医薬品: ロキソニン",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/interactions/",
+      "chunk_count": 2,
+      "top_score": 0.8008,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%83%AD%E3%82%AD%E3%82%BD%E3%83%97%E3%83%AD%E3%83%95%E3%82%A7%E3%83%B3-%E3%83%AF%E3%83%BC%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%83%AD%E3%82%AD%E3%82%BD%E3%83%97%E3%83%AD%E3%83%95%E3%82%A7%E3%83%B3%E3%83%8A%E3%83%88%E3%83%AA%E3%82%A6%E3%83%A0%E6%B0%B4%E5%92%8C%E7%89%A9-%E3%83%AF%E3%83%BC%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3.md"
+      ],
+      "kb_retrieve_ms": 944.02,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 3
+    },
+    {
+      "id": "interaction-ibuprofen-aspirin",
+      "category": "interaction",
+      "query": "イブプロフェンとアスピリンの併用は？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/interactions/",
+      "chunk_count": 4,
+      "top_score": 0.7663,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%82%A2%E3%82%B9%E3%83%94%E3%83%AA%E3%83%B3-%E3%82%A4%E3%83%96%E3%83%97%E3%83%AD%E3%83%95%E3%82%A7%E3%83%B3%E3%83%94%E3%82%B3%E3%83%8E%E3%83%BC%E3%83%AB.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%82%A2%E3%82%B9%E3%83%94%E3%83%AA%E3%83%B3-%E3%82%A4%E3%83%96%E3%83%97%E3%83%AD%E3%83%95%E3%82%A7%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%82%A2%E3%82%B9%E3%83%94%E3%83%AA%E3%83%B3%E3%82%A2%E3%83%AB%E3%83%9F%E3%83%8B%E3%82%A6%E3%83%A0-%E3%82%A4%E3%83%96%E3%83%97%E3%83%AD%E3%83%95%E3%82%A7%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%82%A2%E3%82%B9%E3%83%94%E3%83%AA%E3%83%B3%E3%82%A2%E3%83%AB%E3%83%9F%E3%83%8B%E3%82%A6%E3%83%A0-%E3%82%A4%E3%83%96%E3%83%97%E3%83%AD%E3%83%95%E3%82%A7%E3%83%B3%E3%83%94%E3%82%B3%E3%83%8E%E3%83%BC%E3%83%AB.md"
+      ],
+      "kb_retrieve_ms": 578.54,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 1
+    },
+    {
+      "id": "interaction-acetaminophen-alcohol",
+      "category": "interaction",
+      "query": "アセトアミノフェンをお酒と一緒に飲むと？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/interactions/",
+      "chunk_count": 4,
+      "top_score": 0.7426,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%82%A2%E3%82%BB%E3%83%88%E3%82%A2%E3%83%9F%E3%83%8E%E3%83%95%E3%82%A7%E3%83%B3-%E3%82%A2%E3%83%AB%E3%82%B3%E3%83%BC%E3%83%AB.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/ace%E9%98%BB%E5%AE%B3%E8%96%AC-%E3%82%A2%E3%83%AB%E3%82%B3%E3%83%BC%E3%83%AB.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%82%A2%E3%82%BB%E3%83%88%E3%82%A2%E3%83%9F%E3%83%8E%E3%83%95%E3%82%A7%E3%83%B3%E9%8C%A0a%E3%82%AF%E3%83%8B%E3%83%92%E3%83%AD-%E7%9A%87%E6%BC%A2%E5%A0%82%E8%A3%BD%E8%96%AC.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%82%A2%E3%82%BB%E3%83%88%E3%82%A2%E3%83%9F%E3%83%8E%E3%83%95%E3%82%A7%E3%83%B3%E9%8C%A0%E3%82%AF%E3%83%8B%E3%83%92%E3%83%AD-%E7%9A%87%E6%BC%A2%E5%A0%82%E8%A3%BD%E8%96%AC.md"
+      ],
+      "kb_retrieve_ms": 650.01,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 1
+    },
+    {
+      "id": "interaction-dextromethorphan-ssri",
+      "category": "interaction",
+      "query": "デキストロメトルファンと SSRI の併用リスクは？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/interactions/",
+      "chunk_count": 5,
+      "top_score": 0.7035,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/ssri-%E3%83%87%E3%82%AD%E3%82%B9%E3%83%88%E3%83%AD%E3%83%A1%E3%83%88%E3%83%AB%E3%83%95%E3%82%A1%E3%83%B3%E8%87%AD%E5%8C%96%E6%B0%B4%E7%B4%A0%E9%85%B8%E5%A1%A9%E6%B0%B4%E5%92%8C%E7%89%A9.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/ssri-%E3%83%95%E3%82%A7%E3%83%8E%E3%83%BC%E3%83%AB%E3%83%95%E3%82%BF%E3%83%AA%E3%83%B3%E9%85%B8%E3%83%87%E3%82%AD%E3%82%B9%E3%83%88%E3%83%AD%E3%83%A1%E3%83%88%E3%83%AB%E3%83%95%E3%82%A1%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/ssri-%E3%83%87%E3%82%AD%E3%82%B9%E3%83%88%E3%83%AD%E3%83%A1%E3%83%88%E3%83%AB%E3%83%95%E3%82%A1%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/ssri-%E3%83%87%E3%82%AD%E3%82%B9%E3%83%88%E3%83%AD%E3%83%A1%E3%83%88%E3%83%AB%E3%83%95%E3%82%A1%E3%83%B3%E3%83%95%E3%82%A7%E3%83%8E%E3%83%BC%E3%83%AB%E3%83%95%E3%82%BF%E3%83%AA%E3%83%B3%E5%A1%A9.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/snri-%E3%83%87%E3%82%AD%E3%82%B9%E3%83%88%E3%83%AD%E3%83%A1%E3%83%88%E3%83%AB%E3%83%95%E3%82%A1%E3%83%B3%E8%87%AD%E5%8C%96%E6%B0%B4%E7%B4%A0%E9%85%B8%E5%A1%A9%E6%B0%B4%E5%92%8C%E7%89%A9.md"
+      ],
+      "kb_retrieve_ms": 812.41,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 0
+    },
+    {
+      "id": "interaction-caffeine-ephedrine",
+      "category": "interaction",
+      "query": "カフェインとエフェドリンを同時に取ると？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/interactions/",
+      "chunk_count": 5,
+      "top_score": 0.5209,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%82%AB%E3%83%95%E3%82%A7%E3%82%A4%E3%83%B3-%E5%A1%A9%E9%85%B8%E3%83%97%E3%82%BD%E3%82%A4%E3%83%89%E3%82%A8%E3%83%95%E3%82%A7%E3%83%89%E3%83%AA%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%82%A8%E3%83%95%E3%82%A7%E3%83%89%E3%83%AA%E3%83%B3-%E3%82%AB%E3%83%95%E3%82%A7%E3%82%A4%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%82%A8%E3%83%95%E3%82%A7%E3%83%89%E3%83%AA%E3%83%B3-%E3%82%AB%E3%83%95%E3%82%A7%E3%82%A4%E3%83%B3%E6%B0%B4%E5%92%8C%E7%89%A9.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%82%A8%E3%83%95%E3%82%A7%E3%83%89%E3%83%AA%E3%83%B3-%E3%82%AF%E3%82%A8%E3%83%B3%E9%85%B8%E3%82%AB%E3%83%95%E3%82%A7%E3%82%A4%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%82%AF%E3%82%A8%E3%83%B3%E9%85%B8%E3%82%AB%E3%83%95%E3%82%A7%E3%82%A4%E3%83%B3-%E5%A1%A9%E9%85%B8%E3%83%97%E3%82%BD%E3%82%A4%E3%83%89%E3%82%A8%E3%83%95%E3%82%A7%E3%83%89%E3%83%AA%E3%83%B3.md"
+      ],
+      "kb_retrieve_ms": 668.14,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 0
+    },
+    {
+      "id": "usage-after-meal",
+      "category": "usage",
+      "query": "頭痛薬は食後に飲むべき？ 推奨医薬品: カロナールA",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/products/",
+      "chunk_count": 5,
+      "top_score": 0.7819,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%82%AB%E3%83%AD%E3%83%8A%E3%83%BC%E3%83%ABa-%E7%AC%AC%E4%B8%80%E4%B8%89%E5%85%B1%E3%83%98%E3%83%AB%E3%82%B9%E3%82%B1%E3%82%A2.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/efficacy/%E3%82%AB%E3%83%AD%E3%83%8A%E3%83%BC%E3%83%AB%EF%BD%81.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E9%A0%AD%E7%97%9B%E6%AD%AF%E7%97%9B%E3%82%B1%E3%83%AD%E3%83%B3-%E7%AC%AC%E4%B8%80%E8%96%AC%E5%93%81%E5%B7%A5%E6%A5%AD.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%82%AB%E3%83%AD%E3%83%8A%E3%83%BC%E3%83%ABa-%E7%AC%AC%E4%B8%80%E4%B8%89%E5%85%B1.md"
+      ],
+      "kb_retrieve_ms": 591.27,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 0
+    },
+    {
+      "id": "usage-dose-interval",
+      "category": "usage",
+      "query": "解熱鎮痛薬は何時間おきに飲める？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/products/",
+      "chunk_count": 4,
+      "top_score": 0.4865,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E8%A7%A3%E7%86%B1%E9%8E%AE%E7%97%9B%E9%8C%A0dk-%E4%B8%AD%E5%A4%AE%E8%A3%BD%E8%96%AC.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E8%A7%A3%E7%86%B1%E9%8E%AE%E7%97%9B%E9%8C%A0ip-%E5%A4%A7%E6%98%AD%E8%A3%BD%E8%96%AC.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/dhc%E8%A7%A3%E7%86%B1%E9%8E%AE%E7%97%9B%E8%96%AC-%E3%83%87%E3%82%A3%E3%83%BC%E3%82%A8%E3%82%A4%E3%83%81%E3%82%B7%E3%83%BC.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E8%A7%A3%E7%86%B1%E9%8E%AE%E7%97%9B%E3%82%B1%E3%83%AD%E3%83%81%E3%83%B3-%E6%96%B0%E6%96%B0%E8%96%AC%E5%93%81%E5%B7%A5%E6%A5%AD.md"
+      ],
+      "kb_retrieve_ms": 726.62,
+      "score_pass": false,
+      "prefix_pass": true,
+      "pass": false,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 1
+    },
+    {
+      "id": "usage-how-many-times",
+      "category": "usage",
+      "query": "風邪薬は1日何回まで？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/products/",
+      "chunk_count": 4,
+      "top_score": 0.5955,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E7%B7%8F%E5%90%88%E6%84%9F%E5%86%92%E8%96%AC%E3%82%A2%E3%82%BB%E3%83%9E%E3%83%AC%E3%83%B3-%E6%9D%B1%E6%B5%B7%E3%82%AB%E3%83%97%E3%82%BB%E3%83%AB.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E6%96%B0%E7%B7%8F%E5%90%88%E6%84%9F%E5%86%92%E8%96%ACa%E5%BE%AE%E7%B2%92-%E7%B1%B3%E7%94%B0%E8%96%AC%E5%93%81%E5%B7%A5%E6%A5%AD.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%82%A8%E3%82%B9%E3%82%BF%E3%83%83%E3%82%AF%E7%B7%8F%E5%90%88%E6%84%9F%E5%86%92-%E3%82%A8%E3%82%B9%E3%82%A8%E3%82%B9%E8%A3%BD%E8%96%AC.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E6%94%B9%E6%BA%90%E5%92%B3%E6%AD%A2%E6%B6%B2w-%E3%82%AB%E3%82%A4%E3%82%B2%E3%83%B3%E3%83%95%E3%82%A1%E3%83%BC%E3%83%9E.md"
+      ],
+      "kb_retrieve_ms": 702.01,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 1
+    },
+    {
+      "id": "usage-empty-stomach",
+      "category": "usage",
+      "query": "胃が弱い人は空腹時に飲んでもいい？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/products/",
+      "chunk_count": 5,
+      "top_score": 0.5844,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/kanpo/%E5%B9%B3%E8%83%83%E6%95%A3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E8%96%AC%E8%8D%89%E5%81%A5%E8%83%83%E8%96%ACf-%E5%AF%8C%E5%A3%AB%E8%96%AC%E5%93%81.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/raw/data/otc_medicine_data.csv"
+      ],
+      "kb_retrieve_ms": 1730.08,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 0
+    },
+    {
+      "id": "usage-water-amount",
+      "category": "usage",
+      "query": "錠剤は水と一緒に飲む必要がある？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/products/",
+      "chunk_count": 3,
+      "top_score": 0.5211,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E6%96%B0%E3%82%BF%E3%82%A6%E3%83%AD%E6%84%9F%E5%86%92%E3%83%AC%E3%83%83%E3%83%89-%E7%A6%8F%E4%BA%95%E8%A3%BD%E8%96%AC.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%82%A2%E3%82%B8%E3%82%A7%E3%83%B3%E3%83%86%E9%8E%AE%E7%97%9B%E8%96%ACa-%E5%A5%A5%E7%94%B0%E8%A3%BD%E8%96%AC.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/ibu%E9%8E%AE%E7%97%9B%E8%96%ACexa-%E5%A5%A5%E7%94%B0%E8%A3%BD%E8%96%AC.md"
+      ],
+      "kb_retrieve_ms": 2653.05,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 2
+    },
+    {
+      "id": "sideeffect-loxoprofen-sleepiness",
+      "category": "side_effect",
+      "query": "ロキソプロフェンで眠くなる？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/side_effects/",
+      "chunk_count": 3,
+      "top_score": 0.7234,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E7%9D%A1%E7%9C%A0%E6%94%B9%E5%96%84%E8%96%ACiq-%E4%B8%AD%E5%A4%AE%E8%A3%BD%E8%96%AC.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/side_effects/%E3%83%AD%E3%82%AD%E3%82%BD%E3%83%97%E3%83%AD%E3%83%95%E3%82%A7%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%82%B9%E3%83%AA%E3%83%BC%E3%83%9A%E3%82%A4%E3%83%89-%E5%B2%A9%E5%9F%8E%E8%A3%BD%E8%96%AC.md"
+      ],
+      "kb_retrieve_ms": 2314.29,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 2
+    },
+    {
+      "id": "sideeffect-chlorpheniramine-drowsy",
+      "category": "side_effect",
+      "query": "クロルフェニラミンの副作用で眠気は？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/side_effects/",
+      "chunk_count": 4,
+      "top_score": 0.6968,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/side_effects/%E3%82%AF%E3%83%AD%E3%83%AB%E3%83%95%E3%82%A7%E3%83%8B%E3%83%A9%E3%83%9F%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/side_effects/%E3%83%9E%E3%83%AC%E3%82%A4%E3%83%B3%E9%85%B8%E3%82%AF%E3%83%AD%E3%83%AB%E3%83%95%E3%82%A7%E3%83%8B%E3%83%A9%E3%83%9F%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/raw/data/medicine_side_effects.csv",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%82%AF%E3%83%AD%E3%83%AB%E3%83%95%E3%82%A7%E3%83%8B%E3%83%A9%E3%83%9F%E3%83%B3-%E3%83%99%E3%83%B3%E3%82%BE%E3%82%B8%E3%82%A2%E3%82%BC%E3%83%94%E3%83%B3.md"
+      ],
+      "kb_retrieve_ms": 1684.51,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 1
+    },
+    {
+      "id": "sideeffect-ibuprofen-stomach",
+      "category": "side_effect",
+      "query": "イブプロフェンで胃が痛くなることはある？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/side_effects/",
+      "chunk_count": 5,
+      "top_score": 0.6976,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/side_effects/%E3%82%A4%E3%83%96%E3%83%97%E3%83%AD%E3%83%95%E3%82%A7%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/side_effects/%E3%82%A4%E3%83%96%E3%83%97%E3%83%AD%E3%83%95%E3%82%A7%E3%83%B3%E3%83%94%E3%82%B3%E3%83%8E%E3%83%BC%E3%83%AB.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/raw/data/medicine_side_effects.csv",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/interactions/%E3%82%A4%E3%83%96%E3%83%97%E3%83%AD%E3%83%95%E3%82%A7%E3%83%B3-%E3%82%AF%E3%83%9E%E3%83%AA%E3%83%B3%E7%B3%BB%E6%8A%97%E5%87%9D%E8%A1%80%E8%96%AC.md"
+      ],
+      "kb_retrieve_ms": 683.96,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 0
+    },
+    {
+      "id": "doping-pseudoephedrine",
+      "category": "doping",
+      "query": "プソイドエフェドリンはドーピング禁止？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/products/",
+      "chunk_count": 2,
+      "top_score": 0.4053,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E6%96%B0%E9%BC%BB%E7%82%8E%E3%82%B9%E3%83%A0%E3%83%BC%E3%83%87%E3%82%A3s-%E5%A4%A7%E5%8D%94%E8%96%AC%E5%93%81%E5%B7%A5%E6%A5%AD.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E4%B8%AD%E5%A4%AE%E3%82%AF%E3%83%BC%E3%83%AB%E9%BC%BB%E7%82%8E%E7%94%A8%E3%82%AB%E3%83%97%E3%82%BB%E3%83%AB-%E6%B8%A1%E8%BE%BA%E8%96%AC%E5%93%81%E5%B7%A5%E6%A5%AD.md"
+      ],
+      "kb_retrieve_ms": 694.81,
+      "score_pass": false,
+      "prefix_pass": true,
+      "pass": false,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 3
+    },
+    {
+      "id": "doping-competition-category",
+      "category": "doping",
+      "query": "競技会区分 S6A とは何？ 推奨医薬品: バファリン",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/products/",
+      "chunk_count": 3,
+      "top_score": 0.5322,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3%E3%82%B8%E3%83%A5%E3%83%8B%E3%82%A2%E3%81%8B%E3%81%9C%E8%96%AC-%E3%83%A9%E3%82%A4%E3%82%AA%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%83%91%E3%83%96%E3%83%AD%E3%83%B3%E3%81%9B%E3%81%8D%E6%AD%A2%E3%82%81%E3%83%88%E3%83%AA%E3%83%97%E3%83%AB%E9%8C%A0-%E5%A4%A7%E6%AD%A3%E8%A3%BD%E8%96%AC.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3%E3%82%B8%E3%83%A5%E3%83%8B%E3%82%A2%E3%81%8B%E3%81%9C%E8%96%ACa-%E3%83%A9%E3%82%A4%E3%82%AA%E3%83%B3.md"
+      ],
+      "kb_retrieve_ms": 716.28,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 2
+    },
+    {
+      "id": "doping-prohibited-substance",
+      "category": "doping",
+      "query": "禁止物質ありの市販薬は競技前に注意？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/products/",
+      "chunk_count": 3,
+      "top_score": 0.5665,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%83%97%E3%83%AC%E3%82%B3%E3%83%BC%E3%83%AB%E6%8C%81%E7%B6%9A%E6%80%A7%E3%82%AB%E3%83%97%E3%82%BB%E3%83%AB-%E7%AC%AC%E4%B8%80%E4%B8%89%E5%85%B1%E3%83%98%E3%83%AB%E3%82%B9%E3%82%B1%E3%82%A2.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%83%97%E3%83%AC%E3%82%B3%E3%83%BC%E3%83%AB%E6%8C%81%E7%B6%9A%E6%80%A7%E3%81%9B%E3%81%8D%E6%AD%A2%E3%82%81%E3%82%AB%E3%83%97%E3%82%BB%E3%83%AB-%E7%AC%AC%E4%B8%80%E4%B8%89%E5%85%B1%E3%83%98%E3%83%AB%E3%82%B9%E3%82%B1%E3%82%A2.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%83%97%E3%83%AC%E3%82%B3%E3%83%BC%E3%83%AB%E3%81%8B%E3%81%9C%E8%96%AC%E9%8C%A0-%E7%94%B0%E6%9D%91%E8%96%AC%E5%93%81%E5%B7%A5%E6%A5%AD.md"
+      ],
+      "kb_retrieve_ms": 555.63,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 2
+    },
+    {
+      "id": "age-under-15",
+      "category": "age",
+      "query": "15歳未満は解熱鎮痛薬を飲める？",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/products/",
+      "chunk_count": 4,
+      "top_score": 0.4295,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%82%BB%E3%82%B7%E3%82%AA%E3%83%B3%E8%A7%A3%E7%86%B1%E9%8E%AE%E7%97%9B%E8%96%ACap-%E5%B0%8F%E6%9E%97%E8%96%AC%E5%93%81%E5%B7%A5%E6%A5%AD.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/dhc%E8%A7%A3%E7%86%B1%E9%8E%AE%E7%97%9B%E8%96%AC-%E3%83%87%E3%82%A3%E3%83%BC%E3%82%A8%E3%82%A4%E3%83%81%E3%82%B7%E3%83%BC.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E8%A7%A3%E7%86%B1%E9%8E%AE%E7%97%9B%E3%82%B1%E3%83%AD%E3%83%81%E3%83%B3-%E6%96%B0%E6%96%B0%E8%96%AC%E5%93%81%E5%B7%A5%E6%A5%AD.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%83%A0%E3%83%92%E3%81%AE%E3%81%93%E3%81%A9%E3%82%82%E8%A7%A3%E7%86%B1%E9%8E%AE%E7%97%9B%E9%A1%86%E7%B2%92-%E3%83%80%E3%82%A4%E3%83%88.md"
+      ],
+      "kb_retrieve_ms": 1974.75,
+      "score_pass": false,
+      "prefix_pass": true,
+      "pass": false,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 1
+    },
+    {
+      "id": "age-restriction-product",
+      "category": "age",
+      "query": "この頭痛薬の年齢制限は？ 推奨医薬品: タイレノールA",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/products/",
+      "chunk_count": 5,
+      "top_score": 0.7778,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%82%BF%E3%82%A4%E3%83%AC%E3%83%8E%E3%83%BC%E3%83%ABa-%E6%9D%B1%E4%BA%9C%E8%96%AC%E5%93%81.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/efficacy/%E3%82%BF%E3%82%A4%E3%83%AC%E3%83%8E%E3%83%BC%E3%83%AB%EF%BD%81.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%82%AF%E3%83%9F%E3%82%A2%E3%82%A4%E6%96%B0%E9%A0%AD%E7%97%9B%E9%8C%A0-%E5%9B%BD%E7%94%A3%E8%96%AC%E5%93%81%E5%B7%A5%E6%A5%AD.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/public/%E4%BC%9A%E7%A4%BE%E5%90%91%E3%81%91%E6%A6%82%E8%A6%81%E6%9B%B8%E9%A1%9E.md"
+      ],
+      "kb_retrieve_ms": 644.07,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 0
+    },
+    {
+      "id": "age-child-cold",
+      "category": "age",
+      "query": "小児用の風邪薬の年齢制限",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/products/",
+      "chunk_count": 5,
+      "top_score": 0.4832,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%83%8E%E3%82%B9%E3%83%9D%E3%83%BC%E3%83%AB%E3%81%93%E3%81%A9%E3%82%82%E3%81%8B%E3%81%9C%E8%96%ACa-%E5%8D%94%E5%92%8C%E8%96%AC%E5%93%81%E5%B7%A5%E6%A5%AD.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%82%AB%E3%82%A4%E3%82%B2%E3%83%B3%E6%84%9F%E5%86%92%E6%B6%B2%E5%B0%8F%E5%85%90%E7%94%A8-%E3%82%AB%E3%82%A4%E3%82%B2%E3%83%B3%E3%83%95%E3%82%A1%E3%83%BC%E3%83%9E.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%82%A2%E3%83%AB%E3%83%9A%E3%83%B3%E3%81%93%E3%81%A9%E3%82%82%E3%81%8B%E3%81%9C%E8%96%ACj%E7%B4%B0%E7%B2%92-%E3%83%A9%E3%82%A4%E3%82%AA%E3%83%B3.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%83%81%E3%83%AB%E3%83%87%E3%83%B3%E3%83%88%E3%81%93%E3%81%A9%E3%82%82%E7%94%A8%E3%81%8B%E3%81%9C%E3%82%B7%E3%83%AD%E3%83%83%E3%83%97-%E5%A4%A7%E6%98%AD%E8%A3%BD%E8%96%AC.md",
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/%E3%83%8E%E3%82%B9%E3%83%9D%E3%83%BC%E3%83%AB%E3%81%93%E3%81%A9%E3%82%82%E3%81%8B%E3%81%9C%E8%96%ACs-%E5%8D%94%E5%92%8C%E8%96%AC%E5%93%81%E5%B7%A5%E6%A5%AD.md"
+      ],
+      "kb_retrieve_ms": 598.57,
+      "score_pass": false,
+      "prefix_pass": true,
+      "pass": false,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 0
+    },
+    {
+      "id": "age-elderly-nsaid",
+      "category": "age",
+      "query": "高齢者が NSAID を使うときの注意",
+      "min_score": 0.5,
+      "expected_source_prefix": "medicine/products/",
+      "chunk_count": 1,
+      "top_score": 0.4049,
+      "source_uris": [
+        "https://medicine-recommend-kb-source-290780119994.s3.ap-northeast-1.amazonaws.com/medicine/products/nf%E3%82%AB%E3%83%AD%E3%83%A4%E3%83%B3%E3%82%AC%E3%83%83%E3%82%B7%E3%83%A5-%E3%83%8B%E3%83%97%E3%83%AD%E3%83%95%E3%82%A1%E3%83%BC%E3%83%9E.md"
+      ],
+      "kb_retrieve_ms": 706.8,
+      "score_pass": false,
+      "prefix_pass": true,
+      "pass": false,
+      "provider": "bedrock_kb",
+      "dropped_low_score": 4
+    }
+  ]
+}

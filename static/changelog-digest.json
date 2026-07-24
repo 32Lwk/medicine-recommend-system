@@ -1,7 +1,72 @@
 {
   "source": "CHANGELOG.md",
-  "header_date": "2026年7月23日（Concierge 更新履歴 UI・CodePipeline 自動デプロイ修正・Sage 推奨一括描画）",
+  "header_date": "2026年7月24日（Dual KB RAG Phase 5・PMDA データ取り込み拡張）",
   "releases": [
+    {
+      "heading": "2026年7月24日 — Dual KB RAG Phase 1.5–5（ingestion 修正・パイプライン・Ask sanitize）",
+      "overview": "AWS ステージング Managed KB（Concierge 2CNAGQ2V4P / Medicine 30BCEJCJHA）の RAG 品質向上と運用自動化の骨格を実装。Medicine eval: raw 80%（16/20）/ runtime 85%（17/20）、相互作用 5/5 hard gate。ingestion failed 7,494 → 0（metadata boolean → string 修正）。",
+      "highlights": [
+        "7,494 製品 MD + interactions / side_effects / kanpo / efficacy",
+        "トピックガイド: medicine/topics/（服用間隔・年齢制限・NSAID 高齢者）",
+        "ドーピングガイド: medicine/doping/pseudoephedrine.md",
+        "product MD 固定見出し（用法・用量 / 年齢制限 / ドーピング）",
+        "metadata 全値 string 化（Bedrock ingestion 要件）",
+        "raw CSV は S3 非 sync（sync-medicine-kb-to-s3.sh --exclude raw/*）",
+        "src/services/bedrock_kb_retrieve.py: build_medicine_retrieval_query() / build_concierge_retrieval_query() 拡張",
+        "src/core/medicine/medicine_response_builder.py: KB augment + Ask sanitize",
+        "src/core/explanation_generator.py: Explanation KB citation（方式 A）",
+        "src/agents/concierge_agent.py: Managed KB 接続",
+        "src/services/concierge_output_sanitize.py: sanitize_medicine_ask_output()",
+        "docs/ops/AWS_BEDROCK_KB.md: raw 除外・ingestion トラブルシュート（boolean metadata）",
+        "docs/ops/AWS_CODEPIPELINE.md: KB env 段階ロールアウト・IAM 要件",
+        "docs/ops/AWS_STAGING_CHECKLIST.md: Phase 5 KB 自動化チェック",
+        "docs/ops/GCP_RAG_MIGRATION_ADR.md: Option C 推奨（staging Bedrock / GCP 本番レガシー）",
+        "CodeBuild env 切替は ユーザー GO 後（SYNC_KB_TO_S3=true → ingestion → eval）",
+        "推奨順位（physical_orchestrator.py）は 変更なし"
+      ]
+    },
+    {
+      "heading": "2026年7月24日 — PMDA データ取り込み拡張（live fetch・CSV merge）",
+      "overview": "PMDA 公的情報（市販薬検索・添付文書 §10 相互作用・§11 副作用）を data/*.csv 正本へ取り込むパイプラインを拡張。catalog expansion を正本とし、live fetch は PMDA 原文取得成功分のみ差し替え。CodePipeline / AWS IP からの live fetch は 禁止（ローカル回線のみ）。",
+      "highlights": [
+        "リクエスト間隔 2.5–5.0 秒、1 セッション 30 件上限",
+        "403 / 429×3 / empty HTML×3 で abort → 24h クールダウン",
+        "GO/NO-GO: fetch_interactions.py --live --limit 5",
+        "data/medicine_interactions.csv / data/medicine_side_effects.csv: PMDA 出典行の merge",
+        "data/ingredient_dictionary.json: PMDA import 由来の成分同義語拡張",
+        "data/pmda/manifest.json: import メタ・クールダウン",
+        "data/pmda/staging/: 手動フォールバック用 staging JSON",
+        "docs/ops/PMDA_DATA_IMPORT.md: 運用手順・robots 調査・abort 時フォールバック",
+        "data/DATA_CATALOG.md: PMDA ソース追記"
+      ]
+    },
+    {
+      "heading": "2026年7月24日 — OTC 商品画像 R2 一括同期・ローカル export",
+      "overview": "推奨ログ頻度上位の OTC 医薬品について、マツキヨココカラ online から商品画像を取得し Cloudflare R2（https://images.yutok.dev/otc/）へ一括アップロードするパイプラインを追加。初回実行で 71 / 200 件 を R2 に配置（ログ推奨 117 件のうち 41 件）。UI は MEDICINE_IMAGE_CDN_BASE 経由で アップロード済み品目のパッケージ画像 を表示（未配置は従来どおりプレースホルダー）。",
+      "highlights": [
+        "推奨ログ（recommendation_detail_log.jsonl / recommendation_log.jsonl / counseling_detail_log.jsonl）から推奨頻度を集計",
+        "上位 117 品目を優先し、不足分を data/otc_medicine_data.csv で 200 件まで補完",
+        "マツキヨ検索: セッション Cookie 取得後 search_keyword パラメータで /store/catalogsearch/result/ を検索（?q= は不可）",
+        "商品ページ（JAN）から _01_ パック画像を取得 → WebP 変換 → R2 otc/{slug}.webp へ PUT",
+        "スラッグは src/services/medicine_image_urls.py の slugify_product_name() と同一規則",
+        "フラグ: --dry-run / --upload / --resume / --limit / --delay / --local-dir / --no-local",
+        "成果物: log/analysis/otc_image_sync/manifest.json / candidates.csv / run.log",
+        "manifest.json の uploaded 行を CDN から static/otc/{slug}.webp へ一括ダウンロード",
+        "static/otc/index.json にファイル一覧を出力",
+        "同期スクリプト --upload 時も --local-dir static/otc（既定）で同時保存可能",
+        "ローカル .env / GCP 本番（cloudbuild.yaml）/ AWS ステージングは MEDICINE_IMAGE_CDN_BASE=https://images.yutok.dev/otc/ 設定済み",
+        "src/services/recommendation_client_payload.py → enrich_medicine_image_url() が API ペイロードに image_url を付与",
+        "フロント: static/js/ui/medicine_mapper.js / medicine_card.js — 404 時 onerror でプレースホルダー",
+        "71 枚 WebP 合計 約 5.7 MB（200 枚でも ~50 MB 想定）",
+        "Cloudflare R2 無料枠: 10 GB ストレージ / egress 無料 → 十分余裕",
+        "docs/ops/CLOUDFLARE_R2_IMAGES.md: 一括同期・ローカル export・オフライン env の手順を追記",
+        ".gitignore: static/otc/*.webp / static/otc/index.json を生成物として除外（static/otc/.gitkeep のみ追跡）",
+        "--log-only（ログ推奨品目のみ対象）",
+        "data/otc_image_jan_overrides.csv による JAN 手動上書き",
+        "マッチ品質レビュー（例: タイレノールＡ → ＡS バリアント等）",
+        "マツキヨ未掲載品（トキワイブプロエースＡ 等）の別ソース検討"
+      ]
+    },
     {
       "heading": "2026年7月23日 — Concierge 更新履歴 UI・CodePipeline 自動デプロイ修正（夜）",
       "overview": "ブランチ main に、(1) Concierge 更新履歴カードのユーザー向け表示改善（「次に試すこと」ラベル誤用・箇条書き途中切れ・開発者向け env 文言）、(2) Sage Web で 推奨バブルを diagnosis 一括描画する際の途中 SSE スキップ、(3) GitHub push 後の CodePipeline が post_build で毎回 Failed していた問題の修正を反映（commits c45fe51 / 170e807 / 7b15881）。ステージング ALB には ECS タスクロール（Translate / Polly / Bedrock KB）を admin 手動適用済み（タスク定義 default-medicine-recommend:18）。",
@@ -126,85 +191,6 @@
         "Live 統合: scripts/test_medicine_context_live.py で 10/10 PASS。cold_start_cold_swim は render=sage_reco",
         "レポート: log/analysis/2026-07-04T021159Z_medicine_context_live.json",
         "CI 修正: medicine_context gate を発熱・緊急判定の後へ移動し、guards が fever_flow を上書きしないよう修正（IntentRouter contract / gate テスト）"
-      ]
-    },
-    {
-      "heading": "2026年7月3日 — CHANGELOG Concierge・app_about ガード・UI 改善",
-      "overview": "ブランチ main に、CHANGELOG 要約を Concierge で回答する doc_changelog intent、IntentRouter の app_about 誤ルーティング補正、処理中ステータスマスコットの段階別アニメーション、チャットビューポートとシーズン装飾のレイヤー修正、オンボーディングスライドの文言刷新を実装。",
-      "highlights": [
-        "src/content/changelog_digest.py（新規）: CHANGELOG.md から直近リリースの概要・ハイライトを抽出。static/build-meta.json のデプロイ反映情報と結合して LLM プロンプト用参照ブロックを生成",
-        "src/agents/concierge_agent.py: doc_changelog intent で CHANGELOG 要約を参照回答（推測・補完禁止の専用プロンプト）",
-        "src/content/concierge_docs.py: doc_changelog を doc intent 集合に追加",
-        "src/services/concierge_intent.py: doc_changelog intent とキーワードプローブ（「最近の更新」「CHANGELOG」等）",
-        "src/services/meta_triage.py: meta triage プロンプトに doc_changelog を追加",
-        "src/agents/emergency_classifier.py / src/handlers/line/line_delivery.py: 非緊急・遅延 Concierge intent リストに doc_changelog を追加",
-        "src/dialogue/routing/intent_router_llm.py: プロンプトに app_about / doc_changelog の判定ガイドを追加。legacy triage の concierge_intent をヒントに含める。maybe_corre…",
-        "src/dialogue/routing/intent_router.py: route 決定後に app_about ガードを適用",
-        "src/services/concierge_intent.py: probe_service_app_about_request() / is_excluded_service_app_about_request() — ユーザー自身の自己紹介・他アプリ紹介依頼を除外",
-        "static/js/processing_status.js: パイプライン step / detail_code からマスコット mood を細分化（idle / peek / think / scan / focus / spark / alert / compose /…",
-        "static/css/main.css: 目のみのマスコット + 頭上バブル（? ! …）の段階別 CSS アニメーション。prefers-reduced-motion 対応",
-        "templates/index.html: .chat-messages-viewport ラッパーを追加。シーズン装飾をビューポート下端に固定（メッセージスクロールと独立）",
-        "static/css/main.css / static/css/sage_terrace.css: 背景を viewport に移し .chat-messages は透明化。装飾レイヤの z-index・パディング調整",
-        "static/js/main.js: 全言語（ja / en / ko / zh）のオンボーディングスライドを「完了した改善」と「開発中・今後の予定」に分割。GitLab 一時移行の説明を dev スライドの footnote に移動。チェックリスト項目を現状に合わせて更新",
-        "static/css/main.css: .onboarding-footnote（<details> 折りたたみ）スタイル追加"
-      ]
-    },
-    {
-      "heading": "2026年7月3日 — ローカル DB 分離・セキュリティ入力ブロック・店舗案内・管理画面刷新",
-      "overview": "ブランチ feature/chat-pipeline-v2 に、ローカル開発用 Docker Postgres の自動起動、Neon dev との DB 分離、入力ブロックのカテゴリ別応答、店舗・施設案内の精度改善、管理画面（admin_chat）の Sage Terrace UI 刷新を実装。",
-      "highlights": [
-        "docker-compose.yml（新規）: Postgres 16、medicine_recommend DB、healthcheck、永続ボリューム",
-        "src/utils/local_docker_db.py（新規）: DATABASE_URL が localhost のとき docker compose up -d と接続待ち（LOCAL_DOCKER_DB_AUTO=1 既定、LOCAL_DOCKER_DB_WAIT_SE…",
-        "app.py: 起動前に _prepare_local_database() を呼び出し",
-        "src/services/database.py: ローカル host 向け sslmode=disable 自動付与、channel_binding=require 除去、pooler 警告を localhost では抑制",
-        "scripts/migrate_dev_neon_selective.py（新規）: v2 テストセッション除外のうえ line:* 実データ + feedback 等を Neon dev へ選別移行",
-        ".env.example: ローカル Docker / Neon dev 接続例、LOCAL_DOCKER_DB_* 変数",
-        ".gitignore: tmp_db_migration/ を追加",
-        "src/security/input_block_responses.py（新規）: threat_abuse / sexual_content / solicitation / illegal_drugs / system_abuse のカテゴリ分類と応答文言。性被害相談キー…",
-        "src/security/aggressive_input.py: 判定ロジックを input_block_responses.match_input_block に委譲",
-        "src/handlers/chat/chat_input_validator.py / chat_inappropriate_route.py: カテゴリ別 title / variant / kind でブロック応答。ブロック user メッセージに original_con…",
-        "src/services/session_manager.py: filter_messages_for_user_api() — ユーザー API では original_content 等を除去しプレースホルダのみ返却",
-        "main.py: api_sessions_get / api_sessions_restore で user API フィルタ適用",
-        "src/handlers/line/line_web_handoff.py: handoff 正規化後も user API フィルタ",
-        "static/js/main.js: 新 kind（inappropriate_sexual 等）を SECURITY_NOTICE に追加。user メッセージ畳み込みを uuid / message_id / pending_turn_id キーに変更",
-        "src/handlers/line/line_feedback.py: 不適切入力 kind ではフィードバック UI を非表示",
-        "src/analysis/session_conversation_analysis.py: セキュリティ応答 route_kind を挨拶誤判定から除外",
-        "src/services/store_facility_index.py（新規）: store_inquiry_keyword_catalog.json から施設・外部チェーン・小売チェーンの正規化インデックス。商品照合から施設名を分離",
-        "data/store_inquiry_keyword_catalog.json: external_retail_chains / retail_store_chains セクション追加（マツキヨ・ドンキ・百貨店・家電量販等）",
-        "src/services/store_inquiry_handler.py: 店内外デュアル案内（_compose_dual_location_guidance）、施設名ラベル解決、一般「薬局＋近く」問い合わせの external_chain 検出拡張",
-        "src/services/store_product_index.py: 施設トークン除外で商品誤マッチ防止",
-        "data/store_products.json: カテゴリに空 brands: [] フィールドを正規化追加",
-        "templates/admin_chat.html: sage_terrace.css 適用、data-ui-variant=\"sage\"。ヘッダーをアイコンボタン群に再構成。セッション管理モーダル・ログクリア確認モーダル追加。チャットメッセージ複数選択削除 UI",
-        "static/css/admin_chat.css: Sage Terrace トークン準拠の全面スタイル刷新（レイアウト・モーダル・セッションカード・チャットバブル）",
-        "static/css/scrollbar.css: #session-management-list 等の新スクロール領域を app-scrollbar グループに追加"
-      ]
-    },
-    {
-      "heading": "2026年7月3日 — Phase 4（4a–4b）IntentRouter primary 化・dev 展開",
-      "overview": "ブランチ feature/chat-pipeline-v2 に Phase 4a（dispatch handler 追撃・shadow mismatch 分類）および Phase 4b（Router PRIMARY / orch-trim / shadow exempt / LEGACY_FALLBACK_TRIM）を実装。config/llm_flags.py の _ux_rollout_flag により、APP_ENV=development のみで v2 / PRIMARY / TRIM / Phase 2–4b UX 十二種が env 未設定でも自動 ON（LATENCY_* は対象外・既定 OFF のまま）。本番は env 明示 ON + ALLOWLIST 限定（カナリア 1 は dev 24h Go 待ち）。",
-      "highlights": [
-        "src/dialogue/dispatcher.py: SessionOps / Concierge / Store / Physical 等の dispatch handler 拡充。handler None を 0 件に是正",
-        "src/dialogue/routing/shadow_mismatch.py（新規）: regression / gate_improvement / exempt 分類。counseling follow-up（2週間くらいです 等）の exempt 再分類",
-        "src/dialogue/routing/shadow.py / metrics.py: mismatch_kind 出力、shadow_regression / shadow_exempt KPI",
-        "src/utils/structured_logger.py: emit_dialogue_route_shadow に mismatch_kind",
-        "scripts/measure_intent_router_shadow.py / local_v2_chat_test_runner.py: IntentRouter KPI セクション、--failed-only / --resume / checkpoint",
-        "config/llm_flags.py: _ux_rollout_flag() — 開発ランタイム（APP_ENV=development）で UX 十二種 + PRIMARY/TRIM を自動 ON。LATENCY_* は従来どおり明示 ON のみ",
-        "src/dialogue/routing/intent_router.py / intent_router_llm.py: PRIMARY 切替（triage map 降格）",
-        "src/handlers/chat_orchestrator.py: dispatch 成功 route では meta_triage / SessionAgent / Concierge / Store 再判定をスキップ（orch-trim）",
-        "src/handlers/chat/chat_post_pipeline.py: LEGACY_FALLBACK_TRIM 観測ログ",
-        "src/services/concierge_orchestrator.py / store_inquiry_handler.py / session_ops.py: _intent_router_dispatch 連携",
-        "scripts/verify_v2_canary_flags.py（新規）: dev auto-on / 本番 ALLOWLIST パターン検証",
-        "scripts/canary_sim_smoke.py（新規）: 固定 sid 手動スモーク",
-        "scripts/cloudrun_v2_env.example: 本番カナリア用 env 一覧更新",
-        "背景: dev は env 手動投入済み（rev 00142-ln2）だがコードは 37da58c 相当で Phase 4b 実装未反映",
-        "APP_ENV タイポ developmen 修正（development に統一）",
-        "冗長 env（PRIMARY / TRIM / Phase 3 八種 / Phase 2 四種）を 削除可能（コード自動 ON で代替）",
-        "監視 t0 をコード反映時刻に リセット（log/analysis/2026-07-03_dev_p4b-rollout_monitoring.json）",
-        "log/analysis/: p4a-dispatch-final / p4a-gate* / p4b2〜p4b5a / p3-followup-hotfix* / dev_p4b-rollout_monitoring",
-        "log/raw/archive/2026-07-02_pre-p4a2-dispatch/: dispatch/shadow ログアーカイブ",
-        "p4-unify: legacy 物理削除・本番全面展開（plan 上は pending）",
-        "e2e p95 < 5s: Phase 1/1b レイテンシ（4b スコープ外）",
-        "concierge-followup-04/07: Sage / rule キーワード揺れ（既知・未対応）"
       ]
     }
   ]

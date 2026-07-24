@@ -1,0 +1,23 @@
+{
+    "ingestionJob": {
+        "knowledgeBaseId": "30BCEJCJHA",
+        "dataSourceId": "0ZCBZWSQ7N",
+        "ingestionJobId": "C5XVBS9G0L",
+        "status": "COMPLETE",
+        "statistics": {
+            "numberOfDocumentsScanned": 19667,
+            "numberOfMetadataDocumentsScanned": 12143,
+            "numberOfNewDocumentsIndexed": 44,
+            "numberOfModifiedDocumentsIndexed": 12107,
+            "numberOfMetadataDocumentsModified": 12100,
+            "numberOfDocumentsDeleted": 2744,
+            "numberOfDocumentsFailed": 7494,
+            "numberOfDocumentsSkipped": 0
+        },
+        "failureReasons": [
+            "[\"The sync completed with partial failures. Some documents could not be crawled.\"]"
+        ],
+        "startedAt": "2026-07-24T09:15:28.364453+00:00",
+        "updatedAt": "2026-07-24T09:45:15.951943+00:00"
+    }
+}
