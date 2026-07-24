@@ -634,6 +634,13 @@ def generate_usage_notes_and_consultation_with_gpt(
         or ""
     )
     prompt += _sports_context_instruction(user_text)
+    from src.services.bedrock_kb_retrieve import augment_medicine_prompt_with_kb
+
+    prompt = augment_medicine_prompt_with_kb(
+        user_text,
+        prompt,
+        recommended_medicines=recommended_medicines,
+    )
     prompt += """JSON形式で出力:
 {
   "medicines": [

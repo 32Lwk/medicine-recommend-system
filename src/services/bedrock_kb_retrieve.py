@@ -1,4 +1,4 @@
-"""Bedrock Knowledge Base retrieve（Concierge RAG 補助）。"""
+"""Bedrock Knowledge Base retrieve（Concierge / 医薬品 Q&A RAG 補助）。"""
 from __future__ import annotations
 
 import hashlib
@@ -32,68 +32,34 @@ def _passes_score_threshold(score: Any, *, min_score: float) -> bool:
         return True
 
 
-def _cache_key(query: str, top_k: int) -> str:
+def _cache_key(namespace: str, query: str, top_k: int) -> str:
     digest = hashlib.sha256(f"{top_k}:{query}".encode("utf-8")).hexdigest()[:32]
-    return f"kb:{digest}"
+    return f"kb:{namespace}:{digest}"
 
 
-def retrieve_concierge_context(
-    query: str,
-    *,
-    top_k: int = 5,
-    use_cache: bool = True,
-) -> Dict[str, Any]:
-    """
-    Bedrock KB から関連チャンクを取得。
+def _build_retrieval_configuration(top_k: int, search_mode: str) -> Dict[str, Any]:
+    n = max(1, min(top_k, 10))
+    if search_mode == "managed":
+        return {"managedSearchConfiguration": {"numberOfResults": n}}
+    return {"vectorSearchConfiguration": {"numberOfResults": n}}
 
-    Returns:
-        {chunks, sources, kb_retrieve_ms, chunk_count, source_uris, provider}
-    """
-    from config.aws_features import get_bedrock_kb_id, get_aws_region, use_bedrock_kb_rag
 
-    cleaned = (query or "").strip()
-    empty: Dict[str, Any] = {
+def _empty_result(*, provider: str = "local") -> Dict[str, Any]:
+    return {
         "chunks": [],
         "sources": [],
         "kb_retrieve_ms": 0.0,
         "chunk_count": 0,
         "source_uris": [],
-        "provider": "local",
+        "provider": provider,
     }
-    if not use_bedrock_kb_rag() or not cleaned:
-        return empty
 
-    kb_id = get_bedrock_kb_id()
-    if not kb_id:
-        logger.warning("CONCIERGE_RAG_PROVIDER=bedrock_kb but BEDROCK_KB_ID is unset")
-        return empty
 
-    cache_key = _cache_key(cleaned, top_k)
-    if use_cache:
-        from src.services.redis_cache import cache_get_json, cache_set_json
-
-        cached = cache_get_json(cache_key)
-        if isinstance(cached, dict) and cached.get("chunks") is not None:
-            cached["provider"] = "bedrock_kb_cache"
-            return cached
-
-    import boto3
-
-    start = time.time()
-    client = boto3.client("bedrock-agent-runtime", region_name=get_aws_region())
-    try:
-        resp = client.retrieve(
-            knowledgeBaseId=kb_id,
-            retrievalQuery={"text": cleaned},
-            retrievalConfiguration={
-                "vectorSearchConfiguration": {"numberOfResults": max(1, min(top_k, 10))}
-            },
-        )
-    except Exception as exc:
-        logger.warning("Bedrock KB retrieve failed: %s", exc)
-        return empty
-
-    min_score = _min_kb_score()
+def _parse_retrieval_results(
+    resp: Dict[str, Any],
+    *,
+    min_score: float,
+) -> tuple[List[str], List[Dict[str, Any]], List[str], int]:
     chunks: List[str] = []
     sources: List[Dict[str, Any]] = []
     source_uris: List[str] = []
@@ -111,12 +77,69 @@ def retrieve_concierge_context(
             chunks.append(text)
         if uri and uri not in source_uris:
             source_uris.append(uri)
-        sources.append(
-            {
-                "uri": uri,
-                "score": score,
-            }
+        sources.append({"uri": uri, "score": score})
+    return chunks, sources, source_uris, dropped
+
+
+def retrieve_kb_context(
+    query: str,
+    *,
+    kb_id: str,
+    cache_namespace: str,
+    top_k: int = 5,
+    use_cache: bool = True,
+    search_mode: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Bedrock KB から関連チャンクを取得（Concierge / Medicine 共通）。
+
+    Returns:
+        {chunks, sources, kb_retrieve_ms, chunk_count, source_uris, provider, ...}
+    """
+    from config.aws_features import get_aws_region, get_bedrock_kb_search_mode
+
+    cleaned = (query or "").strip()
+    empty = _empty_result()
+    if not cleaned or not kb_id:
+        return empty
+
+    mode = (search_mode or get_bedrock_kb_search_mode()).strip().lower()
+    if mode not in ("managed", "vector"):
+        mode = "managed"
+
+    cache_key = _cache_key(cache_namespace, cleaned, top_k)
+    if use_cache:
+        from src.services.redis_cache import cache_get_json, cache_set_json
+
+        cached = cache_get_json(cache_key)
+        if isinstance(cached, dict) and cached.get("chunks") is not None:
+            cached["provider"] = "bedrock_kb_cache"
+            return cached
+
+    import boto3
+
+    start = time.time()
+    client = boto3.client("bedrock-agent-runtime", region_name=get_aws_region())
+    try:
+        resp = client.retrieve(
+            knowledgeBaseId=kb_id,
+            retrievalQuery={"text": cleaned},
+            retrievalConfiguration=_build_retrieval_configuration(top_k, mode),
         )
+    except Exception as exc:
+        logger.warning(
+            "Bedrock KB retrieve failed (kb=%s mode=%s): %s",
+            kb_id,
+            mode,
+            exc,
+        )
+        return empty
+
+    min_score = _min_kb_score()
+    chunks, sources, source_uris, dropped = _parse_retrieval_results(
+        resp,
+        min_score=min_score,
+    )
 
     elapsed_ms = round((time.time() - start) * 1000, 2)
     result = {
@@ -128,9 +151,14 @@ def retrieve_concierge_context(
         "provider": "bedrock_kb",
         "min_score": min_score,
         "dropped_low_score": dropped,
+        "kb_id": kb_id,
+        "search_mode": mode,
     }
     logger.info(
-        "Bedrock KB retrieve: chunks=%d dropped=%d min_score=%.2f ms=%.2f uris=%s",
+        "Bedrock KB retrieve: ns=%s kb=%s mode=%s chunks=%d dropped=%d min_score=%.2f ms=%.2f uris=%s",
+        cache_namespace,
+        kb_id,
+        mode,
         len(chunks),
         dropped,
         min_score,
@@ -144,11 +172,91 @@ def retrieve_concierge_context(
     return result
 
 
-def format_kb_context_block(result: Dict[str, Any]) -> str:
+def retrieve_concierge_context(
+    query: str,
+    *,
+    top_k: int = 5,
+    use_cache: bool = True,
+) -> Dict[str, Any]:
+    """Concierge 技術 FAQ 用 KB retrieve。"""
+    from config.aws_features import get_bedrock_kb_id, use_bedrock_kb_rag
+
+    cleaned = (query or "").strip()
+    if not use_bedrock_kb_rag() or not cleaned:
+        return _empty_result()
+
+    kb_id = get_bedrock_kb_id()
+    if not kb_id:
+        logger.warning("CONCIERGE_RAG_PROVIDER=bedrock_kb but BEDROCK_KB_ID is unset")
+        return _empty_result()
+
+    return retrieve_kb_context(
+        cleaned,
+        kb_id=kb_id,
+        cache_namespace="concierge",
+        top_k=top_k,
+        use_cache=use_cache,
+    )
+
+
+def build_medicine_retrieval_query(
+    user_text: str,
+    recommended_medicines: Optional[List[Dict[str, Any]]] = None,
+) -> str:
+    """Ask / Explanation 向け retrieve クエリ（製品名を付与して精度向上）。"""
+    parts: List[str] = []
+    cleaned = (user_text or "").strip()
+    if cleaned:
+        parts.append(cleaned)
+    names: List[str] = []
+    for med in recommended_medicines or []:
+        name = str(med.get("product_name") or med.get("name") or "").strip()
+        if name and name not in names:
+            names.append(name)
+    if names:
+        parts.append("推奨医薬品: " + ", ".join(names[:3]))
+    return " ".join(parts).strip()
+
+
+def retrieve_medicine_context(
+    query: str,
+    *,
+    recommended_medicines: Optional[List[Dict[str, Any]]] = None,
+    top_k: int = 5,
+    use_cache: bool = True,
+) -> Dict[str, Any]:
+    """医薬品 Q&A / 説明補強用 KB retrieve。"""
+    from config.aws_features import get_bedrock_medicine_kb_id, use_medicine_bedrock_kb_rag
+
+    retrieval_query = build_medicine_retrieval_query(query, recommended_medicines)
+    if not use_medicine_bedrock_kb_rag() or not retrieval_query:
+        return _empty_result()
+
+    kb_id = get_bedrock_medicine_kb_id()
+    if not kb_id:
+        logger.warning(
+            "MEDICINE_RAG_PROVIDER=bedrock_kb but BEDROCK_MEDICINE_KB_ID is unset"
+        )
+        return _empty_result()
+
+    return retrieve_kb_context(
+        retrieval_query,
+        kb_id=kb_id,
+        cache_namespace="medicine",
+        top_k=top_k,
+        use_cache=use_cache,
+    )
+
+
+def format_kb_context_block(
+    result: Dict[str, Any],
+    *,
+    heading: str = "【Bedrock Knowledge Base 参照（補助）】",
+) -> str:
     chunks = result.get("chunks") or []
     if not chunks:
         return ""
-    lines = ["【Bedrock Knowledge Base 参照（補助）】"]
+    lines = [heading]
     for idx, chunk in enumerate(chunks[:5], start=1):
         snippet = chunk[:1200].strip()
         lines.append(f"[{idx}] {snippet}")
@@ -162,7 +270,7 @@ def format_kb_context_block(result: Dict[str, Any]) -> str:
 
 
 def augment_reference_with_kb(query: str, base_reference: str) -> str:
-    """ローカル参照ブロックに KB チャンクを追記（障害時は base のみ）。"""
+    """ローカル参照ブロックに Concierge KB チャンクを追記（障害時は base のみ）。"""
     from config.aws_features import use_bedrock_kb_rag
 
     if not use_bedrock_kb_rag():
@@ -170,9 +278,36 @@ def augment_reference_with_kb(query: str, base_reference: str) -> str:
     result = retrieve_concierge_context(query, top_k=5)
     block = format_kb_context_block(result)
     if not block:
-        if use_bedrock_kb_rag():
-            logger.info(
-                "Bedrock KB retrieve empty — using local SSOT reference only (ingestion pending?)"
-            )
+        logger.info(
+            "Bedrock KB retrieve empty — using local SSOT reference only (ingestion pending?)"
+        )
         return base_reference
     return f"{base_reference.rstrip()}\n\n{block}"
+
+
+def augment_medicine_prompt_with_kb(
+    query: str,
+    base_prompt: str,
+    *,
+    recommended_medicines: Optional[List[Dict[str, Any]]] = None,
+) -> str:
+    """Ask / Explanation プロンプトに Medicine KB チャンクを追記（障害時は base のみ）。"""
+    from config.aws_features import use_medicine_bedrock_kb_rag
+
+    if not use_medicine_bedrock_kb_rag():
+        return base_prompt
+    result = retrieve_medicine_context(
+        query,
+        recommended_medicines=recommended_medicines,
+        top_k=5,
+    )
+    block = format_kb_context_block(
+        result,
+        heading="【医薬品ナレッジベース参照（相互作用・副作用・効能等）】",
+    )
+    if not block:
+        logger.info(
+            "Bedrock Medicine KB retrieve empty — using CSV context only (ingestion pending?)"
+        )
+        return base_prompt
+    return f"{base_prompt.rstrip()}\n\n{block}\n"

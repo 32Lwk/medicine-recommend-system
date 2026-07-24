@@ -16,6 +16,12 @@ TRANSLATION_PROVIDER_AWS = "translate"
 CONCIERGE_RAG_LOCAL = "local"
 CONCIERGE_RAG_BEDROCK = "bedrock_kb"
 
+MEDICINE_RAG_LOCAL = "local"
+MEDICINE_RAG_BEDROCK = "bedrock_kb"
+
+BEDROCK_KB_SEARCH_MANAGED = "managed"
+BEDROCK_KB_SEARCH_VECTOR = "vector"
+
 TTS_PROVIDER_WEBSPEECH = "webspeech"
 TTS_PROVIDER_POLLY = "polly"
 
@@ -55,6 +61,17 @@ def get_concierge_rag_provider() -> str:
 
 def use_bedrock_kb_rag() -> bool:
     return get_concierge_rag_provider() == CONCIERGE_RAG_BEDROCK
+
+
+def get_medicine_rag_provider() -> str:
+    p = _env("MEDICINE_RAG_PROVIDER", MEDICINE_RAG_LOCAL).lower()
+    if p in (MEDICINE_RAG_BEDROCK, "bedrock", "kb"):
+        return MEDICINE_RAG_BEDROCK
+    return MEDICINE_RAG_LOCAL
+
+
+def use_medicine_bedrock_kb_rag() -> bool:
+    return get_medicine_rag_provider() == MEDICINE_RAG_BEDROCK
 
 
 def get_tts_provider() -> str:
@@ -109,6 +126,22 @@ def resolve_static_asset_url(filename: str) -> str:
 
 def get_bedrock_kb_id() -> str:
     return _env("BEDROCK_KB_ID")
+
+
+def get_bedrock_medicine_kb_id() -> str:
+    return _env("BEDROCK_MEDICINE_KB_ID")
+
+
+def get_bedrock_kb_search_mode() -> str:
+    """
+    Bedrock KB retrieve API モード。
+    managed: Managed KB（managedSearchConfiguration）
+    vector: Customer-managed KB（vectorSearchConfiguration）
+    """
+    mode = _env("BEDROCK_KB_SEARCH_MODE", BEDROCK_KB_SEARCH_MANAGED).lower()
+    if mode in (BEDROCK_KB_SEARCH_VECTOR, "customer", "opensearch"):
+        return BEDROCK_KB_SEARCH_VECTOR
+    return BEDROCK_KB_SEARCH_MANAGED
 
 
 def get_aws_region() -> str:

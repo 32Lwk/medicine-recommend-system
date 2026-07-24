@@ -92,6 +92,9 @@ for key in (
     "PERSONALIZE_CAMPAIGN_ARN",
     "PERSONALIZE_TRACKING_ID",
     "BEDROCK_KB_ID",
+    "BEDROCK_MEDICINE_KB_ID",
+    "MEDICINE_RAG_PROVIDER",
+    "BEDROCK_KB_SEARCH_MODE",
     "STATIC_CDN_BASE_URL",
 ):
     val = os.environ.get(key)

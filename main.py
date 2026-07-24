@@ -709,18 +709,24 @@ def health_check():
 def health_aws_features():
     """AWS ステージング向け機能フラグ（シークレット非含有）。CodeBuild smoke 用。"""
     from config.aws_features import (
+        get_bedrock_kb_id,
+        get_bedrock_medicine_kb_id,
         get_medicine_image_cdn_base,
         get_static_cdn_base_url,
         get_translation_provider,
         get_tts_provider,
         is_comprehend_medical_enabled,
         use_bedrock_kb_rag,
+        use_medicine_bedrock_kb_rag,
     )
 
     return {
         "translation_provider": get_translation_provider(),
         "tts_provider": get_tts_provider(),
         "bedrock_kb_rag": use_bedrock_kb_rag(),
+        "bedrock_kb_id": get_bedrock_kb_id() or None,
+        "medicine_kb_rag": use_medicine_bedrock_kb_rag(),
+        "bedrock_medicine_kb_id": get_bedrock_medicine_kb_id() or None,
         "comprehend_medical": is_comprehend_medical_enabled(),
         "static_cdn_base": get_static_cdn_base_url(),
         "medicine_image_cdn_base": get_medicine_image_cdn_base(),

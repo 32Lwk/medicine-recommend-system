@@ -28,7 +28,8 @@ allowed = {
     "MEDICINE_IMAGE_CDN_BASE", "STATIC_CDN_BASE_URL", "TRANSLATION_PROVIDER",
     "TTS_PROVIDER", "CONCIERGE_RAG_PROVIDER", "COMPREHEND_MEDICAL_ENABLED",
     "AWS_REGION", "AWS_DEFAULT_REGION", "REDIS_URL", "PERSONALIZE_CAMPAIGN_ARN",
-    "PERSONALIZE_TRACKING_ID", "BEDROCK_KB_ID",
+    "PERSONALIZE_TRACKING_ID", "BEDROCK_KB_ID", "BEDROCK_MEDICINE_KB_ID",
+    "MEDICINE_RAG_PROVIDER", "BEDROCK_KB_SEARCH_MODE",
 }
 path = Path(sys.argv[1])
 for line in path.read_text(encoding="utf-8").splitlines():
@@ -48,6 +49,16 @@ if [[ -f "$ROOT/scripts/.aws-bedrock-kb-id" && -z "${BEDROCK_KB_ID:-}" ]]; then
   export BEDROCK_KB_ID
 fi
 
+if [[ -f "$ROOT/scripts/.aws-bedrock-medicine-kb-id" && -z "${BEDROCK_MEDICINE_KB_ID:-}" ]]; then
+  BEDROCK_MEDICINE_KB_ID="$(tr -d '\r\n' < "$ROOT/scripts/.aws-bedrock-medicine-kb-id")"
+  export BEDROCK_MEDICINE_KB_ID
+fi
+
+# Managed KB 既定（旧 Customer-managed のみ vector）
+export CONCIERGE_RAG_PROVIDER="${CONCIERGE_RAG_PROVIDER:-bedrock_kb}"
+export MEDICINE_RAG_PROVIDER="${MEDICINE_RAG_PROVIDER:-bedrock_kb}"
+export BEDROCK_KB_SEARCH_MODE="${BEDROCK_KB_SEARCH_MODE:-managed}"
+
 MERGE_KEYS=(
   MEDICINE_IMAGE_CDN_BASE
   STATIC_CDN_BASE_URL
@@ -61,6 +72,9 @@ MERGE_KEYS=(
   PERSONALIZE_CAMPAIGN_ARN
   PERSONALIZE_TRACKING_ID
   BEDROCK_KB_ID
+  BEDROCK_MEDICINE_KB_ID
+  MEDICINE_RAG_PROVIDER
+  BEDROCK_KB_SEARCH_MODE
 )
 
 if [[ -f "$ROOT/scripts/.aws-static-cdn-url" && -z "${STATIC_CDN_BASE_URL:-}" ]]; then
@@ -95,6 +109,9 @@ keys = [
     "PERSONALIZE_CAMPAIGN_ARN",
     "PERSONALIZE_TRACKING_ID",
     "BEDROCK_KB_ID",
+    "BEDROCK_MEDICINE_KB_ID",
+    "MEDICINE_RAG_PROVIDER",
+    "BEDROCK_KB_SEARCH_MODE",
 ]
 for key in keys:
     val = os.environ.get(key)

@@ -9,6 +9,7 @@ def _clear_aws_env(monkeypatch):
     for key in (
         "TRANSLATION_PROVIDER",
         "CONCIERGE_RAG_PROVIDER",
+        "MEDICINE_RAG_PROVIDER",
         "TTS_PROVIDER",
         "COMPREHEND_MEDICAL_ENABLED",
         "REDIS_URL",
@@ -16,6 +17,8 @@ def _clear_aws_env(monkeypatch):
         "MEDICINE_IMAGE_CDN_BASE",
         "STATIC_CDN_BASE_URL",
         "BEDROCK_KB_ID",
+        "BEDROCK_MEDICINE_KB_ID",
+        "BEDROCK_KB_SEARCH_MODE",
         "PUBLIC_SITE_URL",
         "AWS_STAGING",
         "APP_ENV",
@@ -28,6 +31,7 @@ def test_defaults_are_legacy():
     assert not aws_features.use_aws_translate()
     assert aws_features.get_concierge_rag_provider() == "local"
     assert not aws_features.use_bedrock_kb_rag()
+    assert not aws_features.use_medicine_bedrock_kb_rag()
     assert aws_features.get_tts_provider() == "webspeech"
     assert not aws_features.use_polly_tts()
     assert not aws_features.is_comprehend_medical_enabled()

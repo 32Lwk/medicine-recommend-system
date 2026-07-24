@@ -466,7 +466,9 @@ def chat_with_medicine_context(
     memory_section = ""
     if long_term_memory_block:
         memory_section = f"\n{long_term_memory_block.strip()}\n"
-    prompt = f"""
+    from src.services.bedrock_kb_retrieve import augment_medicine_prompt_with_kb
+
+    prompt_body = f"""
 あなたは医薬品推奨システムです。ユーザーの医薬品に関する質問に、推奨医薬品の情報を基に回答してください。
 {memory_section}
 【会話履歴（直近）】
@@ -503,6 +505,11 @@ def chat_with_medicine_context(
 - 安全性を最優先に考え、不明な点がある場合は医師相談を推奨してください
 - 質問の内容が推奨医薬品の情報では回答できない場合は、「お近くの登録販売者にご相談ください」と回答してください
 """
+    prompt = augment_medicine_prompt_with_kb(
+        user_message,
+        prompt_body,
+        recommended_medicines=recommended_medicines,
+    )
     try:
         from src.core.llm_client import chat_completion_create, chat_completion_stream
         from src.services.sse_emit import (

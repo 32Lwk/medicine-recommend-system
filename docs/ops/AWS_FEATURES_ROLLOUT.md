@@ -11,6 +11,10 @@ AWS ステージング `aws.medicine.yutok.dev` の ECS タスク定義のみで
 |------|----------|-------------------|
 | `TRANSLATION_PROVIDER` | （未設定→deepl） | `translate` |
 | `CONCIERGE_RAG_PROVIDER` | `local` | `bedrock_kb`（Phase 3） |
+| `MEDICINE_RAG_PROVIDER` | `local` | `bedrock_kb`（Ask / Explanation RAG） |
+| `BEDROCK_KB_ID` | 未設定 | Concierge Managed KB `2CNAGQ2V4P` |
+| `BEDROCK_MEDICINE_KB_ID` | 未設定 | 医薬品 Managed KB `30BCEJCJHA` |
+| `BEDROCK_KB_SEARCH_MODE` | `managed` | 旧 Customer-managed のみ `vector` |
 | `TTS_PROVIDER` | `webspeech` | `polly`（Phase 2b） |
 | `COMPREHEND_MEDICAL_ENABLED` | false | `true`（Phase 3） |
 | `MEDICINE_IMAGE_CDN_BASE` | （任意）共通可 | `https://images.yutok.dev/otc/`（**GCP 本番も cloudbuild.yaml で設定**） |
@@ -18,7 +22,6 @@ AWS ステージング `aws.medicine.yutok.dev` の ECS タスク定義のみで
 | `REDIS_URL` | 未設定 | ElastiCache（Phase 4） |
 | `PERSONALIZE_CAMPAIGN_ARN` | 未設定 | Phase 4 |
 | `PERSONALIZE_TRACKING_ID` | 未設定 | Phase 4（put_events 用） |
-| `BEDROCK_KB_ID` | 未設定 | Phase 3 |
 
 ## ECS Secrets 投入
 
@@ -35,6 +38,7 @@ ECS タスク定義から AWS 向け env を削除するか、明示的に:
 ```
 TRANSLATION_PROVIDER=deepl
 CONCIERGE_RAG_PROVIDER=local
+MEDICINE_RAG_PROVIDER=local
 TTS_PROVIDER=webspeech
 COMPREHEND_MEDICAL_ENABLED=false
 ```
