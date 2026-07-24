@@ -17,6 +17,10 @@ echo "==> [2/4] Sync Concierge KB sources"
 bash "$ROOT/scripts/sync-concierge-kb-to-s3.sh"
 
 echo "==> [3/4] Build Medicine KB documents"
+if ! python3 -c "import pandas" 2>/dev/null; then
+  echo "    installing pandas for build_medicine_kb_documents.py"
+  pip3 install --quiet "pandas>=2.0"
+fi
 python3 "$ROOT/scripts/build_medicine_kb_documents.py" --output "$ROOT/build/medicine"
 
 echo "==> [4/4] Sync Medicine KB sources"

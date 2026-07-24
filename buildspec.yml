@@ -58,6 +58,7 @@ phases:
       - |
         if [ "${SYNC_KB_TO_S3:-false}" = "true" ]; then
           echo "==> sync KB sources (Concierge + Medicine)"
+          pip3 install --quiet "pandas>=2.0" || true
           bash scripts/sync-all-kb-to-s3.sh || echo "WARN: KB S3 sync failed"
         fi
       - |

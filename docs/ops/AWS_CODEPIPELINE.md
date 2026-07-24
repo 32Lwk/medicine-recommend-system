@@ -158,10 +158,17 @@ CodeBuild コンソール → `medicine-recommend-build` → Environment → Add
 
 `medicine-recommend-codebuild-role` に不足がある場合、admin で追加:
 
-- `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket` on `medicine-recommend-kb-source-290780119994`
-- `bedrock-agent:StartIngestionJob` on Concierge / Medicine KB data sources
+```bash
+export AWS_PROFILE=admin
+./scripts/setup-aws-codebuild-kb-role.sh
+```
 
-Agent は IAM を変更しない — 不足時は admin 適用を依頼。
+付与内容:
+
+- `bedrock:StartIngestionJob` / `bedrock-agent:StartIngestionJob` on Concierge / Medicine KB
+- `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket` on `medicine-recommend-kb-source-290780119994`
+
+CodeBuild post_build で `build_medicine_kb_documents.py` を実行するため **pandas** が必要（`buildspec.yml` / `sync-all-kb-to-s3.sh` で `pip3 install pandas`）。
 
 ### eval 閾値（CI）
 

@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-07-24T11:20:00+00:00",
+  "phase": "step_5_f_1_initial",
+  "pipeline_execution_id": "34597e50-69fc-432d-aeba-8007919f69c1",
+  "codebuild_id": "medicine-recommend-build:ff06a3c9-b624-4cc9-84a9-74e8513cc995",
+  "codebuild_status": "SUCCEEDED",
+  "codebuild_env": {
+    "SYNC_KB_TO_S3": "true",
+    "KB_INGESTION_ON_PUSH": "true"
+  },
+  "kb_sync": {
+    "concierge_partial": true,
+    "medicine_build": false,
+    "overall": false,
+    "errors": [
+      "ModuleNotFoundError: No module named 'pandas' in build_medicine_kb_documents.py"
+    ]
+  },
+  "kb_ingestion": {
+    "concierge_started": false,
+    "medicine_started": false,
+    "errors": [
+      "AccessDeniedException: bedrock:StartIngestionJob on medicine-recommend-codebuild-role"
+    ]
+  },
+  "remediation": [
+    "pip3 install pandas in buildspec/sync-all-kb-to-s3.sh",
+    "scripts/setup-aws-codebuild-kb-role.sh (admin IAM applied 2026-07-24)"
+  ],
+  "next": "re-run pipeline after fix commit ff06a3c9+"
+}
