@@ -1,4 +1,6 @@
 """SSE chat stream API"""
+from unittest.mock import patch
+
 from src.handlers.chat_stream import _extract_done_messages
 from src.handlers.sse_events import SseDoneEvent
 
@@ -115,3 +117,25 @@ def test_extract_done_messages_when_trailing_user():
     bot, user = _extract_done_messages(messages)
     assert bot["content"] == "返信"
     assert user["content"] == "a"
+
+
+def test_messages_for_sse_done_falls_back_to_db_when_session_empty():
+    from src.handlers.chat_stream import _build_sse_done_event, _messages_for_sse_done
+
+    bot = {
+        "type": "bot",
+        "content": "sage_qa",
+        "diagnosis": {"render": "sage_qa", "message": "回答"},
+    }
+    user = {"type": "user", "content": "ロキソニンって眠くなる？"}
+    db_messages = [user, bot]
+    session = {}
+
+    with patch("src.handlers.chat_stream.get_session_from_db", return_value={"messages": db_messages}):
+        messages = _messages_for_sse_done(session, "sid1", {"status": "ok", "message_count": 2})
+
+    assert messages == db_messages
+    done = _build_sse_done_event({"status": "ok", "message_count": 2}, 200, messages)
+    payload = done.to_payload()
+    assert payload["bot_message"] == bot
+    assert payload["diagnosis"]["render"] == "sage_qa"

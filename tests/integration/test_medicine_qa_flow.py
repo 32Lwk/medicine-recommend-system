@@ -32,15 +32,18 @@ def test_run_medicine_question_qa_delegates_finalize(mock_chat, mock_finalize):
 
 
 def test_finalize_medicine_qa_response_saves_bot_message():
-    session = MagicMock()
-    session.get.side_effect = lambda k, d=None: {"username": "u"}.get(k, d)
+    from src.utils.request_safe_session import RequestSafeSession
+
+    session = RequestSafeSession({"username": "u", "messages": [{"type": "user", "content": "q"}]})
     client_info = MagicMock(client_ip="127.0.0.1", user_agent="test")
+    saved_bot = {"type": "bot", "content": "sage_qa", "diagnosis": {"render": "sage_qa"}}
     with patch(
         "src.services.session_manager.get_session_from_db",
-        side_effect=[None, {"messages": [{"type": "bot"}]}],
+        side_effect=[None, {"messages": [saved_bot]}, {"messages": [saved_bot]}],
     ), patch("src.services.session_manager.save_session_to_db") as save:
         count = finalize_medicine_qa_response(
             session, client_info, "sid1", "q", {"answer": "a"}
         )
     assert count == 1
     save.assert_called_once()
+    assert session["messages"] == [saved_bot]

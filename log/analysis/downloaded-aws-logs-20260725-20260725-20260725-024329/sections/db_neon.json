@@ -1,0 +1,407 @@
+{
+  "count": 131,
+  "top_patterns": [
+    {
+      "message": "2026-07-25 01:35:50,001 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 2
+    },
+    {
+      "message": "   - Timeout: 300s",
+      "count": 2
+    },
+    {
+      "message": "   - Graceful Timeout: 60s",
+      "count": 2
+    },
+    {
+      "message": "2026-07-25 01:52:21,209 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 2
+    },
+    {
+      "message": "2026-07-25 01:52:21,209 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあり",
+      "count": 2
+    },
+    {
+      "message": "2026-07-25 01:52:24,489 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 2
+    },
+    {
+      "message": "2026-07-25 01:52:57,346 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 2
+    },
+    {
+      "message": "2026-07-25 01:59:21,806 - DEBUG - Response headers: {'x-amzn-RequestId': 'ca7d58a3-1545-4ca2-ae28-40",
+      "count": 2
+    },
+    {
+      "message": "2026-07-25 01:30:04,852 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed ",
+      "count": 1
+    },
+    {
+      "message": "2026-07-25 01:30:04,853 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed ",
+      "count": 1
+    },
+    {
+      "message": "2026-07-25 01:30:05,701 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 10)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-25 01:30:05,716 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 10)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-25 01:30:05,913 - INFO - ✅ Reconnection successful (attempt 1)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-25 01:30:05,932 - INFO - ✅ Reconnection successful (attempt 1)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-25 01:30:41,422 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed ",
+      "count": 1
+    },
+    {
+      "message": "2026-07-25 01:30:42,291 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 10)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-25 01:30:42,501 - INFO - ✅ Reconnection successful (attempt 1)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-25 01:31:11,423 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed ",
+      "count": 1
+    },
+    {
+      "message": "2026-07-25 01:31:12,281 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 10)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-25 01:31:12,494 - INFO - ✅ Reconnection successful (attempt 1)",
+      "count": 1
+    }
+  ],
+  "samples": [
+    {
+      "timestamp": "2026-07-25T01:30:04.852Z",
+      "message": "2026-07-25 01:30:04,852 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-25T01:30:04.853Z",
+      "message": "2026-07-25 01:30:04,853 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-25T01:30:05.702Z",
+      "message": "2026-07-25 01:30:05,701 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 10)"
+    },
+    {
+      "timestamp": "2026-07-25T01:30:05.716Z",
+      "message": "2026-07-25 01:30:05,716 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 10)"
+    },
+    {
+      "timestamp": "2026-07-25T01:30:05.913Z",
+      "message": "2026-07-25 01:30:05,913 - INFO - ✅ Reconnection successful (attempt 1)"
+    },
+    {
+      "timestamp": "2026-07-25T01:30:05.933Z",
+      "message": "2026-07-25 01:30:05,932 - INFO - ✅ Reconnection successful (attempt 1)"
+    },
+    {
+      "timestamp": "2026-07-25T01:30:41.422Z",
+      "message": "2026-07-25 01:30:41,422 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-25T01:30:42.291Z",
+      "message": "2026-07-25 01:30:42,291 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 10)"
+    },
+    {
+      "timestamp": "2026-07-25T01:30:42.501Z",
+      "message": "2026-07-25 01:30:42,501 - INFO - ✅ Reconnection successful (attempt 1)"
+    },
+    {
+      "timestamp": "2026-07-25T01:31:11.423Z",
+      "message": "2026-07-25 01:31:11,423 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-25T01:31:12.281Z",
+      "message": "2026-07-25 01:31:12,281 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 10)"
+    },
+    {
+      "timestamp": "2026-07-25T01:31:12.494Z",
+      "message": "2026-07-25 01:31:12,494 - INFO - ✅ Reconnection successful (attempt 1)"
+    },
+    {
+      "timestamp": "2026-07-25T01:35:02.953Z",
+      "message": "2026-07-25 01:35:02,953 - WARNING - ⚠️ 404 Not Found: http://me-af03a514688645069e3946cd45cd6970.ecs.ap-northeast-1.on.aws/database/.env"
+    },
+    {
+      "timestamp": "2026-07-25T01:35:02.955Z",
+      "message": "172.31.41.145:25598 - \"GET /database/.env HTTP/1.1\" 404"
+    },
+    {
+      "timestamp": "2026-07-25T01:35:46.766Z",
+      "message": "2026-07-25 01:35:46,766 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:35:46.766Z",
+      "message": "2026-07-25 01:35:46,766 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-25T01:35:47.612Z",
+      "message": "2026-07-25 01:35:47,612 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 10)"
+    },
+    {
+      "timestamp": "2026-07-25T01:35:49.231Z",
+      "message": "2026-07-25 01:35:49,231 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-25T01:35:50.000Z",
+      "message": "2026-07-25 01:35:50,000 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-25T01:35:50.001Z",
+      "message": "2026-07-25 01:35:50,001 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:35:50.001Z",
+      "message": "2026-07-25 01:35:50,001 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:18.266Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:18.266Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:21.209Z",
+      "message": "2026-07-25 01:52:21,209 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:21.209Z",
+      "message": "2026-07-25 01:52:21,209 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:21.209Z",
+      "message": "2026-07-25 01:52:21,209 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:21.210Z",
+      "message": "2026-07-25 01:52:21,209 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:22.077Z",
+      "message": "2026-07-25 01:52:22,076 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:22.078Z",
+      "message": "2026-07-25 01:52:22,078 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:23.693Z",
+      "message": "2026-07-25 01:52:23,693 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:23.717Z",
+      "message": "2026-07-25 01:52:23,717 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:24.489Z",
+      "message": "2026-07-25 01:52:24,489 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-25T01:52:24.489Z",
+      "message": "2026-07-25 01:52:24,489 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:24.489Z",
+      "message": "2026-07-25 01:52:24,489 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:24.499Z",
+      "message": "2026-07-25 01:52:24,499 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-25T01:52:24.499Z",
+      "message": "2026-07-25 01:52:24,499 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:24.500Z",
+      "message": "2026-07-25 01:52:24,500 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:49.716Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:49.716Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:54.032Z",
+      "message": "2026-07-25 01:52:54,032 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:54.033Z",
+      "message": "2026-07-25 01:52:54,032 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:54.046Z",
+      "message": "2026-07-25 01:52:54,045 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:54.046Z",
+      "message": "2026-07-25 01:52:54,046 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:54.905Z",
+      "message": "2026-07-25 01:52:54,904 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:54.922Z",
+      "message": "2026-07-25 01:52:54,922 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:56.518Z",
+      "message": "2026-07-25 01:52:56,518 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:56.528Z",
+      "message": "2026-07-25 01:52:56,528 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:57.340Z",
+      "message": "2026-07-25 01:52:57,340 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-25T01:52:57.340Z",
+      "message": "2026-07-25 01:52:57,340 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:57.341Z",
+      "message": "2026-07-25 01:52:57,341 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:57.346Z",
+      "message": "2026-07-25 01:52:57,345 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-25T01:52:57.346Z",
+      "message": "2026-07-25 01:52:57,346 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:52:57.346Z",
+      "message": "2026-07-25 01:52:57,346 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-25T01:59:21.191Z",
+      "message": "2026-07-25 01:59:21,191 - DEBUG - Starting new HTTP connection (1): 169.254.170.2:80"
+    },
+    {
+      "timestamp": "2026-07-25T01:59:21.275Z",
+      "message": "2026-07-25 01:59:21,275 - DEBUG - Setting translate timeout as (60, 60)"
+    },
+    {
+      "timestamp": "2026-07-25T01:59:21.279Z",
+      "message": "2026-07-25 01:59:21,279 - DEBUG - Starting new HTTPS connection (1): translate.ap-northeast-1.amazonaws.com:443"
+    },
+    {
+      "timestamp": "2026-07-25T01:59:21.579Z",
+      "message": "2026-07-25 01:59:21,578 - DEBUG - Starting new HTTP connection (1): 169.254.170.2:80"
+    },
+    {
+      "timestamp": "2026-07-25T01:59:21.596Z",
+      "message": "2026-07-25 01:59:21,595 - DEBUG - Starting new HTTP connection (1): 169.254.170.2:80"
+    },
+    {
+      "timestamp": "2026-07-25T01:59:21.735Z",
+      "message": "2026-07-25 01:59:21,734 - DEBUG - Setting polly timeout as (60, 60)"
+    },
+    {
+      "timestamp": "2026-07-25T01:59:21.742Z",
+      "message": "2026-07-25 01:59:21,742 - DEBUG - Starting new HTTPS connection (1): polly.ap-northeast-1.amazonaws.com:443"
+    },
+    {
+      "timestamp": "2026-07-25T01:59:21.792Z",
+      "message": "2026-07-25 01:59:21,792 - DEBUG - Response headers: {'x-amzn-RequestId': '0f1293dc-0e95-4fa9-86bd-e23a9e874de8', 'x-amzn-ErrorType': 'ValidationException:http://internal.amazon.com/coral/com.amazon.coral.validate/', 'Date': 'Sat, 25 Jul 2026 01:59:21 GMT', 'Content-Type': 'application/json', 'Content-Length': '69', 'connection': 'keep-alive'}"
+    },
+    {
+      "timestamp": "2026-07-25T01:59:21.793Z",
+      "message": "2026-07-25 01:59:21,793 - DEBUG - Response headers: {'x-amzn-RequestId': '0f1293dc-0e95-4fa9-86bd-e23a9e874de8', 'x-amzn-ErrorType': 'ValidationException:http://internal.amazon.com/coral/com.amazon.coral.validate/', 'Date': 'Sat, 25 Jul 2026 01:59:21 GMT', 'Content-Type': 'application/json', 'Content-Length': '69', 'connection': 'keep-alive'}"
+    },
+    {
+      "timestamp": "2026-07-25T01:59:21.806Z",
+      "message": "2026-07-25 01:59:21,806 - DEBUG - Response headers: {'x-amzn-RequestId': 'ca7d58a3-1545-4ca2-ae28-400f6cd50da6', 'x-amzn-ErrorType': 'ValidationException:http://internal.amazon.com/coral/com.amazon.coral.validate/', 'Date': 'Sat, 25 Jul 2026 01:59:21 GMT', 'Content-Type': 'application/json', 'Content-Length': '69', 'connection': 'keep-alive'}"
+    },
+    {
+      "timestamp": "2026-07-25T01:59:21.806Z",
+      "message": "2026-07-25 01:59:21,806 - DEBUG - Response headers: {'x-amzn-RequestId': 'ca7d58a3-1545-4ca2-ae28-400f6cd50da6', 'x-amzn-ErrorType': 'ValidationException:http://internal.amazon.com/coral/com.amazon.coral.validate/', 'Date': 'Sat, 25 Jul 2026 01:59:21 GMT', 'Content-Type': 'application/json', 'Content-Length': '69', 'connection': 'keep-alive'}"
+    },
+    {
+      "timestamp": "2026-07-25T01:59:21.826Z",
+      "message": "2026-07-25 01:59:21,826 - DEBUG - Response headers: {'x-amzn-RequestId': 'd9216b53-0315-48b7-a70c-db49a953fbbf', 'x-amzn-RequestCharacters': '3', 'Date': 'Sat, 25 Jul 2026 01:59:21 GMT', 'Content-Type': 'audio/mpeg', 'Transfer-Encoding': 'chunked', 'connection': 'keep-alive'}"
+    },
+    {
+      "timestamp": "2026-07-25T02:01:00.877Z",
+      "message": "2026-07-25 02:01:00,877 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-25T02:01:00.877Z",
+      "message": "2026-07-25 02:01:00,876 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-25T02:01:02.410Z",
+      "message": "2026-07-25 02:01:02,410 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-25T02:01:02.619Z",
+      "message": "2026-07-25 02:01:02,619 - INFO - ✅ Reconnection successful (attempt 1)"
+    },
+    {
+      "timestamp": "2026-07-25T02:01:02.787Z",
+      "message": "2026-07-25 02:01:02,787 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-25T02:01:02.999Z",
+      "message": "2026-07-25 02:01:02,999 - INFO - ✅ Reconnection successful (attempt 1)"
+    },
+    {
+      "timestamp": "2026-07-25T02:10:57.433Z",
+      "message": "2026-07-25 02:10:57,433 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-25T02:10:58.294Z",
+      "message": "2026-07-25 02:10:58,293 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-25T02:10:58.509Z",
+      "message": "2026-07-25 02:10:58,508 - INFO - ✅ Reconnection successful (attempt 1)"
+    },
+    {
+      "timestamp": "2026-07-25T02:11:00.672Z",
+      "message": "2026-07-25 02:11:00,671 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-25T02:11:01.546Z",
+      "message": "2026-07-25 02:11:01,546 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-25T02:11:01.751Z",
+      "message": "2026-07-25 02:11:01,751 - INFO - ✅ Reconnection successful (attempt 1)"
+    },
+    {
+      "timestamp": "2026-07-25T02:29:17.950Z",
+      "message": "2026-07-25 02:29:17,950 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-25T02:29:17.953Z",
+      "message": "2026-07-25 02:29:17,953 - WARNING - ⚠️ Connection validation failed: SSL connection has been closed unexpectedly"
+    },
+    {
+      "timestamp": "2026-07-25T02:29:19.430Z",
+      "message": "2026-07-25 02:29:19,429 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    }
+  ]
+}

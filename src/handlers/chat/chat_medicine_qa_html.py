@@ -97,15 +97,19 @@ def finalize_medicine_qa_response(
         session_data["messages"].append(bot_response)
         session_data["last_activity"] = datetime.now()
         save_session_to_db(sid, session_data)
-    if "messages" in session:
-        from src.handlers.chat.chat_pipeline_end_guard import mark_pipeline_turn_bot_appended
+    from src.handlers.chat.chat_pipeline_end_guard import mark_pipeline_turn_bot_appended
 
-        mark_pipeline_turn_bot_appended(session)
-        del session["messages"]
-        if hasattr(session, "modified"):
-            session.modified = True
-    logger.info("✅ 質問応答完了: %s", user_message)
+    mark_pipeline_turn_bot_appended(session)
     updated = get_session_from_db(sid) if sid else {}
+    if sid:
+        # SSE done / persist が in-memory messages を参照するため DB 保存後に同期する。
+        # del のみだと done イベントに bot_message が載らず UI が処理バブルで止まる。
+        session["messages"] = list(updated.get("messages") or [])
+    elif "messages" in session:
+        del session["messages"]
+    if hasattr(session, "modified"):
+        session.modified = True
+    logger.info("✅ 質問応答完了: %s", user_message)
     return len(updated.get("messages", []))
 
 

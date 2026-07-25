@@ -128,6 +128,23 @@ def _last_event_id_from_request(request: Request) -> Optional[str]:
     return request.headers.get("last-event-id") or request.headers.get("Last-Event-ID")
 
 
+def _messages_for_sse_done(
+    session: Any,
+    sid: Optional[str],
+    body: Any,
+) -> list:
+    """SSE done 用メッセージ。in-memory が空でも DB に保存済みなら DB から復元。"""
+    messages = list(session.get("messages") or []) if session is not None else []
+    if messages:
+        return messages
+    if not sid or not isinstance(body, dict):
+        return messages
+    if int(body.get("message_count") or 0) <= 0:
+        return messages
+    session_data = get_session_from_db(sid) or {}
+    return list(session_data.get("messages") or [])
+
+
 def _extract_done_messages(messages: list) -> tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
     """末尾が user でも、直近の bot とその直前 user を done ペイロード用に返す。"""
     if not messages:
@@ -265,8 +282,7 @@ async def stream_chat_events(
                 cached = pop_stream_result(sid)
                 if cached:
                     body, status_code = cached
-                    session_data = get_session_from_db(sid) or {}
-                    messages = list(session_data.get("messages") or [])
+                    messages = _messages_for_sse_done(safe_session, sid, body)
                     done = _build_sse_done_event(body, status_code, messages)
                     payload = done.to_payload()
                     from src.dialogue.adapters.web_sse import merge_dialogue_delivery_into_done
@@ -301,7 +317,7 @@ async def stream_chat_events(
                 except Exception:
                     logger.exception("SSE persist before done failed sid=%s", sid)
             trace_id = safe_session.get("last_trace_id")
-            messages = list(safe_session.get("messages") or [])
+            messages = _messages_for_sse_done(safe_session, sid, body)
             done = _build_sse_done_event(
                 body,
                 status_code,

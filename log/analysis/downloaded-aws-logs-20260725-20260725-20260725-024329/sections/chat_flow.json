@@ -1,0 +1,323 @@
+{
+  "trace_count": 2,
+  "exported_traces": [
+    {
+      "trace_id": "9b2244cb-5f2e-4af7-868b-b5e662dd163a",
+      "events": [
+        {
+          "ts": "2026-07-25T02:32:31.612Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-25T02:32:31.614Z",
+          "type": "received_message",
+          "text": "ロキソニンって眠くなる？"
+        },
+        {
+          "ts": "2026-07-25T02:32:32.898Z",
+          "type": "user_message",
+          "text": "ロキソニンって眠くなる？"
+        },
+        {
+          "ts": "2026-07-25T02:32:36.775Z",
+          "type": "triage",
+          "category": "Ask",
+          "subcategory": "drug_side_effect",
+          "confidence": 0.98
+        },
+        {
+          "ts": "2026-07-25T02:32:39.957Z",
+          "type": "pipeline_perf",
+          "total_ms": 8345.33,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-25T02:32:31.612Z",
+      "session_id": "1784946740773995708821",
+      "user_message": "ロキソニンって眠くなる？",
+      "triage": {
+        "category": "Ask",
+        "subcategory": "drug_side_effect",
+        "confidence": 0.98
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1784946740773995708821",
+        "total_ms": 8345.33,
+        "breakdown": {
+          "post_start": 1.94,
+          "parsed_message": 2.1,
+          "session_db_read": 2.42,
+          "after_get_session_db": 283.66,
+          "before_llm_setup": 585.4,
+          "before_security": 1149.29,
+          "after_security": 1389.78,
+          "before_emoji_route": 1421.43,
+          "before_triage": 1424.41,
+          "after_triage": 5446.38,
+          "safety_gate_done": 6369.23
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-25T02:32:36.213697",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 2040.54,
+              "prompt_tokens": 3110,
+              "completion_tokens": 104,
+              "cost_jpy": 0.0964,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 1,
+          "llm_total_latency_ms": 2040.54,
+          "llm_session_cost_jpy": 0.0964,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "a08709ae-c727-4764-bc33-89e670a0252d",
+      "events": [
+        {
+          "ts": "2026-07-25T02:42:34.131Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-25T02:42:34.134Z",
+          "type": "received_message",
+          "text": "ロキソニンって眠くなる？"
+        },
+        {
+          "ts": "2026-07-25T02:42:35.556Z",
+          "type": "user_message",
+          "text": "ロキソニンって眠くなる？"
+        },
+        {
+          "ts": "2026-07-25T02:42:39.319Z",
+          "type": "triage",
+          "category": "Ask",
+          "subcategory": "side_effects",
+          "confidence": 0.98
+        },
+        {
+          "ts": "2026-07-25T02:42:42.837Z",
+          "type": "pipeline_perf",
+          "total_ms": 8706.03,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-25T02:42:34.131Z",
+      "session_id": "1784947344525367619915",
+      "user_message": "ロキソニンって眠くなる？",
+      "triage": {
+        "category": "Ask",
+        "subcategory": "side_effects",
+        "confidence": 0.98
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1784947344525367619915",
+        "total_ms": 8706.03,
+        "breakdown": {
+          "post_start": 2.98,
+          "parsed_message": 3.23,
+          "session_db_read": 3.68,
+          "after_get_session_db": 279.06,
+          "before_llm_setup": 592.02,
+          "before_security": 1150.99,
+          "after_security": 1647.04,
+          "before_emoji_route": 1698.87,
+          "before_triage": 1703.86,
+          "after_triage": 5465.56,
+          "safety_gate_done": 6344.57
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-25T02:42:38.760084",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1877.16,
+              "prompt_tokens": 3110,
+              "completion_tokens": 78,
+              "cost_jpy": 0.0956,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 1,
+          "llm_total_latency_ms": 1877.16,
+          "llm_session_cost_jpy": 0.0956,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    }
+  ],
+  "slow_traces_ge_8s": [
+    {
+      "trace_id": "9b2244cb-5f2e-4af7-868b-b5e662dd163a",
+      "events": [
+        {
+          "ts": "2026-07-25T02:32:31.612Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-25T02:32:31.614Z",
+          "type": "received_message",
+          "text": "ロキソニンって眠くなる？"
+        },
+        {
+          "ts": "2026-07-25T02:32:32.898Z",
+          "type": "user_message",
+          "text": "ロキソニンって眠くなる？"
+        },
+        {
+          "ts": "2026-07-25T02:32:36.775Z",
+          "type": "triage",
+          "category": "Ask",
+          "subcategory": "drug_side_effect",
+          "confidence": 0.98
+        },
+        {
+          "ts": "2026-07-25T02:32:39.957Z",
+          "type": "pipeline_perf",
+          "total_ms": 8345.33,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-25T02:32:31.612Z",
+      "session_id": "1784946740773995708821",
+      "user_message": "ロキソニンって眠くなる？",
+      "triage": {
+        "category": "Ask",
+        "subcategory": "drug_side_effect",
+        "confidence": 0.98
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1784946740773995708821",
+        "total_ms": 8345.33,
+        "breakdown": {
+          "post_start": 1.94,
+          "parsed_message": 2.1,
+          "session_db_read": 2.42,
+          "after_get_session_db": 283.66,
+          "before_llm_setup": 585.4,
+          "before_security": 1149.29,
+          "after_security": 1389.78,
+          "before_emoji_route": 1421.43,
+          "before_triage": 1424.41,
+          "after_triage": 5446.38,
+          "safety_gate_done": 6369.23
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-25T02:32:36.213697",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 2040.54,
+              "prompt_tokens": 3110,
+              "completion_tokens": 104,
+              "cost_jpy": 0.0964,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 1,
+          "llm_total_latency_ms": 2040.54,
+          "llm_session_cost_jpy": 0.0964,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "a08709ae-c727-4764-bc33-89e670a0252d",
+      "events": [
+        {
+          "ts": "2026-07-25T02:42:34.131Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-25T02:42:34.134Z",
+          "type": "received_message",
+          "text": "ロキソニンって眠くなる？"
+        },
+        {
+          "ts": "2026-07-25T02:42:35.556Z",
+          "type": "user_message",
+          "text": "ロキソニンって眠くなる？"
+        },
+        {
+          "ts": "2026-07-25T02:42:39.319Z",
+          "type": "triage",
+          "category": "Ask",
+          "subcategory": "side_effects",
+          "confidence": 0.98
+        },
+        {
+          "ts": "2026-07-25T02:42:42.837Z",
+          "type": "pipeline_perf",
+          "total_ms": 8706.03,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-25T02:42:34.131Z",
+      "session_id": "1784947344525367619915",
+      "user_message": "ロキソニンって眠くなる？",
+      "triage": {
+        "category": "Ask",
+        "subcategory": "side_effects",
+        "confidence": 0.98
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1784947344525367619915",
+        "total_ms": 8706.03,
+        "breakdown": {
+          "post_start": 2.98,
+          "parsed_message": 3.23,
+          "session_db_read": 3.68,
+          "after_get_session_db": 279.06,
+          "before_llm_setup": 592.02,
+          "before_security": 1150.99,
+          "after_security": 1647.04,
+          "before_emoji_route": 1698.87,
+          "before_triage": 1703.86,
+          "after_triage": 5465.56,
+          "safety_gate_done": 6344.57
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-25T02:42:38.760084",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1877.16,
+              "prompt_tokens": 3110,
+              "completion_tokens": 78,
+              "cost_jpy": 0.0956,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 1,
+          "llm_total_latency_ms": 1877.16,
+          "llm_session_cost_jpy": 0.0956,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    }
+  ]
+}

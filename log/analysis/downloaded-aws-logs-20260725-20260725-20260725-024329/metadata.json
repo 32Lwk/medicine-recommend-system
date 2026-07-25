@@ -1,0 +1,32 @@
+{
+  "source_path": "/Users/yuto/medicine recomended/log/raw/downloaded-aws-logs-20260725-20260725-20260725-024329.json",
+  "source_name": "downloaded-aws-logs-20260725-20260725-20260725-024329.json",
+  "entry_count": 2983,
+  "time_range": {
+    "start": "2026-07-25T00:49:48.260Z",
+    "end": "2026-07-25T02:43:28.379Z"
+  },
+  "services": {
+    "/ecs/medicine-recommend": 2983
+  },
+  "primary_service": "/ecs/medicine-recommend",
+  "revisions": {},
+  "commit_shas": {},
+  "severity_counts": {
+    "INFO": 2244,
+    "WARNING": 296,
+    "DEBUG": 439,
+    "ERROR": 4
+  },
+  "platform": "aws",
+  "log_group": "/ecs/medicine-recommend",
+  "region": "ap-northeast-1",
+  "ecs_service": "medicine-recommend",
+  "log_streams": {
+    "ecs/Main/5c5e31d08ab541dbaa7f5639771567a9": 799,
+    "ecs/Main/07347400573c4bcfbfd83dc4f8e9f148": 769,
+    "ecs/Main/38d5c64cd2e74cafbb14109c6770c7e2": 723,
+    "ecs/Main/eedf98e74a0d4bdaac6991dac6512925": 692
+  },
+  "task_definitions": {}
+}

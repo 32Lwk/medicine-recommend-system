@@ -1,0 +1,961 @@
+{
+  "counseling_detail_count": 2,
+  "counseling_dedup_removed": 0,
+  "counseling_details_exported": 2,
+  "counseling_details": [
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-07-25T02:32:39.954794",
+      "session_id": "1784946740773995708821",
+      "user_input": "ロキソニンって眠くなる？",
+      "response": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。",
+      "conversation_history": [
+        {
+          "type": "user",
+          "uuid": "aa508152-2ae6-4f8b-ad76-afcd87249ea6",
+          "content": "ロキソニンって眠くなる？",
+          "timestamp": "2026-07-25T11:32:37+09:00"
+        },
+        {
+          "type": "bot",
+          "content": "sage_qa",
+          "diagnosis": {
+            "kind": "medicine_qa",
+            "hints": [],
+            "title": "医薬品相談回答",
+            "layout": "card",
+            "render": "sage_qa",
+            "actions": [],
+            "message": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。",
+            "variant": "notice",
+            "sections": [
+              {
+                "items": [
+                  "ロキソニンＳ"
+                ],
+                "title": "医薬品の詳細",
+                "commit": ""
+              },
+              {
+                "items": [
+                  "ロキソプロフェンナトリウム水和物: 11.1 重大な副作用 11.1.1 ショック(頻度不明)、アナフィラキシー(頻度不明) ショック、アナフィラキシー(血圧低下、蕁麻疹、喉頭浮腫、呼吸困難等)があらわれることがある。 11.1.2 無顆粒球症(頻度不明)、白血球減少(頻度不; アリルイソプロピルアセチル尿素: 11.1 重大な副作用 11.1.1 血小板減少、溶血性貧血(いずれも頻度不明) 11.1.2 中毒性表皮壊死融解症(Toxic Epidermal Necrolysis:TEN)、皮膚粘膜眼症候群(Stevens-Johnson症候群)、; ケイ酸アルミン酸マグネシウム: 11.1 重大な副作用 11.1.1 ショック、アナフィラキシー(いずれも頻度不明) 11.2 その他の副作用 頻度不明 長期・大量投与 腎結石、尿路結石 代謝異常 注 1 ) 高マグネシウム血症 消化器 便秘 過敏症 発疹 その他 注 2"
+                ],
+                "title": "副作用情報",
+                "commit": ""
+              },
+              {
+                "items": [
+                  "市販薬の副作用は個人差があります。既存の疾患・併用薬がある場合は使用前に薬剤師・医師に相談してください。"
+                ],
+                "title": "相談アドバイス",
+                "commit": ""
+              }
+            ],
+            "subtitle": "",
+            "show_feedback": true,
+            "schema_version": 1,
+            "show_bug_report": false,
+            "feedback_context": {
+              "ai_response": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。",
+              "user_message": "ロキソニンって眠くなる？"
+            },
+            "suggested_symptoms": []
+          },
+          "timestamp": "2026-07-25T11:32:38+09:00",
+          "message_id": "msg_1784946758833_4138"
+        }
+      ]
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-07-25T02:42:42.833009",
+      "session_id": "1784947344525367619915",
+      "user_input": "ロキソニンって眠くなる？",
+      "response": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。",
+      "conversation_history": [
+        {
+          "type": "user",
+          "uuid": "213ff0dc-0ee4-43af-9433-0b088baa8a33",
+          "content": "ロキソニンって眠くなる？",
+          "timestamp": "2026-07-25T11:42:40+09:00"
+        },
+        {
+          "type": "bot",
+          "content": "sage_qa",
+          "diagnosis": {
+            "kind": "medicine_qa",
+            "hints": [],
+            "title": "医薬品相談回答",
+            "layout": "card",
+            "render": "sage_qa",
+            "actions": [],
+            "message": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。",
+            "variant": "notice",
+            "sections": [
+              {
+                "items": [
+                  "ロキソニンＳ"
+                ],
+                "title": "医薬品の詳細",
+                "commit": ""
+              },
+              {
+                "items": [
+                  "ロキソプロフェンナトリウム水和物: 11.1 重大な副作用 11.1.1 ショック(頻度不明)、アナフィラキシー(頻度不明) ショック、アナフィラキシー(血圧低下、蕁麻疹、喉頭浮腫、呼吸困難等)があらわれることがある。 11.1.2 無顆粒球症(頻度不明)、白血球減少(頻度不; アリルイソプロピルアセチル尿素: 11.1 重大な副作用 11.1.1 血小板減少、溶血性貧血(いずれも頻度不明) 11.1.2 中毒性表皮壊死融解症(Toxic Epidermal Necrolysis:TEN)、皮膚粘膜眼症候群(Stevens-Johnson症候群)、; ケイ酸アルミン酸マグネシウム: 11.1 重大な副作用 11.1.1 ショック、アナフィラキシー(いずれも頻度不明) 11.2 その他の副作用 頻度不明 長期・大量投与 腎結石、尿路結石 代謝異常 注 1 ) 高マグネシウム血症 消化器 便秘 過敏症 発疹 その他 注 2"
+                ],
+                "title": "副作用情報",
+                "commit": ""
+              },
+              {
+                "items": [
+                  "市販薬の副作用は個人差があります。既存の疾患・併用薬がある場合は使用前に薬剤師・医師に相談してください。"
+                ],
+                "title": "相談アドバイス",
+                "commit": ""
+              }
+            ],
+            "subtitle": "",
+            "show_feedback": true,
+            "schema_version": 1,
+            "show_bug_report": false,
+            "feedback_context": {
+              "ai_response": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。",
+              "user_message": "ロキソニンって眠くなる？"
+            },
+            "suggested_symptoms": []
+          },
+          "timestamp": "2026-07-25T11:42:41+09:00",
+          "message_id": "msg_1784947361705_3973"
+        }
+      ]
+    }
+  ],
+  "security_flags": [
+    {
+      "timestamp": "2026-07-25T02:32:32.897Z",
+      "message": "2026-07-25 02:32:32,897 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-07-25T02:42:35.556Z",
+      "message": "2026-07-25 02:42:35,556 - INFO - Security validation: score=0, safe=True, warnings=0"
+    }
+  ],
+  "session_conversations": {
+    "session_count": 2,
+    "exported_session_count": 2,
+    "counseling_session_count": 2,
+    "trace_only_session_count": 0,
+    "chat_flow_trace_count": 2,
+    "sessions": [
+      {
+        "session_id": "1784946740773995708821",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-07-25T02:32:39.957330Z",
+          "end": "2026-07-25T02:32:39.954794"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "ロキソニンって眠くなる？"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_qa"
+          },
+          {
+            "role": "user",
+            "content": "ロキソニンって眠くなる？"
+          },
+          {
+            "role": "assistant",
+            "content": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-07-25T02:32:39.957330Z",
+            "user_input": "ロキソニンって眠くなる？",
+            "response_preview": "sage_qa",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "conversation_history",
+            "input_labels": [
+              "side_effect_qa"
+            ],
+            "routing": {
+              "trace_id": "9b2244cb-5f2e-4af7-868b-b5e662dd163a",
+              "triage": {
+                "category": "Ask",
+                "subcategory": "drug_side_effect",
+                "confidence": 0.98
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 8345.33,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 240.5,
+                "triage_ms": 4022.0,
+                "post_to_security_ms": 1387.8,
+                "safety_gate_ms": 4979.4,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-07-25T02:32:31.612Z",
+              "response_at": "2026-07-25T02:32:39.957330Z",
+              "e2e_ms": 8345.3,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 8345.33,
+              "phase_summary_ms": {
+                "security_ms": 240.5,
+                "triage_ms": 4022.0,
+                "post_to_security_ms": 1387.8,
+                "safety_gate_ms": 4979.4,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 1.94,
+                "parsed_message": 2.1,
+                "session_db_read": 2.42,
+                "after_get_session_db": 283.66,
+                "before_llm_setup": 585.4,
+                "before_security": 1149.29,
+                "after_security": 1389.78,
+                "before_emoji_route": 1421.43,
+                "before_triage": 1424.41,
+                "after_triage": 5446.38,
+                "safety_gate_done": 6369.23
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 2040.54,
+              "llm_session_cost_jpy": 0.0964,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-07-25T02:32:36.213697",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 2040.54,
+                  "prompt_tokens": 3110,
+                  "completion_tokens": 104,
+                  "cost_jpy": 0.0964,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-07-25T02:32:39.954794",
+            "user_input": "ロキソニンって眠くなる？",
+            "response_preview": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "side_effect_qa"
+            ],
+            "routing": {
+              "trace_id": "9b2244cb-5f2e-4af7-868b-b5e662dd163a",
+              "triage": {
+                "category": "Ask",
+                "subcategory": "drug_side_effect",
+                "confidence": 0.98
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 8345.33,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 240.5,
+                "triage_ms": 4022.0,
+                "post_to_security_ms": 1387.8,
+                "safety_gate_ms": 4979.4,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-07-25T02:32:31.612Z",
+              "response_at": "2026-07-25T02:32:39.954794",
+              "e2e_ms": 8342.8,
+              "since_previous_turn_ms": -2.5,
+              "pipeline_total_ms": 8345.33,
+              "phase_summary_ms": {
+                "security_ms": 240.5,
+                "triage_ms": 4022.0,
+                "post_to_security_ms": 1387.8,
+                "safety_gate_ms": 4979.4,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 1.94,
+                "parsed_message": 2.1,
+                "session_db_read": 2.42,
+                "after_get_session_db": 283.66,
+                "before_llm_setup": 585.4,
+                "before_security": 1149.29,
+                "after_security": 1389.78,
+                "before_emoji_route": 1421.43,
+                "before_triage": 1424.41,
+                "after_triage": 5446.38,
+                "safety_gate_done": 6369.23
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 2040.54,
+              "llm_session_cost_jpy": 0.0964,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-07-25T02:32:36.213697",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 2040.54,
+                  "prompt_tokens": 3110,
+                  "completion_tokens": 104,
+                  "cost_jpy": 0.0964,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "ロキソニンって眠くなる？"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_qa"
+              }
+            ],
+            "heuristic_signals": [
+              {
+                "type": "side_effect_qa_mishandled",
+                "severity": "critical",
+                "cause_hypothesis": "副作用Q&A（例: ロキソニンって眠い？）が症状推奨/escalationに落ちた",
+                "evidence": "input='ロキソニンって眠くなる？' sub='drug_side_effect' triage=Ask"
+              }
+            ],
+            "issues": [
+              {
+                "type": "side_effect_qa_mishandled",
+                "severity": "critical",
+                "cause_hypothesis": "副作用Q&A（例: ロキソニンって眠い？）が症状推奨/escalationに落ちた",
+                "evidence": "input='ロキソニンって眠くなる？' sub='drug_side_effect' triage=Ask"
+              }
+            ],
+            "llm_review_required": true,
+            "turn_grade": "critical"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 2,
+          "issue_count": 1,
+          "critical_count": 1,
+          "warning_count": 0,
+          "issue_type_counts": {
+            "side_effect_qa_mishandled": 1
+          },
+          "overall_grade": "needs_improvement",
+          "strengths": [
+            "1/2 ターンは応答が入力意図と整合"
+          ],
+          "weaknesses": [
+            "side_effect_qa_mishandled: 1件"
+          ],
+          "summary": "session=1784946740773995708821 turns=2 grade=needs_improvement issues=[side_effect_qa_mishandled×1] first='ロキソニンって眠くなる？' last='ロキソニンって眠くなる？'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "conversation_history": 1,
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1784947344525367619915",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-07-25T02:42:42.837030Z",
+          "end": "2026-07-25T02:42:42.833009"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "ロキソニンって眠くなる？"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_qa"
+          },
+          {
+            "role": "user",
+            "content": "ロキソニンって眠くなる？"
+          },
+          {
+            "role": "assistant",
+            "content": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-07-25T02:42:42.837030Z",
+            "user_input": "ロキソニンって眠くなる？",
+            "response_preview": "sage_qa",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "conversation_history",
+            "input_labels": [
+              "side_effect_qa"
+            ],
+            "routing": {
+              "trace_id": "a08709ae-c727-4764-bc33-89e670a0252d",
+              "triage": {
+                "category": "Ask",
+                "subcategory": "side_effects",
+                "confidence": 0.98
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 8706.03,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 496.0,
+                "triage_ms": 3761.7,
+                "post_to_security_ms": 1644.1,
+                "safety_gate_ms": 4697.5,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-07-25T02:42:34.131Z",
+              "response_at": "2026-07-25T02:42:42.837030Z",
+              "e2e_ms": 8706.0,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 8706.03,
+              "phase_summary_ms": {
+                "security_ms": 496.0,
+                "triage_ms": 3761.7,
+                "post_to_security_ms": 1644.1,
+                "safety_gate_ms": 4697.5,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 2.98,
+                "parsed_message": 3.23,
+                "session_db_read": 3.68,
+                "after_get_session_db": 279.06,
+                "before_llm_setup": 592.02,
+                "before_security": 1150.99,
+                "after_security": 1647.04,
+                "before_emoji_route": 1698.87,
+                "before_triage": 1703.86,
+                "after_triage": 5465.56,
+                "safety_gate_done": 6344.57
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 1877.16,
+              "llm_session_cost_jpy": 0.0956,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-07-25T02:42:38.760084",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1877.16,
+                  "prompt_tokens": 3110,
+                  "completion_tokens": 78,
+                  "cost_jpy": 0.0956,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-07-25T02:42:42.833009",
+            "user_input": "ロキソニンって眠くなる？",
+            "response_preview": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "side_effect_qa"
+            ],
+            "routing": {
+              "trace_id": "a08709ae-c727-4764-bc33-89e670a0252d",
+              "triage": {
+                "category": "Ask",
+                "subcategory": "side_effects",
+                "confidence": 0.98
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 8706.03,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 496.0,
+                "triage_ms": 3761.7,
+                "post_to_security_ms": 1644.1,
+                "safety_gate_ms": 4697.5,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-07-25T02:42:34.131Z",
+              "response_at": "2026-07-25T02:42:42.833009",
+              "e2e_ms": 8702.0,
+              "since_previous_turn_ms": -4.0,
+              "pipeline_total_ms": 8706.03,
+              "phase_summary_ms": {
+                "security_ms": 496.0,
+                "triage_ms": 3761.7,
+                "post_to_security_ms": 1644.1,
+                "safety_gate_ms": 4697.5,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 2.98,
+                "parsed_message": 3.23,
+                "session_db_read": 3.68,
+                "after_get_session_db": 279.06,
+                "before_llm_setup": 592.02,
+                "before_security": 1150.99,
+                "after_security": 1647.04,
+                "before_emoji_route": 1698.87,
+                "before_triage": 1703.86,
+                "after_triage": 5465.56,
+                "safety_gate_done": 6344.57
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 1877.16,
+              "llm_session_cost_jpy": 0.0956,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-07-25T02:42:38.760084",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1877.16,
+                  "prompt_tokens": 3110,
+                  "completion_tokens": 78,
+                  "cost_jpy": 0.0956,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "ロキソニンって眠くなる？"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_qa"
+              }
+            ],
+            "heuristic_signals": [
+              {
+                "type": "side_effect_qa_mishandled",
+                "severity": "critical",
+                "cause_hypothesis": "副作用Q&A（例: ロキソニンって眠い？）が症状推奨/escalationに落ちた",
+                "evidence": "input='ロキソニンって眠くなる？' sub='side_effects' triage=Ask"
+              }
+            ],
+            "issues": [
+              {
+                "type": "side_effect_qa_mishandled",
+                "severity": "critical",
+                "cause_hypothesis": "副作用Q&A（例: ロキソニンって眠い？）が症状推奨/escalationに落ちた",
+                "evidence": "input='ロキソニンって眠くなる？' sub='side_effects' triage=Ask"
+              }
+            ],
+            "llm_review_required": true,
+            "turn_grade": "critical"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 2,
+          "issue_count": 1,
+          "critical_count": 1,
+          "warning_count": 0,
+          "issue_type_counts": {
+            "side_effect_qa_mishandled": 1
+          },
+          "overall_grade": "needs_improvement",
+          "strengths": [
+            "1/2 ターンは応答が入力意図と整合"
+          ],
+          "weaknesses": [
+            "side_effect_qa_mishandled: 1件"
+          ],
+          "summary": "session=1784947344525367619915 turns=2 grade=needs_improvement issues=[side_effect_qa_mishandled×1] first='ロキソニンって眠くなる？' last='ロキソニンって眠くなる？'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "conversation_history": 1,
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      }
+    ],
+    "intent_mismatches": [
+      {
+        "session_id": "1784946740773995708821",
+        "timestamp": "2026-07-25T02:32:39.954794",
+        "user_input": "ロキソニンって眠くなる？",
+        "issue_type": "side_effect_qa_mishandled",
+        "severity": "critical",
+        "cause_hypothesis": "副作用Q&A（例: ロキソニンって眠い？）が症状推奨/escalationに落ちた",
+        "evidence": "input='ロキソニンって眠くなる？' sub='drug_side_effect' triage=Ask",
+        "routing": {
+          "trace_id": "9b2244cb-5f2e-4af7-868b-b5e662dd163a",
+          "triage": {
+            "category": "Ask",
+            "subcategory": "drug_side_effect",
+            "confidence": 0.98
+          },
+          "concierge_intent": null,
+          "structural_intent": null,
+          "meta_intent": null,
+          "handoff_target": null,
+          "concierge_handled": null,
+          "concierge_ms": null,
+          "total_ms": 8345.33,
+          "channel": "web",
+          "phase_summary_ms": {
+            "security_ms": 240.5,
+            "triage_ms": 4022.0,
+            "post_to_security_ms": 1387.8,
+            "safety_gate_ms": 4979.4,
+            "confidence_gate_ms": null,
+            "orchestrator_ms": null,
+            "concierge_build_ms": null,
+            "meta_triage_ms": null
+          },
+          "llm_call_count": 1
+        }
+      },
+      {
+        "session_id": "1784947344525367619915",
+        "timestamp": "2026-07-25T02:42:42.833009",
+        "user_input": "ロキソニンって眠くなる？",
+        "issue_type": "side_effect_qa_mishandled",
+        "severity": "critical",
+        "cause_hypothesis": "副作用Q&A（例: ロキソニンって眠い？）が症状推奨/escalationに落ちた",
+        "evidence": "input='ロキソニンって眠くなる？' sub='side_effects' triage=Ask",
+        "routing": {
+          "trace_id": "a08709ae-c727-4764-bc33-89e670a0252d",
+          "triage": {
+            "category": "Ask",
+            "subcategory": "side_effects",
+            "confidence": 0.98
+          },
+          "concierge_intent": null,
+          "structural_intent": null,
+          "meta_intent": null,
+          "handoff_target": null,
+          "concierge_handled": null,
+          "concierge_ms": null,
+          "total_ms": 8706.03,
+          "channel": "web",
+          "phase_summary_ms": {
+            "security_ms": 496.0,
+            "triage_ms": 3761.7,
+            "post_to_security_ms": 1644.1,
+            "safety_gate_ms": 4697.5,
+            "confidence_gate_ms": null,
+            "orchestrator_ms": null,
+            "concierge_build_ms": null,
+            "meta_triage_ms": null
+          },
+          "llm_call_count": 1
+        }
+      }
+    ],
+    "mismatch_count": 2,
+    "sessions_by_grade": {
+      "needs_improvement": 2
+    },
+    "physical_recommendation_events": []
+  },
+  "intent_mismatches": [
+    {
+      "session_id": "1784946740773995708821",
+      "timestamp": "2026-07-25T02:32:39.954794",
+      "user_input": "ロキソニンって眠くなる？",
+      "issue_type": "side_effect_qa_mishandled",
+      "severity": "critical",
+      "cause_hypothesis": "副作用Q&A（例: ロキソニンって眠い？）が症状推奨/escalationに落ちた",
+      "evidence": "input='ロキソニンって眠くなる？' sub='drug_side_effect' triage=Ask",
+      "routing": {
+        "trace_id": "9b2244cb-5f2e-4af7-868b-b5e662dd163a",
+        "triage": {
+          "category": "Ask",
+          "subcategory": "drug_side_effect",
+          "confidence": 0.98
+        },
+        "concierge_intent": null,
+        "structural_intent": null,
+        "meta_intent": null,
+        "handoff_target": null,
+        "concierge_handled": null,
+        "concierge_ms": null,
+        "total_ms": 8345.33,
+        "channel": "web",
+        "phase_summary_ms": {
+          "security_ms": 240.5,
+          "triage_ms": 4022.0,
+          "post_to_security_ms": 1387.8,
+          "safety_gate_ms": 4979.4,
+          "confidence_gate_ms": null,
+          "orchestrator_ms": null,
+          "concierge_build_ms": null,
+          "meta_triage_ms": null
+        },
+        "llm_call_count": 1
+      }
+    },
+    {
+      "session_id": "1784947344525367619915",
+      "timestamp": "2026-07-25T02:42:42.833009",
+      "user_input": "ロキソニンって眠くなる？",
+      "issue_type": "side_effect_qa_mishandled",
+      "severity": "critical",
+      "cause_hypothesis": "副作用Q&A（例: ロキソニンって眠い？）が症状推奨/escalationに落ちた",
+      "evidence": "input='ロキソニンって眠くなる？' sub='side_effects' triage=Ask",
+      "routing": {
+        "trace_id": "a08709ae-c727-4764-bc33-89e670a0252d",
+        "triage": {
+          "category": "Ask",
+          "subcategory": "side_effects",
+          "confidence": 0.98
+        },
+        "concierge_intent": null,
+        "structural_intent": null,
+        "meta_intent": null,
+        "handoff_target": null,
+        "concierge_handled": null,
+        "concierge_ms": null,
+        "total_ms": 8706.03,
+        "channel": "web",
+        "phase_summary_ms": {
+          "security_ms": 496.0,
+          "triage_ms": 3761.7,
+          "post_to_security_ms": 1644.1,
+          "safety_gate_ms": 4697.5,
+          "confidence_gate_ms": null,
+          "orchestrator_ms": null,
+          "concierge_build_ms": null,
+          "meta_triage_ms": null
+        },
+        "llm_call_count": 1
+      }
+    }
+  ],
+  "intent_review_queue": [
+    {
+      "session_id": "1784946740773995708821",
+      "timestamp": "2026-07-25T02:32:39.954794",
+      "user_input": "ロキソニンって眠くなる？",
+      "issue_type": "side_effect_qa_mishandled",
+      "severity": "critical",
+      "cause_hypothesis": "副作用Q&A（例: ロキソニンって眠い？）が症状推奨/escalationに落ちた",
+      "evidence": "input='ロキソニンって眠くなる？' sub='drug_side_effect' triage=Ask",
+      "routing": {
+        "trace_id": "9b2244cb-5f2e-4af7-868b-b5e662dd163a",
+        "triage": {
+          "category": "Ask",
+          "subcategory": "drug_side_effect",
+          "confidence": 0.98
+        },
+        "concierge_intent": null,
+        "structural_intent": null,
+        "meta_intent": null,
+        "handoff_target": null,
+        "concierge_handled": null,
+        "concierge_ms": null,
+        "total_ms": 8345.33,
+        "channel": "web",
+        "phase_summary_ms": {
+          "security_ms": 240.5,
+          "triage_ms": 4022.0,
+          "post_to_security_ms": 1387.8,
+          "safety_gate_ms": 4979.4,
+          "confidence_gate_ms": null,
+          "orchestrator_ms": null,
+          "concierge_build_ms": null,
+          "meta_triage_ms": null
+        },
+        "llm_call_count": 1
+      }
+    },
+    {
+      "session_id": "1784947344525367619915",
+      "timestamp": "2026-07-25T02:42:42.833009",
+      "user_input": "ロキソニンって眠くなる？",
+      "issue_type": "side_effect_qa_mishandled",
+      "severity": "critical",
+      "cause_hypothesis": "副作用Q&A（例: ロキソニンって眠い？）が症状推奨/escalationに落ちた",
+      "evidence": "input='ロキソニンって眠くなる？' sub='side_effects' triage=Ask",
+      "routing": {
+        "trace_id": "a08709ae-c727-4764-bc33-89e670a0252d",
+        "triage": {
+          "category": "Ask",
+          "subcategory": "side_effects",
+          "confidence": 0.98
+        },
+        "concierge_intent": null,
+        "structural_intent": null,
+        "meta_intent": null,
+        "handoff_target": null,
+        "concierge_handled": null,
+        "concierge_ms": null,
+        "total_ms": 8706.03,
+        "channel": "web",
+        "phase_summary_ms": {
+          "security_ms": 496.0,
+          "triage_ms": 3761.7,
+          "post_to_security_ms": 1644.1,
+          "safety_gate_ms": 4697.5,
+          "confidence_gate_ms": null,
+          "orchestrator_ms": null,
+          "concierge_build_ms": null,
+          "meta_triage_ms": null
+        },
+        "llm_call_count": 1
+      }
+    }
+  ],
+  "sessions_by_grade": {
+    "needs_improvement": 2
+  },
+  "intent_router": {
+    "rows": [
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-07-25T02:32:37.971423",
+        "session_id": "1784946740773995708821",
+        "user_input": "ロキソニンって眠くなる？",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "sub_route": "medicine_side_effect_qa",
+        "resolved_by": "gate",
+        "confidence": 0.96,
+        "source": "layer1_side_effect_qa",
+        "triage_category": "Ask",
+        "triage_subcategory": "drug_side_effect"
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-07-25T02:42:40.459117",
+        "session_id": "1784947344525367619915",
+        "user_input": "ロキソニンって眠くなる？",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "sub_route": "medicine_side_effect_qa",
+        "resolved_by": "gate",
+        "confidence": 0.96,
+        "source": "layer1_side_effect_qa",
+        "triage_category": "Ask",
+        "triage_subcategory": "side_effects"
+      }
+    ],
+    "shadow_total": 2,
+    "shadow_mismatch": 0,
+    "shadow_mismatch_rate_pct": 0.0,
+    "shadow_improvement_mismatch": 0,
+    "shadow_improvement_mismatch_rate_pct": 0.0,
+    "shadow_regression_mismatch": 0,
+    "shadow_regression_mismatch_rate_pct": 0.0,
+    "shadow_exempt": 0,
+    "shadow_exempt_rate_pct": 0.0,
+    "shadow_by_mismatch_kind": {
+      "agree": 2
+    },
+    "shadow_by_primary_route": {
+      "Physical": 2
+    },
+    "shadow_by_resolved_by": {
+      "gate": 2
+    },
+    "shadow_with_fever_context_flag": 0,
+    "shadow_with_pending_cancelled_flag": 0,
+    "dispatch_with_fever_context_flag": 0,
+    "dispatch_with_pending_cancelled_flag": 0,
+    "dispatch_total": 0,
+    "dispatch_handled": 0,
+    "dispatch_unhandled": 0,
+    "dispatch_success_rate_pct": 0.0,
+    "dispatch_by_handler": {},
+    "execution_total": 0,
+    "execution_mismatch": 0,
+    "execution_mismatch_rate_pct": 0.0,
+    "execution_by_layer_used": {},
+    "execution_side_effect_qa": 0,
+    "mismatch_samples": []
+  }
+}
