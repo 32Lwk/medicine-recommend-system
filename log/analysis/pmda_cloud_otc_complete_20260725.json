@@ -1,0 +1,88 @@
+{
+  "generated_at": "2026-07-25T15:51:53+00:00",
+  "phase": "pmda_cloud_otc_complete",
+  "cloud_go_nogo": {
+    "result": "GO",
+    "hits": 7,
+    "errors": 3,
+    "http_403": 0,
+    "http_429": 0
+  },
+  "side_effects_drain": {
+    "pending_before": 10,
+    "pending_after": 0
+  },
+  "queue": {
+    "interactions": {
+      "source": "interactions",
+      "pending": 0,
+      "done": 489,
+      "failed": 833,
+      "total": 1322,
+      "pct_done": 37.0
+    },
+    "side_effects": {
+      "source": "side_effects",
+      "pending": 0,
+      "done": 489,
+      "failed": 833,
+      "total": 1322,
+      "pct_done": 37.0
+    },
+    "otc": {
+      "source": "otc",
+      "pending": 0,
+      "done": 6011,
+      "failed": 1240,
+      "total": 7251,
+      "pct_done": 82.9
+    }
+  },
+  "otc": {
+    "csv_rows": 7495,
+    "unique_keys_processed": 7251,
+    "done": 6011,
+    "orphans": 1240,
+    "hit_rate_pct": 82.9,
+    "target_hit_rate_pct": 95.0,
+    "http_requested": 13929,
+    "http_errors": 0,
+    "elapsed_sec": 52290.4,
+    "merge_runs": 72,
+    "fields_nonempty": {
+      "成分": 7494,
+      "年齢制限": 3623
+    }
+  },
+  "tests": {
+    "test_pmda_import_and_otc_parse": "13 passed",
+    "golden_regression": "45 passed"
+  },
+  "kb": {
+    "build_medicine_kb_documents": "ok",
+    "s3_sync": "skipped_no_aws",
+    "bedrock_reingest": "skipped_no_aws",
+    "eval": "skipped_no_aws"
+  },
+  "git": {
+    "commit": false,
+    "push": false,
+    "reason": "explicitly forbidden until instructed"
+  },
+  "quality_eval": {
+    "baseline": "data/pmda/backups/20260724/otc_medicine_data.csv",
+    "verdict": "pass_after_taxonomy_restore",
+    "row_keys_preserved": true,
+    "efficacy_updated": 5473,
+    "usage_updated": 5940,
+    "age_fill_pct": {
+      "before": 44.4,
+      "after": 48.0
+    },
+    "taxonomy_restored": true,
+    "taxonomy_note": "PMDA 薬効分類/リスク区分で分類・医薬品の種類が一時汚染→baseline復元。merge対象から除外済み",
+    "recommendation_filter_counts_unchanged": true,
+    "orphan_baseline_preserved": true,
+    "doping_fields_unchanged": true
+  }
+}

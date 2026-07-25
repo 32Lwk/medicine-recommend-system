@@ -130,7 +130,8 @@ def merge_otc_products(
         if key in staging_by_key and pmda_priority:
             patch = staging_by_key[key]
             changed = False
-            for field in ("効能効果", "用法用量", "年齢制限", "成分", "分類", "医薬品の種類"):
+            # 分類・医薬品の種類は既存タクソノミを保持（PMDA 薬効分類/リスク区分で置換しない）
+            for field in ("効能効果", "用法用量", "年齢制限", "成分"):
                 if patch.get(field) and patch.get(field) != norm.get(field):
                     norm[field] = patch[field]
                     changed = True

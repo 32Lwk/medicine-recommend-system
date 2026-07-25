@@ -1,0 +1,76 @@
+{
+  "runs": [
+    {
+      "stats": {
+        "requested_ingredients": 0,
+        "requested_pairs": 0,
+        "cache_hits": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "staging_count": 2811
+    },
+    {
+      "stats": {
+        "requested_ingredients": 0,
+        "requested_pairs": 0,
+        "cache_hits": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "staging_count": 2811
+    },
+    {
+      "stats": {
+        "requested_ingredients": 0,
+        "requested_pairs": 0,
+        "cache_hits": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "staging_count": 2811
+    },
+    {
+      "stats": {
+        "requested_ingredients": 0,
+        "requested_pairs": 0,
+        "cache_hits": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "staging_count": 2811
+    },
+    {
+      "stats": {
+        "requested_ingredients": 0,
+        "requested_pairs": 0,
+        "cache_hits": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "staging_count": 2811
+    },
+    {
+      "stats": {
+        "requested_ingredients": 0,
+        "requested_pairs": 0,
+        "cache_hits": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "staging_count": 2811
+    }
+  ]
+}

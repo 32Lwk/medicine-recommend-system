@@ -1,0 +1,3968 @@
+{
+  "当帰": {
+    "canonical_name": "当帰",
+    "synonyms": [
+      "トウキ",
+      "当帰",
+      "とうき",
+      "トウキ末",
+      "トウキ流エキス",
+      "トウキエキス",
+      "トウキ乾燥エキス",
+      "トウキ流エキスＳ",
+      "トウキエキスＳ",
+      "当帰末"
+    ],
+    "effects": [
+      "血行改善",
+      "冷え性改善",
+      "生理痛緩和",
+      "体力回復"
+    ],
+    "related_symptoms": [
+      "月経不順",
+      "生理痛",
+      "冷え性"
+    ],
+    "medicine_types": [
+      "解熱鎮痛薬",
+      "漢方薬"
+    ]
+  },
+  "芍薬": {
+    "canonical_name": "芍薬",
+    "synonyms": [
+      "シャクヤク",
+      "芍薬",
+      "しゃくやく",
+      "シャクヤク末",
+      "シャクヤクエキス",
+      "シャクヤク乾燥エキス",
+      "芍薬エキス"
+    ],
+    "effects": [
+      "痛み緩和",
+      "筋肉緊張緩和",
+      "不安緩和"
+    ],
+    "related_symptoms": [
+      "月経不順",
+      "生理痛",
+      "イライラ"
+    ],
+    "medicine_types": [
+      "解熱鎮痛薬",
+      "漢方薬"
+    ]
+  },
+  "当帰芍薬散": {
+    "canonical_name": "当帰芍薬散",
+    "synonyms": [
+      "トウキシャクヤクサン",
+      "当帰芍薬散",
+      "とうきしゃくやくさん"
+    ],
+    "effects": [
+      "血行改善",
+      "生理痛緩和",
+      "月経不順改善",
+      "冷え性改善"
+    ],
+    "related_symptoms": [
+      "月経不順",
+      "生理痛",
+      "冷え性"
+    ],
+    "medicine_types": [
+      "漢方薬"
+    ]
+  },
+  "茯苓": {
+    "canonical_name": "茯苓",
+    "synonyms": [
+      "ブクリョウ",
+      "茯苓",
+      "ぶくりょう",
+      "ブクリョウ末",
+      "ブクリョウエキス",
+      "茯苓末"
+    ],
+    "effects": [
+      "利水作用",
+      "むくみ改善",
+      "精神安定",
+      "不安緩和"
+    ],
+    "related_symptoms": [
+      "月経不順",
+      "むくみ",
+      "イライラ",
+      "不安"
+    ],
+    "medicine_types": [
+      "漢方薬"
+    ]
+  },
+  "牡丹皮": {
+    "canonical_name": "牡丹皮",
+    "synonyms": [
+      "ボタンピ",
+      "牡丹皮",
+      "ぼたんぴ",
+      "ボタンピ末",
+      "ボタンピエキス",
+      "牡丹皮末"
+    ],
+    "effects": [
+      "血行改善",
+      "瘀血除去",
+      "炎症緩和",
+      "精神安定"
+    ],
+    "related_symptoms": [
+      "月経不順",
+      "生理痛",
+      "イライラ",
+      "ニキビ"
+    ],
+    "medicine_types": [
+      "漢方薬"
+    ],
+    "contraindications": [
+      "妊娠中"
+    ]
+  },
+  "桃仁": {
+    "canonical_name": "桃仁",
+    "synonyms": [
+      "トウニン",
+      "桃仁",
+      "とうにん",
+      "トウニン末",
+      "トウニンエキス",
+      "桃仁末"
+    ],
+    "effects": [
+      "血行改善",
+      "瘀血除去",
+      "便秘改善"
+    ],
+    "related_symptoms": [
+      "月経不順",
+      "生理痛",
+      "便秘"
+    ],
+    "medicine_types": [
+      "漢方薬"
+    ],
+    "contraindications": [
+      "妊娠中"
+    ]
+  },
+  "桂枝": {
+    "canonical_name": "桂枝",
+    "synonyms": [
+      "ケイヒ",
+      "桂枝",
+      "けいひ",
+      "ケイヒ末",
+      "ケイヒエキス",
+      "桂枝末"
+    ],
+    "effects": [
+      "血行改善",
+      "冷え性改善",
+      "発汗作用"
+    ],
+    "related_symptoms": [
+      "月経不順",
+      "冷え性",
+      "生理痛"
+    ],
+    "medicine_types": [
+      "漢方薬"
+    ]
+  },
+  "柴胡": {
+    "canonical_name": "柴胡",
+    "synonyms": [
+      "シャクヨウ",
+      "柴胡",
+      "しゃくよう",
+      "シャクヨウ末",
+      "シャクヨウエキス",
+      "柴胡末"
+    ],
+    "effects": [
+      "精神安定",
+      "イライラ緩和",
+      "ストレス緩和",
+      "気の流れ改善"
+    ],
+    "related_symptoms": [
+      "月経不順",
+      "イライラ",
+      "ストレス",
+      "不安"
+    ],
+    "medicine_types": [
+      "漢方薬"
+    ]
+  },
+  "甘草": {
+    "canonical_name": "甘草",
+    "synonyms": [
+      "カンゾウ",
+      "甘草",
+      "かんぞう",
+      "カンゾウ末",
+      "カンゾウエキス",
+      "甘草末"
+    ],
+    "effects": [
+      "痛み緩和",
+      "炎症緩和",
+      "精神安定"
+    ],
+    "related_symptoms": [
+      "月経不順",
+      "生理痛",
+      "イライラ"
+    ],
+    "medicine_types": [
+      "漢方薬"
+    ]
+  },
+  "大黄": {
+    "canonical_name": "大黄",
+    "synonyms": [
+      "ダイオウ",
+      "大黄",
+      "だいおう",
+      "ダイオウ末",
+      "ダイオウエキス",
+      "大黄末"
+    ],
+    "effects": [
+      "便秘改善",
+      "血行改善",
+      "瘀血除去"
+    ],
+    "related_symptoms": [
+      "月経不順",
+      "便秘"
+    ],
+    "medicine_types": [
+      "漢方薬"
+    ],
+    "contraindications": [
+      "お腹を壊しやすい",
+      "産後",
+      "授乳中"
+    ]
+  },
+  "イブプロフェン": {
+    "canonical_name": "イブプロフェン",
+    "synonyms": [
+      "イブプロフェン",
+      "ibuprofen",
+      "イブ",
+      "NSAID",
+      "非ステロイド性抗炎症薬"
+    ],
+    "source": "pmda_import"
+  },
+  "アセトアミノフェン": {
+    "canonical_name": "アセトアミノフェン",
+    "synonyms": [
+      "アセトアミノフェン"
+    ],
+    "source": "pmda_import"
+  },
+  "アスピリン": {
+    "canonical_name": "アスピリン",
+    "synonyms": [
+      "アスピリン"
+    ],
+    "source": "pmda_import"
+  },
+  "ロキソプロフェン": {
+    "canonical_name": "ロキソプロフェン",
+    "synonyms": [
+      "ロキソプロフェン",
+      "loxoprofen",
+      "ロキソニン",
+      "NSAID",
+      "非ステロイド性抗炎症薬"
+    ],
+    "source": "pmda_import"
+  },
+  "ジクロフェナク": {
+    "canonical_name": "ジクロフェナク",
+    "synonyms": [
+      "ジクロフェナク"
+    ],
+    "source": "pmda_import"
+  },
+  "メフェナム酸": {
+    "canonical_name": "メフェナム酸",
+    "synonyms": [
+      "メフェナム酸"
+    ],
+    "source": "pmda_import"
+  },
+  "エテンザミド": {
+    "canonical_name": "エテンザミド",
+    "synonyms": [
+      "エテンザミド"
+    ],
+    "source": "pmda_import"
+  },
+  "カフェイン": {
+    "canonical_name": "カフェイン",
+    "synonyms": [
+      "カフェイン"
+    ],
+    "source": "pmda_import"
+  },
+  "エフェドリン": {
+    "canonical_name": "エフェドリン",
+    "synonyms": [
+      "エフェドリン"
+    ],
+    "source": "pmda_import"
+  },
+  "プソイドエフェドリン": {
+    "canonical_name": "プソイドエフェドリン",
+    "synonyms": [
+      "プソイドエフェドリン",
+      "塩酸プソイドエフェドリン",
+      "pseudoephedrine",
+      "エフェドリン"
+    ],
+    "source": "pmda_import"
+  },
+  "NSAID": {
+    "canonical_name": "NSAID",
+    "synonyms": [
+      "NSAID",
+      "NSAIDs",
+      "非ステロイド性抗炎症薬",
+      "イブプロフェン",
+      "ロキソプロフェン",
+      "アスピリン",
+      "ジクロフェナク"
+    ],
+    "related_symptoms": [
+      "頭痛",
+      "発熱",
+      "筋肉痛"
+    ],
+    "source": "phase1_5_kb"
+  },
+  "クロルフェニラミン": {
+    "canonical_name": "クロルフェニラミン",
+    "synonyms": [
+      "クロルフェニラミン"
+    ],
+    "source": "pmda_import"
+  },
+  "ジフェンヒドラミン": {
+    "canonical_name": "ジフェンヒドラミン",
+    "synonyms": [
+      "ジフェンヒドラミン"
+    ],
+    "source": "pmda_import"
+  },
+  "ロラタジン": {
+    "canonical_name": "ロラタジン",
+    "synonyms": [
+      "ロラタジン"
+    ],
+    "source": "pmda_import"
+  },
+  "セチリジン": {
+    "canonical_name": "セチリジン",
+    "synonyms": [
+      "セチリジン"
+    ],
+    "source": "pmda_import"
+  },
+  "フマル酸ケトチフェン": {
+    "canonical_name": "フマル酸ケトチフェン",
+    "synonyms": [
+      "フマル酸ケトチフェン"
+    ],
+    "source": "pmda_import"
+  },
+  "オキサトミド": {
+    "canonical_name": "オキサトミド",
+    "synonyms": [
+      "オキサトミド"
+    ],
+    "source": "pmda_import"
+  },
+  "ベクロメタゾン": {
+    "canonical_name": "ベクロメタゾン",
+    "synonyms": [
+      "ベクロメタゾン"
+    ],
+    "source": "pmda_import"
+  },
+  "フルチカゾン": {
+    "canonical_name": "フルチカゾン",
+    "synonyms": [
+      "フルチカゾン"
+    ],
+    "source": "pmda_import"
+  },
+  "モメタゾン": {
+    "canonical_name": "モメタゾン",
+    "synonyms": [
+      "モメタゾン"
+    ],
+    "source": "pmda_import"
+  },
+  "オキシメタゾリン": {
+    "canonical_name": "オキシメタゾリン",
+    "synonyms": [
+      "オキシメタゾリン"
+    ],
+    "source": "pmda_import"
+  },
+  "ナファゾリン": {
+    "canonical_name": "ナファゾリン",
+    "synonyms": [
+      "ナファゾリン"
+    ],
+    "source": "pmda_import"
+  },
+  "テトラヒドロゾリン": {
+    "canonical_name": "テトラヒドロゾリン",
+    "synonyms": [
+      "テトラヒドロゾリン"
+    ],
+    "source": "pmda_import"
+  },
+  "トラマドール": {
+    "canonical_name": "トラマドール",
+    "synonyms": [
+      "トラマドール"
+    ],
+    "source": "pmda_import"
+  },
+  "コデイン": {
+    "canonical_name": "コデイン",
+    "synonyms": [
+      "コデイン"
+    ],
+    "source": "pmda_import"
+  },
+  "ジヒドロコデイン": {
+    "canonical_name": "ジヒドロコデイン",
+    "synonyms": [
+      "ジヒドロコデイン"
+    ],
+    "source": "pmda_import"
+  },
+  "デキストロメトルファン": {
+    "canonical_name": "デキストロメトルファン",
+    "synonyms": [
+      "デキストロメトルファン"
+    ],
+    "source": "pmda_import"
+  },
+  "グアイフェネシン": {
+    "canonical_name": "グアイフェネシン",
+    "synonyms": [
+      "グアイフェネシン"
+    ],
+    "source": "pmda_import"
+  },
+  "ブロムヘキシン": {
+    "canonical_name": "ブロムヘキシン",
+    "synonyms": [
+      "ブロムヘキシン"
+    ],
+    "source": "pmda_import"
+  },
+  "アンブロキソール": {
+    "canonical_name": "アンブロキソール",
+    "synonyms": [
+      "アンブロキソール"
+    ],
+    "source": "pmda_import"
+  },
+  "カルボシステイン": {
+    "canonical_name": "カルボシステイン",
+    "synonyms": [
+      "カルボシステイン"
+    ],
+    "source": "pmda_import"
+  },
+  "アセチルシステイン": {
+    "canonical_name": "アセチルシステイン",
+    "synonyms": [
+      "アセチルシステイン"
+    ],
+    "source": "pmda_import"
+  },
+  "メチルエフェドリン": {
+    "canonical_name": "メチルエフェドリン",
+    "synonyms": [
+      "メチルエフェドリン"
+    ],
+    "source": "pmda_import"
+  },
+  "フェニレフリン": {
+    "canonical_name": "フェニレフリン",
+    "synonyms": [
+      "フェニレフリン"
+    ],
+    "source": "pmda_import"
+  },
+  "塩酸プソイドエフェドリン": {
+    "canonical_name": "塩酸プソイドエフェドリン",
+    "synonyms": [
+      "塩酸プソイドエフェドリン"
+    ],
+    "source": "pmda_import"
+  },
+  "マレイン酸クロルフェニラミン": {
+    "canonical_name": "マレイン酸クロルフェニラミン",
+    "synonyms": [
+      "マレイン酸クロルフェニラミン"
+    ],
+    "source": "pmda_import"
+  },
+  "マレイン酸カルビノキサミン": {
+    "canonical_name": "マレイン酸カルビノキサミン",
+    "synonyms": [
+      "マレイン酸カルビノキサミン"
+    ],
+    "source": "pmda_import"
+  },
+  "フマル酸クレマスチン": {
+    "canonical_name": "フマル酸クレマスチン",
+    "synonyms": [
+      "フマル酸クレマスチン"
+    ],
+    "source": "pmda_import"
+  },
+  "塩酸プロメタジン": {
+    "canonical_name": "塩酸プロメタジン",
+    "synonyms": [
+      "塩酸プロメタジン"
+    ],
+    "source": "pmda_import"
+  },
+  "塩酸トリメトキノール": {
+    "canonical_name": "塩酸トリメトキノール",
+    "synonyms": [
+      "塩酸トリメトキノール"
+    ],
+    "source": "pmda_import"
+  },
+  "塩酸メトキシフェナミン": {
+    "canonical_name": "塩酸メトキシフェナミン",
+    "synonyms": [
+      "塩酸メトキシフェナミン"
+    ],
+    "source": "pmda_import"
+  },
+  "塩酸メチルエフェドリン": {
+    "canonical_name": "塩酸メチルエフェドリン",
+    "synonyms": [
+      "塩酸メチルエフェドリン"
+    ],
+    "source": "pmda_import"
+  },
+  "硫酸アトロピン": {
+    "canonical_name": "硫酸アトロピン",
+    "synonyms": [
+      "硫酸アトロピン"
+    ],
+    "source": "pmda_import"
+  },
+  "臭化ブチルスコポラミン": {
+    "canonical_name": "臭化ブチルスコポラミン",
+    "synonyms": [
+      "臭化ブチルスコポラミン"
+    ],
+    "source": "pmda_import"
+  },
+  "塩酸パパベリン": {
+    "canonical_name": "塩酸パパベリン",
+    "synonyms": [
+      "塩酸パパベリン"
+    ],
+    "source": "pmda_import"
+  },
+  "塩酸ジフェンヒドラミン": {
+    "canonical_name": "塩酸ジフェンヒドラミン",
+    "synonyms": [
+      "塩酸ジフェンヒドラミン"
+    ],
+    "source": "pmda_import"
+  },
+  "ショウキョウ": {
+    "canonical_name": "ショウキョウ",
+    "synonyms": [
+      "ショウキョウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ソウジュツ": {
+    "canonical_name": "ソウジュツ",
+    "synonyms": [
+      "ソウジュツ"
+    ],
+    "source": "pmda_import"
+  },
+  "タイソウ": {
+    "canonical_name": "タイソウ",
+    "synonyms": [
+      "タイソウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ダイオウ": {
+    "canonical_name": "ダイオウ",
+    "synonyms": [
+      "ダイオウ"
+    ],
+    "source": "pmda_import"
+  },
+  "トウニン": {
+    "canonical_name": "トウニン",
+    "synonyms": [
+      "トウニン"
+    ],
+    "source": "pmda_import"
+  },
+  "ブクリョウ": {
+    "canonical_name": "ブクリョウ",
+    "synonyms": [
+      "ブクリョウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ボウイ": {
+    "canonical_name": "ボウイ",
+    "synonyms": [
+      "ボウイ"
+    ],
+    "source": "pmda_import"
+  },
+  "ボウフウ": {
+    "canonical_name": "ボウフウ",
+    "synonyms": [
+      "ボウフウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ボタンピ": {
+    "canonical_name": "ボタンピ",
+    "synonyms": [
+      "ボタンピ"
+    ],
+    "source": "pmda_import"
+  },
+  "マオウ": {
+    "canonical_name": "マオウ",
+    "synonyms": [
+      "マオウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ヨクイニン": {
+    "canonical_name": "ヨクイニン",
+    "synonyms": [
+      "ヨクイニン"
+    ],
+    "source": "pmda_import"
+  },
+  "ニコチン": {
+    "canonical_name": "ニコチン",
+    "synonyms": [
+      "ニコチン"
+    ],
+    "source": "pmda_import"
+  },
+  "ショウマ": {
+    "canonical_name": "ショウマ",
+    "synonyms": [
+      "ショウマ"
+    ],
+    "source": "pmda_import"
+  },
+  "トウキ": {
+    "canonical_name": "トウキ",
+    "synonyms": [
+      "トウキ"
+    ],
+    "source": "pmda_import"
+  },
+  "ケイヒ末": {
+    "canonical_name": "ケイヒ末",
+    "synonyms": [
+      "ケイヒ末"
+    ],
+    "source": "pmda_import"
+  },
+  "シャクヤク末": {
+    "canonical_name": "シャクヤク末",
+    "synonyms": [
+      "シャクヤク末"
+    ],
+    "source": "pmda_import"
+  },
+  "ブクリョウ末": {
+    "canonical_name": "ブクリョウ末",
+    "synonyms": [
+      "ブクリョウ末"
+    ],
+    "source": "pmda_import"
+  },
+  "ボタンピ末": {
+    "canonical_name": "ボタンピ末",
+    "synonyms": [
+      "ボタンピ末"
+    ],
+    "source": "pmda_import"
+  },
+  "サンソウニン": {
+    "canonical_name": "サンソウニン",
+    "synonyms": [
+      "サンソウニン"
+    ],
+    "source": "pmda_import"
+  },
+  "センキュウ": {
+    "canonical_name": "センキュウ",
+    "synonyms": [
+      "センキュウ"
+    ],
+    "source": "pmda_import"
+  },
+  "チモ": {
+    "canonical_name": "チモ",
+    "synonyms": [
+      "チモ"
+    ],
+    "source": "pmda_import"
+  },
+  "オウギ": {
+    "canonical_name": "オウギ",
+    "synonyms": [
+      "オウギ"
+    ],
+    "source": "pmda_import"
+  },
+  "ビャクジュツ": {
+    "canonical_name": "ビャクジュツ",
+    "synonyms": [
+      "ビャクジュツ"
+    ],
+    "source": "pmda_import"
+  },
+  "カッセキ": {
+    "canonical_name": "カッセキ",
+    "synonyms": [
+      "カッセキ"
+    ],
+    "source": "pmda_import"
+  },
+  "キキョウ": {
+    "canonical_name": "キキョウ",
+    "synonyms": [
+      "キキョウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ケイガイ": {
+    "canonical_name": "ケイガイ",
+    "synonyms": [
+      "ケイガイ"
+    ],
+    "source": "pmda_import"
+  },
+  "サンシシ": {
+    "canonical_name": "サンシシ",
+    "synonyms": [
+      "サンシシ"
+    ],
+    "source": "pmda_import"
+  },
+  "セッコウ": {
+    "canonical_name": "セッコウ",
+    "synonyms": [
+      "セッコウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ハッカ": {
+    "canonical_name": "ハッカ",
+    "synonyms": [
+      "ハッカ"
+    ],
+    "source": "pmda_import"
+  },
+  "レンギョウ": {
+    "canonical_name": "レンギョウ",
+    "synonyms": [
+      "レンギョウ"
+    ],
+    "source": "pmda_import"
+  },
+  "アスコルビン酸": {
+    "canonical_name": "アスコルビン酸",
+    "synonyms": [
+      "アスコルビン酸"
+    ],
+    "source": "pmda_import"
+  },
+  "ピリドキシン塩酸塩": {
+    "canonical_name": "ピリドキシン塩酸塩",
+    "synonyms": [
+      "ピリドキシン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "L−システイン": {
+    "canonical_name": "L−システイン",
+    "synonyms": [
+      "L−システイン"
+    ],
+    "source": "pmda_import"
+  },
+  "リボフラビン酪酸エステル": {
+    "canonical_name": "リボフラビン酪酸エステル",
+    "synonyms": [
+      "リボフラビン酪酸エステル"
+    ],
+    "source": "pmda_import"
+  },
+  "パントテン酸カルシウム": {
+    "canonical_name": "パントテン酸カルシウム",
+    "synonyms": [
+      "パントテン酸カルシウム"
+    ],
+    "source": "pmda_import"
+  },
+  "リボフラビンリン酸エステルナトリウム": {
+    "canonical_name": "リボフラビンリン酸エステルナトリウム",
+    "synonyms": [
+      "リボフラビンリン酸エステルナトリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "センナ末": {
+    "canonical_name": "センナ末",
+    "synonyms": [
+      "センナ末"
+    ],
+    "source": "pmda_import"
+  },
+  "グリセリン": {
+    "canonical_name": "グリセリン",
+    "synonyms": [
+      "グリセリン"
+    ],
+    "source": "pmda_import"
+  },
+  "セトラキサート塩酸塩": {
+    "canonical_name": "セトラキサート塩酸塩",
+    "synonyms": [
+      "セトラキサート塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ロートエキス": {
+    "canonical_name": "ロートエキス",
+    "synonyms": [
+      "ロートエキス"
+    ],
+    "source": "pmda_import"
+  },
+  "水酸化マグネシウム": {
+    "canonical_name": "水酸化マグネシウム",
+    "synonyms": [
+      "水酸化マグネシウム"
+    ],
+    "source": "pmda_import"
+  },
+  "沈降炭酸カルシウム": {
+    "canonical_name": "沈降炭酸カルシウム",
+    "synonyms": [
+      "沈降炭酸カルシウム"
+    ],
+    "source": "pmda_import"
+  },
+  "アセンヤク": {
+    "canonical_name": "アセンヤク",
+    "synonyms": [
+      "アセンヤク"
+    ],
+    "source": "pmda_import"
+  },
+  "アルコール": {
+    "canonical_name": "アルコール",
+    "synonyms": [
+      "アルコール"
+    ],
+    "source": "pmda_import"
+  },
+  "リュウタン末": {
+    "canonical_name": "リュウタン末",
+    "synonyms": [
+      "リュウタン末"
+    ],
+    "source": "pmda_import"
+  },
+  "ゲンチアナ末": {
+    "canonical_name": "ゲンチアナ末",
+    "synonyms": [
+      "ゲンチアナ末"
+    ],
+    "source": "pmda_import"
+  },
+  "コウブシ末": {
+    "canonical_name": "コウブシ末",
+    "synonyms": [
+      "コウブシ末"
+    ],
+    "source": "pmda_import"
+  },
+  "アロエ": {
+    "canonical_name": "アロエ",
+    "synonyms": [
+      "アロエ"
+    ],
+    "source": "pmda_import"
+  },
+  "ゲンノショウコエキス": {
+    "canonical_name": "ゲンノショウコエキス",
+    "synonyms": [
+      "ゲンノショウコエキス"
+    ],
+    "source": "pmda_import"
+  },
+  "薬用炭": {
+    "canonical_name": "薬用炭",
+    "synonyms": [
+      "薬用炭"
+    ],
+    "source": "pmda_import"
+  },
+  "オウバク": {
+    "canonical_name": "オウバク",
+    "synonyms": [
+      "オウバク"
+    ],
+    "source": "pmda_import"
+  },
+  "タクシャ": {
+    "canonical_name": "タクシャ",
+    "synonyms": [
+      "タクシャ"
+    ],
+    "source": "pmda_import"
+  },
+  "チョレイ": {
+    "canonical_name": "チョレイ",
+    "synonyms": [
+      "チョレイ"
+    ],
+    "source": "pmda_import"
+  },
+  "オキセサゼイン": {
+    "canonical_name": "オキセサゼイン",
+    "synonyms": [
+      "オキセサゼイン"
+    ],
+    "source": "pmda_import"
+  },
+  "ウイキョウ": {
+    "canonical_name": "ウイキョウ",
+    "synonyms": [
+      "ウイキョウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ゲンチアナ": {
+    "canonical_name": "ゲンチアナ",
+    "synonyms": [
+      "ゲンチアナ"
+    ],
+    "source": "pmda_import"
+  },
+  "チョウジ": {
+    "canonical_name": "チョウジ",
+    "synonyms": [
+      "チョウジ"
+    ],
+    "source": "pmda_import"
+  },
+  "チンピ": {
+    "canonical_name": "チンピ",
+    "synonyms": [
+      "チンピ"
+    ],
+    "source": "pmda_import"
+  },
+  "ニガキ末": {
+    "canonical_name": "ニガキ末",
+    "synonyms": [
+      "ニガキ末"
+    ],
+    "source": "pmda_import"
+  },
+  "ニクズク": {
+    "canonical_name": "ニクズク",
+    "synonyms": [
+      "ニクズク"
+    ],
+    "source": "pmda_import"
+  },
+  "炭酸マグネシウム": {
+    "canonical_name": "炭酸マグネシウム",
+    "synonyms": [
+      "炭酸マグネシウム"
+    ],
+    "source": "pmda_import"
+  },
+  "ビオヂアスターゼ1000": {
+    "canonical_name": "ビオヂアスターゼ1000",
+    "synonyms": [
+      "ビオヂアスターゼ1000"
+    ],
+    "source": "pmda_import"
+  },
+  "プロザイム6": {
+    "canonical_name": "プロザイム6",
+    "synonyms": [
+      "プロザイム6"
+    ],
+    "source": "pmda_import"
+  },
+  "エンゴサク": {
+    "canonical_name": "エンゴサク",
+    "synonyms": [
+      "エンゴサク"
+    ],
+    "source": "pmda_import"
+  },
+  "シュクシャ": {
+    "canonical_name": "シュクシャ",
+    "synonyms": [
+      "シュクシャ"
+    ],
+    "source": "pmda_import"
+  },
+  "ボレイ": {
+    "canonical_name": "ボレイ",
+    "synonyms": [
+      "ボレイ"
+    ],
+    "source": "pmda_import"
+  },
+  "リョウキョウ": {
+    "canonical_name": "リョウキョウ",
+    "synonyms": [
+      "リョウキョウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ビオヂアスターゼ2000": {
+    "canonical_name": "ビオヂアスターゼ2000",
+    "synonyms": [
+      "ビオヂアスターゼ2000"
+    ],
+    "source": "pmda_import"
+  },
+  "メタケイ酸アルミン酸マグネシウム": {
+    "canonical_name": "メタケイ酸アルミン酸マグネシウム",
+    "synonyms": [
+      "メタケイ酸アルミン酸マグネシウム"
+    ],
+    "source": "pmda_import"
+  },
+  "ケイ酸アルミン酸マグネシウム": {
+    "canonical_name": "ケイ酸アルミン酸マグネシウム",
+    "synonyms": [
+      "ケイ酸アルミン酸マグネシウム"
+    ],
+    "source": "pmda_import"
+  },
+  "ジアスメン": {
+    "canonical_name": "ジアスメン",
+    "synonyms": [
+      "ジアスメン"
+    ],
+    "source": "pmda_import"
+  },
+  "ウイキョウ末": {
+    "canonical_name": "ウイキョウ末",
+    "synonyms": [
+      "ウイキョウ末"
+    ],
+    "source": "pmda_import"
+  },
+  "メチルメチオニンスルホニウムクロリド": {
+    "canonical_name": "メチルメチオニンスルホニウムクロリド",
+    "synonyms": [
+      "メチルメチオニンスルホニウムクロリド"
+    ],
+    "source": "pmda_import"
+  },
+  "水酸化アルミニウム": {
+    "canonical_name": "水酸化アルミニウム",
+    "synonyms": [
+      "水酸化アルミニウム"
+    ],
+    "source": "pmda_import"
+  },
+  "ベンフォチアミン": {
+    "canonical_name": "ベンフォチアミン",
+    "synonyms": [
+      "ベンフォチアミン"
+    ],
+    "source": "pmda_import"
+  },
+  "乾燥水酸化アルミニウムゲル": {
+    "canonical_name": "乾燥水酸化アルミニウムゲル",
+    "synonyms": [
+      "乾燥水酸化アルミニウムゲル"
+    ],
+    "source": "pmda_import"
+  },
+  "プロザイム": {
+    "canonical_name": "プロザイム",
+    "synonyms": [
+      "プロザイム"
+    ],
+    "source": "pmda_import"
+  },
+  "l−メントール": {
+    "canonical_name": "l−メントール",
+    "synonyms": [
+      "l−メントール"
+    ],
+    "source": "pmda_import"
+  },
+  "アルジオキサ": {
+    "canonical_name": "アルジオキサ",
+    "synonyms": [
+      "アルジオキサ"
+    ],
+    "source": "pmda_import"
+  },
+  "キジツ": {
+    "canonical_name": "キジツ",
+    "synonyms": [
+      "キジツ"
+    ],
+    "source": "pmda_import"
+  },
+  "コウブシ": {
+    "canonical_name": "コウブシ",
+    "synonyms": [
+      "コウブシ"
+    ],
+    "source": "pmda_import"
+  },
+  "コウボク": {
+    "canonical_name": "コウボク",
+    "synonyms": [
+      "コウボク"
+    ],
+    "source": "pmda_import"
+  },
+  "ウバイ": {
+    "canonical_name": "ウバイ",
+    "synonyms": [
+      "ウバイ"
+    ],
+    "source": "pmda_import"
+  },
+  "ウヤク": {
+    "canonical_name": "ウヤク",
+    "synonyms": [
+      "ウヤク"
+    ],
+    "source": "pmda_import"
+  },
+  "カンキョウ": {
+    "canonical_name": "カンキョウ",
+    "synonyms": [
+      "カンキョウ"
+    ],
+    "source": "pmda_import"
+  },
+  "サンザシ": {
+    "canonical_name": "サンザシ",
+    "synonyms": [
+      "サンザシ"
+    ],
+    "source": "pmda_import"
+  },
+  "シソシ": {
+    "canonical_name": "シソシ",
+    "synonyms": [
+      "シソシ"
+    ],
+    "source": "pmda_import"
+  },
+  "ニンジン": {
+    "canonical_name": "ニンジン",
+    "synonyms": [
+      "ニンジン"
+    ],
+    "source": "pmda_import"
+  },
+  "モッコウ": {
+    "canonical_name": "モッコウ",
+    "synonyms": [
+      "モッコウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ヤクチ": {
+    "canonical_name": "ヤクチ",
+    "synonyms": [
+      "ヤクチ"
+    ],
+    "source": "pmda_import"
+  },
+  "アズレンスルホン酸ナトリウム": {
+    "canonical_name": "アズレンスルホン酸ナトリウム",
+    "synonyms": [
+      "アズレンスルホン酸ナトリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "スクラルファート水和物": {
+    "canonical_name": "スクラルファート水和物",
+    "synonyms": [
+      "スクラルファート水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "L−グルタミン": {
+    "canonical_name": "L−グルタミン",
+    "synonyms": [
+      "L−グルタミン"
+    ],
+    "source": "pmda_import"
+  },
+  "リパーゼ": {
+    "canonical_name": "リパーゼ",
+    "synonyms": [
+      "リパーゼ"
+    ],
+    "source": "pmda_import"
+  },
+  "デヒドロコール酸": {
+    "canonical_name": "デヒドロコール酸",
+    "synonyms": [
+      "デヒドロコール酸"
+    ],
+    "source": "pmda_import"
+  },
+  "ニューラーゼ": {
+    "canonical_name": "ニューラーゼ",
+    "synonyms": [
+      "ニューラーゼ"
+    ],
+    "source": "pmda_import"
+  },
+  "ピレンゼピン塩酸塩水和物": {
+    "canonical_name": "ピレンゼピン塩酸塩水和物",
+    "synonyms": [
+      "ピレンゼピン塩酸塩水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "トリメブチンマレイン酸塩": {
+    "canonical_name": "トリメブチンマレイン酸塩",
+    "synonyms": [
+      "トリメブチンマレイン酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "アセンヤク末": {
+    "canonical_name": "アセンヤク末",
+    "synonyms": [
+      "アセンヤク末"
+    ],
+    "source": "pmda_import"
+  },
+  "タンニン酸アルブミン": {
+    "canonical_name": "タンニン酸アルブミン",
+    "synonyms": [
+      "タンニン酸アルブミン"
+    ],
+    "source": "pmda_import"
+  },
+  "ビフィズス菌": {
+    "canonical_name": "ビフィズス菌",
+    "synonyms": [
+      "ビフィズス菌"
+    ],
+    "source": "pmda_import"
+  },
+  "ビサコジル": {
+    "canonical_name": "ビサコジル",
+    "synonyms": [
+      "ビサコジル"
+    ],
+    "source": "pmda_import"
+  },
+  "ハンゲ": {
+    "canonical_name": "ハンゲ",
+    "synonyms": [
+      "ハンゲ"
+    ],
+    "source": "pmda_import"
+  },
+  "チクセツニンジン": {
+    "canonical_name": "チクセツニンジン",
+    "synonyms": [
+      "チクセツニンジン"
+    ],
+    "source": "pmda_import"
+  },
+  "ソヨウ": {
+    "canonical_name": "ソヨウ",
+    "synonyms": [
+      "ソヨウ"
+    ],
+    "source": "pmda_import"
+  },
+  "コンドロイチン硫酸エステルナトリウム": {
+    "canonical_name": "コンドロイチン硫酸エステルナトリウム",
+    "synonyms": [
+      "コンドロイチン硫酸エステルナトリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "タウリン": {
+    "canonical_name": "タウリン",
+    "synonyms": [
+      "タウリン"
+    ],
+    "source": "pmda_import"
+  },
+  "パンテノール": {
+    "canonical_name": "パンテノール",
+    "synonyms": [
+      "パンテノール"
+    ],
+    "source": "pmda_import"
+  },
+  "ゴオウ": {
+    "canonical_name": "ゴオウ",
+    "synonyms": [
+      "ゴオウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ビスベンチアミン": {
+    "canonical_name": "ビスベンチアミン",
+    "synonyms": [
+      "ビスベンチアミン"
+    ],
+    "source": "pmda_import"
+  },
+  "ジクロロ酢酸ジイソプロピルアミン": {
+    "canonical_name": "ジクロロ酢酸ジイソプロピルアミン",
+    "synonyms": [
+      "ジクロロ酢酸ジイソプロピルアミン"
+    ],
+    "source": "pmda_import"
+  },
+  "ガジュツ": {
+    "canonical_name": "ガジュツ",
+    "synonyms": [
+      "ガジュツ"
+    ],
+    "source": "pmda_import"
+  },
+  "コウジン": {
+    "canonical_name": "コウジン",
+    "synonyms": [
+      "コウジン"
+    ],
+    "source": "pmda_import"
+  },
+  "センブリ": {
+    "canonical_name": "センブリ",
+    "synonyms": [
+      "センブリ"
+    ],
+    "source": "pmda_import"
+  },
+  "ゴオウ末": {
+    "canonical_name": "ゴオウ末",
+    "synonyms": [
+      "ゴオウ末"
+    ],
+    "source": "pmda_import"
+  },
+  "アリルイソプロピルアセチル尿素": {
+    "canonical_name": "アリルイソプロピルアセチル尿素",
+    "synonyms": [
+      "アリルイソプロピルアセチル尿素"
+    ],
+    "source": "pmda_import"
+  },
+  "無水カフェイン": {
+    "canonical_name": "無水カフェイン",
+    "synonyms": [
+      "無水カフェイン"
+    ],
+    "source": "pmda_import"
+  },
+  "ブロモバレリル尿素": {
+    "canonical_name": "ブロモバレリル尿素",
+    "synonyms": [
+      "ブロモバレリル尿素"
+    ],
+    "source": "pmda_import"
+  },
+  "チアミンジスルフィド": {
+    "canonical_name": "チアミンジスルフィド",
+    "synonyms": [
+      "チアミンジスルフィド"
+    ],
+    "source": "pmda_import"
+  },
+  "ブチルスコポラミン臭化物": {
+    "canonical_name": "ブチルスコポラミン臭化物",
+    "synonyms": [
+      "ブチルスコポラミン臭化物"
+    ],
+    "source": "pmda_import"
+  },
+  "トラネキサム酸": {
+    "canonical_name": "トラネキサム酸",
+    "synonyms": [
+      "トラネキサム酸"
+    ],
+    "source": "pmda_import"
+  },
+  "アスピリンアルミニウム": {
+    "canonical_name": "アスピリンアルミニウム",
+    "synonyms": [
+      "アスピリンアルミニウム"
+    ],
+    "source": "pmda_import"
+  },
+  "イソプロピルアンチピリン": {
+    "canonical_name": "イソプロピルアンチピリン",
+    "synonyms": [
+      "イソプロピルアンチピリン"
+    ],
+    "source": "pmda_import"
+  },
+  "セトチアミン塩酸塩水和物": {
+    "canonical_name": "セトチアミン塩酸塩水和物",
+    "synonyms": [
+      "セトチアミン塩酸塩水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "サリチルアミド": {
+    "canonical_name": "サリチルアミド",
+    "synonyms": [
+      "サリチルアミド"
+    ],
+    "source": "pmda_import"
+  },
+  "カノコソウ末": {
+    "canonical_name": "カノコソウ末",
+    "synonyms": [
+      "カノコソウ末"
+    ],
+    "source": "pmda_import"
+  },
+  "グリシン": {
+    "canonical_name": "グリシン",
+    "synonyms": [
+      "グリシン"
+    ],
+    "source": "pmda_import"
+  },
+  "ジフェンヒドラミン塩酸塩": {
+    "canonical_name": "ジフェンヒドラミン塩酸塩",
+    "synonyms": [
+      "ジフェンヒドラミン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "d−クロルフェニラミンマレイン酸塩": {
+    "canonical_name": "d−クロルフェニラミンマレイン酸塩",
+    "synonyms": [
+      "d−クロルフェニラミンマレイン酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ジプロフィリン": {
+    "canonical_name": "ジプロフィリン",
+    "synonyms": [
+      "ジプロフィリン"
+    ],
+    "source": "pmda_import"
+  },
+  "ジフェンヒドラミンサリチル酸塩": {
+    "canonical_name": "ジフェンヒドラミンサリチル酸塩",
+    "synonyms": [
+      "ジフェンヒドラミンサリチル酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "サンキライ末": {
+    "canonical_name": "サンキライ末",
+    "synonyms": [
+      "サンキライ末"
+    ],
+    "source": "pmda_import"
+  },
+  "センキュウ末": {
+    "canonical_name": "センキュウ末",
+    "synonyms": [
+      "センキュウ末"
+    ],
+    "source": "pmda_import"
+  },
+  "センナ": {
+    "canonical_name": "センナ",
+    "synonyms": [
+      "センナ"
+    ],
+    "source": "pmda_import"
+  },
+  "コウカ": {
+    "canonical_name": "コウカ",
+    "synonyms": [
+      "コウカ"
+    ],
+    "source": "pmda_import"
+  },
+  "リン酸水素カルシウム水和物": {
+    "canonical_name": "リン酸水素カルシウム水和物",
+    "synonyms": [
+      "リン酸水素カルシウム水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "ガンマ−オリザノール": {
+    "canonical_name": "ガンマ−オリザノール",
+    "synonyms": [
+      "ガンマ−オリザノール"
+    ],
+    "source": "pmda_import"
+  },
+  "トコフェロール酢酸エステル": {
+    "canonical_name": "トコフェロール酢酸エステル",
+    "synonyms": [
+      "トコフェロール酢酸エステル"
+    ],
+    "source": "pmda_import"
+  },
+  "ビタミンA油": {
+    "canonical_name": "ビタミンA油",
+    "synonyms": [
+      "ビタミンA油"
+    ],
+    "source": "pmda_import"
+  },
+  "ビタミンC": {
+    "canonical_name": "ビタミンC",
+    "synonyms": [
+      "ビタミンC"
+    ],
+    "source": "pmda_import"
+  },
+  "コレカルシフェロール": {
+    "canonical_name": "コレカルシフェロール",
+    "synonyms": [
+      "コレカルシフェロール"
+    ],
+    "source": "pmda_import"
+  },
+  "シアノコバラミン": {
+    "canonical_name": "シアノコバラミン",
+    "synonyms": [
+      "シアノコバラミン"
+    ],
+    "source": "pmda_import"
+  },
+  "ビタミンA": {
+    "canonical_name": "ビタミンA",
+    "synonyms": [
+      "ビタミンA"
+    ],
+    "source": "pmda_import"
+  },
+  "溶性ピロリン酸第二鉄": {
+    "canonical_name": "溶性ピロリン酸第二鉄",
+    "synonyms": [
+      "溶性ピロリン酸第二鉄"
+    ],
+    "source": "pmda_import"
+  },
+  "葉酸": {
+    "canonical_name": "葉酸",
+    "synonyms": [
+      "葉酸"
+    ],
+    "source": "pmda_import"
+  },
+  "ヒドロキソコバラミン酢酸塩": {
+    "canonical_name": "ヒドロキソコバラミン酢酸塩",
+    "synonyms": [
+      "ヒドロキソコバラミン酢酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "フルスルチアミン": {
+    "canonical_name": "フルスルチアミン",
+    "synonyms": [
+      "フルスルチアミン"
+    ],
+    "source": "pmda_import"
+  },
+  "レチノールパルミチン酸エステル": {
+    "canonical_name": "レチノールパルミチン酸エステル",
+    "synonyms": [
+      "レチノールパルミチン酸エステル"
+    ],
+    "source": "pmda_import"
+  },
+  "フルスルチアミン塩酸塩": {
+    "canonical_name": "フルスルチアミン塩酸塩",
+    "synonyms": [
+      "フルスルチアミン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ビオチン": {
+    "canonical_name": "ビオチン",
+    "synonyms": [
+      "ビオチン"
+    ],
+    "source": "pmda_import"
+  },
+  "カノコソウ": {
+    "canonical_name": "カノコソウ",
+    "synonyms": [
+      "カノコソウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ジオウ": {
+    "canonical_name": "ジオウ",
+    "synonyms": [
+      "ジオウ"
+    ],
+    "source": "pmda_import"
+  },
+  "センナエキス": {
+    "canonical_name": "センナエキス",
+    "synonyms": [
+      "センナエキス"
+    ],
+    "source": "pmda_import"
+  },
+  "サフラン": {
+    "canonical_name": "サフラン",
+    "synonyms": [
+      "サフラン"
+    ],
+    "source": "pmda_import"
+  },
+  "トウキ末": {
+    "canonical_name": "トウキ末",
+    "synonyms": [
+      "トウキ末"
+    ],
+    "source": "pmda_import"
+  },
+  "ヨクイニン末": {
+    "canonical_name": "ヨクイニン末",
+    "synonyms": [
+      "ヨクイニン末"
+    ],
+    "source": "pmda_import"
+  },
+  "ロキソプロフェンナトリウム水和物": {
+    "canonical_name": "ロキソプロフェンナトリウム水和物",
+    "synonyms": [
+      "ロキソプロフェンナトリウム水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "ジフェニドール塩酸塩": {
+    "canonical_name": "ジフェニドール塩酸塩",
+    "synonyms": [
+      "ジフェニドール塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ケツメイシ": {
+    "canonical_name": "ケツメイシ",
+    "synonyms": [
+      "ケツメイシ"
+    ],
+    "source": "pmda_import"
+  },
+  "L−リシン塩酸塩": {
+    "canonical_name": "L−リシン塩酸塩",
+    "synonyms": [
+      "L−リシン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "アスパラギン酸カリウム": {
+    "canonical_name": "アスパラギン酸カリウム",
+    "synonyms": [
+      "アスパラギン酸カリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "マグネシウム": {
+    "canonical_name": "マグネシウム",
+    "synonyms": [
+      "マグネシウム"
+    ],
+    "source": "pmda_import"
+  },
+  "L−アルギニン塩酸塩": {
+    "canonical_name": "L−アルギニン塩酸塩",
+    "synonyms": [
+      "L−アルギニン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "L−イソロイシン": {
+    "canonical_name": "L−イソロイシン",
+    "synonyms": [
+      "L−イソロイシン"
+    ],
+    "source": "pmda_import"
+  },
+  "L−バリン": {
+    "canonical_name": "L−バリン",
+    "synonyms": [
+      "L−バリン"
+    ],
+    "source": "pmda_import"
+  },
+  "L−ロイシン": {
+    "canonical_name": "L−ロイシン",
+    "synonyms": [
+      "L−ロイシン"
+    ],
+    "source": "pmda_import"
+  },
+  "L−アスパラギン酸マグネシウム": {
+    "canonical_name": "L−アスパラギン酸マグネシウム",
+    "synonyms": [
+      "L−アスパラギン酸マグネシウム"
+    ],
+    "source": "pmda_import"
+  },
+  "カリウム": {
+    "canonical_name": "カリウム",
+    "synonyms": [
+      "カリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "グルコン酸カルシウム水和物": {
+    "canonical_name": "グルコン酸カルシウム水和物",
+    "synonyms": [
+      "グルコン酸カルシウム水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "L−アスパラギン酸カリウム": {
+    "canonical_name": "L−アスパラギン酸カリウム",
+    "synonyms": [
+      "L−アスパラギン酸カリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "乳酸カルシウム": {
+    "canonical_name": "乳酸カルシウム",
+    "synonyms": [
+      "乳酸カルシウム"
+    ],
+    "source": "pmda_import"
+  },
+  "クエン酸鉄アンモニウム": {
+    "canonical_name": "クエン酸鉄アンモニウム",
+    "synonyms": [
+      "クエン酸鉄アンモニウム"
+    ],
+    "source": "pmda_import"
+  },
+  "人参": {
+    "canonical_name": "人参",
+    "synonyms": [
+      "人参"
+    ],
+    "source": "pmda_import"
+  },
+  "地黄": {
+    "canonical_name": "地黄",
+    "synonyms": [
+      "地黄"
+    ],
+    "source": "pmda_import"
+  },
+  "桂皮": {
+    "canonical_name": "桂皮",
+    "synonyms": [
+      "桂皮"
+    ],
+    "source": "pmda_import"
+  },
+  "蒼朮": {
+    "canonical_name": "蒼朮",
+    "synonyms": [
+      "蒼朮"
+    ],
+    "source": "pmda_import"
+  },
+  "黄耆": {
+    "canonical_name": "黄耆",
+    "synonyms": [
+      "黄耆"
+    ],
+    "source": "pmda_import"
+  },
+  "エタノール": {
+    "canonical_name": "エタノール",
+    "synonyms": [
+      "エタノール"
+    ],
+    "source": "pmda_import"
+  },
+  "乳酸カルシウム水和物": {
+    "canonical_name": "乳酸カルシウム水和物",
+    "synonyms": [
+      "乳酸カルシウム水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "〔ニンジン": {
+    "canonical_name": "〔ニンジン",
+    "synonyms": [
+      "〔ニンジン"
+    ],
+    "source": "pmda_import"
+  },
+  "枸杞子": {
+    "canonical_name": "枸杞子",
+    "synonyms": [
+      "枸杞子"
+    ],
+    "source": "pmda_import"
+  },
+  "地骨皮": {
+    "canonical_name": "地骨皮",
+    "synonyms": [
+      "地骨皮"
+    ],
+    "source": "pmda_import"
+  },
+  "グルコン酸カルシウム": {
+    "canonical_name": "グルコン酸カルシウム",
+    "synonyms": [
+      "グルコン酸カルシウム"
+    ],
+    "source": "pmda_import"
+  },
+  "オウギ末": {
+    "canonical_name": "オウギ末",
+    "synonyms": [
+      "オウギ末"
+    ],
+    "source": "pmda_import"
+  },
+  "タクシャ末": {
+    "canonical_name": "タクシャ末",
+    "synonyms": [
+      "タクシャ末"
+    ],
+    "source": "pmda_import"
+  },
+  "DL−メチオニン": {
+    "canonical_name": "DL−メチオニン",
+    "synonyms": [
+      "DL−メチオニン"
+    ],
+    "source": "pmda_import"
+  },
+  "センコツ": {
+    "canonical_name": "センコツ",
+    "synonyms": [
+      "センコツ"
+    ],
+    "source": "pmda_import"
+  },
+  "ビンロウジ": {
+    "canonical_name": "ビンロウジ",
+    "synonyms": [
+      "ビンロウジ"
+    ],
+    "source": "pmda_import"
+  },
+  "ゴシュユ": {
+    "canonical_name": "ゴシュユ",
+    "synonyms": [
+      "ゴシュユ"
+    ],
+    "source": "pmda_import"
+  },
+  "トウヒ": {
+    "canonical_name": "トウヒ",
+    "synonyms": [
+      "トウヒ"
+    ],
+    "source": "pmda_import"
+  },
+  "アキョウ": {
+    "canonical_name": "アキョウ",
+    "synonyms": [
+      "アキョウ"
+    ],
+    "source": "pmda_import"
+  },
+  "トウジン": {
+    "canonical_name": "トウジン",
+    "synonyms": [
+      "トウジン"
+    ],
+    "source": "pmda_import"
+  },
+  "モクツウ": {
+    "canonical_name": "モクツウ",
+    "synonyms": [
+      "モクツウ"
+    ],
+    "source": "pmda_import"
+  },
+  "アマチャ": {
+    "canonical_name": "アマチャ",
+    "synonyms": [
+      "アマチャ"
+    ],
+    "source": "pmda_import"
+  },
+  "ビャクシ": {
+    "canonical_name": "ビャクシ",
+    "synonyms": [
+      "ビャクシ"
+    ],
+    "source": "pmda_import"
+  },
+  "ゼラチン": {
+    "canonical_name": "ゼラチン",
+    "synonyms": [
+      "ゼラチン"
+    ],
+    "source": "pmda_import"
+  },
+  "バクモンドウ": {
+    "canonical_name": "バクモンドウ",
+    "synonyms": [
+      "バクモンドウ"
+    ],
+    "source": "pmda_import"
+  },
+  "キクカ": {
+    "canonical_name": "キクカ",
+    "synonyms": [
+      "キクカ"
+    ],
+    "source": "pmda_import"
+  },
+  "キョウカツ": {
+    "canonical_name": "キョウカツ",
+    "synonyms": [
+      "キョウカツ"
+    ],
+    "source": "pmda_import"
+  },
+  "サイシン": {
+    "canonical_name": "サイシン",
+    "synonyms": [
+      "サイシン"
+    ],
+    "source": "pmda_import"
+  },
+  "ドクカツ": {
+    "canonical_name": "ドクカツ",
+    "synonyms": [
+      "ドクカツ"
+    ],
+    "source": "pmda_import"
+  },
+  "マンケイシ": {
+    "canonical_name": "マンケイシ",
+    "synonyms": [
+      "マンケイシ"
+    ],
+    "source": "pmda_import"
+  },
+  "カシ": {
+    "canonical_name": "カシ",
+    "synonyms": [
+      "カシ"
+    ],
+    "source": "pmda_import"
+  },
+  "硫酸ナトリウム": {
+    "canonical_name": "硫酸ナトリウム",
+    "synonyms": [
+      "硫酸ナトリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "チョウトウコウ": {
+    "canonical_name": "チョウトウコウ",
+    "synonyms": [
+      "チョウトウコウ"
+    ],
+    "source": "pmda_import"
+  },
+  "キッピ": {
+    "canonical_name": "キッピ",
+    "synonyms": [
+      "キッピ"
+    ],
+    "source": "pmda_import"
+  },
+  "ハマボウフウ": {
+    "canonical_name": "ハマボウフウ",
+    "synonyms": [
+      "ハマボウフウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ソボク": {
+    "canonical_name": "ソボク",
+    "synonyms": [
+      "ソボク"
+    ],
+    "source": "pmda_import"
+  },
+  "ケイシ": {
+    "canonical_name": "ケイシ",
+    "synonyms": [
+      "ケイシ"
+    ],
+    "source": "pmda_import"
+  },
+  "オンジ": {
+    "canonical_name": "オンジ",
+    "synonyms": [
+      "オンジ"
+    ],
+    "source": "pmda_import"
+  },
+  "ゴミシ": {
+    "canonical_name": "ゴミシ",
+    "synonyms": [
+      "ゴミシ"
+    ],
+    "source": "pmda_import"
+  },
+  "コウベイ": {
+    "canonical_name": "コウベイ",
+    "synonyms": [
+      "コウベイ"
+    ],
+    "source": "pmda_import"
+  },
+  "タンジン": {
+    "canonical_name": "タンジン",
+    "synonyms": [
+      "タンジン"
+    ],
+    "source": "pmda_import"
+  },
+  "ゴシツ": {
+    "canonical_name": "ゴシツ",
+    "synonyms": [
+      "ゴシツ"
+    ],
+    "source": "pmda_import"
+  },
+  "コハク": {
+    "canonical_name": "コハク",
+    "synonyms": [
+      "コハク"
+    ],
+    "source": "pmda_import"
+  },
+  "テンマ": {
+    "canonical_name": "テンマ",
+    "synonyms": [
+      "テンマ"
+    ],
+    "source": "pmda_import"
+  },
+  "丹参": {
+    "canonical_name": "丹参",
+    "synonyms": [
+      "丹参"
+    ],
+    "source": "pmda_import"
+  },
+  "ゼンコ": {
+    "canonical_name": "ゼンコ",
+    "synonyms": [
+      "ゼンコ"
+    ],
+    "source": "pmda_import"
+  },
+  "ゲンジン": {
+    "canonical_name": "ゲンジン",
+    "synonyms": [
+      "ゲンジン"
+    ],
+    "source": "pmda_import"
+  },
+  "バイモ": {
+    "canonical_name": "バイモ",
+    "synonyms": [
+      "バイモ"
+    ],
+    "source": "pmda_import"
+  },
+  "ウコン": {
+    "canonical_name": "ウコン",
+    "synonyms": [
+      "ウコン"
+    ],
+    "source": "pmda_import"
+  },
+  "カッコウ": {
+    "canonical_name": "カッコウ",
+    "synonyms": [
+      "カッコウ"
+    ],
+    "source": "pmda_import"
+  },
+  "カンテン末": {
+    "canonical_name": "カンテン末",
+    "synonyms": [
+      "カンテン末"
+    ],
+    "source": "pmda_import"
+  },
+  "トコフェロール": {
+    "canonical_name": "トコフェロール",
+    "synonyms": [
+      "トコフェロール"
+    ],
+    "source": "pmda_import"
+  },
+  "乾燥酵母": {
+    "canonical_name": "乾燥酵母",
+    "synonyms": [
+      "乾燥酵母"
+    ],
+    "source": "pmda_import"
+  },
+  "ハチミツ": {
+    "canonical_name": "ハチミツ",
+    "synonyms": [
+      "ハチミツ"
+    ],
+    "source": "pmda_import"
+  },
+  "ビタミンE": {
+    "canonical_name": "ビタミンE",
+    "synonyms": [
+      "ビタミンE"
+    ],
+    "source": "pmda_import"
+  },
+  "塩化カルシウム水和物": {
+    "canonical_name": "塩化カルシウム水和物",
+    "synonyms": [
+      "塩化カルシウム水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "グリチルリチン酸": {
+    "canonical_name": "グリチルリチン酸",
+    "synonyms": [
+      "グリチルリチン酸"
+    ],
+    "source": "pmda_import"
+  },
+  "チクセツニンジン末": {
+    "canonical_name": "チクセツニンジン末",
+    "synonyms": [
+      "チクセツニンジン末"
+    ],
+    "source": "pmda_import"
+  },
+  "サリチル酸メチル": {
+    "canonical_name": "サリチル酸メチル",
+    "synonyms": [
+      "サリチル酸メチル"
+    ],
+    "source": "pmda_import"
+  },
+  "ユーカリ油": {
+    "canonical_name": "ユーカリ油",
+    "synonyms": [
+      "ユーカリ油"
+    ],
+    "source": "pmda_import"
+  },
+  "エストラジオール": {
+    "canonical_name": "エストラジオール",
+    "synonyms": [
+      "エストラジオール"
+    ],
+    "source": "pmda_import"
+  },
+  "エチニルエストラジオール": {
+    "canonical_name": "エチニルエストラジオール",
+    "synonyms": [
+      "エチニルエストラジオール"
+    ],
+    "source": "pmda_import"
+  },
+  "ケトプロフェン": {
+    "canonical_name": "ケトプロフェン",
+    "synonyms": [
+      "ケトプロフェン"
+    ],
+    "source": "pmda_import"
+  },
+  "クロタミトン": {
+    "canonical_name": "クロタミトン",
+    "synonyms": [
+      "クロタミトン"
+    ],
+    "source": "pmda_import"
+  },
+  "グリチルレチン酸": {
+    "canonical_name": "グリチルレチン酸",
+    "synonyms": [
+      "グリチルレチン酸"
+    ],
+    "source": "pmda_import"
+  },
+  "ブテナフィン塩酸塩": {
+    "canonical_name": "ブテナフィン塩酸塩",
+    "synonyms": [
+      "ブテナフィン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "リドカイン": {
+    "canonical_name": "リドカイン",
+    "synonyms": [
+      "リドカイン"
+    ],
+    "source": "pmda_import"
+  },
+  "dl−カンフル": {
+    "canonical_name": "dl−カンフル",
+    "synonyms": [
+      "dl−カンフル"
+    ],
+    "source": "pmda_import"
+  },
+  "テルビナフィン塩酸塩": {
+    "canonical_name": "テルビナフィン塩酸塩",
+    "synonyms": [
+      "テルビナフィン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ベンザルコニウム塩化物": {
+    "canonical_name": "ベンザルコニウム塩化物",
+    "synonyms": [
+      "ベンザルコニウム塩化物"
+    ],
+    "source": "pmda_import"
+  },
+  "尿素": {
+    "canonical_name": "尿素",
+    "synonyms": [
+      "尿素"
+    ],
+    "source": "pmda_import"
+  },
+  "ジブカイン塩酸塩": {
+    "canonical_name": "ジブカイン塩酸塩",
+    "synonyms": [
+      "ジブカイン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ラノコナゾール": {
+    "canonical_name": "ラノコナゾール",
+    "synonyms": [
+      "ラノコナゾール"
+    ],
+    "source": "pmda_import"
+  },
+  "トリアムシノロンアセトニド": {
+    "canonical_name": "トリアムシノロンアセトニド",
+    "synonyms": [
+      "トリアムシノロンアセトニド"
+    ],
+    "source": "pmda_import"
+  },
+  "セチルピリジニウム塩化物水和物": {
+    "canonical_name": "セチルピリジニウム塩化物水和物",
+    "synonyms": [
+      "セチルピリジニウム塩化物水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "プレドニゾロン": {
+    "canonical_name": "プレドニゾロン",
+    "synonyms": [
+      "プレドニゾロン"
+    ],
+    "source": "pmda_import"
+  },
+  "クロルヘキシジングルコン酸塩": {
+    "canonical_name": "クロルヘキシジングルコン酸塩",
+    "synonyms": [
+      "クロルヘキシジングルコン酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "クロルヘキシジン塩酸塩": {
+    "canonical_name": "クロルヘキシジン塩酸塩",
+    "synonyms": [
+      "クロルヘキシジン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "トウガラシチンキ": {
+    "canonical_name": "トウガラシチンキ",
+    "synonyms": [
+      "トウガラシチンキ"
+    ],
+    "source": "pmda_import"
+  },
+  "ヘパリン類似物質": {
+    "canonical_name": "ヘパリン類似物質",
+    "synonyms": [
+      "ヘパリン類似物質"
+    ],
+    "source": "pmda_import"
+  },
+  "サリチル酸": {
+    "canonical_name": "サリチル酸",
+    "synonyms": [
+      "サリチル酸"
+    ],
+    "source": "pmda_import"
+  },
+  "フェノール": {
+    "canonical_name": "フェノール",
+    "synonyms": [
+      "フェノール"
+    ],
+    "source": "pmda_import"
+  },
+  "酸化亜鉛": {
+    "canonical_name": "酸化亜鉛",
+    "synonyms": [
+      "酸化亜鉛"
+    ],
+    "source": "pmda_import"
+  },
+  "スルファジアジン": {
+    "canonical_name": "スルファジアジン",
+    "synonyms": [
+      "スルファジアジン"
+    ],
+    "source": "pmda_import"
+  },
+  "イオウ": {
+    "canonical_name": "イオウ",
+    "synonyms": [
+      "イオウ"
+    ],
+    "source": "pmda_import"
+  },
+  "レゾルシン": {
+    "canonical_name": "レゾルシン",
+    "synonyms": [
+      "レゾルシン"
+    ],
+    "source": "pmda_import"
+  },
+  "イブプロフェンピコノール": {
+    "canonical_name": "イブプロフェンピコノール",
+    "synonyms": [
+      "イブプロフェンピコノール"
+    ],
+    "source": "pmda_import"
+  },
+  "ホモスルファミン": {
+    "canonical_name": "ホモスルファミン",
+    "synonyms": [
+      "ホモスルファミン"
+    ],
+    "source": "pmda_import"
+  },
+  "ベンゼトニウム塩化物": {
+    "canonical_name": "ベンゼトニウム塩化物",
+    "synonyms": [
+      "ベンゼトニウム塩化物"
+    ],
+    "source": "pmda_import"
+  },
+  "インドメタシン": {
+    "canonical_name": "インドメタシン",
+    "synonyms": [
+      "インドメタシン"
+    ],
+    "source": "pmda_import"
+  },
+  "フェルビナク": {
+    "canonical_name": "フェルビナク",
+    "synonyms": [
+      "フェルビナク"
+    ],
+    "source": "pmda_import"
+  },
+  "ジクロフェナクナトリウム": {
+    "canonical_name": "ジクロフェナクナトリウム",
+    "synonyms": [
+      "ジクロフェナクナトリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "ゴマ油": {
+    "canonical_name": "ゴマ油",
+    "synonyms": [
+      "ゴマ油"
+    ],
+    "source": "pmda_import"
+  },
+  "ミツロウ": {
+    "canonical_name": "ミツロウ",
+    "synonyms": [
+      "ミツロウ"
+    ],
+    "source": "pmda_import"
+  },
+  "トウガラシエキス": {
+    "canonical_name": "トウガラシエキス",
+    "synonyms": [
+      "トウガラシエキス"
+    ],
+    "source": "pmda_import"
+  },
+  "ヘパリンナトリウム": {
+    "canonical_name": "ヘパリンナトリウム",
+    "synonyms": [
+      "ヘパリンナトリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "ピロキシカム": {
+    "canonical_name": "ピロキシカム",
+    "synonyms": [
+      "ピロキシカム"
+    ],
+    "source": "pmda_import"
+  },
+  "オキシコナゾール硝酸塩": {
+    "canonical_name": "オキシコナゾール硝酸塩",
+    "synonyms": [
+      "オキシコナゾール硝酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ミコナゾール硝酸塩": {
+    "canonical_name": "ミコナゾール硝酸塩",
+    "synonyms": [
+      "ミコナゾール硝酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "トルナフタート": {
+    "canonical_name": "トルナフタート",
+    "synonyms": [
+      "トルナフタート"
+    ],
+    "source": "pmda_import"
+  },
+  "クロトリマゾール": {
+    "canonical_name": "クロトリマゾール",
+    "synonyms": [
+      "クロトリマゾール"
+    ],
+    "source": "pmda_import"
+  },
+  "ビホナゾール": {
+    "canonical_name": "ビホナゾール",
+    "synonyms": [
+      "ビホナゾール"
+    ],
+    "source": "pmda_import"
+  },
+  "ヒノキチオール": {
+    "canonical_name": "ヒノキチオール",
+    "synonyms": [
+      "ヒノキチオール"
+    ],
+    "source": "pmda_import"
+  },
+  "安息香酸": {
+    "canonical_name": "安息香酸",
+    "synonyms": [
+      "安息香酸"
+    ],
+    "source": "pmda_import"
+  },
+  "チモール": {
+    "canonical_name": "チモール",
+    "synonyms": [
+      "チモール"
+    ],
+    "source": "pmda_import"
+  },
+  "シコン": {
+    "canonical_name": "シコン",
+    "synonyms": [
+      "シコン"
+    ],
+    "source": "pmda_import"
+  },
+  "プロカイン塩酸塩": {
+    "canonical_name": "プロカイン塩酸塩",
+    "synonyms": [
+      "プロカイン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "チョウジ油": {
+    "canonical_name": "チョウジ油",
+    "synonyms": [
+      "チョウジ油"
+    ],
+    "source": "pmda_import"
+  },
+  "クレゾール": {
+    "canonical_name": "クレゾール",
+    "synonyms": [
+      "クレゾール"
+    ],
+    "source": "pmda_import"
+  },
+  "白色ワセリン": {
+    "canonical_name": "白色ワセリン",
+    "synonyms": [
+      "白色ワセリン"
+    ],
+    "source": "pmda_import"
+  },
+  "サンシシ末": {
+    "canonical_name": "サンシシ末",
+    "synonyms": [
+      "サンシシ末"
+    ],
+    "source": "pmda_import"
+  },
+  "トウガラシ末": {
+    "canonical_name": "トウガラシ末",
+    "synonyms": [
+      "トウガラシ末"
+    ],
+    "source": "pmda_import"
+  },
+  "カンフル": {
+    "canonical_name": "カンフル",
+    "synonyms": [
+      "カンフル"
+    ],
+    "source": "pmda_import"
+  },
+  "グリチルリチン酸一アンモニウム": {
+    "canonical_name": "グリチルリチン酸一アンモニウム",
+    "synonyms": [
+      "グリチルリチン酸一アンモニウム"
+    ],
+    "source": "pmda_import"
+  },
+  "プロピレングリコール": {
+    "canonical_name": "プロピレングリコール",
+    "synonyms": [
+      "プロピレングリコール"
+    ],
+    "source": "pmda_import"
+  },
+  "オリブ油": {
+    "canonical_name": "オリブ油",
+    "synonyms": [
+      "オリブ油"
+    ],
+    "source": "pmda_import"
+  },
+  "ダイズ油": {
+    "canonical_name": "ダイズ油",
+    "synonyms": [
+      "ダイズ油"
+    ],
+    "source": "pmda_import"
+  },
+  "黄色ワセリン": {
+    "canonical_name": "黄色ワセリン",
+    "synonyms": [
+      "黄色ワセリン"
+    ],
+    "source": "pmda_import"
+  },
+  "ポビドンヨード": {
+    "canonical_name": "ポビドンヨード",
+    "synonyms": [
+      "ポビドンヨード"
+    ],
+    "source": "pmda_import"
+  },
+  "アズレンスルホン酸ナトリウム水和物": {
+    "canonical_name": "アズレンスルホン酸ナトリウム水和物",
+    "synonyms": [
+      "アズレンスルホン酸ナトリウム水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "ヨウ化カリウム": {
+    "canonical_name": "ヨウ化カリウム",
+    "synonyms": [
+      "ヨウ化カリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "ヨウ素": {
+    "canonical_name": "ヨウ素",
+    "synonyms": [
+      "ヨウ素"
+    ],
+    "source": "pmda_import"
+  },
+  "濃グリセリン": {
+    "canonical_name": "濃グリセリン",
+    "synonyms": [
+      "濃グリセリン"
+    ],
+    "source": "pmda_import"
+  },
+  "カルバゾクロム": {
+    "canonical_name": "カルバゾクロム",
+    "synonyms": [
+      "カルバゾクロム"
+    ],
+    "source": "pmda_import"
+  },
+  "プレドニゾロン酢酸エステル": {
+    "canonical_name": "プレドニゾロン酢酸エステル",
+    "synonyms": [
+      "プレドニゾロン酢酸エステル"
+    ],
+    "source": "pmda_import"
+  },
+  "ヒドロコルチゾン酢酸エステル": {
+    "canonical_name": "ヒドロコルチゾン酢酸エステル",
+    "synonyms": [
+      "ヒドロコルチゾン酢酸エステル"
+    ],
+    "source": "pmda_import"
+  },
+  "アルミニウム": {
+    "canonical_name": "アルミニウム",
+    "synonyms": [
+      "アルミニウム"
+    ],
+    "source": "pmda_import"
+  },
+  "dl−メチルエフェドリン塩酸塩": {
+    "canonical_name": "dl−メチルエフェドリン塩酸塩",
+    "synonyms": [
+      "dl−メチルエフェドリン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "塩酸テトラヒドロゾリン": {
+    "canonical_name": "塩酸テトラヒドロゾリン",
+    "synonyms": [
+      "塩酸テトラヒドロゾリン"
+    ],
+    "source": "pmda_import"
+  },
+  "フェニレフリン塩酸塩": {
+    "canonical_name": "フェニレフリン塩酸塩",
+    "synonyms": [
+      "フェニレフリン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "リドカイン塩酸塩": {
+    "canonical_name": "リドカイン塩酸塩",
+    "synonyms": [
+      "リドカイン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "エフェドリン塩酸塩": {
+    "canonical_name": "エフェドリン塩酸塩",
+    "synonyms": [
+      "エフェドリン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "インチンコウ": {
+    "canonical_name": "インチンコウ",
+    "synonyms": [
+      "インチンコウ"
+    ],
+    "source": "pmda_import"
+  },
+  "バシトラシン": {
+    "canonical_name": "バシトラシン",
+    "synonyms": [
+      "バシトラシン"
+    ],
+    "source": "pmda_import"
+  },
+  "フラジオマイシン硫酸塩": {
+    "canonical_name": "フラジオマイシン硫酸塩",
+    "synonyms": [
+      "フラジオマイシン硫酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "テトラサイクリン塩酸塩": {
+    "canonical_name": "テトラサイクリン塩酸塩",
+    "synonyms": [
+      "テトラサイクリン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "オキシテトラサイクリン塩酸塩": {
+    "canonical_name": "オキシテトラサイクリン塩酸塩",
+    "synonyms": [
+      "オキシテトラサイクリン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ヒドロコルチゾン": {
+    "canonical_name": "ヒドロコルチゾン",
+    "synonyms": [
+      "ヒドロコルチゾン"
+    ],
+    "source": "pmda_import"
+  },
+  "ベタメタゾン吉草酸エステル": {
+    "canonical_name": "ベタメタゾン吉草酸エステル",
+    "synonyms": [
+      "ベタメタゾン吉草酸エステル"
+    ],
+    "source": "pmda_import"
+  },
+  "クロラムフェニコール": {
+    "canonical_name": "クロラムフェニコール",
+    "synonyms": [
+      "クロラムフェニコール"
+    ],
+    "source": "pmda_import"
+  },
+  "プレドニゾロン吉草酸エステル酢酸エステル": {
+    "canonical_name": "プレドニゾロン吉草酸エステル酢酸エステル",
+    "synonyms": [
+      "プレドニゾロン吉草酸エステル酢酸エステル"
+    ],
+    "source": "pmda_import"
+  },
+  "タンニン酸": {
+    "canonical_name": "タンニン酸",
+    "synonyms": [
+      "タンニン酸"
+    ],
+    "source": "pmda_import"
+  },
+  "ヒドロコルチゾン酪酸エステル": {
+    "canonical_name": "ヒドロコルチゾン酪酸エステル",
+    "synonyms": [
+      "ヒドロコルチゾン酪酸エステル"
+    ],
+    "source": "pmda_import"
+  },
+  "デキサメタゾン": {
+    "canonical_name": "デキサメタゾン",
+    "synonyms": [
+      "デキサメタゾン"
+    ],
+    "source": "pmda_import"
+  },
+  "コルチゾン酢酸エステル": {
+    "canonical_name": "コルチゾン酢酸エステル",
+    "synonyms": [
+      "コルチゾン酢酸エステル"
+    ],
+    "source": "pmda_import"
+  },
+  "フルオシノロンアセトニド": {
+    "canonical_name": "フルオシノロンアセトニド",
+    "synonyms": [
+      "フルオシノロンアセトニド"
+    ],
+    "source": "pmda_import"
+  },
+  "トチュウ": {
+    "canonical_name": "トチュウ",
+    "synonyms": [
+      "トチュウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ブシ末": {
+    "canonical_name": "ブシ末",
+    "synonyms": [
+      "ブシ末"
+    ],
+    "source": "pmda_import"
+  },
+  "メキタジン": {
+    "canonical_name": "メキタジン",
+    "synonyms": [
+      "メキタジン"
+    ],
+    "source": "pmda_import"
+  },
+  "キキョウ末": {
+    "canonical_name": "キキョウ末",
+    "synonyms": [
+      "キキョウ末"
+    ],
+    "source": "pmda_import"
+  },
+  "硫酸銅": {
+    "canonical_name": "硫酸銅",
+    "synonyms": [
+      "硫酸銅"
+    ],
+    "source": "pmda_import"
+  },
+  "ポリミキシンB硫酸塩": {
+    "canonical_name": "ポリミキシンB硫酸塩",
+    "synonyms": [
+      "ポリミキシンB硫酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "液状フェノール": {
+    "canonical_name": "液状フェノール",
+    "synonyms": [
+      "液状フェノール"
+    ],
+    "source": "pmda_import"
+  },
+  "アンモニア": {
+    "canonical_name": "アンモニア",
+    "synonyms": [
+      "アンモニア"
+    ],
+    "source": "pmda_import"
+  },
+  "ウフェナマート": {
+    "canonical_name": "ウフェナマート",
+    "synonyms": [
+      "ウフェナマート"
+    ],
+    "source": "pmda_import"
+  },
+  "次硝酸ビスマス": {
+    "canonical_name": "次硝酸ビスマス",
+    "synonyms": [
+      "次硝酸ビスマス"
+    ],
+    "source": "pmda_import"
+  },
+  "硫酸アルミニウムカリウム": {
+    "canonical_name": "硫酸アルミニウムカリウム",
+    "synonyms": [
+      "硫酸アルミニウムカリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "カルプロニウム塩化物水和物": {
+    "canonical_name": "カルプロニウム塩化物水和物",
+    "synonyms": [
+      "カルプロニウム塩化物水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "カルプロニウム塩化物": {
+    "canonical_name": "カルプロニウム塩化物",
+    "synonyms": [
+      "カルプロニウム塩化物"
+    ],
+    "source": "pmda_import"
+  },
+  "ガイヨウ": {
+    "canonical_name": "ガイヨウ",
+    "synonyms": [
+      "ガイヨウ"
+    ],
+    "source": "pmda_import"
+  },
+  "コウイ": {
+    "canonical_name": "コウイ",
+    "synonyms": [
+      "コウイ"
+    ],
+    "source": "pmda_import"
+  },
+  "キンギンカ": {
+    "canonical_name": "キンギンカ",
+    "synonyms": [
+      "キンギンカ"
+    ],
+    "source": "pmda_import"
+  },
+  "ジュウヤク": {
+    "canonical_name": "ジュウヤク",
+    "synonyms": [
+      "ジュウヤク"
+    ],
+    "source": "pmda_import"
+  },
+  "カロコン": {
+    "canonical_name": "カロコン",
+    "synonyms": [
+      "カロコン"
+    ],
+    "source": "pmda_import"
+  },
+  "ゴボウシ": {
+    "canonical_name": "ゴボウシ",
+    "synonyms": [
+      "ゴボウシ"
+    ],
+    "source": "pmda_import"
+  },
+  "クジン": {
+    "canonical_name": "クジン",
+    "synonyms": [
+      "クジン"
+    ],
+    "source": "pmda_import"
+  },
+  "テンモンドウ": {
+    "canonical_name": "テンモンドウ",
+    "synonyms": [
+      "テンモンドウ"
+    ],
+    "source": "pmda_import"
+  },
+  "オウヒ": {
+    "canonical_name": "オウヒ",
+    "synonyms": [
+      "オウヒ"
+    ],
+    "source": "pmda_import"
+  },
+  "ボクソク": {
+    "canonical_name": "ボクソク",
+    "synonyms": [
+      "ボクソク"
+    ],
+    "source": "pmda_import"
+  },
+  "マシニン": {
+    "canonical_name": "マシニン",
+    "synonyms": [
+      "マシニン"
+    ],
+    "source": "pmda_import"
+  },
+  "ゴマ": {
+    "canonical_name": "ゴマ",
+    "synonyms": [
+      "ゴマ"
+    ],
+    "source": "pmda_import"
+  },
+  "センタイ": {
+    "canonical_name": "センタイ",
+    "synonyms": [
+      "センタイ"
+    ],
+    "source": "pmda_import"
+  },
+  "クジン末": {
+    "canonical_name": "クジン末",
+    "synonyms": [
+      "クジン末"
+    ],
+    "source": "pmda_import"
+  },
+  "カシュウ": {
+    "canonical_name": "カシュウ",
+    "synonyms": [
+      "カシュウ"
+    ],
+    "source": "pmda_import"
+  },
+  "シツリシ": {
+    "canonical_name": "シツリシ",
+    "synonyms": [
+      "シツリシ"
+    ],
+    "source": "pmda_import"
+  },
+  "サンシュユ": {
+    "canonical_name": "サンシュユ",
+    "synonyms": [
+      "サンシュユ"
+    ],
+    "source": "pmda_import"
+  },
+  "サンヤク": {
+    "canonical_name": "サンヤク",
+    "synonyms": [
+      "サンヤク"
+    ],
+    "source": "pmda_import"
+  },
+  "ニンドウ": {
+    "canonical_name": "ニンドウ",
+    "synonyms": [
+      "ニンドウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ブシ": {
+    "canonical_name": "ブシ",
+    "synonyms": [
+      "ブシ"
+    ],
+    "source": "pmda_import"
+  },
+  "ピリドキサールリン酸エステル水和物": {
+    "canonical_name": "ピリドキサールリン酸エステル水和物",
+    "synonyms": [
+      "ピリドキサールリン酸エステル水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "カラミン": {
+    "canonical_name": "カラミン",
+    "synonyms": [
+      "カラミン"
+    ],
+    "source": "pmda_import"
+  },
+  "ジメチルイソプロピルアズレン": {
+    "canonical_name": "ジメチルイソプロピルアズレン",
+    "synonyms": [
+      "ジメチルイソプロピルアズレン"
+    ],
+    "source": "pmda_import"
+  },
+  "バレイショデンプン": {
+    "canonical_name": "バレイショデンプン",
+    "synonyms": [
+      "バレイショデンプン"
+    ],
+    "source": "pmda_import"
+  },
+  "カルシフェロール": {
+    "canonical_name": "カルシフェロール",
+    "synonyms": [
+      "カルシフェロール"
+    ],
+    "source": "pmda_import"
+  },
+  "メトカルバモール": {
+    "canonical_name": "メトカルバモール",
+    "synonyms": [
+      "メトカルバモール"
+    ],
+    "source": "pmda_import"
+  },
+  "イレイセン": {
+    "canonical_name": "イレイセン",
+    "synonyms": [
+      "イレイセン"
+    ],
+    "source": "pmda_import"
+  },
+  "リュウタン": {
+    "canonical_name": "リュウタン",
+    "synonyms": [
+      "リュウタン"
+    ],
+    "source": "pmda_import"
+  },
+  "テンナンショウ": {
+    "canonical_name": "テンナンショウ",
+    "synonyms": [
+      "テンナンショウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ソウハクヒ": {
+    "canonical_name": "ソウハクヒ",
+    "synonyms": [
+      "ソウハクヒ"
+    ],
+    "source": "pmda_import"
+  },
+  "トウドクカツ": {
+    "canonical_name": "トウドクカツ",
+    "synonyms": [
+      "トウドクカツ"
+    ],
+    "source": "pmda_import"
+  },
+  "サンキライ": {
+    "canonical_name": "サンキライ",
+    "synonyms": [
+      "サンキライ"
+    ],
+    "source": "pmda_import"
+  },
+  "フラボキサート塩酸塩": {
+    "canonical_name": "フラボキサート塩酸塩",
+    "synonyms": [
+      "フラボキサート塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "牛黄": {
+    "canonical_name": "牛黄",
+    "synonyms": [
+      "牛黄"
+    ],
+    "source": "pmda_import"
+  },
+  "クロルフェニラミンマレイン酸塩": {
+    "canonical_name": "クロルフェニラミンマレイン酸塩",
+    "synonyms": [
+      "クロルフェニラミンマレイン酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ゲンノショウコ末": {
+    "canonical_name": "ゲンノショウコ末",
+    "synonyms": [
+      "ゲンノショウコ末"
+    ],
+    "source": "pmda_import"
+  },
+  "コウボク末": {
+    "canonical_name": "コウボク末",
+    "synonyms": [
+      "コウボク末"
+    ],
+    "source": "pmda_import"
+  },
+  "サイコ": {
+    "canonical_name": "サイコ",
+    "synonyms": [
+      "サイコ"
+    ],
+    "source": "pmda_import"
+  },
+  "シュクシャ末": {
+    "canonical_name": "シュクシャ末",
+    "synonyms": [
+      "シュクシャ末"
+    ],
+    "source": "pmda_import"
+  },
+  "ショウキョウ末": {
+    "canonical_name": "ショウキョウ末",
+    "synonyms": [
+      "ショウキョウ末"
+    ],
+    "source": "pmda_import"
+  },
+  "センブリ末": {
+    "canonical_name": "センブリ末",
+    "synonyms": [
+      "センブリ末"
+    ],
+    "source": "pmda_import"
+  },
+  "ソウジュツ末": {
+    "canonical_name": "ソウジュツ末",
+    "synonyms": [
+      "ソウジュツ末"
+    ],
+    "source": "pmda_import"
+  },
+  "ダイオウ末": {
+    "canonical_name": "ダイオウ末",
+    "synonyms": [
+      "ダイオウ末"
+    ],
+    "source": "pmda_import"
+  },
+  "チアミン塩化物塩酸塩": {
+    "canonical_name": "チアミン塩化物塩酸塩",
+    "synonyms": [
+      "チアミン塩化物塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "チョウジ末": {
+    "canonical_name": "チョウジ末",
+    "synonyms": [
+      "チョウジ末"
+    ],
+    "source": "pmda_import"
+  },
+  "テプレノン": {
+    "canonical_name": "テプレノン",
+    "synonyms": [
+      "テプレノン"
+    ],
+    "source": "pmda_import"
+  },
+  "ニコチン酸アミド": {
+    "canonical_name": "ニコチン酸アミド",
+    "synonyms": [
+      "ニコチン酸アミド"
+    ],
+    "source": "pmda_import"
+  },
+  "ニンジン末": {
+    "canonical_name": "ニンジン末",
+    "synonyms": [
+      "ニンジン末"
+    ],
+    "source": "pmda_import"
+  },
+  "ハッカ油": {
+    "canonical_name": "ハッカ油",
+    "synonyms": [
+      "ハッカ油"
+    ],
+    "source": "pmda_import"
+  },
+  "パパベリン塩酸塩": {
+    "canonical_name": "パパベリン塩酸塩",
+    "synonyms": [
+      "パパベリン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ヒマシ油": {
+    "canonical_name": "ヒマシ油",
+    "synonyms": [
+      "ヒマシ油"
+    ],
+    "source": "pmda_import"
+  },
+  "ビオヂアスターゼ": {
+    "canonical_name": "ビオヂアスターゼ",
+    "synonyms": [
+      "ビオヂアスターゼ"
+    ],
+    "source": "pmda_import"
+  },
+  "ビャクジュツ末": {
+    "canonical_name": "ビャクジュツ末",
+    "synonyms": [
+      "ビャクジュツ末"
+    ],
+    "source": "pmda_import"
+  },
+  "ボレイ末": {
+    "canonical_name": "ボレイ末",
+    "synonyms": [
+      "ボレイ末"
+    ],
+    "source": "pmda_import"
+  },
+  "リチウム": {
+    "canonical_name": "リチウム",
+    "synonyms": [
+      "リチウム"
+    ],
+    "source": "pmda_import"
+  },
+  "リボフラビン": {
+    "canonical_name": "リボフラビン",
+    "synonyms": [
+      "リボフラビン"
+    ],
+    "source": "pmda_import"
+  },
+  "合成ケイ酸アルミニウム": {
+    "canonical_name": "合成ケイ酸アルミニウム",
+    "synonyms": [
+      "合成ケイ酸アルミニウム"
+    ],
+    "source": "pmda_import"
+  },
+  "炭酸水素ナトリウム": {
+    "canonical_name": "炭酸水素ナトリウム",
+    "synonyms": [
+      "炭酸水素ナトリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "酸化マグネシウム": {
+    "canonical_name": "酸化マグネシウム",
+    "synonyms": [
+      "酸化マグネシウム"
+    ],
+    "source": "pmda_import"
+  },
+  "丁子": {
+    "canonical_name": "丁子",
+    "synonyms": [
+      "丁子"
+    ],
+    "source": "pmda_import"
+  },
+  "木香": {
+    "canonical_name": "木香",
+    "synonyms": [
+      "木香"
+    ],
+    "source": "pmda_import"
+  },
+  "ニコチン酸": {
+    "canonical_name": "ニコチン酸",
+    "synonyms": [
+      "ニコチン酸"
+    ],
+    "source": "pmda_import"
+  },
+  "クコシ": {
+    "canonical_name": "クコシ",
+    "synonyms": [
+      "クコシ"
+    ],
+    "source": "pmda_import"
+  },
+  "ビタミンB1": {
+    "canonical_name": "ビタミンB1",
+    "synonyms": [
+      "ビタミンB1"
+    ],
+    "source": "pmda_import"
+  },
+  "キササゲ": {
+    "canonical_name": "キササゲ",
+    "synonyms": [
+      "キササゲ"
+    ],
+    "source": "pmda_import"
+  },
+  "シンキク": {
+    "canonical_name": "シンキク",
+    "synonyms": [
+      "シンキク"
+    ],
+    "source": "pmda_import"
+  },
+  "ウワウルシ": {
+    "canonical_name": "ウワウルシ",
+    "synonyms": [
+      "ウワウルシ"
+    ],
+    "source": "pmda_import"
+  },
+  "カゴソウ": {
+    "canonical_name": "カゴソウ",
+    "synonyms": [
+      "カゴソウ"
+    ],
+    "source": "pmda_import"
+  },
+  "シャゼンシ": {
+    "canonical_name": "シャゼンシ",
+    "synonyms": [
+      "シャゼンシ"
+    ],
+    "source": "pmda_import"
+  },
+  "ボウコン": {
+    "canonical_name": "ボウコン",
+    "synonyms": [
+      "ボウコン"
+    ],
+    "source": "pmda_import"
+  },
+  "リュウコツ": {
+    "canonical_name": "リュウコツ",
+    "synonyms": [
+      "リュウコツ"
+    ],
+    "source": "pmda_import"
+  },
+  "シャカンゾウ": {
+    "canonical_name": "シャカンゾウ",
+    "synonyms": [
+      "シャカンゾウ"
+    ],
+    "source": "pmda_import"
+  },
+  "炙甘草": {
+    "canonical_name": "炙甘草",
+    "synonyms": [
+      "炙甘草"
+    ],
+    "source": "pmda_import"
+  },
+  "ジコッピ": {
+    "canonical_name": "ジコッピ",
+    "synonyms": [
+      "ジコッピ"
+    ],
+    "source": "pmda_import"
+  },
+  "レンニク": {
+    "canonical_name": "レンニク",
+    "synonyms": [
+      "レンニク"
+    ],
+    "source": "pmda_import"
+  },
+  "滑石": {
+    "canonical_name": "滑石",
+    "synonyms": [
+      "滑石"
+    ],
+    "source": "pmda_import"
+  },
+  "ユビデカレノン": {
+    "canonical_name": "ユビデカレノン",
+    "synonyms": [
+      "ユビデカレノン"
+    ],
+    "source": "pmda_import"
+  },
+  "安息香酸ナトリウムカフェイン": {
+    "canonical_name": "安息香酸ナトリウムカフェイン",
+    "synonyms": [
+      "安息香酸ナトリウムカフェイン"
+    ],
+    "source": "pmda_import"
+  },
+  "グリチルリチン": {
+    "canonical_name": "グリチルリチン",
+    "synonyms": [
+      "グリチルリチン"
+    ],
+    "source": "pmda_import"
+  },
+  "ベクロメタゾンプロピオン酸エステル": {
+    "canonical_name": "ベクロメタゾンプロピオン酸エステル",
+    "synonyms": [
+      "ベクロメタゾンプロピオン酸エステル"
+    ],
+    "source": "pmda_import"
+  },
+  "フルチカゾンプロピオン酸エステル": {
+    "canonical_name": "フルチカゾンプロピオン酸エステル",
+    "synonyms": [
+      "フルチカゾンプロピオン酸エステル"
+    ],
+    "source": "pmda_import"
+  },
+  "シンイ": {
+    "canonical_name": "シンイ",
+    "synonyms": [
+      "シンイ"
+    ],
+    "source": "pmda_import"
+  },
+  "アゼラスチン塩酸塩": {
+    "canonical_name": "アゼラスチン塩酸塩",
+    "synonyms": [
+      "アゼラスチン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "エピナスチン塩酸塩": {
+    "canonical_name": "エピナスチン塩酸塩",
+    "synonyms": [
+      "エピナスチン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "エバスチン": {
+    "canonical_name": "エバスチン",
+    "synonyms": [
+      "エバスチン"
+    ],
+    "source": "pmda_import"
+  },
+  "セチリジン塩酸塩": {
+    "canonical_name": "セチリジン塩酸塩",
+    "synonyms": [
+      "セチリジン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ケトチフェンフマル酸塩": {
+    "canonical_name": "ケトチフェンフマル酸塩",
+    "synonyms": [
+      "ケトチフェンフマル酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "フェキソフェナジン塩酸塩": {
+    "canonical_name": "フェキソフェナジン塩酸塩",
+    "synonyms": [
+      "フェキソフェナジン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "クレマスチンフマル酸塩": {
+    "canonical_name": "クレマスチンフマル酸塩",
+    "synonyms": [
+      "クレマスチンフマル酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ペミロラストカリウム": {
+    "canonical_name": "ペミロラストカリウム",
+    "synonyms": [
+      "ペミロラストカリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "ベポタスチンベシル酸塩": {
+    "canonical_name": "ベポタスチンベシル酸塩",
+    "synonyms": [
+      "ベポタスチンベシル酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "オキシメタゾリン塩酸塩": {
+    "canonical_name": "オキシメタゾリン塩酸塩",
+    "synonyms": [
+      "オキシメタゾリン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "クロモグリク酸ナトリウム": {
+    "canonical_name": "クロモグリク酸ナトリウム",
+    "synonyms": [
+      "クロモグリク酸ナトリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "サンショウ": {
+    "canonical_name": "サンショウ",
+    "synonyms": [
+      "サンショウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ビャクゴウ": {
+    "canonical_name": "ビャクゴウ",
+    "synonyms": [
+      "ビャクゴウ"
+    ],
+    "source": "pmda_import"
+  },
+  "ビワヨウ": {
+    "canonical_name": "ビワヨウ",
+    "synonyms": [
+      "ビワヨウ"
+    ],
+    "source": "pmda_import"
+  },
+  "セネガ末": {
+    "canonical_name": "セネガ末",
+    "synonyms": [
+      "セネガ末"
+    ],
+    "source": "pmda_import"
+  },
+  "チペピジンヒベンズ酸塩": {
+    "canonical_name": "チペピジンヒベンズ酸塩",
+    "synonyms": [
+      "チペピジンヒベンズ酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ジヒドロコデインリン酸塩": {
+    "canonical_name": "ジヒドロコデインリン酸塩",
+    "synonyms": [
+      "ジヒドロコデインリン酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "デキストロメトルファン臭化水素酸塩水和物": {
+    "canonical_name": "デキストロメトルファン臭化水素酸塩水和物",
+    "synonyms": [
+      "デキストロメトルファン臭化水素酸塩水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "チャヨウ": {
+    "canonical_name": "チャヨウ",
+    "synonyms": [
+      "チャヨウ"
+    ],
+    "source": "pmda_import"
+  },
+  "チクジョ": {
+    "canonical_name": "チクジョ",
+    "synonyms": [
+      "チクジョ"
+    ],
+    "source": "pmda_import"
+  },
+  "ブロムヘキシン塩酸塩": {
+    "canonical_name": "ブロムヘキシン塩酸塩",
+    "synonyms": [
+      "ブロムヘキシン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ペントキシベリンクエン酸塩": {
+    "canonical_name": "ペントキシベリンクエン酸塩",
+    "synonyms": [
+      "ペントキシベリンクエン酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "L−カルボシステイン": {
+    "canonical_name": "L−カルボシステイン",
+    "synonyms": [
+      "L−カルボシステイン"
+    ],
+    "source": "pmda_import"
+  },
+  "オウヒエキス": {
+    "canonical_name": "オウヒエキス",
+    "synonyms": [
+      "オウヒエキス"
+    ],
+    "source": "pmda_import"
+  },
+  "トリメトキノール塩酸塩水和物": {
+    "canonical_name": "トリメトキノール塩酸塩水和物",
+    "synonyms": [
+      "トリメトキノール塩酸塩水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "大棗": {
+    "canonical_name": "大棗",
+    "synonyms": [
+      "大棗"
+    ],
+    "source": "pmda_import"
+  },
+  "生姜": {
+    "canonical_name": "生姜",
+    "synonyms": [
+      "生姜"
+    ],
+    "source": "pmda_import"
+  },
+  "葛根": {
+    "canonical_name": "葛根",
+    "synonyms": [
+      "葛根"
+    ],
+    "source": "pmda_import"
+  },
+  "麻黄": {
+    "canonical_name": "麻黄",
+    "synonyms": [
+      "麻黄"
+    ],
+    "source": "pmda_import"
+  },
+  "半夏": {
+    "canonical_name": "半夏",
+    "synonyms": [
+      "半夏"
+    ],
+    "source": "pmda_import"
+  },
+  "オクトチアミン": {
+    "canonical_name": "オクトチアミン",
+    "synonyms": [
+      "オクトチアミン"
+    ],
+    "source": "pmda_import"
+  },
+  "クロペラスチンフェンジゾ酸塩": {
+    "canonical_name": "クロペラスチンフェンジゾ酸塩",
+    "synonyms": [
+      "クロペラスチンフェンジゾ酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "クロペラスチン塩酸塩": {
+    "canonical_name": "クロペラスチン塩酸塩",
+    "synonyms": [
+      "クロペラスチン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "シャゼンソウ": {
+    "canonical_name": "シャゼンソウ",
+    "synonyms": [
+      "シャゼンソウ"
+    ],
+    "source": "pmda_import"
+  },
+  "クレゾールスルホン酸カリウム": {
+    "canonical_name": "クレゾールスルホン酸カリウム",
+    "synonyms": [
+      "クレゾールスルホン酸カリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "アンブロキソール塩酸塩": {
+    "canonical_name": "アンブロキソール塩酸塩",
+    "synonyms": [
+      "アンブロキソール塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "プロメタジンメチレンジサリチル酸塩": {
+    "canonical_name": "プロメタジンメチレンジサリチル酸塩",
+    "synonyms": [
+      "プロメタジンメチレンジサリチル酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "トコン末": {
+    "canonical_name": "トコン末",
+    "synonyms": [
+      "トコン末"
+    ],
+    "source": "pmda_import"
+  },
+  "アマチャ末": {
+    "canonical_name": "アマチャ末",
+    "synonyms": [
+      "アマチャ末"
+    ],
+    "source": "pmda_import"
+  },
+  "L−エチルシステイン塩酸塩": {
+    "canonical_name": "L−エチルシステイン塩酸塩",
+    "synonyms": [
+      "L−エチルシステイン塩酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ダイフクヒ": {
+    "canonical_name": "ダイフクヒ",
+    "synonyms": [
+      "ダイフクヒ"
+    ],
+    "source": "pmda_import"
+  },
+  "カロニン": {
+    "canonical_name": "カロニン",
+    "synonyms": [
+      "カロニン"
+    ],
+    "source": "pmda_import"
+  },
+  "タルク": {
+    "canonical_name": "タルク",
+    "synonyms": [
+      "タルク"
+    ],
+    "source": "pmda_import"
+  },
+  "コデインリン酸塩水和物": {
+    "canonical_name": "コデインリン酸塩水和物",
+    "synonyms": [
+      "コデインリン酸塩水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "テオフィリン": {
+    "canonical_name": "テオフィリン",
+    "synonyms": [
+      "テオフィリン"
+    ],
+    "source": "pmda_import"
+  },
+  "乳酸": {
+    "canonical_name": "乳酸",
+    "synonyms": [
+      "乳酸"
+    ],
+    "source": "pmda_import"
+  },
+  "精製ヒアルロン酸ナトリウム": {
+    "canonical_name": "精製ヒアルロン酸ナトリウム",
+    "synonyms": [
+      "精製ヒアルロン酸ナトリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "カルシウム": {
+    "canonical_name": "カルシウム",
+    "synonyms": [
+      "カルシウム"
+    ],
+    "source": "pmda_import"
+  },
+  "塩化カリウム": {
+    "canonical_name": "塩化カリウム",
+    "synonyms": [
+      "塩化カリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "塩化ナトリウム": {
+    "canonical_name": "塩化ナトリウム",
+    "synonyms": [
+      "塩化ナトリウム"
+    ],
+    "source": "pmda_import"
+  },
+  "ネオスチグミンメチル硫酸塩": {
+    "canonical_name": "ネオスチグミンメチル硫酸塩",
+    "synonyms": [
+      "ネオスチグミンメチル硫酸塩"
+    ],
+    "source": "pmda_import"
+  },
+  "ポビドン": {
+    "canonical_name": "ポビドン",
+    "synonyms": [
+      "ポビドン"
+    ],
+    "source": "pmda_import"
+  },
+  "ブドウ糖": {
+    "canonical_name": "ブドウ糖",
+    "synonyms": [
+      "ブドウ糖"
+    ],
+    "source": "pmda_import"
+  },
+  "硫酸マグネシウム水和物": {
+    "canonical_name": "硫酸マグネシウム水和物",
+    "synonyms": [
+      "硫酸マグネシウム水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "ヒドロキシエチルセルロース": {
+    "canonical_name": "ヒドロキシエチルセルロース",
+    "synonyms": [
+      "ヒドロキシエチルセルロース"
+    ],
+    "source": "pmda_import"
+  },
+  "ベルベリン塩化物水和物": {
+    "canonical_name": "ベルベリン塩化物水和物",
+    "synonyms": [
+      "ベルベリン塩化物水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "ホウ酸": {
+    "canonical_name": "ホウ酸",
+    "synonyms": [
+      "ホウ酸"
+    ],
+    "source": "pmda_import"
+  },
+  "硫酸亜鉛水和物": {
+    "canonical_name": "硫酸亜鉛水和物",
+    "synonyms": [
+      "硫酸亜鉛水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "ベルベリン硫酸塩水和物": {
+    "canonical_name": "ベルベリン硫酸塩水和物",
+    "synonyms": [
+      "ベルベリン硫酸塩水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "プラノプロフェン": {
+    "canonical_name": "プラノプロフェン",
+    "synonyms": [
+      "プラノプロフェン"
+    ],
+    "source": "pmda_import"
+  },
+  "スルファメトキサゾール": {
+    "canonical_name": "スルファメトキサゾール",
+    "synonyms": [
+      "スルファメトキサゾール"
+    ],
+    "source": "pmda_import"
+  },
+  "アシタザノラスト水和物": {
+    "canonical_name": "アシタザノラスト水和物",
+    "synonyms": [
+      "アシタザノラスト水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "トラニラスト": {
+    "canonical_name": "トラニラスト",
+    "synonyms": [
+      "トラニラスト"
+    ],
+    "source": "pmda_import"
+  },
+  "ウルソデオキシコール酸": {
+    "canonical_name": "ウルソデオキシコール酸",
+    "synonyms": [
+      "ウルソデオキシコール酸"
+    ],
+    "source": "pmda_import"
+  },
+  "カフェイン水和物": {
+    "canonical_name": "カフェイン水和物",
+    "synonyms": [
+      "カフェイン水和物"
+    ],
+    "source": "pmda_import"
+  },
+  "カンゾウ末": {
+    "canonical_name": "カンゾウ末",
+    "synonyms": [
+      "カンゾウ末"
+    ],
+    "source": "pmda_import"
+  },
+  "アミノ安息香酸エチル": {
+    "canonical_name": "アミノ安息香酸エチル",
+    "synonyms": [
+      "アミノ安息香酸エチル"
+    ],
+    "source": "pmda_import"
+  }
+}

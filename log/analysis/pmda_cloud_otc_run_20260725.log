@@ -1,0 +1,313 @@
+[cloud-otc +10m] HTTP: 161 | hits: 66 | errors: 0 | pending: 7394/7495
+  hit_rate: 70.2% | orphans: 28 | abort: false
+  ETA: ~14.4h
+Traceback (most recent call last):
+  File "/workspace/scripts/pmda/run_live_fetch_otc_cloud.py", line 253, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/scripts/pmda/run_live_fetch_otc_cloud.py", line 237, in main
+    result = run_cloud_otc_fetch(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scripts/pmda/run_live_fetch_otc_cloud.py", line 142, in run_cloud_otc_fetch
+    result = process_otc_product(session, key)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scripts/pmda/fetch_otc.py", line 132, in process_otc_product
+    html = session.fetch_otc_search(search_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scripts/pmda/http_client.py", line 566, in fetch_otc_search
+    resp = self._request("POST", PMDA_OTC_SEARCH, data=payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scripts/pmda/http_client.py", line 264, in _request
+    self._sleep_jitter()
+  File "/workspace/scripts/pmda/http_client.py", line 231, in _sleep_jitter
+    time.sleep(delay - elapsed)
+KeyboardInterrupt
+[cloud-otc +10m] HTTP: 163 | hits: 57 | errors: 0 | pending: 7330/7495
+  hit_rate: 65.5% | orphans: 30 | abort: false
+  ETA: ~14.3h
+[cloud-otc +10m] HTTP: 167 | hits: 53 | errors: 0 | pending: 7266/7495
+  hit_rate: 61.6% | orphans: 33 | abort: false
+  ETA: ~14.1h
+[cloud-otc +20m] HTTP: 329 | hits: 122 | errors: 0 | pending: 7181/7495
+  hit_rate: 71.8% | orphans: 48 | abort: false
+  ETA: ~14.0h
+[cloud-otc +30m] HTTP: 497 | hits: 200 | errors: 0 | pending: 7090/7495
+  hit_rate: 77.8% | orphans: 57 | abort: false
+  ETA: ~13.8h
+[cloud-otc +40m] HTTP: 656 | hits: 269 | errors: 0 | pending: 7006/7495
+  hit_rate: 79.1% | orphans: 71 | abort: false
+  ETA: ~13.6h
+[cloud-otc +50m] HTTP: 810 | hits: 337 | errors: 0 | pending: 6920/7495
+  hit_rate: 79.3% | orphans: 88 | abort: false
+  ETA: ~13.5h
+[cloud-otc +60m] HTTP: 974 | hits: 413 | errors: 0 | pending: 6833/7495
+  hit_rate: 81.1% | orphans: 96 | abort: false
+  ETA: ~13.3h
+[cloud-otc +70m] HTTP: 1135 | hits: 475 | errors: 0 | pending: 6747/7495
+  hit_rate: 79.8% | orphans: 120 | abort: false
+  ETA: ~13.1h
+[cloud-otc +80m] HTTP: 1294 | hits: 525 | errors: 0 | pending: 6663/7495
+  hit_rate: 77.3% | orphans: 154 | abort: false
+  ETA: ~13.0h
+[cloud-otc +90m] HTTP: 1457 | hits: 595 | errors: 0 | pending: 6579/7495
+  hit_rate: 78.2% | orphans: 166 | abort: false
+  ETA: ~12.8h
+[cloud-otc +100m] HTTP: 1618 | hits: 662 | errors: 0 | pending: 6492/7495
+  hit_rate: 78.2% | orphans: 185 | abort: false
+  ETA: ~12.6h
+[cloud-otc +110m] HTTP: 1777 | hits: 731 | errors: 0 | pending: 6400/7495
+  hit_rate: 78.5% | orphans: 200 | abort: false
+  ETA: ~12.4h
+[cloud-otc +121m] HTTP: 1940 | hits: 799 | errors: 0 | pending: 6304/7495
+  hit_rate: 78.4% | orphans: 220 | abort: false
+  ETA: ~12.3h
+[cloud-otc +131m] HTTP: 2105 | hits: 867 | errors: 0 | pending: 6212/7495
+  hit_rate: 78.5% | orphans: 237 | abort: false
+  ETA: ~12.1h
+[cloud-otc +141m] HTTP: 2264 | hits: 926 | errors: 0 | pending: 6127/7495
+  hit_rate: 78.0% | orphans: 261 | abort: false
+  ETA: ~11.9h
+[cloud-otc +151m] HTTP: 2427 | hits: 997 | errors: 0 | pending: 6045/7495
+  hit_rate: 78.6% | orphans: 271 | abort: false
+  ETA: ~11.8h
+[cloud-otc +161m] HTTP: 2589 | hits: 1051 | errors: 0 | pending: 5969/7495
+  hit_rate: 78.2% | orphans: 293 | abort: false
+  ETA: ~11.6h
+[cloud-otc +171m] HTTP: 2750 | hits: 1121 | errors: 0 | pending: 5886/7495
+  hit_rate: 78.8% | orphans: 301 | abort: false
+  ETA: ~11.4h
+[cloud-otc +181m] HTTP: 2910 | hits: 1187 | errors: 0 | pending: 5806/7495
+  hit_rate: 79.1% | orphans: 314 | abort: false
+  ETA: ~11.3h
+[cloud-otc +191m] HTTP: 3075 | hits: 1264 | errors: 0 | pending: 5717/7495
+  hit_rate: 79.5% | orphans: 326 | abort: false
+  ETA: ~11.1h
+[cloud-otc +201m] HTTP: 3238 | hits: 1337 | errors: 0 | pending: 5626/7495
+  hit_rate: 79.9% | orphans: 337 | abort: false
+  ETA: ~10.9h
+[cloud-otc +211m] HTTP: 3397 | hits: 1402 | errors: 0 | pending: 5547/7495
+  hit_rate: 80.0% | orphans: 351 | abort: false
+  ETA: ~10.8h
+[cloud-otc +221m] HTTP: 3556 | hits: 1467 | errors: 0 | pending: 5470/7495
+  hit_rate: 80.2% | orphans: 363 | abort: false
+  ETA: ~10.6h
+[cloud-otc +231m] HTTP: 3714 | hits: 1537 | errors: 0 | pending: 5389/7495
+  hit_rate: 80.4% | orphans: 374 | abort: false
+  ETA: ~10.5h
+[cloud-otc +242m] HTTP: 3878 | hits: 1590 | errors: 0 | pending: 5304/7495
+  hit_rate: 79.7% | orphans: 406 | abort: false
+  ETA: ~10.3h
+[cloud-otc +252m] HTTP: 4038 | hits: 1649 | errors: 0 | pending: 5227/7495
+  hit_rate: 79.5% | orphans: 424 | abort: false
+  ETA: ~10.2h
+[cloud-otc +262m] HTTP: 4203 | hits: 1708 | errors: 0 | pending: 5143/7495
+  hit_rate: 79.3% | orphans: 446 | abort: false
+  ETA: ~10.0h
+[cloud-otc +272m] HTTP: 4364 | hits: 1773 | errors: 0 | pending: 5062/7495
+  hit_rate: 79.4% | orphans: 461 | abort: false
+  ETA: ~9.8h
+[cloud-otc +282m] HTTP: 4527 | hits: 1843 | errors: 0 | pending: 4975/7495
+  hit_rate: 79.4% | orphans: 477 | abort: false
+  ETA: ~9.7h
+[cloud-otc +292m] HTTP: 4686 | hits: 1915 | errors: 0 | pending: 4891/7495
+  hit_rate: 79.7% | orphans: 489 | abort: false
+  ETA: ~9.5h
+[cloud-otc +302m] HTTP: 4847 | hits: 1983 | errors: 0 | pending: 4797/7495
+  hit_rate: 79.6% | orphans: 508 | abort: false
+  ETA: ~9.3h
+[cloud-otc +312m] HTTP: 5009 | hits: 2052 | errors: 0 | pending: 4711/7495
+  hit_rate: 79.7% | orphans: 522 | abort: false
+  ETA: ~9.2h
+[cloud-otc +322m] HTTP: 5166 | hits: 2115 | errors: 0 | pending: 4626/7495
+  hit_rate: 79.6% | orphans: 541 | abort: false
+  ETA: ~9.0h
+[cloud-otc +332m] HTTP: 5333 | hits: 2189 | errors: 0 | pending: 4536/7495
+  hit_rate: 79.7% | orphans: 557 | abort: false
+  ETA: ~8.8h
+[cloud-otc +342m] HTTP: 5496 | hits: 2264 | errors: 0 | pending: 4453/7495
+  hit_rate: 80.1% | orphans: 564 | abort: false
+  ETA: ~8.7h
+[cloud-otc +352m] HTTP: 5660 | hits: 2342 | errors: 0 | pending: 4368/7495
+  hit_rate: 80.4% | orphans: 571 | abort: false
+  ETA: ~8.5h
+[cloud-otc +362m] HTTP: 5815 | hits: 2415 | errors: 0 | pending: 4289/7495
+  hit_rate: 80.7% | orphans: 576 | abort: false
+  ETA: ~8.3h
+[cloud-otc +373m] HTTP: 5979 | hits: 2484 | errors: 0 | pending: 4205/7495
+  hit_rate: 80.8% | orphans: 590 | abort: false
+  ETA: ~8.2h
+[cloud-otc +383m] HTTP: 6137 | hits: 2546 | errors: 0 | pending: 4130/7495
+  hit_rate: 80.9% | orphans: 602 | abort: false
+  ETA: ~8.0h
+[cloud-otc +393m] HTTP: 6300 | hits: 2601 | errors: 0 | pending: 4055/7495
+  hit_rate: 80.7% | orphans: 622 | abort: false
+  ETA: ~7.9h
+[cloud-otc +403m] HTTP: 6457 | hits: 2665 | errors: 0 | pending: 3979/7495
+  hit_rate: 80.8% | orphans: 633 | abort: false
+  ETA: ~7.7h
+[cloud-otc +413m] HTTP: 6615 | hits: 2728 | errors: 0 | pending: 3900/7495
+  hit_rate: 80.8% | orphans: 649 | abort: false
+  ETA: ~7.6h
+[cloud-otc +423m] HTTP: 6774 | hits: 2794 | errors: 0 | pending: 3817/7495
+  hit_rate: 80.8% | orphans: 663 | abort: false
+  ETA: ~7.4h
+[cloud-otc +433m] HTTP: 6937 | hits: 2861 | errors: 0 | pending: 3732/7495
+  hit_rate: 80.8% | orphans: 681 | abort: false
+  ETA: ~7.3h
+[cloud-otc +443m] HTTP: 7103 | hits: 2937 | errors: 0 | pending: 3647/7495
+  hit_rate: 81.0% | orphans: 688 | abort: false
+  ETA: ~7.1h
+[cloud-otc +453m] HTTP: 7267 | hits: 3008 | errors: 0 | pending: 3562/7495
+  hit_rate: 81.1% | orphans: 701 | abort: false
+  ETA: ~6.9h
+[cloud-otc +463m] HTTP: 7427 | hits: 3076 | errors: 0 | pending: 3471/7495
+  hit_rate: 81.1% | orphans: 715 | abort: false
+  ETA: ~6.7h
+[cloud-otc +473m] HTTP: 7589 | hits: 3145 | errors: 0 | pending: 3379/7495
+  hit_rate: 81.2% | orphans: 727 | abort: false
+  ETA: ~6.6h
+[cloud-otc +483m] HTTP: 7745 | hits: 3210 | errors: 0 | pending: 3289/7495
+  hit_rate: 81.2% | orphans: 743 | abort: false
+  ETA: ~6.4h
+[cloud-otc +493m] HTTP: 7909 | hits: 3277 | errors: 0 | pending: 3208/7495
+  hit_rate: 81.3% | orphans: 756 | abort: false
+  ETA: ~6.2h
+[cloud-otc +503m] HTTP: 8066 | hits: 3348 | errors: 0 | pending: 3118/7495
+  hit_rate: 81.5% | orphans: 761 | abort: false
+  ETA: ~6.1h
+[cloud-otc +513m] HTTP: 8228 | hits: 3419 | errors: 0 | pending: 3037/7495
+  hit_rate: 81.6% | orphans: 770 | abort: false
+  ETA: ~5.9h
+[cloud-otc +523m] HTTP: 8391 | hits: 3495 | errors: 0 | pending: 2949/7495
+  hit_rate: 81.8% | orphans: 778 | abort: false
+  ETA: ~5.7h
+[cloud-otc +534m] HTTP: 8550 | hits: 3556 | errors: 0 | pending: 2860/7495
+  hit_rate: 81.7% | orphans: 798 | abort: false
+  ETA: ~5.6h
+[cloud-otc +544m] HTTP: 8713 | hits: 3631 | errors: 0 | pending: 2770/7495
+  hit_rate: 81.8% | orphans: 806 | abort: false
+  ETA: ~5.4h
+[cloud-otc +554m] HTTP: 8872 | hits: 3709 | errors: 0 | pending: 2672/7495
+  hit_rate: 82.0% | orphans: 814 | abort: false
+  ETA: ~5.2h
+[cloud-otc +564m] HTTP: 9029 | hits: 3781 | errors: 0 | pending: 2579/7495
+  hit_rate: 82.1% | orphans: 826 | abort: false
+  ETA: ~5.0h
+[cloud-otc +574m] HTTP: 9189 | hits: 3856 | errors: 0 | pending: 2487/7495
+  hit_rate: 82.2% | orphans: 833 | abort: false
+  ETA: ~4.8h
+[cloud-otc +584m] HTTP: 9352 | hits: 3927 | errors: 0 | pending: 2394/7495
+  hit_rate: 82.2% | orphans: 849 | abort: false
+  ETA: ~4.7h
+[cloud-otc +594m] HTTP: 9513 | hits: 3995 | errors: 0 | pending: 2312/7495
+  hit_rate: 82.2% | orphans: 863 | abort: false
+  ETA: ~4.5h
+[cloud-otc +604m] HTTP: 9677 | hits: 4060 | errors: 0 | pending: 2234/7495
+  hit_rate: 82.3% | orphans: 876 | abort: false
+  ETA: ~4.3h
+[cloud-otc +614m] HTTP: 9841 | hits: 4129 | errors: 0 | pending: 2148/7495
+  hit_rate: 82.2% | orphans: 893 | abort: false
+  ETA: ~4.2h
+[cloud-otc +624m] HTTP: 10002 | hits: 4205 | errors: 0 | pending: 2058/7495
+  hit_rate: 82.3% | orphans: 902 | abort: false
+  ETA: ~4.0h
+[cloud-otc +634m] HTTP: 10161 | hits: 4279 | errors: 0 | pending: 1974/7495
+  hit_rate: 82.5% | orphans: 910 | abort: false
+  ETA: ~3.8h
+[cloud-otc +644m] HTTP: 10321 | hits: 4345 | errors: 0 | pending: 1894/7495
+  hit_rate: 82.5% | orphans: 923 | abort: false
+  ETA: ~3.7h
+[cloud-otc +654m] HTTP: 10478 | hits: 4411 | errors: 0 | pending: 1813/7495
+  hit_rate: 82.5% | orphans: 936 | abort: false
+  ETA: ~3.5h
+[cloud-otc +664m] HTTP: 10638 | hits: 4476 | errors: 0 | pending: 1728/7495
+  hit_rate: 82.4% | orphans: 956 | abort: false
+  ETA: ~3.4h
+[cloud-otc +674m] HTTP: 10800 | hits: 4547 | errors: 0 | pending: 1643/7495
+  hit_rate: 82.5% | orphans: 966 | abort: false
+  ETA: ~3.2h
+[cloud-otc +684m] HTTP: 10961 | hits: 4617 | errors: 0 | pending: 1558/7495
+  hit_rate: 82.5% | orphans: 979 | abort: false
+  ETA: ~3.0h
+[cloud-otc +695m] HTTP: 11123 | hits: 4685 | errors: 0 | pending: 1476/7495
+  hit_rate: 82.5% | orphans: 993 | abort: false
+  ETA: ~2.9h
+[cloud-otc +705m] HTTP: 11282 | hits: 4741 | errors: 0 | pending: 1403/7495
+  hit_rate: 82.4% | orphans: 1010 | abort: false
+  ETA: ~2.7h
+[cloud-otc +715m] HTTP: 11445 | hits: 4813 | errors: 0 | pending: 1316/7495
+  hit_rate: 82.5% | orphans: 1023 | abort: false
+  ETA: ~2.6h
+[cloud-otc +725m] HTTP: 11601 | hits: 4878 | errors: 0 | pending: 1235/7495
+  hit_rate: 82.5% | orphans: 1037 | abort: false
+  ETA: ~2.4h
+[cloud-otc +735m] HTTP: 11763 | hits: 4943 | errors: 0 | pending: 1148/7495
+  hit_rate: 82.4% | orphans: 1057 | abort: false
+  ETA: ~2.2h
+[cloud-otc +745m] HTTP: 11925 | hits: 5019 | errors: 0 | pending: 1058/7495
+  hit_rate: 82.5% | orphans: 1064 | abort: false
+  ETA: ~2.1h
+[cloud-otc +755m] HTTP: 12084 | hits: 5080 | errors: 0 | pending: 975/7495
+  hit_rate: 82.4% | orphans: 1083 | abort: false
+  ETA: ~1.9h
+[cloud-otc +765m] HTTP: 12240 | hits: 5142 | errors: 0 | pending: 896/7495
+  hit_rate: 82.4% | orphans: 1099 | abort: false
+  ETA: ~1.7h
+[cloud-otc +775m] HTTP: 12400 | hits: 5215 | errors: 0 | pending: 812/7495
+  hit_rate: 82.5% | orphans: 1108 | abort: false
+  ETA: ~1.6h
+[cloud-otc +785m] HTTP: 12563 | hits: 5287 | errors: 0 | pending: 730/7495
+  hit_rate: 82.5% | orphans: 1118 | abort: false
+  ETA: ~1.4h
+[cloud-otc +795m] HTTP: 12724 | hits: 5355 | errors: 0 | pending: 648/7495
+  hit_rate: 82.5% | orphans: 1132 | abort: false
+  ETA: ~1.3h
+[cloud-otc +805m] HTTP: 12883 | hits: 5429 | errors: 0 | pending: 565/7495
+  hit_rate: 82.6% | orphans: 1141 | abort: false
+  ETA: ~1.1h
+[cloud-otc +815m] HTTP: 13041 | hits: 5494 | errors: 0 | pending: 481/7495
+  hit_rate: 82.6% | orphans: 1159 | abort: false
+  ETA: ~0.9h
+[cloud-otc +825m] HTTP: 13201 | hits: 5560 | errors: 0 | pending: 397/7495
+  hit_rate: 82.5% | orphans: 1177 | abort: false
+  ETA: ~0.8h
+[cloud-otc +835m] HTTP: 13362 | hits: 5634 | errors: 0 | pending: 314/7495
+  hit_rate: 82.6% | orphans: 1185 | abort: false
+  ETA: ~0.6h
+[cloud-otc +846m] HTTP: 13525 | hits: 5704 | errors: 0 | pending: 217/7495
+  hit_rate: 82.6% | orphans: 1201 | abort: false
+  ETA: ~0.4h
+[cloud-otc +856m] HTTP: 13685 | hits: 5771 | errors: 0 | pending: 134/7495
+  hit_rate: 82.6% | orphans: 1215 | abort: false
+  ETA: ~0.3h
+[cloud-otc +866m] HTTP: 13844 | hits: 5835 | errors: 0 | pending: 45/7495
+  hit_rate: 82.5% | orphans: 1236 | abort: false
+  ETA: ~0.1h
+[cloud-otc +871m] HTTP: 13929 | hits: 5876 | errors: 0 | pending: 0/7495
+  hit_rate: 82.6% | orphans: 1240 | abort: false
+  ETA: ~0.0h
+{
+  "ok": false,
+  "elapsed_sec": 52290.4,
+  "queue_otc": {
+    "source": "otc",
+    "pending": 0,
+    "done": 6009,
+    "failed": 1240,
+    "total": 7249,
+    "pct_done": 82.9
+  },
+  "http_requested": 13929,
+  "http_errors": 0,
+  "http_hits": 5876,
+  "aborted": false,
+  "abort_reason": "",
+  "hit_rate_pct": 82.9,
+  "processed": 7116,
+  "hits": 5876,
+  "orphans": 1240,
+  "merge_runs": 72,
+  "min_interval": 1.0,
+  "http403_retries": 0,
+  "stopped_reason": ""
+}
