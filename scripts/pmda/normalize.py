@@ -116,6 +116,13 @@ def normalize_otc_product_row(row: Dict[str, Any]) -> Optional[Dict[str, str]]:
         "禁止物質あり": normalize_text(str(row.get("禁止物質あり") or row.get("doping_prohibited") or "")),
         "競技会区分": normalize_text(str(row.get("競技会区分") or row.get("competition") or "")),
         "条件": normalize_text(str(row.get("条件") or row.get("conditions") or "")),
+        # PMDA 添付文書由来（社内タクソノミとは別管理）
+        "pmda_薬効分類": normalize_text(
+            str(row.get("pmda_薬効分類") or row.get("pmda_yakkou_classification") or "")
+        ),
+        "pmda_リスク区分": normalize_text(
+            str(row.get("pmda_リスク区分") or row.get("pmda_risk_class") or "")
+        ),
     }
     return out
 

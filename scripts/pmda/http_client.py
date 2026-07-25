@@ -707,8 +707,8 @@ class PmdaLiveSession:
                     age = normalize_text(m2.group(1))
 
         product = fields.get("製品名") or fields.get("承認販売名") or ""
-        classification = fields.get("薬効分類") or ""
-        medicine_type = fields.get("リスク区分") or fields.get("医薬品区分") or ""
+        pmda_yakkou = fields.get("薬効分類") or ""
+        pmda_risk = fields.get("リスク区分") or fields.get("医薬品区分") or ""
         manufacturer = fields.get("製造販売会社") or ""
         if manufacturer:
             manufacturer = normalize_text(re.split(r"添付文書情報", manufacturer)[0])
@@ -717,15 +717,19 @@ class PmdaLiveSession:
         out = {
             "製品名": product,
             "メーカー名": manufacturer,
-            "分類": classification,
-            "医薬品の種類": medicine_type,
+            # 社内タクソノミ用の「分類」「医薬品の種類」には入れない
+            "pmda_薬効分類": pmda_yakkou,
+            "pmda_リスク区分": pmda_risk,
             "効能効果": efficacy,
             "用法用量": usage,
             "年齢制限": age,
             "成分": ingredients,
             "出典": PMDA_OTC_SOURCE_LABEL,
         }
-        if any(out.get(k) for k in ("効能効果", "用法用量", "成分", "年齢制限")):
+        if any(
+            out.get(k)
+            for k in ("効能効果", "用法用量", "成分", "年齢制限", "pmda_薬効分類", "pmda_リスク区分")
+        ):
             return out
         return {}
 

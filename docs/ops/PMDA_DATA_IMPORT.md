@@ -316,6 +316,22 @@ orphans: `log/analysis/pmda_otc_orphans_20260725.json`
 
 スポット: バファリンA・ロキソニンS の効能/用法/年齢は PMDA 添付文書と整合。
 
+**PMDA 情報の保全（再取得なし・2026-07-25）**
+
+| 置き場 | 内容 |
+|--------|------|
+| `data/otc_medicine_data.csv` の `pmda_薬効分類` / `pmda_リスク区分` | 専用カラム追加済み。過去ランは detail HTML 未保全のため**空**。今後の live fetch で充填 |
+| `data/pmda/raw/otc/applied_updates_20260725.jsonl` | baseline 差分で回収した効能・用法・年齢の before/after（5,943 品目） |
+| `data/pmda/raw/otc_products/*.json` | 同上の品目単位 raw（parsed のみ。`detail_html` 無し） |
+| `data/pmda/raw/otc_index.json` | product_key → raw ファイル索引 |
+
+```bash
+# カラム追加 + 既存反映分の raw 保全（HTTP なし）
+.venv/bin/python scripts/pmda/archive_otc_pmda_applied.py --stamp YYYYMMDD
+```
+
+今後の `process_otc_product` は成功時に `detail_html` 付きで `raw/otc_products/` へ保存し、`pmda_*` を CSV へ merge する。
+
 **side_effects 残 pending 10 件**も本 Phase で消化（pending=0）。その後 `reparse_from_raw.py` で CSV 正本再構築。
 
 **KB / eval（Cloud 環境）**

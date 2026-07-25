@@ -53,6 +53,22 @@ def test_parse_otc_detail_from_fixture_sample():
         assert value in (parsed.get(key) or "")
 
 
+def test_parse_otc_detail_exposes_pmda_taxonomy_columns():
+    html = (
+        "<table><tr><td class='head'>薬効分類</td><td class='deta'>解熱鎮痛薬</td></tr>"
+        "<tr><td class='head'>リスク区分</td><td class='deta'>第「2」類医薬品</td></tr>"
+        "<tr><td class='head'>効能・効果</td><td class='deta'>頭痛</td></tr>"
+        "<tr><td class='head'>用法・用量</td><td class='deta'>1回1錠</td></tr>"
+        "</table>"
+    )
+    parsed = PmdaLiveSession.parse_otc_detail_html(html)
+    assert parsed.get("pmda_薬効分類") == "解熱鎮痛薬"
+    assert "2" in (parsed.get("pmda_リスク区分") or "")
+    # 社内タクソノミ欄には載せない
+    assert "分類" not in parsed or not parsed.get("分類")
+    assert "医薬品の種類" not in parsed or not parsed.get("医薬品の種類")
+
+
 def test_extract_otc_result_hits_from_fixture_sample():
     fixture = ROOT / "tests" / "fixtures" / "pmda" / "otc_live_sample.json"
     data = json.loads(fixture.read_text(encoding="utf-8"))

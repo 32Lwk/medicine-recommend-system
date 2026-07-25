@@ -6,7 +6,7 @@
 
 | ファイル | 状態 | 用途 |
 |----------|------|------|
-| `otc_medicine_data.csv` | `data/otc_medicine_data.csv`（**7,495 行**・出典 PMDA OTC Search / Cloud live 2026-07-25）— リポジトリに含める | 推奨候補の主カタログ |
+| `otc_medicine_data.csv` | `data/otc_medicine_data.csv`（**7,495 行**・出典 PMDA OTC Search / Cloud live 2026-07-25。`pmda_薬効分類`/`pmda_リスク区分` 列あり）— リポジトリに含める | 推奨候補の主カタログ |
 
 **運用**: PMDA 由来データを更新したら差分 PR。push サイズが問題なら Git LFS を検討。エージェント評価前に必ずローカルでファイル存在を確認。
 
@@ -24,7 +24,10 @@ git add data/otc_medicine_data.csv   # 未追跡の場合のみ
 | `medicine_interactions.csv` | 相互作用スコア（PMDA live + reparse で更新。**185 行**・2026-07-25） |
 | `pmda/manifest.json` | PMDA import メタ・live fetch キュー |
 | `pmda/raw/ingredients/` | **PMDA 添付文書 HTML 正本**（680 件・reparse 元） |
-| `pmda/raw/index.json` | raw ファイル索引 |
+| `pmda/raw/index.json` | raw ファイル索引（成分） |
+| `pmda/raw/otc/` | OTC 反映分アーカイブ（jsonl/summary。再取得なしで保全） |
+| `pmda/raw/otc_products/` | OTC 品目単位 raw（parsed。今後 live では detail_html も保存） |
+| `pmda/raw/otc_index.json` | OTC product_key → raw ファイル索引 |
 | `pmda/common_rx_medications.json` | 相互作用 fetch 用 常用処方薬リスト |
 | `kanpo_medicine.csv` | 漢方特化ルール |
 | `summarized_efficacy_data.csv` | GPT 補助効能（Physical 主経路外） |

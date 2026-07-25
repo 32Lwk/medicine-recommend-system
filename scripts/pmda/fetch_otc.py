@@ -190,8 +190,7 @@ def process_otc_product(session: PmdaLiveSession, key: str) -> Dict[str, Any]:
         result["reason"] = "parse_empty"
         return result
 
-    # 分類 / 医薬品の種類は社内タクソノミ（リスク区分・効能カテゴリ）を正とする。
-    # PMDA の薬効分類・リスク区分で上書きしない（推奨フィルタが壊れるため）。
+    # 分類 / 医薬品の種類は社内タクソノミを正とし、PMDA 値は専用カラムへ。
     row = {
         "製品名": product_name,
         "メーカー名": manufacturer,
@@ -199,11 +198,44 @@ def process_otc_product(session: PmdaLiveSession, key: str) -> Dict[str, Any]:
         "用法用量": parsed.get("用法用量") or "",
         "年齢制限": parsed.get("年齢制限") or "",
         "成分": parsed.get("成分") or "",
+        "pmda_薬効分類": parsed.get("pmda_薬効分類") or "",
+        "pmda_リスク区分": parsed.get("pmda_リスク区分") or "",
     }
     norm = normalize_otc_product_row(row)
     if not norm:
         result["reason"] = "normalize_failed"
         return result
+
+    try:
+        from scripts.pmda.raw_store import save_otc_product_raw
+
+        save_otc_product_raw(
+            key,
+            parsed={
+                **{k: parsed.get(k) or "" for k in (
+                    "効能効果",
+                    "用法用量",
+                    "年齢制限",
+                    "成分",
+                    "pmda_薬効分類",
+                    "pmda_リスク区分",
+                    "製品名",
+                    "メーカー名",
+                    "出典",
+                )},
+            },
+            detail_html=detail_html,
+            detail_fname=best.get("fname") or "",
+            search_name=result.get("search_name") or "",
+            pmda_hit=result.get("pmda_hit") or "",
+            score=int(result.get("score") or 0),
+            status="ok",
+            source="live",
+        )
+    except Exception:
+        # raw 保全失敗でも本処理は継続
+        pass
+
     session.stats.hits += 1
     result["status"] = "done"
     result["row"] = norm
