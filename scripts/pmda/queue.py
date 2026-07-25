@@ -23,11 +23,14 @@ from scripts.pmda.normalize import normalize_otc_product_row
 JST = timezone(timedelta(hours=9))
 QUEUE_SOURCES = ("interactions", "side_effects", "otc")
 
-# 剤形・容量除去（OTC 検索用）
+# 剤形・容量除去（OTC 検索用）。「散」「末」単体は漢方名を壊すため含めない。
 _DOSAGE_FORM_RE = re.compile(
-    r"(錠|カプセル|液|シロップ|顆粒|パップ|テープ|ゲル|スプレー|坐剤|軟膏|クリーム|ローション|内用|外用)$"
+    r"(錠剤|錠|カプセル|液|シロップ|顆粒|細粒|微粒|散剤|パップ|テープ|パッチ|ゲル|スプレー|"
+    r"坐剤|軟膏|クリーム|ローション|内服液|内用|外用|浣腸|パステル)$"
 )
 _CAPACITY_RE = re.compile(r"(\d+\s*(錠|包|mL|ml|g|％|%|本|個|枚|袋|セット))+$")
+_BRACKET_ANNOT_RE = re.compile(r"[<〈《\[（(「][^>〉》\]）)」]*[>〉》\]）)」]")
+_SPACE_RE = re.compile(r"\s+")
 
 
 def empty_queue_bucket() -> Dict[str, Any]:
@@ -344,11 +347,59 @@ def record_session_end(*, aborted: bool = False, stats: Optional[Dict[str, Any]]
 
 
 def normalize_product_search_name(product_name: str) -> str:
-    """OTC 検索用: NFKC + 剤形/容量除去。"""
+    """OTC 検索用: NFKC + 括弧注釈/剤形/容量除去。"""
     text = normalize_text(product_name)
+    text = _BRACKET_ANNOT_RE.sub("", text)
+    text = _SPACE_RE.sub("", text)
     text = _CAPACITY_RE.sub("", text).strip()
     text = _DOSAGE_FORM_RE.sub("", text).strip()
     return text
+
+
+def compact_product_name(product_name: str) -> str:
+    """マッチ比較用: 空白除去・括弧種別統一・注釈除去。"""
+    text = normalize_text(product_name)
+    text = text.replace("<", "〈").replace(">", "〉").replace("[", "〈").replace("]", "〉")
+    text = text.replace("《", "〈").replace("》", "〉").replace("「", "〈").replace("」", "〉")
+    text = _BRACKET_ANNOT_RE.sub("", text)
+    text = _SPACE_RE.sub("", text)
+    return text
+
+
+def product_search_name_variants(product_name: str) -> List[str]:
+    """検索フォールバック用の候補（先頭ほど具体的）。"""
+    variants: List[str] = []
+
+    def _add(value: str) -> None:
+        text = normalize_text(value)
+        if text and text not in variants:
+            variants.append(text)
+
+    raw = normalize_text(product_name)
+    _add(raw)
+    no_br = _BRACKET_ANNOT_RE.sub("", raw)
+    _add(no_br)
+    _add(_SPACE_RE.sub("", no_br))
+    _add(normalize_product_search_name(product_name))
+    _add(normalize_product_search_name(no_br))
+
+    # 末尾の規格コード（G / S / 10 / 40 等）を段階的に落とす
+    core = _SPACE_RE.sub("", no_br)
+    for _ in range(2):
+        nxt = re.sub(r"[\d０-９]+$", "", core)
+        nxt = re.sub(r"[A-Za-z]+$", "", nxt)
+        # 浣腸+容量 → 浣腸 を残す中間形
+        m_enema = re.match(r"(.+浣腸)\d+$", core)
+        if m_enema:
+            _add(m_enema.group(1))
+        nxt = _DOSAGE_FORM_RE.sub("", nxt).strip()
+        if nxt == core:
+            break
+        core = nxt
+        _add(core)
+        _add(normalize_product_search_name(core))
+
+    return variants[:5]
 
 
 def product_key_to_row(key: str) -> Dict[str, str]:
@@ -438,6 +489,20 @@ def write_local_ingredients_progress(payload: Dict[str, Any]) -> None:
 
     stamp = datetime.now().strftime("%Y%m%d")
     path = LOG_ANALYSIS_DIR / f"pmda_local_ingredients_{stamp}.json"
+    existing = load_json(path, {"runs": []}) if path.is_file() else {"runs": []}
+    if not isinstance(existing, dict):
+        existing = {"runs": []}
+    existing.setdefault("runs", []).append(
+        {"logged_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(), **payload}
+    )
+    save_json(path, existing)
+
+
+def write_cloud_otc_progress(payload: Dict[str, Any]) -> None:
+    from scripts.pmda.common import LOG_ANALYSIS_DIR
+
+    stamp = datetime.now().strftime("%Y%m%d")
+    path = LOG_ANALYSIS_DIR / f"pmda_cloud_otc_{stamp}.json"
     existing = load_json(path, {"runs": []}) if path.is_file() else {"runs": []}
     if not isinstance(existing, dict):
         existing = {"runs": []}

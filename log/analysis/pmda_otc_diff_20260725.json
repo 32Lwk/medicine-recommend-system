@@ -1,0 +1,81 @@
+{
+  "runs": [
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 18,
+        "hits": 7,
+        "errors": 3,
+        "mode": "live",
+        "abort_reason": ""
+      },
+      "diff_count": 10,
+      "staging_count": 7
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "diff_count": 0,
+      "staging_count": 101
+    }
+  ]
+}

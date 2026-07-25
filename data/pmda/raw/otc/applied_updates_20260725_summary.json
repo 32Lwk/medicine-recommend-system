@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-07-25T16:17:25+00:00",
+  "baseline": "/workspace/data/pmda/backups/20260724/otc_medicine_data.csv",
+  "csv": "/workspace/data/otc_medicine_data.csv",
+  "jsonl": "/workspace/data/pmda/raw/otc/applied_updates_20260725.jsonl",
+  "products_with_pmda_content_updates": 5943,
+  "field_change_counts": {
+    "効能効果": 5474,
+    "用法用量": 5941,
+    "年齢制限": 2551,
+    "成分": 0
+  },
+  "raw_product_files_written": 0,
+  "otc_raw_stats": {
+    "indexed": 0,
+    "files": 0
+  },
+  "pmda_taxonomy_columns": {
+    "pmda_薬効分類": "added empty (historical HTML not retained; fill on future live fetch)",
+    "pmda_リスク区分": "added empty (historical HTML not retained; fill on future live fetch)"
+  },
+  "queue": {
+    "done": 6011,
+    "failed": 1240
+  },
+  "note": "Canonical no-refetch archive is applied_updates_*.jsonl. Per-product JSON is for future live fetch with detail_html."
+}

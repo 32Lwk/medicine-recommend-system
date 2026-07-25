@@ -1,0 +1,57 @@
+{
+  "runs": [
+    {
+      "ok": true,
+      "stats": {
+        "mode": "reparse_from_raw",
+        "raw_files": {
+          "indexed": 689,
+          "files": 689
+        },
+        "parsed_ingredients": 287,
+        "skipped_no_html": 196,
+        "empty_section": 206,
+        "interactions_raw": 191,
+        "side_effects_raw": 241,
+        "interactions": 112,
+        "side_effects": 241,
+        "filter_interactions": {
+          "accepted": 113,
+          "rejected": 78,
+          "reject_missing_section10": 66,
+          "reject_wrong_section": 12
+        },
+        "filter_side_effects": {
+          "accepted": 241,
+          "rejected": 0
+        }
+      },
+      "validation": {
+        "interactions": {
+          "errors": [],
+          "count": 112
+        },
+        "side_effects": {
+          "errors": [],
+          "count": 241
+        }
+      },
+      "dry_run": false,
+      "backup_dir": "/workspace/data/pmda/backups/20260725",
+      "merge": {
+        "interactions": {
+          "before": 180,
+          "after": 185,
+          "added": 5,
+          "live_replace": true
+        },
+        "side_effects": {
+          "before": 271,
+          "after": 275,
+          "added": 4,
+          "live_replace": true
+        }
+      }
+    }
+  ]
+}

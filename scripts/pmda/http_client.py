@@ -15,11 +15,21 @@ import httpx
 from scripts.pmda.common import USER_AGENT, normalize_text
 
 PMDA_OTC_SEARCH = "https://www.pmda.go.jp/PmdaSearch/otcSearch/"
+PMDA_OTC_DETAIL = "https://www.pmda.go.jp/PmdaSearch/otcDetail/"
 PMDA_IYAKU_SEARCH = "https://www.pmda.go.jp/PmdaSearch/iyakuSearch/"
 PMDA_IYAKU_DETAIL = "https://www.pmda.go.jp/PmdaSearch/iyakuDetail/"
 
 PMDA_SOURCE_LABEL = "PMDA iyakuSearch"
+PMDA_OTC_SOURCE_LABEL = "PMDA OTC Search"
 PMDA_LIVE_SOURCE_LABELS = frozenset({"PMDA iyakuSearch", "PMDA PackinsSearch"})
+
+_AGE_RESTRICT_RE = re.compile(
+    r"([^。\n]{0,40}(?:歳|才)[^。\n]{0,40}(?:服用しない|使用しない|与えない|飲ませない)[^。\n]*)"
+)
+_OTC_INGREDIENT_ROW_RE = re.compile(
+    r"<tr[^>]*>\s*<td[^>]*>(.*?)</td>\s*<td[^>]*>(.*?)</td>\s*</tr>",
+    re.I | re.S,
+)
 
 JITTER_MIN_SEC = 2.5
 JITTER_MAX_SEC = 5.0
@@ -190,6 +200,7 @@ class PmdaLiveSession:
         self._html_cache: Dict[str, str] = {}
         self._form_data: Optional[Dict[str, str]] = None
         self._form_loaded = False
+        self._otc_form_data: Optional[Dict[str, str]] = None
         self._empty_streak = 0
         self._429_attempt = 0
         self._last_request_at = 0.0
@@ -481,28 +492,246 @@ class PmdaLiveSession:
     def _extract_section(html: str, section: str) -> str:
         return PmdaLiveSession.extract_section_from_html(html, section)
 
+    def _ensure_otc_form_data(self) -> Dict[str, str]:
+        if self._otc_form_data is not None:
+            return dict(self._otc_form_data)
+        resp = self._request("GET", PMDA_OTC_SEARCH)
+
+        class _OtcFormParser(HTMLParser):
+            def __init__(self) -> None:
+                super().__init__()
+                self.in_form = False
+                self.data: Dict[str, str] = {}
+                self._current_select: Optional[str] = None
+                self._opts: List[tuple[str, bool]] = []
+
+            def handle_starttag(self, tag: str, attrs) -> None:
+                d = dict(attrs)
+                if tag == "form" and d.get("id") == "otcSearchForm":
+                    self.in_form = True
+                    return
+                if not self.in_form:
+                    return
+                if tag == "input":
+                    name = d.get("name")
+                    typ = d.get("type", "text").lower()
+                    if not name:
+                        return
+                    if typ in ("checkbox", "radio"):
+                        if "checked" in d:
+                            self.data[name] = d.get("value", "on")
+                    elif typ not in ("image", "button", "submit"):
+                        self.data.setdefault(name, d.get("value", ""))
+                elif tag == "select":
+                    self._current_select = d.get("name")
+                    self._opts = []
+                elif tag == "option" and self._current_select:
+                    self._opts.append((d.get("value", ""), "selected" in d))
+
+            def handle_endtag(self, tag: str) -> None:
+                if tag == "form":
+                    self.in_form = False
+                if tag == "select" and self._current_select:
+                    val = next((v for v, sel in self._opts if sel), self._opts[0][0] if self._opts else "")
+                    self.data[self._current_select] = val
+                    self._current_select = None
+
+        otc_parser = _OtcFormParser()
+        otc_parser.feed(resp.text)
+        self._otc_form_data = otc_parser.data or {
+            "ListRows": "20",
+            "howtoMatchRadioValue": "1",
+            "nameWord": "",
+        }
+        return dict(self._otc_form_data)
+
+    def _build_otc_search_payload(self, product_name: str) -> Dict[str, str]:
+        data = self._ensure_otc_form_data()
+        data.update(
+            {
+                "nameWord": product_name,
+                "howtoMatchRadioValue": "1",
+                "ListRows": "20",
+                "btnA.x": "39",
+                "btnA.y": "12",
+            }
+        )
+        return data
+
     def fetch_otc_search(self, product_name: str) -> str:
         if not self._can_request():
             return ""
         try:
-            resp = self._request(
-                "POST",
-                PMDA_OTC_SEARCH,
-                data={
-                    "nameWord": product_name,
-                    "howtoMatchRadioValue": "1",
-                    "ListRows": "20",
-                    "btnA": "検索",
-                },
-            )
+            payload = self._build_otc_search_payload(product_name)
+            resp = self._request("POST", PMDA_OTC_SEARCH, data=payload)
             html = resp.text
         except PmdaFetchAborted:
             return ""
         try:
-            self._record_html(html)
+            self._record_html(html, allow_no_results=True)
         except PmdaFetchAborted:
             return ""
         return html
+
+    def fetch_otc_detail_html(self, fname_or_url: str) -> str:
+        """OTC 詳細 HTML を取得。fname または GeneralList URL 断片を受け取る。"""
+        fname = fname_or_url.strip()
+        if "otcDetail/" in fname:
+            fname = fname.split("otcDetail/", 1)[1]
+        fname = fname.lstrip("/")
+        if fname.startswith("GeneralList/"):
+            fname = fname[len("GeneralList/") :]
+        cache_key = f"otc_detail::{fname}"
+        if cache_key in self._html_cache:
+            self.stats.cache_hits += 1
+            return self._html_cache[cache_key]
+        if not self._can_request():
+            return ""
+        url = f"{PMDA_OTC_DETAIL}{fname}"
+        try:
+            resp = self._request("GET", url)
+        except PmdaFetchAborted:
+            return ""
+        try:
+            self._record_html(resp.text)
+        except PmdaFetchAborted:
+            return ""
+        self._html_cache[cache_key] = resp.text
+        return resp.text
+
+    @staticmethod
+    def extract_otc_result_hits(html: str) -> List[Dict[str, str]]:
+        """検索結果テーブルから (製品名, メーカー, detail fname) を抽出。"""
+        hits: List[Dict[str, str]] = []
+        table_match = re.search(
+            r"<table[^>]*id=['\"]ResultList['\"][^>]*>(.*?)</table>",
+            html or "",
+            re.I | re.S,
+        )
+        body = table_match.group(1) if table_match else (html or "")
+        row_re = re.compile(
+            r"<tr[^>]*>\s*<td[^>]*>\s*<div>\s*<a[^>]+href=['\"]([^'\"]+)['\"][^>]*>(.*?)</a>"
+            r".*?</td>\s*<td[^>]*>(.*?)</td>",
+            re.I | re.S,
+        )
+        for href, name_html, mfr_html in row_re.findall(body):
+            name = normalize_text(re.sub(r"<[^>]+>", " ", name_html))
+            mfr = normalize_text(re.sub(r"<[^>]+>", " ", mfr_html))
+            mfr = re.sub(r"^(製造販売元|販売元|製造元|発売元)\s*/\s*", "", mfr)
+            fname = href
+            if "otcDetail/" in href:
+                fname = href.split("otcDetail/", 1)[1]
+            fname = fname.split("GeneralList/", 1)[-1].strip("/")
+            if name and fname:
+                hits.append(
+                    {
+                        "product_name": name,
+                        "manufacturer": mfr,
+                        "fname": fname,
+                        "href": urljoin(PMDA_OTC_SEARCH, href),
+                        "text": name,
+                    }
+                )
+        return hits
+
+    @staticmethod
+    def parse_otc_detail_html(html: str) -> Dict[str, str]:
+        """OTC 詳細 HTML から効能・用法・成分・年齢制限などを抽出。"""
+        fields: Dict[str, str] = {}
+        pair_re = re.compile(
+            r"<tr[^>]*>\s*<td[^>]*class=['\"]head['\"][^>]*>(.*?)</td>\s*"
+            r"<td[^>]*class=['\"]deta['\"][^>]*>(.*?)</td>\s*</tr>",
+            re.I | re.S,
+        )
+        for raw_key, raw_val in pair_re.findall(html or ""):
+            key = normalize_text(re.sub(r"<[^>]+>", " ", raw_key))
+            if key == "成分分量":
+                ingredients: List[str] = []
+                for ing_html, qty_html in _OTC_INGREDIENT_ROW_RE.findall(raw_val):
+                    ing = normalize_text(re.sub(r"<[^>]+>", " ", ing_html))
+                    qty = normalize_text(re.sub(r"<[^>]+>", " ", qty_html))
+                    if not ing or ing == "成分":
+                        continue
+                    ingredients.append(f"{ing}{(' ' + qty) if qty and qty != '分量' else ''}".strip())
+                if ingredients:
+                    fields["成分"] = "、".join(ingredients)
+                # keep leading quantity note if present
+                lead = normalize_text(re.sub(r"<table.*", "", raw_val, flags=re.I | re.S))
+                lead = normalize_text(re.sub(r"<[^>]+>", " ", lead))
+                if lead and "成分" in fields:
+                    fields["成分"] = f"{lead} {fields['成分']}".strip()
+                continue
+            val = normalize_text(re.sub(r"<[^>]+>", " ", raw_val))
+            if key and val:
+                fields[key] = val
+
+        efficacy = fields.get("効能・効果") or fields.get("効能効果") or ""
+        usage = fields.get("用法・用量") or fields.get("用法用量") or ""
+        ingredients = fields.get("成分") or fields.get("成分分量") or ""
+        age = fields.get("年齢制限") or ""
+
+        # テーブル構造が無いプレーンテキスト向けフォールバック
+        if not any((efficacy, usage, ingredients)):
+            text = normalize_text(re.sub(r"<[^>]+>", " ", html or ""))
+            for label, key in (
+                (r"効能[・･]?効果", "efficacy"),
+                (r"用法[・･]?用量", "usage"),
+                (r"年齢制限", "age"),
+                (r"成分(?!分量)", "ingredients"),
+            ):
+                m = re.search(
+                    label + r"\s*[:：]?\s*(.+?)(?=(?:効能|用法|成分|年齢制限|添加物|$))",
+                    text,
+                )
+                if not m:
+                    continue
+                val = normalize_text(m.group(1)).rstrip("。")
+                if key == "efficacy":
+                    efficacy = val
+                elif key == "usage":
+                    usage = val
+                elif key == "age":
+                    age = val
+                elif key == "ingredients":
+                    ingredients = val
+
+        if not age:
+            for blob in (usage, fields.get("使用上の注意") or "", fields.get("■してはいけないこと") or ""):
+                m = _AGE_RESTRICT_RE.search(blob)
+                if m:
+                    age = normalize_text(m.group(1))
+                    break
+            if not age and re.search(r"(歳|才)未満[：:]\s*服用しない", usage):
+                m2 = re.search(r"([^。]*?(?:歳|才)未満[：:]\s*服用しないこと?)", usage)
+                if m2:
+                    age = normalize_text(m2.group(1))
+
+        product = fields.get("製品名") or fields.get("承認販売名") or ""
+        pmda_yakkou = fields.get("薬効分類") or ""
+        pmda_risk = fields.get("リスク区分") or fields.get("医薬品区分") or ""
+        manufacturer = fields.get("製造販売会社") or ""
+        if manufacturer:
+            manufacturer = normalize_text(re.split(r"添付文書情報", manufacturer)[0])
+            manufacturer = re.sub(r"^会社名[：:]\s*", "", manufacturer)
+
+        out = {
+            "製品名": product,
+            "メーカー名": manufacturer,
+            # 社内タクソノミ用の「分類」「医薬品の種類」には入れない
+            "pmda_薬効分類": pmda_yakkou,
+            "pmda_リスク区分": pmda_risk,
+            "効能効果": efficacy,
+            "用法用量": usage,
+            "年齢制限": age,
+            "成分": ingredients,
+            "出典": PMDA_OTC_SOURCE_LABEL,
+        }
+        if any(
+            out.get(k)
+            for k in ("効能効果", "用法用量", "成分", "年齢制限", "pmda_薬効分類", "pmda_リスク区分")
+        ):
+            return out
+        return {}
 
     @staticmethod
     def extract_links(html: str, base_url: str) -> List[Dict[str, str]]:
@@ -642,15 +871,7 @@ class PmdaHttpClient(PmdaLiveSession):
         if not self.live:
             return []
         html = self.fetch_otc_search(product_name)
-        links = self.extract_links(html, PMDA_OTC_SEARCH)
-        hits: List[Dict[str, str]] = []
-        for link in links:
-            if product_name not in link["text"] and normalize_text(product_name) not in link["text"]:
-                continue
-            if "pdf" in link["href"].lower():
-                continue
-            hits.append(link)
-        return hits[:20]
+        return self.extract_otc_result_hits(html)[:20]
 
     def parse_interactions_from_html(self, html: str, ingredient_a: str, ingredient_b: str) -> List[Dict[str, str]]:
         return super().parse_interactions_from_html(html, ingredient_a, [ingredient_b])

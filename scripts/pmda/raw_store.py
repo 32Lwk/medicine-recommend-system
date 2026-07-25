@@ -11,6 +11,8 @@ from scripts.pmda.common import PMDA_DIR, normalize_text, utc_now_iso
 
 RAW_DIR = PMDA_DIR / "raw" / "ingredients"
 RAW_INDEX = PMDA_DIR / "raw" / "index.json"
+RAW_OTC_DIR = PMDA_DIR / "raw" / "otc_products"
+RAW_OTC_INDEX = PMDA_DIR / "raw" / "otc_index.json"
 
 
 def _ingredient_key(ingredient: str) -> str:
@@ -115,4 +117,86 @@ def list_missing_raw(ingredients: List[str]) -> List[str]:
 def raw_stats() -> Dict[str, int]:
     idx = _load_index()
     on_disk = len(list(RAW_DIR.glob("*.json"))) if RAW_DIR.is_dir() else 0
+    return {"indexed": len(idx), "files": on_disk}
+
+
+def _otc_key(product_key: str) -> str:
+    return normalize_text(product_key)
+
+
+def otc_raw_file_path(product_key: str) -> Path:
+    digest = hashlib.sha256(_otc_key(product_key).encode("utf-8")).hexdigest()[:20]
+    return RAW_OTC_DIR / f"{digest}.json"
+
+
+def _load_otc_index() -> Dict[str, str]:
+    if not RAW_OTC_INDEX.is_file():
+        return {}
+    try:
+        data = json.loads(RAW_OTC_INDEX.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    if isinstance(data, dict) and isinstance(data.get("by_product_key"), dict):
+        return {normalize_text(k): str(v) for k, v in data["by_product_key"].items()}
+    return {}
+
+
+def _save_otc_index(by_product_key: Dict[str, str]) -> None:
+    RAW_OTC_INDEX.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "updated_at": utc_now_iso(),
+        "count": len(by_product_key),
+        "by_product_key": dict(sorted(by_product_key.items())),
+    }
+    RAW_OTC_INDEX.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def save_otc_product_raw(
+    product_key: str,
+    *,
+    parsed: Optional[Dict[str, Any]] = None,
+    detail_html: str = "",
+    detail_fname: str = "",
+    search_name: str = "",
+    pmda_hit: str = "",
+    score: int = 0,
+    status: str = "ok",
+    reason: str = "",
+    source: str = "live",
+) -> Path:
+    """OTC 1 品目の PMDA 取得結果を永続化（再取得なしの保全・将来 reparse 用）。"""
+    RAW_OTC_DIR.mkdir(parents=True, exist_ok=True)
+    path = otc_raw_file_path(product_key)
+    payload: Dict[str, Any] = {
+        "product_key": _otc_key(product_key),
+        "fetched_at": utc_now_iso(),
+        "status": status,
+        "reason": reason,
+        "source": source,
+        "search_name": search_name or "",
+        "pmda_hit": pmda_hit or "",
+        "score": score,
+        "detail_fname": detail_fname or "",
+        "detail_html": detail_html or "",
+        "parsed": parsed or {},
+    }
+    fd, tmp_name = tempfile.mkstemp(dir=RAW_OTC_DIR, suffix=".tmp")
+    tmp_path = Path(tmp_name)
+    try:
+        with open(fd, "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+            f.write("\n")
+        tmp_path.replace(path)
+    finally:
+        if tmp_path.is_file():
+            tmp_path.unlink(missing_ok=True)
+    idx = _load_otc_index()
+    idx[_otc_key(product_key)] = path.name
+    _save_otc_index(idx)
+    return path
+
+
+def otc_raw_stats() -> Dict[str, int]:
+    idx = _load_otc_index()
+    on_disk = len(list(RAW_OTC_DIR.glob("*.json"))) if RAW_OTC_DIR.is_dir() else 0
     return {"indexed": len(idx), "files": on_disk}

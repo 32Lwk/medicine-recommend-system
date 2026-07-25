@@ -45,11 +45,13 @@ DerivedData/
 user_interface_state.xcuserstate
 *.xcuserstate
 
-# Logs（log/ 配下は追跡。tests/fixtures の jsonl は下記例外）
+# Logs（log/ 配下は追跡。tests/fixtures・PMDA raw の jsonl は下記例外）
 *.jsonl
 !log/
 !log/**
 !tests/fixtures/**/*.jsonl
+!data/pmda/raw/
+!data/pmda/raw/**/*.jsonl
 # 肥大化しリモート push 不可(GitHub 100MB 超)のログは追跡除外（他 log/ 成果物は追跡継続）
 # 必ず !log/** より後に置くこと（gitignore は後勝ち）
 log/app.log

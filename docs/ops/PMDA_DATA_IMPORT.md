@@ -270,6 +270,75 @@ AWS_PROFILE=admin python scripts/start_bedrock_kb_ingestion.py 30BCEJCJHA 0ZCBZW
 
 **OTC live**: 初回 10 品目は PMDA ヒット 0（CSV 製品名と検索結果テキストのマッチ改善が必要）。
 
+### OTC Cloud live 完走（2026-07-25）
+
+**Cloud IP GO/NO-GO**: **GO**（403/429 = 0、hits = 7/10）
+
+```bash
+.venv/bin/python scripts/pmda/fetch_otc.py \
+  --live --limit 10 --min-interval 1 --allow-daytime --force
+# → requested=18 hits=7 errors=3 abort=''
+```
+
+**完走ランナー**: `scripts/pmda/run_live_fetch_otc_cloud.py`（4h gap / 日次上限無効、`--merge-every 100`、`--max-hours 20`）
+
+| 指標 | 値 |
+|------|-----|
+| otc pending | **0**（unique key 7,251 = done 6,011 + failed/orphans 1,240） |
+| CSV 行数 | **7,495**（全行保持・PMDA 優先 merge） |
+| ヒット率 | **82.9%**（6,011 / 7,251）※目標 95% 未達 |
+| orphans | **1,240**（理由: 全て `not_found` — PMDA otcSearch に該当なし） |
+| HTTP 総数 | **13,929**（session 最終、errors **0**） |
+| 所要時間 | **~14.5h**（elapsed_sec 52,290） |
+| abort | false（403 リトライ 0 回） |
+| Cloud IP | GO（遮断なし） |
+
+進捗: `log/analysis/pmda_cloud_otc_20260725.json`  
+orphans: `log/analysis/pmda_otc_orphans_20260725.json`
+
+**マッチ改善（本ランで実装）**
+
+- otcSearch は form 全項目 + `btnA.x/y` POST、詳細は `/PmdaSearch/otcDetail/{fname}`
+- 品名: NFKC・括弧注釈除去・剤形/容量除去・空白無視・検索フォールバック（最大 5 候補）
+- スコア: 完全一致 → 正規化一致 → 部分一致（ratio ≥ 50、弱部分一致の底上げは廃止）
+
+**品質評価（vs `data/pmda/backups/20260724`）**
+
+| 項目 | 結果 |
+|------|------|
+| 行・キー保持 | unique 7,250 → 7,251（欠落 0、orphans も baseline 保持） |
+| 効能効果 / 用法用量 | 更新 5,473 / 5,940（空欄化 0） |
+| 年齢制限 | 非空 44.4% → 48.0%（+259、新規は全て「歳/才」含む） |
+| 成分 | 変化なし（既存値維持） |
+| 分類 / 医薬品の種類 | **社内タクソノミ維持**（初回 merge で PMDA 薬効分類・リスク区分が混入→復元済み。以降は merge 対象外） |
+| ドーピング列 | 変化 0 |
+| 推奨フィルタ | 解熱鎮痛薬 1,207 / 風邪薬 1,131（baseline と同数） |
+
+スポット: バファリンA・ロキソニンS の効能/用法/年齢は PMDA 添付文書と整合。
+
+**PMDA 情報の保全（再取得なし・2026-07-25）**
+
+| 置き場 | 内容 |
+|--------|------|
+| `data/otc_medicine_data.csv` の `pmda_薬効分類` / `pmda_リスク区分` | 専用カラム追加済み。過去ランは detail HTML 未保全のため**空**。今後の live fetch で充填 |
+| `data/pmda/raw/otc/applied_updates_20260725.jsonl` | baseline 差分で回収した効能・用法・年齢の before/after（5,943 品目） |
+| `data/pmda/raw/otc_products/*.json` | 同上の品目単位 raw（parsed のみ。`detail_html` 無し） |
+| `data/pmda/raw/otc_index.json` | product_key → raw ファイル索引 |
+
+```bash
+# カラム追加 + 既存反映分の raw 保全（HTTP なし）
+.venv/bin/python scripts/pmda/archive_otc_pmda_applied.py --stamp YYYYMMDD
+```
+
+今後の `process_otc_product` は成功時に `detail_html` 付きで `raw/otc_products/` へ保存し、`pmda_*` を CSV へ merge する。
+
+**side_effects 残 pending 10 件**も本 Phase で消化（pending=0）。その後 `reparse_from_raw.py` で CSV 正本再構築。
+
+**KB / eval（Cloud 環境）**
+
+- `scripts/build_medicine_kb_documents.py` まで完了（products 7,495）
+- S3 sync / Bedrock re-ingest / `eval_medicine_kb.py` は **AWS 未設定のため未実施**（ローカルまたは AWS 資格情報あり環境で C-3 続き）
+
 ## ロールバック
 
 ```bash
