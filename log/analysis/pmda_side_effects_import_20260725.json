@@ -29,6 +29,36 @@
         "abort_reason": ""
       },
       "staging_count": 528
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "staging_count": 528
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "staging_count": 528
+    },
+    {
+      "stats": {
+        "requested": 0,
+        "hits": 0,
+        "errors": 0,
+        "mode": "fixture",
+        "abort_reason": ""
+      },
+      "staging_count": 528
     }
   ]
 }

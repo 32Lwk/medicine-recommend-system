@@ -28,11 +28,7 @@ from scripts.pmda.common import (  # noqa: E402
 from scripts.pmda.merge_into_csv import OTC_FIELDS  # noqa: E402
 from scripts.pmda.normalize import normalize_otc_product_row  # noqa: E402
 from scripts.pmda.queue import get_live_fetch_queue  # noqa: E402
-from scripts.pmda.raw_store import (  # noqa: E402
-    RAW_OTC_DIR,
-    otc_raw_stats,
-    save_otc_product_raw,
-)
+from scripts.pmda.raw_store import RAW_OTC_DIR, otc_raw_stats  # noqa: E402
 
 PMDA_CONTENT_FIELDS = ("効能効果", "用法用量", "年齢制限", "成分")
 BASELINE_DEFAULT = PMDA_DIR / "backups" / "20260724" / "otc_medicine_data.csv"

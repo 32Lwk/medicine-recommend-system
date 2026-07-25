@@ -25,9 +25,9 @@ git add data/otc_medicine_data.csv   # 未追跡の場合のみ
 | `pmda/manifest.json` | PMDA import メタ・live fetch キュー |
 | `pmda/raw/ingredients/` | **PMDA 添付文書 HTML 正本**（680 件・reparse 元） |
 | `pmda/raw/index.json` | raw ファイル索引（成分） |
-| `pmda/raw/otc/` | OTC 反映分アーカイブ（jsonl/summary。再取得なしで保全） |
-| `pmda/raw/otc_products/` | OTC 品目単位 raw（parsed。今後 live では detail_html も保存） |
-| `pmda/raw/otc_index.json` | OTC product_key → raw ファイル索引 |
+| `pmda/raw/otc/` | OTC 反映分アーカイブ（`applied_updates_*.jsonl`。再取得なしで保全） |
+| `pmda/raw/otc_products/` | OTC 品目単位 raw（今後 live 時に detail_html 付きで保存） |
+| `pmda/raw/otc_index.json` | OTC product_key → raw ファイル索引（live 保存時に生成） |
 | `pmda/common_rx_medications.json` | 相互作用 fetch 用 常用処方薬リスト |
 | `kanpo_medicine.csv` | 漢方特化ルール |
 | `summarized_efficacy_data.csv` | GPT 補助効能（Physical 主経路外） |
