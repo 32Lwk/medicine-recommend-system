@@ -576,6 +576,17 @@ body:has(#app > .ui-app) #app {
   --safety-rail-chip-size: clamp(0.75rem, 0.55rem + 0.48vw, 0.9375rem);
   --safety-rail-chip-pad-y: clamp(2px, 0.08rem + 0.06vw, 4px);
   --safety-rail-chip-pad-x: clamp(6px, 0.3rem + 0.4vw, 10px);
+  --safety-rail-chip-line: 1.25;
+  --safety-rail-chip-height: calc(
+    var(--safety-rail-chip-size) * var(--safety-rail-chip-line)
+    + var(--safety-rail-chip-pad-y) * 2
+    + 2px
+  );
+  --safety-rail-cta-height: calc(var(--safety-rail-chip-height) * 1.2);
+  --safety-rail-cta-pad-y: calc(
+    (var(--safety-rail-cta-height) - var(--safety-rail-chip-size) * var(--safety-rail-chip-line) - 2px) / 2
+  );
+  --safety-rail-cta-pad-x: calc(var(--safety-rail-chip-pad-x) * 1.2);
   padding: 5px 12px;
   gap: 8px;
   min-height: 0;
@@ -703,10 +714,12 @@ body:has(#app > .ui-app) #app {
 
 .ui-safety-rail--compact .ui-safety-rail__cta {
   font-size: var(--safety-rail-chip-size);
-  padding: var(--safety-rail-chip-pad-y) var(--safety-rail-chip-pad-x);
-  line-height: 1.25;
+  padding: var(--safety-rail-cta-pad-y) var(--safety-rail-cta-pad-x);
+  line-height: var(--safety-rail-chip-line);
   border-radius: 999px;
-  min-height: 0;
+  box-sizing: border-box;
+  min-height: var(--safety-rail-cta-height);
+  min-width: 0;
   white-space: nowrap;
 }
 

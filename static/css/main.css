@@ -1414,7 +1414,7 @@
         }
         
         /* すべてのボタンとリンクを44px×44px以上に（高齢者向け） */
-        button:not(.collapse-toggle):not(.collapse-icon):not(.ui-feedback-compact__btn),
+        button:not(.collapse-toggle):not(.collapse-icon):not(.ui-feedback-compact__btn):not(.ui-safety-rail__cta),
         a.button,
         .chat-input button,
         .voice-read-main-btn:not(.voice-read-compact-btn),

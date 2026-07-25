@@ -623,10 +623,12 @@ body[data-ui-variant="sage"] {
   background: #eef4f8;
   font-size: var(--safety-rail-chip-size);
   font-weight: 600;
-  padding: var(--safety-rail-chip-pad-y) var(--safety-rail-chip-pad-x);
-  line-height: 1.25;
+  padding: var(--safety-rail-cta-pad-y) var(--safety-rail-cta-pad-x);
+  line-height: var(--safety-rail-chip-line);
   border-radius: 999px;
-  min-height: 0;
+  box-sizing: border-box;
+  min-height: var(--safety-rail-cta-height);
+  min-width: 0;
   white-space: nowrap;
 }
 
