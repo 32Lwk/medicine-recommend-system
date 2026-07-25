@@ -1,7 +1,20 @@
 {
   "source": "CHANGELOG.md",
-  "header_date": "2026年7月25日（OTC 上位50画像 R2 完備・推奨除外・TTS/UI・localhost 静的アセット）",
+  "header_date": "2026年7月25日（SSE 副作用 Q&A 表示復旧・医薬品比較 Q&A・CodeBuild post_deploy 高速化）",
   "releases": [
+    {
+      "heading": "2026年7月25日 — SSE 副作用 Q&A 表示復旧・医薬品比較 Q&A・CodeBuild post_deploy 高速化",
+      "overview": "AWS ステージングで 「ロキソニンって眠くなる？」 等の副作用 Q&A がバックエンド正常完了後も 処理バブル（AI分析中）のまま になる不具合を修正。あわせて 医薬品比較 Q&A ルーティング・ブランド通称レジストリ・副作用 UI、および CodeBuild post_build 高速化（精度維持） を反映。",
+      "highlights": []
+    },
+    {
+      "heading": "2026年7月25日 — NLU/ルーティング統合（Unified Pipeline）・副作用 QA・AWS ログ分析",
+      "overview": "AWS ステージングログで特定した Concierge follow-up 乖離（doc_changelog 固定）と ロキソニン副作用 QA の誤 escalation を、Intent Router v2 有効時に 一括 ON する 3 層ルーティングで修正。あわせて AWS CloudWatch ログ分析パイプライン（GCP 相当）を追加し、ゴールデン 6 セッションを local-v2-chat-test で再検証（8/8 自動合格）。",
+      "highlights": [
+        "finalize_medicine_qa_response: DB 保存後に session cookie から messages を削除する際、mark_pipeline_turn_bot_appended を呼び pipeline end guard の誤 system_e…",
+        "main._enrich_v2_test_chat_body: v2 テスト UA 向け POST 応答に DB フォールバック付き latest_bot を同梱"
+      ]
+    },
     {
       "heading": "2026年7月25日 — OTC 画像（トキワ公式）・推奨除外・TTS/UI・静的アセット",
       "overview": "マツキヨ未掲載の トキワイブプロエースＡ を常盤薬品公式画像で R2 に配置。イブプロフェン錠200S / 200SC は OTC CSV に残しつつ推奨候補から除外（EC 未掲載・画像なし・ジェネリック名で購入特定が困難なため）。あわせて Sage UI の CHANGELOG 表示・TTS（Polly SSML / Web Speech） と localhost 限定の /static/ 配信を改善。",
@@ -82,48 +95,6 @@
         "docs/ops/GCP_RAG_MIGRATION_ADR.md: Option C 推奨（staging Bedrock / GCP 本番レガシー）",
         "push 毎 ingestion は コスト増 — 運用負荷が高い場合は KB_INGESTION_ON_PUSH=false + 手動 reflect_medicine_kb.sh も可",
         "推奨順位（physical_orchestrator.py）は 変更なし"
-      ]
-    },
-    {
-      "heading": "2026年7月24日 — PMDA データ取り込み拡張（live fetch・CSV merge）",
-      "overview": "PMDA 公的情報（市販薬検索・添付文書 §10 相互作用・§11 副作用）を data/*.csv 正本へ取り込むパイプラインを拡張。初版は catalog expansion を正本としたが、2026-07-24 夜の正本再生成以降は live + raw 再パースが正本（catalog 復元なし）。CodePipeline / AWS IP からの live fetch は 禁止（ローカル回線のみ）。",
-      "highlights": [
-        "リクエスト間隔 2.5–5.0 秒、1 セッション 30 件上限",
-        "403 / 429×3 / empty HTML×3 で abort → 24h クールダウン",
-        "GO/NO-GO: fetch_interactions.py --live --limit 5",
-        "data/medicine_interactions.csv / data/medicine_side_effects.csv: PMDA 出典行の merge",
-        "data/ingredient_dictionary.json: PMDA import 由来の成分同義語拡張",
-        "data/pmda/manifest.json: import メタ・クールダウン",
-        "data/pmda/staging/: 手動フォールバック用 staging JSON",
-        "docs/ops/PMDA_DATA_IMPORT.md: 運用手順・robots 調査・abort 時フォールバック",
-        "data/DATA_CATALOG.md: PMDA ソース追記"
-      ]
-    },
-    {
-      "heading": "2026年7月24日 — OTC 商品画像 R2 一括同期・ローカル export",
-      "overview": "推奨ログ頻度上位の OTC 医薬品について、マツキヨココカラ online から商品画像を取得し Cloudflare R2（https://images.yutok.dev/otc/）へ一括アップロードするパイプラインを追加。初回実行で 71 / 200 件 を R2 に配置（ログ推奨 117 件のうち 41 件）。UI は MEDICINE_IMAGE_CDN_BASE 経由で アップロード済み品目のパッケージ画像 を表示（未配置は従来どおりプレースホルダー）。",
-      "highlights": [
-        "推奨ログ（recommendation_detail_log.jsonl / recommendation_log.jsonl / counseling_detail_log.jsonl）から推奨頻度を集計",
-        "上位 117 品目を優先し、不足分を data/otc_medicine_data.csv で 200 件まで補完",
-        "マツキヨ検索: セッション Cookie 取得後 search_keyword パラメータで /store/catalogsearch/result/ を検索（?q= は不可）",
-        "商品ページ（JAN）から _01_ パック画像を取得 → WebP 変換 → R2 otc/{slug}.webp へ PUT",
-        "スラッグは src/services/medicine_image_urls.py の slugify_product_name() と同一規則",
-        "フラグ: --dry-run / --upload / --resume / --limit / --delay / --local-dir / --no-local",
-        "成果物: log/analysis/otc_image_sync/manifest.json / candidates.csv / run.log",
-        "manifest.json の uploaded 行を CDN から static/otc/{slug}.webp へ一括ダウンロード",
-        "static/otc/index.json にファイル一覧を出力",
-        "同期スクリプト --upload 時も --local-dir static/otc（既定）で同時保存可能",
-        "ローカル .env / GCP 本番（cloudbuild.yaml）/ AWS ステージングは MEDICINE_IMAGE_CDN_BASE=https://images.yutok.dev/otc/ 設定済み",
-        "src/services/recommendation_client_payload.py → enrich_medicine_image_url() が API ペイロードに image_url を付与",
-        "フロント: static/js/ui/medicine_mapper.js / medicine_card.js — 404 時 onerror でプレースホルダー",
-        "71 枚 WebP 合計 約 5.7 MB（200 枚でも ~50 MB 想定）",
-        "Cloudflare R2 無料枠: 10 GB ストレージ / egress 無料 → 十分余裕",
-        "docs/ops/CLOUDFLARE_R2_IMAGES.md: 一括同期・ローカル export・オフライン env の手順を追記",
-        ".gitignore: static/otc/*.webp / static/otc/index.json を生成物として除外（static/otc/.gitkeep のみ追跡）",
-        "--log-only（ログ推奨品目のみ対象）",
-        "data/otc_image_jan_overrides.csv による JAN 手動上書き",
-        "マッチ品質レビュー（例: タイレノールＡ → ＡS バリアント等）",
-        "マツキヨ未掲載品（トキワイブプロエースＡ 等）の別ソース検討 → 2026-07-25 トキワ公式画像を R2 配置済み（CHANGELOG 2026-07-25）"
       ]
     }
   ]

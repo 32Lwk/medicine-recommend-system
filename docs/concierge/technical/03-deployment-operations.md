@@ -9,17 +9,21 @@
 ## AWS ステージング（aws.medicine.yutok.dev）
 
 - **CI**: CodePipeline `medicine-recommend-main`
-  1. GitHub Source（CodeStar Connection）
+  1. GitHub Source（CodeStar Connection、`CODEBUILD_CLONE_REF` 推奨）
   2. CodeBuild `medicine-recommend-build` — Docker build → ECR push
-  3. `ecs update-service --force-new-deployment`
-  4. `services-stable` 待ち
-  5. `sync-static-to-s3.sh --invalidate`（CodeBuild で static 同期が有効な場合）
-  6. （任意）`sync-all-kb-to-s3.sh` — `SYNC_KB_TO_S3=true` 時
-  7. （任意）`start-managed-kb-ingestion.sh` — `KB_INGESTION_ON_PUSH=true` 時（非同期）
-  8. `verify-concierge-ssot.sh` → staging smoke
+  3. **`scripts/codebuild-post-deploy.sh`**（post_build オーケストレーション）
+     - `ecs update-service --force-new-deployment`
+     - **`wait-staging-health-commit.sh`** — `/health` で新 `git_commit` を確認（`services-stable` の代替）
+     - **条件付き** `sync-static-to-s3.sh --invalidate`（`static/` 等の変更時のみ）
+     - **条件付き** `sync-all-kb-to-s3.sh`（`data/` / `docs/concierge/` 等の変更時のみ）
+     - **並列**: static sync / KB sync / `verify-concierge-ssot.sh`
+     - **毎回**: staging smoke（Translate / Polly / CDN）— 精度維持
+     - 変更検知不可時は **従来どおり全 sync**（`codebuild_deploy_paths.py` フォールバック）
+  4. （任意）`start-managed-kb-ingestion.sh` — KB 変更時 + `KB_INGESTION_ON_PUSH=true`
 - **確認**: `GET /health` の `git_commit`、 `GET /health/aws` の機能フラグ
 - **手動デプロイ**: `scripts/deploy-aws-ecs.sh`
 - **env 更新**: `scripts/update-aws-express-env.sh`（PassRole 不要）
+- **詳細**: `docs/ops/AWS_CODEPIPELINE.md`
 
 ## Bedrock Managed Knowledge Base（Dual KB）
 

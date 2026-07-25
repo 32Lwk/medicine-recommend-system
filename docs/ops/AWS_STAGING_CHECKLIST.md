@@ -56,7 +56,10 @@ CodePipeline で static 同期 + smoke（push 毎自動）:
 
 - [x] CodeBuild env `SYNC_STATIC_TO_S3=true`（[buildspec.yml](../../buildspec.yml) 既定 + CodeBuild 環境変数）
 - [x] CodeBuild ロールに S3 + `cloudfront:CreateInvalidation`（`setup-aws-codepipeline.sh`）
-- [x] post_build: `sync-static-to-s3.sh --invalidate` → `aws-staging-smoke.sh`（Translate / Polly / CDN）
+- [x] post_build: **`scripts/codebuild-post-deploy.sh`**
+  - `/health` commit 待ち → 条件付き static/KB sync（変更パス検知）→ SSOT 並列 → **毎回** `aws-staging-smoke.sh`
+  - 変更検知不可時は **全 sync フォールバック**（精度維持）
+- [ ] Pipeline Source `CODEBUILD_CLONE_REF`（admin `iam:PassRole` — git diff 用、未設定時は compare / フォールバック）
 
 手動 smoke（ローカル）:
 

@@ -36,7 +36,10 @@
 ## SSE（Server-Sent Events）
 
 - ストリーミング応答で処理ステータス（マスコットアニメーション）を段階表示
-- 実装: `src/services/sse_emit.py` 等 — 一方向サーバー→クライアント配信
+- 実装: `src/services/sse_emit.py`、`src/handlers/chat/chat_stream.py` — 一方向サーバー→クライアント配信
+- **`done` イベント**: `bot_message` を含む。クライアントは `renderDonePayloadImmediately` で即描画
+- **副作用 Q&A（2026-07-25）**: `medicine_side_effect_qa` は `qa_delta` 非対応のため **`done` 必須**。DB 保存後 in-memory `messages` を同期し、空時は DB フォールバック（`chat_medicine_qa_html.py` / `chat_stream.py`）
+- **推奨フロー**: Sage UI は最終 `diagnosis` 一括描画のため途中 SSE（`cards` / `reco_detail`）をスキップ可能（`shouldBulkRenderSageReco`）
 
 ## 多言語
 

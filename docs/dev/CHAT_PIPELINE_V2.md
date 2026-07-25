@@ -37,6 +37,8 @@ Intent Router が正しい `sub_route` を返しても実行層（Concierge rege
 
 **医薬品比較 Q&A（2026-07-25 追記）**: 「ロキソニンとイブの違い」等は `medicine_qa` へ。副作用判定の誤ルーティングを `medicine_qa_routing.is_strict_medicine_side_effect_question` で防止。通称解決は [`MEDICINE_BRAND_RESOLVE.md`](MEDICINE_BRAND_RESOLVE.md)。
 
+**SSE `done` と副作用 Q&A（2026-07-25）**: `handle_medicine_side_effect_qa` 完了後、`finalize_medicine_qa_response` が DB に保存した bot メッセージを SSE `done.bot_message` に載せる。in-memory `session["messages"]` が空の場合は `chat_stream._messages_for_sse_done()` が DB から復元。処理バブル残留（「AI分析中」のまま）を防止。
+
 **ゴールデン再検証**: `tests/fixtures/v2_golden_aws_6_sessions.yaml` + `--scenarios-path`（AWS staging 6 セッション由来）
 
 **観測**: `dialogue_route_execution` ログ、`log/analysis/*_local_v2_chat_test_golden-aws-6-final.md`

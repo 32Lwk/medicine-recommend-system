@@ -1,16 +1,34 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月25日**（医薬品比較 Q&A・ブランド通称解決・副作用 UI・CodeBuild post_deploy 高速化）
+**最終更新日: 2026年7月25日**（SSE 副作用 Q&A 表示復旧・医薬品比較 Q&A・CodeBuild post_deploy 高速化）
 
 ---
 
-## 2026年7月25日 — 医薬品比較 Q&A・ブランド通称レジストリ・副作用表示 UI・AWS post_deploy
+## 2026年7月25日 — SSE 副作用 Q&A 表示復旧・医薬品比較 Q&A・CodeBuild post_deploy 高速化
 
 ### 概要
 
-「ロキソニンとイブの違い」等の **医薬品比較質問** が副作用 Q&A に誤ルーティングされ、ケイブク（ケイ**イブ**ク部分一致）が誤検出される問題を修正。**意図ベースの `medicine_qa` ルート**、**拡張可能なブランド通称レジストリ**、**質問に関連する補足セクションのみ表示**、**副作用 Q&A の読みやすい UI** を追加。あわせて CodeBuild **post_build を `codebuild-post-deploy.sh` に委譲**し、変更パス分岐でデプロイ時間を短縮。
+AWS ステージングで **「ロキソニンって眠くなる？」** 等の副作用 Q&A がバックエンド正常完了後も **処理バブル（AI分析中）のまま** になる不具合を修正。あわせて **医薬品比較 Q&A ルーティング**・**ブランド通称レジストリ**・**副作用 UI**、および CodeBuild **post_build 高速化（精度維持）** を反映。
 
-### 医薬品 Q&A ルーティング（比較 vs 副作用）
+### SSE `done` — 副作用 Q&A UI 表示復旧（commit `39d4d39`）
+
+| 症状 | 原因 | 修正 |
+|------|------|------|
+| 処理バブルが消えず bot 返信なし | `finalize_medicine_qa_response` が DB 保存後 `del session["messages"]` | 保存後 **DB から in-memory を再同期** |
+| SSE `done` に `bot_message: null` | `chat_stream.py` が空 in-memory から `done` 組み立て | `_messages_for_sse_done()` で **DB フォールバック** |
+
+**経路**: `medicine_side_effect_qa` は `qa_delta` 非対応のため **`done` イベント依存**（`qa_delta` がある経路は従来どおり）。
+
+| ファイル | 変更 |
+|----------|------|
+| `src/handlers/chat/chat_medicine_qa_html.py` | DB 保存後 `session["messages"]` 同期 |
+| `src/handlers/chat/chat_stream.py` | `_messages_for_sse_done()` |
+| `tests/chat/test_chat_stream_api.py` | SSE done + DB フォールバック |
+| `tests/integration/test_medicine_qa_flow.py` | 副作用 Q&A フロー |
+
+**検証**: AWS ログ解析（`log/analysis/2026-07-25_downloaded-aws-logs-*.md`）でバックエンド応答正常を確認後、ステージング再現 → 修正。
+
+### 医薬品 Q&A ルーティング（比較 vs 副作用）（commit `cdad315`）
 
 | 問題 | 原因 | 修正 |
 |------|------|------|
@@ -54,17 +72,24 @@
 | `static/js/ui/ui_strings.js` | 副作用バッジ i18n |
 | `src/services/status_diagnosis_builder.py` | `build_side_effect_qa_from_chat_response`、QA 補足の焦点タイトル |
 
-### AWS CodeBuild post_deploy 高速化
+### AWS CodeBuild post_deploy 高速化（精度維持）
 
 | 変更 | 内容 |
 |------|------|
 | `buildspec.yml` | post_build を `scripts/codebuild-post-deploy.sh` に委譲 |
-| `scripts/lib/codebuild_deploy_paths.py` | git diff / GitHub compare による変更パス検知 |
-| `scripts/wait-staging-health-commit.sh` | `/health` commit 待ち（`services-stable` より早い） |
-| `scripts/aws-staging-smoke.sh` | ステージング smoke 改善 |
-| `docs/ops/AWS_CODEPIPELINE.md` | 高速 post_build・トラブルシュート更新 |
+| `scripts/lib/codebuild_deploy_paths.py` | git diff / CodePipeline 前回 commit / GitHub compare → 変更パス分類 |
+| `scripts/wait-staging-health-commit.sh` | `/health` で **live commit** 待ち（`services-stable` より早く正確） |
+| `scripts/codebuild-post-deploy.sh` | 条件付き static/KB sync + **並列** SSOT + **毎回フル smoke** |
+| `scripts/aws-staging-smoke.sh` | `SKIP_HEALTH_WAIT=1`（二重待ち回避、commit 再確認あり） |
+| `scripts/setup-aws-codepipeline.sh` | Source `CODEBUILD_CLONE_REF`（git diff 用） |
+| `tests/ops/test_codebuild_deploy_paths.py` | パス分類 10 件 |
+| `docs/ops/AWS_CODEPIPELINE.md` | 高速 post_build・フォールバック方針 |
 
-**目安**: backend のみ push 時 ~11 分 → ~7 分（static/KB sync スキップ時）
+**精度維持の原則**: 変更ファイルが特定できない場合は **従来どおり全 sync**。smoke / SSOT 検証は **毎回実行**。
+
+**目安**: backend のみ push 時 ~11 分 → **~6〜7 分**（static/KB sync スキップ時）
+
+**残作業（AWS）**: Pipeline Source を `CODEBUILD_CLONE_REF` に更新（admin `iam:PassRole`）。未更新時は GitHub compare → 不明なら全 sync フォールバック。
 
 ---
 
