@@ -19,9 +19,10 @@ def _safe_log_snippet(text: str, *, limit: int = 80) -> str:
 
 
 def measure_intent_router_logs(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    """dialogue_route_shadow / dialogue_route_dispatch JSONL 行を集計。"""
+    """dialogue_route_shadow / dispatch / execution JSONL 行を集計。"""
     shadow = [r for r in rows if r.get("log_type") == "dialogue_route_shadow"]
     dispatch = [r for r in rows if r.get("log_type") == "dialogue_route_dispatch"]
+    execution = [r for r in rows if r.get("log_type") == "dialogue_route_execution"]
 
     shadow_mismatch = sum(1 for r in shadow if r.get("mismatch"))
     dispatch_handled = sum(1 for r in dispatch if r.get("handled"))
@@ -38,6 +39,12 @@ def measure_intent_router_logs(rows: list[dict[str, Any]]) -> dict[str, Any]:
         Counter(k or "agree" for k in shadow_kinds)
     )
     dispatch_by_handler = dict(Counter(str(r.get("handler") or "unknown") for r in dispatch))
+
+    execution_mismatch = sum(1 for r in execution if r.get("mismatch"))
+    execution_by_layer = dict(Counter(str(r.get("layer_used") or "unknown") for r in execution))
+    execution_side_effect = sum(
+        1 for r in execution if r.get("dispatch_sub_route") == "medicine_side_effect_qa"
+    )
 
     mismatch_rate = _pct(shadow_mismatch, len(shadow))
     dispatch_success_rate = _pct(dispatch_handled, len(dispatch))
@@ -94,6 +101,11 @@ def measure_intent_router_logs(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "dispatch_unhandled": dispatch_missed,
         "dispatch_success_rate_pct": dispatch_success_rate,
         "dispatch_by_handler": dispatch_by_handler,
+        "execution_total": len(execution),
+        "execution_mismatch": execution_mismatch,
+        "execution_mismatch_rate_pct": _pct(execution_mismatch, len(execution)),
+        "execution_by_layer_used": execution_by_layer,
+        "execution_side_effect_qa": execution_side_effect,
         "mismatch_samples": samples_mismatch,
     }
 

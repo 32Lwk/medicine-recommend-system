@@ -676,7 +676,8 @@ def extract_intent_router_logs(entries: Sequence[LogEntry]) -> Dict[str, Any]:
     rows = [
         obj
         for obj in _extract_multiline_json_objects(entries)
-        if obj.get("log_type") in ("dialogue_route_shadow", "dialogue_route_dispatch")
+        if obj.get("log_type")
+        in ("dialogue_route_shadow", "dialogue_route_dispatch", "dialogue_route_execution")
     ]
     metrics = measure_intent_router_logs(rows)
     return {"rows": rows, **metrics}

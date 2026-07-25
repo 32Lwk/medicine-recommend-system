@@ -1,0 +1,36 @@
+{
+  "conversation": {
+    "session_count": 6,
+    "exported_session_count": 6,
+    "counseling_session_count": 6,
+    "trace_only_session_count": 0,
+    "chat_flow_trace_count": 14,
+    "sessions_by_grade": {
+      "needs_improvement": 2,
+      "good": 4
+    },
+    "heuristic_mismatch_count": 9,
+    "heuristic_issue_types": {
+      "about_question_mishandled": 8,
+      "greeting_to_non_greeting": 1
+    },
+    "heuristic_severity": {
+      "warning": 9
+    },
+    "physical_sessions_with_advisor_hook": 1,
+    "physical_recommendation_log_events": 0,
+    "counseling_detail_count": 14,
+    "counseling_after_dedup": 14
+  },
+  "infra": {
+    "http_4xx_5xx_total": 659,
+    "http_by_status": {
+      "400": 10,
+      "403": 2,
+      "404": 634,
+      "405": 5,
+      "422": 8
+    }
+  },
+  "llm_review_note": "heuristic_* は LLM 最終判定の参考シグナル。Skill 実行時に conversation_history を読み全ターン再評価すること。"
+}

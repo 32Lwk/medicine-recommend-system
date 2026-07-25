@@ -1,0 +1,1092 @@
+{
+  "meta": {
+    "date": "2026-07-25",
+    "report_suffix": "golden-aws-6-final",
+    "base_url": "http://127.0.0.1:5003/",
+    "started_at": "2026-07-25T01:37:43.779194+00:00",
+    "elapsed_sec": 456.6,
+    "scenario_count": 8,
+    "total_turns": 16,
+    "auto_pass": 7,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "metrics": {
+    "since_unix": 1784943463.779191,
+    "pipeline_baseline": {
+      "exit_code": 0,
+      "data": {
+        "counseling_detail_path": "/Users/yuto/medicine recomended/log/counseling_detail_log.jsonl",
+        "counseling_detail_total": 9112,
+        "with_response": 9112,
+        "response_missing": 0,
+        "response_missing_rate_pct": 0.0,
+        "intent_router": {
+          "shadow_total": 710,
+          "shadow_mismatch": 67,
+          "shadow_mismatch_rate_pct": 9.44,
+          "shadow_improvement_mismatch": 46,
+          "shadow_improvement_mismatch_rate_pct": 6.48,
+          "shadow_regression_mismatch": 9,
+          "shadow_regression_mismatch_rate_pct": 1.27,
+          "shadow_exempt": 12,
+          "shadow_exempt_rate_pct": 1.69,
+          "shadow_by_mismatch_kind": {
+            "agree": 643,
+            "gate_improvement": 46,
+            "exempt": 12,
+            "regression": 9
+          },
+          "shadow_by_primary_route": {
+            "Physical": 286,
+            "Concierge": 276,
+            "Counseling": 72,
+            "Emergency": 24,
+            "Store": 47,
+            "Unknown": 2,
+            "Security": 3
+          },
+          "shadow_by_resolved_by": {
+            "gate": 344,
+            "legacy": 43,
+            "llm": 271,
+            "guard": 52
+          },
+          "shadow_with_fever_context_flag": 41,
+          "shadow_with_pending_cancelled_flag": 0,
+          "dispatch_with_fever_context_flag": 41,
+          "dispatch_with_pending_cancelled_flag": 0,
+          "dispatch_total": 653,
+          "dispatch_handled": 647,
+          "dispatch_unhandled": 6,
+          "dispatch_success_rate_pct": 99.08,
+          "dispatch_by_handler": {
+            "concierge_agent": 281,
+            "physical_agent": 245,
+            "counseling_processor": 71,
+            "store_inquiry": 47,
+            "emergency_agent": 6,
+            "security_gate": 3
+          },
+          "execution_total": 0,
+          "execution_mismatch": 0,
+          "execution_mismatch_rate_pct": 0.0,
+          "execution_by_layer_used": {},
+          "execution_side_effect_qa": 0,
+          "mismatch_samples": [
+            {
+              "session_id": "1782973789622525865487",
+              "user_input": "近くの薬局",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973917916280451456",
+              "user_input": "近くの薬局を教えて",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973931406085911208",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973944286547860166",
+              "user_input": "OTCを買える店",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973958078709834251",
+              "user_input": "処方箋なしで買える場所",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973972138396339780",
+              "user_input": "マツキヨは近くにありますか",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973985776412873150",
+              "user_input": "市販薬の購入先",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782974025130304889943",
+              "user_input": "マツキヨは近くにありますか",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782974034953233964996",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782974044763563580264",
+              "user_input": "2週間くらいです",
+              "primary_route": "Counseling",
+              "triage_category": "Ask",
+              "mismatch_kind": "exempt",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976790703085148705",
+              "user_input": "近くの薬局を教えて",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976803771382313097",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976817282718313459",
+              "user_input": "OTCを買える店",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976831242466417989",
+              "user_input": "処方箋なしで買える場所",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976844060063906193",
+              "user_input": "マツキヨは近くにありますか",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976857874404248980",
+              "user_input": "市販薬の購入先",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976871542386910077",
+              "user_input": "マツキヨは近くにありますか",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976882031883795208",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782978124369208942322",
+              "user_input": "近くの薬局を教えて",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782978137413880726841",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            }
+          ]
+        },
+        "latency": {
+          "pipeline_perf_requests": 1666,
+          "total_ms_p50": 11121.05,
+          "total_ms_p95": 41776.55,
+          "total_ms_max": 104936.24,
+          "llm_calls_total": 3846,
+          "llm_calls_per_request_avg": 2.31,
+          "llm_by_path": {
+            "explanation_generator.batch_usage_notes": {
+              "count": 463,
+              "latency_ms_sum": 4108131.21,
+              "latency_ms_p50": 8967.88,
+              "latency_ms_p95": 14120.69
+            },
+            "missing_info_service": {
+              "count": 537,
+              "latency_ms_sum": 1276715.83,
+              "latency_ms_p50": 2229.04,
+              "latency_ms_p95": 3000.06
+            },
+            "llm_triage.stage1": {
+              "count": 776,
+              "latency_ms_sum": 1211360.26,
+              "latency_ms_p50": 1403.74,
+              "latency_ms_p95": 2590.25
+            },
+            "dialogue.intent_router_llm": {
+              "count": 591,
+              "latency_ms_sum": 774231.93,
+              "latency_ms_p50": 1216.85,
+              "latency_ms_p95": 1807.5
+            },
+            "chat_response_service.personalized_advice": {
+              "count": 375,
+              "latency_ms_sum": 615376.36,
+              "latency_ms_p50": 1491.09,
+              "latency_ms_p95": 2338.44
+            },
+            "medicine_response_builder.chat_context": {
+              "count": 32,
+              "latency_ms_sum": 440179.93,
+              "latency_ms_p50": 13883.86,
+              "latency_ms_p95": 15096.81
+            },
+            "concierge_agent.meta_architecture": {
+              "count": 213,
+              "latency_ms_sum": 379280.5,
+              "latency_ms_p50": 1710.11,
+              "latency_ms_p95": 2326.34
+            },
+            "counseling_followup.alt": {
+              "count": 173,
+              "latency_ms_sum": 253900.37,
+              "latency_ms_p50": 1320.12,
+              "latency_ms_p95": 1981.2
+            },
+            "llm_triage.stage2": {
+              "count": 177,
+              "latency_ms_sum": 249492.24,
+              "latency_ms_p50": 1252.16,
+              "latency_ms_p95": 2242.5
+            },
+            "counseling_generator.main": {
+              "count": 205,
+              "latency_ms_sum": 243960.5,
+              "latency_ms_p50": 1120.45,
+              "latency_ms_p95": 1693.27
+            },
+            "concierge_agent.greeting": {
+              "count": 69,
+              "latency_ms_sum": 120217.37,
+              "latency_ms_p50": 1570.04,
+              "latency_ms_p95": 2568.95
+            },
+            "concierge_agent.meta_architecture_deep": {
+              "count": 32,
+              "latency_ms_sum": 78270.83,
+              "latency_ms_p50": 2402.18,
+              "latency_ms_p95": 3016.74
+            },
+            "concierge_agent.doc_changelog_intro": {
+              "count": 37,
+              "latency_ms_sum": 53340.73,
+              "latency_ms_p50": 1334.92,
+              "latency_ms_p95": 1862.15
+            },
+            "concierge_agent.chitchat": {
+              "count": 30,
+              "latency_ms_sum": 47925.46,
+              "latency_ms_p50": 1185.09,
+              "latency_ms_p95": 1749.31
+            },
+            "llm_triage.combined": {
+              "count": 21,
+              "latency_ms_sum": 34766.56,
+              "latency_ms_p50": 1544.03,
+              "latency_ms_p95": 2305.76
+            },
+            "concierge_agent.meta_capabilities": {
+              "count": 27,
+              "latency_ms_sum": 32023.6,
+              "latency_ms_p50": 1056.93,
+              "latency_ms_p95": 1578.07
+            },
+            "llm_medicine_service.select_symptoms": {
+              "count": 26,
+              "latency_ms_sum": 25080.04,
+              "latency_ms_p50": 821.44,
+              "latency_ms_p95": 1866.3
+            },
+            "concierge_agent.doc_privacy": {
+              "count": 8,
+              "latency_ms_sum": 24702.21,
+              "latency_ms_p50": 2996.27,
+              "latency_ms_p95": 3532.23
+            },
+            "explanation_generator.individual_usage": {
+              "count": 5,
+              "latency_ms_sum": 22762.64,
+              "latency_ms_p50": 4602.66,
+              "latency_ms_p95": 6168.72
+            },
+            "meta_triage.classify": {
+              "count": 15,
+              "latency_ms_sum": 14734.99,
+              "latency_ms_p50": 897.06,
+              "latency_ms_p95": 1220.22
+            },
+            "concierge_agent.meta_app_about": {
+              "count": 8,
+              "latency_ms_sum": 12598.61,
+              "latency_ms_p50": 1524.92,
+              "latency_ms_p95": 2121.67
+            },
+            "counseling_followup": {
+              "count": 6,
+              "latency_ms_sum": 12097.4,
+              "latency_ms_p50": 1865.71,
+              "latency_ms_p95": 2431.73
+            },
+            "store_inquiry_handler.classify": {
+              "count": 6,
+              "latency_ms_sum": 6649.36,
+              "latency_ms_p50": 1113.01,
+              "latency_ms_p95": 1317.53
+            },
+            "episode_summary_agent": {
+              "count": 2,
+              "latency_ms_sum": 4641.46,
+              "latency_ms_p50": 2320.73,
+              "latency_ms_p95": 2320.73
+            },
+            "concierge_agent.doc_changelog": {
+              "count": 1,
+              "latency_ms_sum": 2019.84,
+              "latency_ms_p50": 2019.84,
+              "latency_ms_p95": 2019.84
+            },
+            "moderation_agent": {
+              "count": 1,
+              "latency_ms_sum": 1236.76,
+              "latency_ms_p50": 1236.76,
+              "latency_ms_p95": 1236.76
+            },
+            "triage.stage1": {
+              "count": 10,
+              "latency_ms_sum": 1234.0,
+              "latency_ms_p50": 123.4,
+              "latency_ms_p95": 123.4
+            }
+          },
+          "breakdown_steps_avg_ms": {
+            "after_get_session_db": 316.44,
+            "after_security": 1118.23,
+            "after_triage": 3728.73,
+            "before_emoji_route": 1117.82,
+            "before_llm_setup": 566.59,
+            "before_orchestrator": 6335.61,
+            "before_security": 1077.5,
+            "before_triage": 1117.97,
+            "concierge_build_payload_end": 8908.64,
+            "concierge_build_payload_start": 6719.64,
+            "concierge_resolve_intent_end": 6719.26,
+            "concierge_resolve_intent_start": 6719.18,
+            "confidence_gate_done": 8252.34,
+            "delivery_mode": 242.23,
+            "emit_cards": 30701.99,
+            "explanation_phase_done": 31112.47,
+            "explanation_phase_start": 31112.46,
+            "first": 0.0,
+            "line_carousel_push": 31112.41,
+            "line_loading_start": 0.08,
+            "line_profile_fetch": 0.6,
+            "line_reply_done": 101.35,
+            "meta_triage_end": 9584.14,
+            "meta_triage_start": 8230.78,
+            "nlu_batch_done": 9649.54,
+            "nlu_batch_start": 6526.55,
+            "orch_enrich_end": 9294.67,
+            "orch_enrich_start": 8753.96,
+            "orch_handoff": 8255.74,
+            "orch_pre_social_intent": 8258.66,
+            "orch_route_concierge_end": 12280.54,
+            "orch_route_concierge_start": 9299.29,
+            "orch_route_end": 11412.13,
+            "orch_router_locked_end": 4140.97,
+            "orch_router_locked_start": 4140.35,
+            "parsed_message": 1.04,
+            "personalized_advice": 33436.25,
+            "post_start": 0.68,
+            "rb_explain_batch_done": 31497.68,
+            "rb_missing_info_done": 13083.2,
+            "rb_scoring_only_done": 17025.05,
+            "rule_based_scoring_only_done": 28798.06,
+            "rule_based_start": 10998.73,
+            "safety_gate_done": 5470.85,
+            "second": 0.01,
+            "session_db_read": 1.09
+          }
+        },
+        "gcp_analysis": {
+          "source_md": "log/analysis/2026-06-28_downloaded-logs-20260626-20260627-20260627-162735.md",
+          "counseling_detail_count_from_report": 0,
+          "turns_response_missing_from_report": 36,
+          "line_reply_fallback_push": 9,
+          "slowest_post_seconds": 49.4
+        },
+        "notes": {
+          "fast_path_ratio": "requires triage skip fields in structured logs (Wave 0 TODO)",
+          "end_guard_redirect_rate": "requires pipeline_end_guard field in session/logs"
+        }
+      },
+      "stderr": ""
+    },
+    "intent_router_shadow": {
+      "sources": {
+        "shadow_jsonl": "/Users/yuto/medicine recomended/log/dialogue_route_shadow_log.jsonl",
+        "dispatch_jsonl": "/Users/yuto/medicine recomended/log/dialogue_route_dispatch_log.jsonl",
+        "gcp_log": null
+      },
+      "local": {
+        "shadow_total": 710,
+        "shadow_mismatch": 67,
+        "shadow_mismatch_rate_pct": 9.44,
+        "shadow_improvement_mismatch": 46,
+        "shadow_improvement_mismatch_rate_pct": 6.48,
+        "shadow_regression_mismatch": 9,
+        "shadow_regression_mismatch_rate_pct": 1.27,
+        "shadow_exempt": 12,
+        "shadow_exempt_rate_pct": 1.69,
+        "shadow_by_mismatch_kind": {
+          "agree": 643,
+          "gate_improvement": 46,
+          "exempt": 12,
+          "regression": 9
+        },
+        "shadow_by_primary_route": {
+          "Physical": 286,
+          "Concierge": 276,
+          "Counseling": 72,
+          "Emergency": 24,
+          "Store": 47,
+          "Unknown": 2,
+          "Security": 3
+        },
+        "shadow_by_resolved_by": {
+          "gate": 344,
+          "legacy": 43,
+          "llm": 271,
+          "guard": 52
+        },
+        "shadow_with_fever_context_flag": 41,
+        "shadow_with_pending_cancelled_flag": 0,
+        "dispatch_with_fever_context_flag": 41,
+        "dispatch_with_pending_cancelled_flag": 0,
+        "dispatch_total": 653,
+        "dispatch_handled": 647,
+        "dispatch_unhandled": 6,
+        "dispatch_success_rate_pct": 99.08,
+        "dispatch_by_handler": {
+          "concierge_agent": 281,
+          "physical_agent": 245,
+          "counseling_processor": 71,
+          "store_inquiry": 47,
+          "emergency_agent": 6,
+          "security_gate": 3
+        },
+        "execution_total": 0,
+        "execution_mismatch": 0,
+        "execution_mismatch_rate_pct": 0.0,
+        "execution_by_layer_used": {},
+        "execution_side_effect_qa": 0,
+        "mismatch_samples": [
+          {
+            "session_id": "1782973789622525865487",
+            "user_input": "近くの薬局",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973917916280451456",
+            "user_input": "近くの薬局を教えて",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973931406085911208",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973944286547860166",
+            "user_input": "OTCを買える店",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973958078709834251",
+            "user_input": "処方箋なしで買える場所",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973972138396339780",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973985776412873150",
+            "user_input": "市販薬の購入先",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782974025130304889943",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782974034953233964996",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782974044763563580264",
+            "user_input": "2週間くらいです",
+            "primary_route": "Counseling",
+            "triage_category": "Ask",
+            "mismatch_kind": "exempt",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976790703085148705",
+            "user_input": "近くの薬局を教えて",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976803771382313097",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976817282718313459",
+            "user_input": "OTCを買える店",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976831242466417989",
+            "user_input": "処方箋なしで買える場所",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976844060063906193",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976857874404248980",
+            "user_input": "市販薬の購入先",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976871542386910077",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976882031883795208",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782978124369208942322",
+            "user_input": "近くの薬局を教えて",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782978137413880726841",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          }
+        ]
+      }
+    },
+    "intent_evaluation": {
+      "sessions_tracked": 8,
+      "counseling_rows_matched": 0,
+      "route_rows_matched": 0,
+      "per_session": {
+        "1784943506323241211047": {
+          "counseling_turns": 0,
+          "counseling_with_response": 0,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": []
+        },
+        "1784943695353212909658": {
+          "counseling_turns": 0,
+          "counseling_with_response": 0,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": []
+        },
+        "1784943463783199183941": {
+          "counseling_turns": 0,
+          "counseling_with_response": 0,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": []
+        },
+        "1784943667510584810182": {
+          "counseling_turns": 0,
+          "counseling_with_response": 0,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": []
+        },
+        "1784943894655769197666": {
+          "counseling_turns": 0,
+          "counseling_with_response": 0,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": []
+        },
+        "1784943852250001605278": {
+          "counseling_turns": 0,
+          "counseling_with_response": 0,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": []
+        },
+        "1784943581026453769773": {
+          "counseling_turns": 0,
+          "counseling_with_response": 0,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": []
+        },
+        "1784943718877188315813": {
+          "counseling_turns": 0,
+          "counseling_with_response": 0,
+          "route_events": 0,
+          "routes": {},
+          "intent_samples": []
+        }
+      }
+    },
+    "counseling_detail_log.jsonl_lines_since_run": 17,
+    "dialogue_route_shadow_log.jsonl_lines_since_run": 17,
+    "dialogue_route_dispatch_log.jsonl_lines_since_run": 14,
+    "latency_this_run": {
+      "turns_measured": 16,
+      "e2e_ms_p50": 18424.0,
+      "e2e_ms_p95": 29735.0,
+      "e2e_ms_max": 107019.0
+    }
+  },
+  "results": [
+    {
+      "scenario_id": "golden-session-8283-about",
+      "category": "golden_aws",
+      "wave": "nlu-fix",
+      "session_id": "1784943463783199183941",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "最近の更新内容は？",
+          "http_status": 200,
+          "elapsed_ms": 17003,
+          "diagnosis_kind": "concierge_doc_changelog",
+          "response_snippet": "最近の更新では、医薬品画像の充実や、より見つけやすい表示の見直しが進み、全体的に使いやすさが高まりました。あわせて、更新情報の表示や音声案内、ローカル環境での静的アセット表示も整えられています。",
+          "response_full": "最近の更新では、医薬品画像の充実や、より見つけやすい表示の見直しが進み、全体的に使いやすさが高まりました。あわせて、更新情報の表示や音声案内、ローカル環境での静的アセット表示も整えられています。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "あなたについて詳しくおしえて",
+          "http_status": 200,
+          "elapsed_ms": 17511,
+          "diagnosis_kind": "concierge_app_about",
+          "response_snippet": "私は、症状に合いそうな市販薬をチャットで案内する相談ツールです。\n\n病院や診療所のように診察や処方は行わず、診断もできません。\n\nご相談内容に応じて、使える市販薬の候補や注意点をわかりやすくお伝えします。\n\n必要なら、症状や年齢などを教えてください。",
+          "response_full": "私は、症状に合いそうな市販薬をチャットで案内する相談ツールです。\n\n病院や診療所のように診察や処方は行わず、診断もできません。\n\nご相談内容に応じて、使える市販薬の候補や注意点をわかりやすくお伝えします。\n\n必要なら、症状や年齢などを教えてください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:相談"
+      ],
+      "auto_failures": [],
+      "description": "8283 T2: about after changelog must not repeat doc_changelog",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "golden-session-8283-architecture",
+      "category": "golden_aws",
+      "wave": "nlu-fix",
+      "session_id": "1784943506323241211047",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "最近の更新内容は？",
+          "http_status": 200,
+          "elapsed_ms": 17933,
+          "diagnosis_kind": "concierge_doc_changelog",
+          "response_snippet": "最近の更新では、OTC画像の追加や推奨候補の見直しが進み、より探しやすくなりました。あわせて、画面の更新情報表示や音声案内、ローカル環境での表示まわりも整い、全体的により使いやすくなりました。",
+          "response_full": "最近の更新では、OTC画像の追加や推奨候補の見直しが進み、より探しやすくなりました。あわせて、画面の更新情報表示や音声案内、ローカル環境での表示まわりも整い、全体的により使いやすくなりました。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "あなたについて詳しく教えて",
+          "http_status": 200,
+          "elapsed_ms": 15938,
+          "diagnosis_kind": "concierge_app_about",
+          "response_snippet": "私は、症状に合わせて一般用医薬品の候補をチャットで案内する相談ツールです。\n\n病院や診療所のように診察や処方を行うものではなく、診断もしていません。\n\n必要に応じて、飲み合わせや注意点、受診の目安などの参考情報をお伝えします。",
+          "response_full": "私は、症状に合わせて一般用医薬品の候補をチャットで案内する相談ツールです。\n\n病院や診療所のように診察や処方を行うものではなく、診断もしていません。\n\n必要に応じて、飲み合わせや注意点、受診の目安などの参考情報をお伝えします。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 2,
+          "user_message": "あなたのシステムアーキテクチャについて詳しく教えて",
+          "http_status": 200,
+          "elapsed_ms": 29735,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "システムは、チャットの入力をまず振り分けてから、目的に応じた処理へ流す構成です。\n\n市販薬の相談は、症状を整理したうえでルールベースのスコアリングで候補を出し、薬名を自由に作って決めることはありません。\n\n会話の入口には、挨拶や案内、技術 FAQ、店舗案内、心理面の相談、緊急案内などを分ける仕組みがあり、症状相談は市販薬案内の経路に回ります。\n\n説明や案内は別の担当が行い、推奨したあとの薬の質問にも答えられるようになっています。\n\nデータは、会話履歴は PostgreSQL、実行ログは各クラウドのログ基盤、医薬品マスタは CSV で管理されています。",
+          "response_full": "システムは、チャットの入力をまず振り分けてから、目的に応じた処理へ流す構成です。\n\n市販薬の相談は、症状を整理したうえでルールベースのスコアリングで候補を出し、薬名を自由に作って決めることはありません。\n\n会話の入口には、挨拶や案内、技術 FAQ、店舗案内、心理面の相談、緊急案内などを分ける仕組みがあり、症状相談は市販薬案内の経路に回ります。\n\n説明や案内は別の担当が行い、推奨したあとの薬の質問にも答えられるようになっています。\n\nデータは、会話履歴は PostgreSQL、実行ログは各クラウドのログ基盤、医薬品マスタは CSV で管理されています。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:PostgreSQL"
+      ],
+      "auto_failures": [],
+      "description": "8283 T4: architecture after changelog/about must not repeat doc_changelog",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "golden-session-8283-aws-gcp",
+      "category": "golden_aws",
+      "wave": "nlu-fix",
+      "session_id": "1784943581026453769773",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "最近の更新内容は？",
+          "http_status": 200,
+          "elapsed_ms": 15077,
+          "diagnosis_kind": "concierge_doc_changelog",
+          "response_snippet": "最近の更新では、市販薬の案内がより見つけやすく、使いやすくなりました。画像の追加やおすすめの見直しに加えて、画面の表示や音声案内、静的アセットの読み込みまわりも改善されています。",
+          "response_full": "最近の更新では、市販薬の案内がより見つけやすく、使いやすくなりました。画像の追加やおすすめの見直しに加えて、画面の表示や音声案内、静的アセットの読み込みまわりも改善されています。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "あなたについて詳しく教えて",
+          "http_status": 200,
+          "elapsed_ms": 16998,
+          "diagnosis_kind": "concierge_app_about",
+          "response_snippet": "私は、症状に合わせて一般用医薬品をチャットで案内する相談ツールです。\n\n薬の候補や注意点を、公開されている情報に基づいて整理してお伝えします。\n\n診断や治療、処方は行いません。\n\n必要に応じて、医師・薬剤師・登録販売者などの専門家に相談する前提で使ってください。\n\n今の会話では、AIが案内役として返答し、候補の選定はルールに基づいて行います。\n\n気になる症状があれば、そのまま教えてください。",
+          "response_full": "私は、症状に合わせて一般用医薬品をチャットで案内する相談ツールです。\n\n薬の候補や注意点を、公開されている情報に基づいて整理してお伝えします。\n\n診断や治療、処方は行いません。\n\n必要に応じて、医師・薬剤師・登録販売者などの専門家に相談する前提で使ってください。\n\n今の会話では、AIが案内役として返答し、候補の選定はルールに基づいて行います。\n\n気になる症状があれば、そのまま教えてください。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 2,
+          "user_message": "あなたのシステムアーキテクチャについて詳しく教えて",
+          "http_status": 200,
+          "elapsed_ms": 24346,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "会話の流れは、まず入力を振り分けてから、症状相談はルールベースで市販薬候補を選び、挨拶や技術 FAQ、店舗案内、感情面の相談はそれぞれ別の担当で返します。\n\n市販薬の候補選定は LLM が自由に決めるのではなく、症状辞書や効能、年齢、相互作用などを見たスコアリングで行います。",
+          "response_full": "会話の流れは、まず入力を振り分けてから、症状相談はルールベースで市販薬候補を選び、挨拶や技術 FAQ、店舗案内、感情面の相談はそれぞれ別の担当で返します。\n\n市販薬の候補選定は LLM が自由に決めるのではなく、症状辞書や効能、年齢、相互作用などを見たスコアリングで行います。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 3,
+          "user_message": "AWSとGCP の違いは？",
+          "http_status": 200,
+          "elapsed_ms": 16172,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "このサービスでは、GCP 本番は medicine.yutok.dev を Cloud Run で動かし、翻訳は DeepL、読み上げは Web Speech API を使っています。\n\n一方、AWS ステージングは aws.medicine.yutok.dev を ECS Express Gateway + ALB + WAF で動かし、翻訳は Amazon Translate、読み上げは Amazon Polly を使っています。\n\nまた、画像は Cloudflare R2 の共通 CDN を使い、GCP 本番と AWS ステージングで同じ URL を参照します。\n\n市販薬の候補選定はどち",
+          "response_full": "このサービスでは、GCP 本番は medicine.yutok.dev を Cloud Run で動かし、翻訳は DeepL、読み上げは Web Speech API を使っています。\n\n一方、AWS ステージングは aws.medicine.yutok.dev を ECS Express Gateway + ALB + WAF で動かし、翻訳は Amazon Translate、読み上げは Amazon Polly を使っています。\n\nまた、画像は Cloudflare R2 の共通 CDN を使い、GCP 本番と AWS ステージングで同じ URL を参照します。\n\n市販薬の候補選定はどちらの環境でもルールベースで行われ、薬名を自由に作ることはありません。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:GCP"
+      ],
+      "auto_failures": [],
+      "description": "8283 T5: AWS/GCP after meta context must not repeat doc_changelog",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "golden-session-3443-side-effect",
+      "category": "golden_aws",
+      "wave": "nlu-fix",
+      "session_id": "1784943667510584810182",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "ロキソニンって眠い？",
+          "http_status": 200,
+          "elapsed_ms": 23747,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。",
+          "response_full": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:ロキソニン"
+      ],
+      "auto_failures": [],
+      "description": "3443 T7: ロキソニン副作用 QA — must not escalate to sleep symptom reco",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "golden-session-2059-side-effect",
+      "category": "golden_aws",
+      "wave": "nlu-fix",
+      "session_id": "1784943695353212909658",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "ロキソニンって眠くなる？",
+          "http_status": 200,
+          "elapsed_ms": 19058,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。",
+          "response_full": "「ロキソニンＳ」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:ロキソニン"
+      ],
+      "auto_failures": [],
+      "description": "2059: ロキソニン副作用 QA — must not escalate to sleep symptom reco",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "golden-session-6483-regression",
+      "category": "golden_aws",
+      "wave": "nlu-fix",
+      "session_id": "1784943718877188315813",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "頭が痛いです",
+          "http_status": 200,
+          "elapsed_ms": 107019,
+          "diagnosis_kind": null,
+          "response_snippet": "頭が痛いんですね、つらいですね。まずは水分をとって、安静にしてください。カロナールA・タイレノールAは、胃への負担が比較的少なく、頭痛のつらさを和らげやすいお薬です。発熱や関節痛もあれば、かぜやインフルエンザの可能性もあるので、無理せず様子を見て、強い痛みや続く場合は受診してください。",
+          "response_full": "頭が痛いんですね、つらいですね。まずは水分をとって、安静にしてください。カロナールA・タイレノールAは、胃への負担が比較的少なく、頭痛のつらさを和らげやすいお薬です。発熱や関節痛もあれば、かぜやインフルエンザの可能性もあるので、無理せず様子を見て、強い痛みや続く場合は受診してください。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "最近の更新内容は？",
+          "http_status": 200,
+          "elapsed_ms": 18424,
+          "diagnosis_kind": "concierge_doc_changelog",
+          "response_snippet": "最近の更新では、OTC 上位50の画像まわりがさらに整い、より探しやすくなりました。あわせて、画面の表示や読み上げ、静的アセットの扱いも見直され、全体としてより使いやすくなりました。 また、表示する候補の整理も進み、必要な情報が見つけやすいようになっています。",
+          "response_full": "最近の更新では、OTC 上位50の画像まわりがさらに整い、より探しやすくなりました。あわせて、画面の表示や読み上げ、静的アセットの扱いも見直され、全体としてより使いやすくなりました。 また、表示する候補の整理も進み、必要な情報が見つけやすいようになっています。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:更新"
+      ],
+      "auto_failures": [],
+      "description": "6483: headache reco then changelog — regression good session",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "golden-session-2070-regression",
+      "category": "golden_aws",
+      "wave": "nlu-fix",
+      "session_id": "1784943852250001605278",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "最近の更新内容教えて",
+          "http_status": 200,
+          "elapsed_ms": 15690,
+          "diagnosis_kind": "concierge_doc_changelog",
+          "response_snippet": "最近の更新では、画像や表示まわりがさらに整い、より使いやすくなりました。あわせて、更新内容の見え方や音声案内、静的アセットの扱いも改善され、日常的に確認しやすくなっています。",
+          "response_full": "最近の更新では、画像や表示まわりがさらに整い、より使いやすくなりました。あわせて、更新内容の見え方や音声案内、静的アセットの扱いも改善され、日常的に確認しやすくなっています。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "AWSとGCPって何が違うの？",
+          "http_status": 200,
+          "elapsed_ms": 19199,
+          "diagnosis_kind": "concierge_architecture",
+          "response_snippet": "このツールでは、GCP 本番は medicine.yutok.dev で Google Cloud Run を使い、翻訳は DeepL、読み上げは Web Speech API を使っています。\n\nAWS ステージングは aws.medicine.yutok.dev で、ECS Express Gateway + ALB + WAF 上で動き、翻訳は Amazon Translate、読み上げは Amazon Polly です。\n\nつまり、両方とも同じ市販薬相談ツールですが、GCP は本番向けの構成、AWS は試験運用向けの構成で、使っているクラウド機能が一部違います。\n\n画像はどちらも im",
+          "response_full": "このツールでは、GCP 本番は medicine.yutok.dev で Google Cloud Run を使い、翻訳は DeepL、読み上げは Web Speech API を使っています。\n\nAWS ステージングは aws.medicine.yutok.dev で、ECS Express Gateway + ALB + WAF 上で動き、翻訳は Amazon Translate、読み上げは Amazon Polly です。\n\nつまり、両方とも同じ市販薬相談ツールですが、GCP は本番向けの構成、AWS は試験運用向けの構成で、使っているクラウド機能が一部違います。\n\n画像はどちらも images.yutok.dev/otc/ の共通 CDN を使っています。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response",
+        "context_kw:GCP"
+      ],
+      "auto_failures": [],
+      "description": "2070: changelog then AWS/GCP — regression good session",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    },
+    {
+      "scenario_id": "golden-session-1951-regression",
+      "category": "golden_aws",
+      "wave": "nlu-fix",
+      "session_id": "1784943894655769197666",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "最近の更新内容を教えてください。",
+          "http_status": 200,
+          "elapsed_ms": 20956,
+          "diagnosis_kind": "concierge_doc_changelog",
+          "response_snippet": "最近は、OTC 上位50画像の整備や推奨候補の見直し、TTS と画面表示の改善が進み、より使いやすくなりました。あわせて、端末の場所に応じた静的アセットの切り替えも整い、表示まわりがなめらかになっています。",
+          "response_full": "最近は、OTC 上位50画像の整備や推奨候補の見直し、TTS と画面表示の改善が進み、より使いやすくなりました。あわせて、端末の場所に応じた静的アセットの切り替えも整い、表示まわりがなめらかになっています。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": false,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [
+        "missing_context_kw:更新"
+      ],
+      "description": "1951: single changelog query — regression good session",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {}
+    }
+  ]
+}

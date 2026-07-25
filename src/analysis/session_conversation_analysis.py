@@ -32,6 +32,11 @@ PHYSICAL_SYMPTOM_RE = re.compile(
     r"痛|熱|咳|鼻|頭|腹痛|吐|下痢|痒|腫|寒|倦怠|不眠|発熱|風邪|症状|headache|pain|fever|cough",
     re.I,
 )
+SIDE_EFFECT_QA_INPUT_RE = re.compile(
+    r"(ロキソニン|バファリン|カロナール|タイレノール|イブ).{0,8}(眠い|眠くなる|眠気|副作用)"
+    r"|(.+?)(?:って|は|の)(?:眠い|眠くなる|副作用)",
+    re.I,
+)
 GREETING_RESPONSE_RE = re.compile(
     r"こんにちは|何かお困り|お待ちして|お聞かせください|feel free",
     re.I,
@@ -65,6 +70,7 @@ ISSUE_DEFS: Tuple[Tuple[str, str], ...] = (
     ("duplicate_turn", "同一入力への重複応答"),
     ("concierge_not_handled", "Concierge handled=false のまま不自然応答"),
     ("off_topic_pivoted", "店舗・施設外の質問を薬相談テンプレにすり替え"),
+    ("side_effect_qa_mishandled", "医薬品副作用Q&Aが症状推奨/escalationに誤ルーティング"),
 )
 
 
@@ -116,6 +122,8 @@ def classify_user_input(user_input: str) -> List[str]:
         labels.append("off_topic_store")
     if PHYSICAL_SYMPTOM_RE.search(text):
         labels.append("physical_symptom")
+    if SIDE_EFFECT_QA_INPUT_RE.search(text):
+        labels.append("side_effect_qa")
     if len(text) <= 3 and not labels:
         labels.append("short_or_emoji")
     if not labels:
@@ -503,6 +511,21 @@ def detect_turn_issues(
 
     triage = routing.get("triage") or {}
     triage_cat = triage.get("category")
+    if "side_effect_qa" in input_labels:
+        sub = routing.get("sub_route") or triage.get("subcategory") or ""
+        looks_escalation = (
+            MEDICAL_REFERRAL_RE.search(plain)
+            and any(k in plain for k in ("睡眠", "眠気", "不眠", "受診"))
+        )
+        looks_symptom_reco = "推奨" in plain and "眠" in plain
+        if sub != "medicine_side_effect_qa" and (looks_escalation or looks_symptom_reco or triage_cat == "Physical"):
+            add(
+                "side_effect_qa_mishandled",
+                "critical",
+                "副作用Q&A（例: ロキソニンって眠い？）が症状推奨/escalationに落ちた",
+                f"input={user_input!r} sub={sub!r} triage={triage_cat}",
+            )
+
     if triage_cat and triage_cat not in ("Other", "Ask") and looks_greeting_response and "greeting" not in input_labels:
         add(
             "intent_routing_gap",

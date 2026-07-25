@@ -568,6 +568,11 @@ def _evaluate_scenario(spec: dict[str, Any], turns: list[TurnResult]) -> tuple[b
             else:
                 failures.append(f"missing_context_kw:{kw}")
 
+        text = last.response_full or last.response_snippet
+        for bad in expect.get("must_not_contain") or []:
+            if str(bad) in text:
+                failures.append(f"must_not_contain:{bad}")
+
         if expect.get("content_kpi"):
             kpis = expect["content_kpi"]
             text = last.response_full or last.response_snippet
@@ -715,10 +720,11 @@ def _run_gpt_persona_session(
     )
 
 
-def _load_scenarios() -> list[dict[str, Any]]:
-    if not SCENARIOS_PATH.is_file():
-        raise FileNotFoundError(f"Missing {SCENARIOS_PATH}")
-    data = yaml.safe_load(SCENARIOS_PATH.read_text(encoding="utf-8"))
+def _load_scenarios(path: Path | None = None) -> list[dict[str, Any]]:
+    scenarios_path = path or SCENARIOS_PATH
+    if not scenarios_path.is_file():
+        raise FileNotFoundError(f"Missing {scenarios_path}")
+    data = yaml.safe_load(scenarios_path.read_text(encoding="utf-8"))
     return list(data.get("scenarios") or [])
 
 
@@ -1403,6 +1409,11 @@ def main() -> int:
         default="",
         help="Merge new results into this base report JSON before writing output",
     )
+    parser.add_argument(
+        "--scenarios-path",
+        default="",
+        help="Alternate YAML scenarios file (default: tests/fixtures/v2_local_chat_scenarios.yaml)",
+    )
     args = parser.parse_args()
 
     gpt_scale = args.sessions > 0 or args.min_chats > 0
@@ -1443,7 +1454,10 @@ def main() -> int:
     completed_ids = {r.scenario_id for r in results}
 
     if not args.skip_yaml:
-        scenarios = _load_scenarios()
+        scenarios_path = Path(args.scenarios_path).expanduser() if args.scenarios_path.strip() else None
+        if scenarios_path and not scenarios_path.is_absolute():
+            scenarios_path = PROJECT_ROOT / scenarios_path
+        scenarios = _load_scenarios(scenarios_path)
         if args.categories.strip():
             cats = {c.strip() for c in args.categories.split(",") if c.strip()}
             scenarios = [s for s in scenarios if str(s.get("category") or "") in cats]

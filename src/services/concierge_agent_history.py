@@ -230,6 +230,20 @@ def infer_prior_meta_follow_up_intent(
         return None
     if len(t) > 40:
         return None
+
+    try:
+        from src.dialogue.routing.context_signals import (
+            is_doc_changelog_continuation,
+            is_explicit_new_meta_topic,
+        )
+
+        if is_explicit_new_meta_topic(t, prior_intent=prior_intent):
+            return None
+        if prior_intent == "doc_changelog" and not is_doc_changelog_continuation(t):
+            return None
+    except ImportError:
+        pass
+
     if prior_intent == "architecture":
         if _ARCHITECTURE_TOPIC_RE.search(t) or len(t) <= 24:
             return "architecture"
@@ -259,6 +273,19 @@ def infer_enhanced_concierge_follow_up_intent(
         return None
     if _PHYSICAL_SYMPTOM_RE.search(t):
         return None
+
+    try:
+        from src.dialogue.routing.context_signals import (
+            is_doc_changelog_continuation,
+            is_explicit_new_meta_topic,
+        )
+
+        if is_explicit_new_meta_topic(t, prior_intent=prior_intent):
+            return None
+        if prior_intent == "doc_changelog" and not is_doc_changelog_continuation(t):
+            return None
+    except ImportError:
+        pass
 
     has_signal = (
         _META_FOLLOW_UP_EXTENDED_EXTRA.search(t)

@@ -275,3 +275,35 @@ scenarios:
       primary_route: Store
       sub_route: store_locator
       precondition: no_active_fever
+
+  # --- unified routing (NLU fix 2026-07) ---
+  - id: web-side-effect-loxonin
+    channel: web
+    input: ロキソニンって眠い？
+    expect:
+      primary_route: Physical
+      sub_route: medicine_side_effect_qa
+      must_not: [greeting_only]
+
+  - id: web-changelog-then-app-about
+    channel: web
+    setup: [最近の更新を教えて]
+    setup_bot:
+      - concierge_intent: doc_changelog
+        diagnosis:
+          kind: concierge_doc_changelog
+    input: あなたについて詳しく
+    expect:
+      primary_route: Concierge
+      sub_route: app_about
+      must_not: [doc_changelog]
+
+  - id: web-changelog-continuation
+    channel: web
+    setup: [最近の更新を教えて]
+    setup_bot:
+      - concierge_intent: doc_changelog
+    input: もっと詳しく
+    expect:
+      primary_route: Concierge
+      sub_route: doc_changelog

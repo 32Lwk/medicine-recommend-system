@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-07-25T09:51:06",
+  "metadata_path": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/metadata.json",
+  "sections": {
+    "metadata": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/metadata.json",
+    "errors_http": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sections/errors_http.json",
+    "pipeline_perf": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sections/pipeline_perf.json",
+    "llm_cost": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sections/llm_cost.json",
+    "deploy_revision": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sections/deploy_revision.json",
+    "db_neon": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sections/db_neon.json",
+    "line_webhook": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sections/line_webhook.json",
+    "chat_flow": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sections/chat_flow.json",
+    "user_sessions": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sections/user_sessions.json",
+    "misc_signals": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sections/misc_signals.json",
+    "manifest": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/manifest.json"
+  },
+  "analysis_groups": {
+    "infra_errors": [
+      "errors_http",
+      "deploy_revision"
+    ],
+    "performance_cost": [
+      "pipeline_perf",
+      "llm_cost"
+    ],
+    "conversation_quality": [
+      "chat_flow",
+      "user_sessions"
+    ],
+    "integrations": [
+      "line_webhook",
+      "db_neon",
+      "misc_signals"
+    ]
+  },
+  "conversation_quality_focus": {
+    "session_timelines": "user_sessions.session_conversations.sessions",
+    "conversation_history": "sessions[].conversation_history / turns[].conversation_history",
+    "heuristic_hints": "user_sessions.intent_mismatches (LLM must re-judge)",
+    "physical_advisor": "sessions[].physical_recommendation_summary",
+    "quality_summary": "quality_metrics.json"
+  },
+  "session_transcripts": {
+    "1784915304486558608283": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sessions/1784915304486558608283.md",
+    "1784915537811922323443": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sessions/1784915537811922323443.md",
+    "1784729277306607261951": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sessions/1784729277306607261951.md",
+    "1784827093323772686483": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sessions/1784827093323772686483.md",
+    "1784897862598930292070": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sessions/1784897862598930292070.md",
+    "1784938841574720802059": "/Users/yuto/medicine recomended/log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002/sessions/1784938841574720802059.md"
+  },
+  "platform": "aws"
+}

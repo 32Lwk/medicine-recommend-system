@@ -37,7 +37,7 @@ _INTENT_ROUTER_PROMPT = """あなたは医薬品相談チャットの IntentRout
 - Unknown: 上記に当てはまらない・情報不足
 
 【sub_route 例（任意）】
-- Physical: rule_based_recommend, fever_flow, medicine_followup_qa, symptom_prompt_sports
+- Physical: rule_based_recommend, fever_flow, medicine_followup_qa, medicine_side_effect_qa, symptom_prompt_sports
 - SessionOps: delete, summarize, status
 - Concierge: greeting, app_about, architecture, redirect, chitchat, doc_changelog
 - Emergency: emergency_dispatch
@@ -55,6 +55,8 @@ _INTENT_ROUTER_PROMPT = """あなたは医薬品相談チャットの IntentRout
 - 直近で医薬品を推奨済みのセッションで「どれ」「使える」「競技」「大会」「ドーピング」等の追質問は Physical/medicine_followup_qa（新規症状推奨ではない）
 - 推奨履歴なしで競技・大会のみ・症状不明は Physical/symptom_prompt_sports
 - 推奨履歴なしで症状＋競技条件付きの薬探索は Physical/rule_based_recommend
+- **推奨履歴なしで「ロキソニンって眠い？」「バファリン眠くなる？」等、医薬品名＋副作用・眠気の質問 → Physical/medicine_side_effect_qa（症状推奨・睡眠障害 escalation に入れない）**
+- **「眠い」単独の症状申告（薬名なし）→ Physical/rule_based_recommend（副作用 QA ではない）**
 
 【Concierge / app_about（本サービスの自己紹介・説明）】
 - sub_route=app_about: 本チャット・本ツール・あなた（bot）への自己紹介や説明の依頼

@@ -1,0 +1,974 @@
+{
+  "gunicorn": [
+    {
+      "timestamp": "2026-07-24T05:36:26.897Z",
+      "message": "[2026-07-24 05:36:26 +0000] [25] [INFO] Worker exiting (pid: 25)"
+    },
+    {
+      "timestamp": "2026-07-24T05:36:27.053Z",
+      "message": "[2026-07-24 05:36:27 +0000] [34] [INFO] Booting worker with pid: 34"
+    },
+    {
+      "timestamp": "2026-07-24T05:48:39.295Z",
+      "message": "[2026-07-24 05:48:39 +0000] [42] [INFO] Worker exiting (pid: 42)"
+    },
+    {
+      "timestamp": "2026-07-24T05:48:39.429Z",
+      "message": "[2026-07-24 05:48:39 +0000] [53] [INFO] Booting worker with pid: 53"
+    },
+    {
+      "timestamp": "2026-07-24T06:11:30.442Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-24T06:11:30.449Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-24T06:11:30.449Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T06:11:30.559Z",
+      "message": "[2026-07-24 06:11:30 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-24T06:11:30.559Z",
+      "message": "[2026-07-24 06:11:30 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T06:11:30.561Z",
+      "message": "[2026-07-24 06:11:30 +0000] [6] [INFO] Booting worker with pid: 6"
+    },
+    {
+      "timestamp": "2026-07-24T06:11:30.572Z",
+      "message": "[2026-07-24 06:11:30 +0000] [7] [INFO] Booting worker with pid: 7"
+    },
+    {
+      "timestamp": "2026-07-24T06:12:03.035Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-24T06:12:03.037Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-24T06:12:03.037Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T06:12:03.198Z",
+      "message": "[2026-07-24 06:12:03 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-24T06:12:03.198Z",
+      "message": "[2026-07-24 06:12:03 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T06:12:03.201Z",
+      "message": "[2026-07-24 06:12:03 +0000] [7] [INFO] Booting worker with pid: 7"
+    },
+    {
+      "timestamp": "2026-07-24T06:12:03.291Z",
+      "message": "[2026-07-24 06:12:03 +0000] [8] [INFO] Booting worker with pid: 8"
+    },
+    {
+      "timestamp": "2026-07-24T06:13:28.433Z",
+      "message": "[2026-07-24 06:13:28 +0000] [50] [INFO] Worker exiting (pid: 50)"
+    },
+    {
+      "timestamp": "2026-07-24T06:13:28.585Z",
+      "message": "[2026-07-24 06:13:28 +0000] [56] [INFO] Booting worker with pid: 56"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:09.207Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:09.207Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:09.207Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:09.321Z",
+      "message": "[2026-07-24 06:17:09 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:09.321Z",
+      "message": "[2026-07-24 06:17:09 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:09.323Z",
+      "message": "[2026-07-24 06:17:09 +0000] [7] [INFO] Booting worker with pid: 7"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:09.387Z",
+      "message": "[2026-07-24 06:17:09 +0000] [8] [INFO] Booting worker with pid: 8"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:44.829Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:44.830Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:44.830Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:45.012Z",
+      "message": "[2026-07-24 06:17:45 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:45.012Z",
+      "message": "[2026-07-24 06:17:45 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:45.015Z",
+      "message": "[2026-07-24 06:17:45 +0000] [7] [INFO] Booting worker with pid: 7"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:45.067Z",
+      "message": "[2026-07-24 06:17:45 +0000] [8] [INFO] Booting worker with pid: 8"
+    },
+    {
+      "timestamp": "2026-07-24T06:18:43.778Z",
+      "message": "[2026-07-24 06:18:43 +0000] [1] [ERROR] Worker (pid:34) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T06:18:43.778Z",
+      "message": "[2026-07-24 06:18:43 +0000] [1] [ERROR] Worker (pid:30) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T06:18:47.573Z",
+      "message": "[2026-07-24 06:18:47 +0000] [1] [ERROR] Worker (pid:53) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T06:18:47.579Z",
+      "message": "[2026-07-24 06:18:47 +0000] [1] [ERROR] Worker (pid:56) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T06:25:05.917Z",
+      "message": "[2026-07-24 06:25:05 +0000] [1] [ERROR] Worker (pid:7) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T06:25:05.918Z",
+      "message": "[2026-07-24 06:25:05 +0000] [1] [ERROR] Worker (pid:6) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T06:25:06.968Z",
+      "message": "[2026-07-24 06:25:06 +0000] [1] [ERROR] Worker (pid:8) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T06:25:06.971Z",
+      "message": "[2026-07-24 06:25:06 +0000] [1] [ERROR] Worker (pid:7) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T11:15:36.436Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-24T11:15:36.436Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-24T11:15:36.436Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T11:15:36.545Z",
+      "message": "[2026-07-24 11:15:36 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-24T11:15:36.546Z",
+      "message": "[2026-07-24 11:15:36 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T11:15:36.547Z",
+      "message": "[2026-07-24 11:15:36 +0000] [6] [INFO] Booting worker with pid: 6"
+    },
+    {
+      "timestamp": "2026-07-24T11:15:36.597Z",
+      "message": "[2026-07-24 11:15:36 +0000] [7] [INFO] Booting worker with pid: 7"
+    },
+    {
+      "timestamp": "2026-07-24T11:16:10.674Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-24T11:16:10.676Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-24T11:16:10.676Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T11:16:10.857Z",
+      "message": "[2026-07-24 11:16:10 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-24T11:16:10.858Z",
+      "message": "[2026-07-24 11:16:10 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T11:16:10.861Z",
+      "message": "[2026-07-24 11:16:10 +0000] [7] [INFO] Booting worker with pid: 7"
+    },
+    {
+      "timestamp": "2026-07-24T11:16:10.877Z",
+      "message": "[2026-07-24 11:16:10 +0000] [8] [INFO] Booting worker with pid: 8"
+    },
+    {
+      "timestamp": "2026-07-24T11:23:08.330Z",
+      "message": "[2026-07-24 11:23:08 +0000] [1] [ERROR] Worker (pid:8) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T11:23:08.341Z",
+      "message": "[2026-07-24 11:23:08 +0000] [1] [ERROR] Worker (pid:7) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T11:23:12.415Z",
+      "message": "[2026-07-24 11:23:12 +0000] [1] [ERROR] Worker (pid:8) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T11:23:12.416Z",
+      "message": "[2026-07-24 11:23:12 +0000] [1] [ERROR] Worker (pid:7) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:22.497Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:22.497Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:22.497Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:22.706Z",
+      "message": "[2026-07-24 11:24:22 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:22.706Z",
+      "message": "[2026-07-24 11:24:22 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:22.710Z",
+      "message": "[2026-07-24 11:24:22 +0000] [7] [INFO] Booting worker with pid: 7"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:22.800Z",
+      "message": "[2026-07-24 11:24:22 +0000] [8] [INFO] Booting worker with pid: 8"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:42.933Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:42.933Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:42.933Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:43.129Z",
+      "message": "[2026-07-24 11:24:43 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:43.130Z",
+      "message": "[2026-07-24 11:24:43 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:43.133Z",
+      "message": "[2026-07-24 11:24:43 +0000] [7] [INFO] Booting worker with pid: 7"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:43.200Z",
+      "message": "[2026-07-24 11:24:43 +0000] [8] [INFO] Booting worker with pid: 8"
+    },
+    {
+      "timestamp": "2026-07-24T11:31:29.126Z",
+      "message": "[2026-07-24 11:31:29 +0000] [1] [ERROR] Worker (pid:7) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T11:31:29.127Z",
+      "message": "[2026-07-24 11:31:29 +0000] [1] [ERROR] Worker (pid:6) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T11:31:42.934Z",
+      "message": "[2026-07-24 11:31:42 +0000] [1] [ERROR] Worker (pid:7) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T11:31:42.937Z",
+      "message": "[2026-07-24 11:31:42 +0000] [1] [ERROR] Worker (pid:8) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-24T11:32:29.282Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-24T11:32:29.283Z",
+      "message": "   - Workers: 2"
+    }
+  ],
+  "openai_errors": [
+    {
+      "timestamp": "2026-07-24T06:11:30.449Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T06:11:30.449Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T06:12:03.037Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T06:12:03.037Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:09.207Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:09.207Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:44.830Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T06:17:44.830Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T09:01:07.713Z",
+      "message": "2026-07-24 09:01:07,713 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T09:01:07.954Z",
+      "message": "2026-07-24 09:01:07,954 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T09:01:08.174Z",
+      "message": "2026-07-24 09:01:08,174 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T09:01:12.811Z",
+      "message": "2026-07-24 09:01:12,811 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T11:15:36.436Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T11:15:36.436Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T11:16:10.675Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T11:16:10.675Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:22.497Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:22.497Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:42.933Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T11:24:42.933Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T11:32:29.282Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T11:32:29.282Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T11:32:47.574Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T11:32:47.574Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T11:40:14.699Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T11:40:14.699Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T11:40:41.341Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T11:40:41.341Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T11:50:57.271Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T11:50:57.271Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T11:51:40.879Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T11:51:40.879Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T11:58:45.991Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T11:58:45.991Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T11:59:00.440Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T11:59:00.440Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T12:36:19.157Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T12:36:19.157Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T12:36:44.799Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T12:36:44.799Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T12:50:17.137Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T12:50:17.137Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T12:50:36.242Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T12:50:36.242Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T12:57:57.883Z",
+      "message": "2026-07-24 12:57:57,882 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T12:57:58.213Z",
+      "message": "2026-07-24 12:57:58,213 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T12:58:00.563Z",
+      "message": "2026-07-24 12:58:00,563 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T12:58:04.810Z",
+      "message": "2026-07-24 12:58:04,810 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T12:58:56.359Z",
+      "message": "2026-07-24 12:58:56,359 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T12:58:56.614Z",
+      "message": "2026-07-24 12:58:56,614 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T12:58:57.731Z",
+      "message": "2026-07-24 12:58:57,731 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T12:59:07.009Z",
+      "message": "2026-07-24 12:59:07,009 - WARNING - Redis unavailable, cache disabled: Timeout connecting to server"
+    },
+    {
+      "timestamp": "2026-07-24T12:59:09.650Z",
+      "message": "2026-07-24 12:59:09,650 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T13:01:25.704Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T13:01:25.704Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T13:02:07.502Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T13:02:07.502Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T13:36:26.907Z",
+      "message": "2026-07-24 13:36:26,907 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T13:36:27.301Z",
+      "message": "2026-07-24 13:36:27,301 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T13:36:31.853Z",
+      "message": "2026-07-24 13:36:31,853 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-24T14:13:09.876Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T14:13:09.876Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T14:13:43.225Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T14:13:43.225Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T15:59:03.112Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T15:59:03.112Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T15:59:15.050Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T15:59:15.050Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T16:01:24.178Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T16:01:24.178Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T16:01:53.145Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T16:01:53.145Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T16:08:38.186Z",
+      "message": "2026-07-24 16:08:38,186 - DEBUG - Setting translate timeout as (60, 60)"
+    },
+    {
+      "timestamp": "2026-07-24T16:08:38.621Z",
+      "message": "2026-07-24 16:08:38,621 - DEBUG - Setting polly timeout as (60, 60)"
+    },
+    {
+      "timestamp": "2026-07-24T16:12:23.396Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T16:12:23.396Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T16:12:55.993Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-24T16:12:55.993Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-24T16:19:55.962Z",
+      "message": "2026-07-24 16:19:55,962 - DEBUG - Setting translate timeout as (60, 60)"
+    },
+    {
+      "timestamp": "2026-07-24T16:19:56.097Z",
+      "message": "2026-07-24 16:19:56,097 - DEBUG - Setting polly timeout as (60, 60)"
+    }
+  ],
+  "duplicate_triage": [
+    {
+      "timestamp": "2026-07-24T09:01:09.173Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-24T09:01:09.173038\",\"session_id\":\"1784827093323772686483\",\"user_input\":\"最近の更新内容は？\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"doc_changelog\",\"resolved_by\":\"llm\",\"confidence\":0.98,\"source\":\"intent_router_llm\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\"}"
+    },
+    {
+      "timestamp": "2026-07-24T09:01:14.074Z",
+      "message": "2026-07-24 09:01:14,074 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784827093323772686483', 'total_ms': 11023.36, 'breakdown': {'post_start': 2.84, 'parsed_message': 3.04, 'session_db_read': 3.12, 'after_get_session_db': 347.0, 'before_llm_setup': 659.46, 'before_security': 1218.59, 'after_security': 1733.65, 'before_emoji_route': 1791.27"
+    },
+    {
+      "timestamp": "2026-07-24T12:58:01.122Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-24T12:58:01.121883\",\"session_id\":\"1784897862598930292070\",\"user_input\":\"最近の更新内容教えて\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"doc_changelog\",\"resolved_by\":\"llm\",\"confidence\":0.99,\"source\":\"intent_router_llm\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\"}"
+    },
+    {
+      "timestamp": "2026-07-24T12:58:05.930Z",
+      "message": "2026-07-24 12:58:05,930 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784897862598930292070', 'total_ms': 12937.15, 'breakdown': {'post_start': 3.15, 'parsed_message': 3.36, 'session_db_read': 3.39, 'after_get_session_db': 281.44, 'before_llm_setup': 590.6, 'before_security': 1153.02, 'after_security': 1665.61, 'before_emoji_route': 1719.44"
+    },
+    {
+      "timestamp": "2026-07-24T12:58:58.294Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-24T12:58:58.294527\",\"session_id\":\"1784897862598930292070\",\"user_input\":\"AWSとGCPって何が違うの？\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"architecture\",\"resolved_by\":\"llm\",\"confidence\":0.94,\"source\":\"intent_router_llm\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\"}"
+    },
+    {
+      "timestamp": "2026-07-24T12:59:10.784Z",
+      "message": "2026-07-24 12:59:10,784 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784897862598930292070', 'total_ms': 18126.06, 'breakdown': {'post_start': 0.95, 'parsed_message': 1.09, 'session_db_read': 1.13, 'after_get_session_db': 278.81, 'before_llm_setup': 572.2, 'before_security': 1130.28, 'after_security': 1581.8, 'before_emoji_route': 1594.2, "
+    },
+    {
+      "timestamp": "2026-07-24T13:36:27.857Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-24T13:36:27.856740\",\"session_id\":\"1784729277306607261951\",\"user_input\":\"最近の更新内容を教えてください。\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"doc_changelog\",\"resolved_by\":\"llm\",\"confidence\":0.99,\"source\":\"intent_router_llm\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\"}"
+    },
+    {
+      "timestamp": "2026-07-24T13:36:32.978Z",
+      "message": "2026-07-24 13:36:32,978 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784729277306607261951', 'total_ms': 11552.42, 'breakdown': {'post_start': 2.55, 'parsed_message': 2.7, 'session_db_read': 2.73, 'after_get_session_db': 281.75, 'before_llm_setup': 591.49, 'before_security': 1155.85, 'after_security': 1658.49, 'before_emoji_route': 1706.07"
+    },
+    {
+      "timestamp": "2026-07-24T17:48:38.894Z",
+      "message": "2026-07-24 17:48:38,894 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:48:40.979Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-24T17:48:40.979365\",\"session_id\":\"1784915304486558608283\",\"user_input\":\"最近の更新内容は？\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"doc_changelog\",\"resolved_by\":\"llm\",\"confidence\":0.99,\"source\":\"intent_router_llm\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\"}"
+    },
+    {
+      "timestamp": "2026-07-24T17:48:40.979Z",
+      "message": "2026-07-24 17:48:40,979 - DEBUG - dialogue v2 SessionOps phase=triage sid=1784915304486558608283"
+    },
+    {
+      "timestamp": "2026-07-24T17:48:46.043Z",
+      "message": "2026-07-24 17:48:46,042 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784915304486558608283', 'total_ms': 12142.61, 'breakdown': {'post_start': 2.81, 'parsed_message': 3.02, 'session_db_read': 3.27, 'after_get_session_db': 285.35, 'before_llm_setup': 596.13, 'before_security': 1164.26, 'after_security': 1658.23, 'before_emoji_route': 1708.4"
+    },
+    {
+      "timestamp": "2026-07-24T17:50:29.334Z",
+      "message": "2026-07-24 17:50:29,334 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:50:31.377Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-24T17:50:31.377453\",\"session_id\":\"1784915304486558608283\",\"user_input\":\"あなたについて詳しくおしえて\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"app_about\",\"resolved_by\":\"llm\",\"confidence\":0.98,\"source\":\"intent_router_llm\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\"}"
+    },
+    {
+      "timestamp": "2026-07-24T17:50:31.378Z",
+      "message": "2026-07-24 17:50:31,378 - DEBUG - dialogue v2 SessionOps phase=triage sid=1784915304486558608283"
+    },
+    {
+      "timestamp": "2026-07-24T17:50:37.059Z",
+      "message": "2026-07-24 17:50:37,058 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784915304486558608283', 'total_ms': 11058.49, 'breakdown': {'post_start': 0.41, 'parsed_message': 0.62, 'session_db_read': 0.68, 'after_get_session_db': 288.34, 'before_llm_setup': 562.27, 'before_security': 1105.65, 'after_security': 1111.11, 'before_emoji_route': 1111.8"
+    },
+    {
+      "timestamp": "2026-07-24T17:50:57.268Z",
+      "message": "2026-07-24 17:50:57,268 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:50:59.024Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-24T17:50:59.024665\",\"session_id\":\"1784915304486558608283\",\"user_input\":\"あなたについて詳しく教えて\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"app_about\",\"resolved_by\":\"llm\",\"confidence\":0.99,\"source\":\"intent_router_llm\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\"}"
+    },
+    {
+      "timestamp": "2026-07-24T17:50:59.024Z",
+      "message": "2026-07-24 17:50:59,024 - DEBUG - dialogue v2 SessionOps phase=triage sid=1784915304486558608283"
+    },
+    {
+      "timestamp": "2026-07-24T17:51:04.277Z",
+      "message": "2026-07-24 17:51:04,277 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784915304486558608283', 'total_ms': 10666.54, 'breakdown': {'post_start': 2.18, 'parsed_message': 2.37, 'session_db_read': 2.58, 'after_get_session_db': 279.62, 'before_llm_setup': 579.9, 'before_security': 1145.84, 'after_security': 1396.88, 'before_emoji_route': 1430.82"
+    },
+    {
+      "timestamp": "2026-07-24T17:51:30.001Z",
+      "message": "2026-07-24 17:51:30,001 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:51:31.830Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-24T17:51:31.830664\",\"session_id\":\"1784915304486558608283\",\"user_input\":\"あなたのシステムアーキテクチャについて詳しく教えて\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"architecture\",\"resolved_by\":\"llm\",\"confidence\":0.98,\"source\":\"intent_router_llm\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general"
+    },
+    {
+      "timestamp": "2026-07-24T17:51:31.831Z",
+      "message": "2026-07-24 17:51:31,831 - DEBUG - dialogue v2 SessionOps phase=triage sid=1784915304486558608283"
+    },
+    {
+      "timestamp": "2026-07-24T17:51:37.178Z",
+      "message": "2026-07-24 17:51:37,177 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784915304486558608283', 'total_ms': 14357.62, 'breakdown': {'post_start': 1.2, 'parsed_message': 1.41, 'session_db_read': 1.66, 'after_get_session_db': 281.19, 'before_llm_setup': 575.05, 'before_security': 1136.29, 'after_security': 1574.79, 'before_emoji_route': 1586.68"
+    },
+    {
+      "timestamp": "2026-07-24T17:52:01.357Z",
+      "message": "2026-07-24 17:52:01,357 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:52:03.615Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-24T17:52:03.614639\",\"session_id\":\"1784915304486558608283\",\"user_input\":\"AWSとGCP の違いは？\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"architecture\",\"resolved_by\":\"llm\",\"confidence\":0.98,\"source\":\"intent_router_llm\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\"}"
+    },
+    {
+      "timestamp": "2026-07-24T17:52:03.615Z",
+      "message": "2026-07-24 17:52:03,615 - DEBUG - dialogue v2 SessionOps phase=triage sid=1784915304486558608283"
+    },
+    {
+      "timestamp": "2026-07-24T17:52:09.099Z",
+      "message": "2026-07-24 17:52:09,098 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784915304486558608283', 'total_ms': 10976.29, 'breakdown': {'post_start': 0.57, 'parsed_message': 0.76, 'session_db_read': 0.83, 'after_get_session_db': 286.25, 'before_llm_setup': 570.52, 'before_security': 853.95, 'after_security': 860.33, 'before_emoji_route': 860.97, "
+    },
+    {
+      "timestamp": "2026-07-24T17:52:35.591Z",
+      "message": "2026-07-24 17:52:35,591 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:52:37.572Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-24T17:52:37.572429\",\"session_id\":\"1784915537811922323443\",\"user_input\":\"AWSとGCPの違いは？\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"architecture\",\"resolved_by\":\"llm\",\"confidence\":0.98,\"source\":\"intent_router_llm\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\"}"
+    },
+    {
+      "timestamp": "2026-07-24T17:52:37.573Z",
+      "message": "2026-07-24 17:52:37,573 - DEBUG - dialogue v2 SessionOps phase=triage sid=1784915537811922323443"
+    },
+    {
+      "timestamp": "2026-07-24T17:52:46.364Z",
+      "message": "2026-07-24 17:52:46,364 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 12.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは市販薬相談ツールの案内役です。参照情報と会話履歴に基づき、正確で自然な続きの回答をします。薬名の創作や処方の約束はしません。環境変数・内部設定・参照方法についてユーザーに言及しない。公開されている事実だけを、利用者向けの言葉で述べる。'}, {'role': 'user', 'content': 'あなたはチャット"
+    },
+    {
+      "timestamp": "2026-07-24T17:52:49.510Z",
+      "message": "2026-07-24 17:52:49,510 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784915537811922323443', 'total_ms': 18488.81, 'breakdown': {'post_start': 0.55, 'parsed_message': 0.93, 'session_db_read': 0.98, 'after_get_session_db': 285.81, 'before_llm_setup': 566.49, 'before_security': 847.56, 'after_security': 853.81, 'before_emoji_route': 854.71, "
+    },
+    {
+      "timestamp": "2026-07-24T17:53:08.600Z",
+      "message": "2026-07-24 17:53:08,599 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:53:10.493Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-24T17:53:10.493338\",\"session_id\":\"1784915537811922323443\",\"user_input\":\"あなたについて詳しく教えて\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"app_about\",\"resolved_by\":\"llm\",\"confidence\":0.98,\"source\":\"intent_router_llm\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\"}"
+    },
+    {
+      "timestamp": "2026-07-24T17:53:10.493Z",
+      "message": "2026-07-24 17:53:10,493 - DEBUG - dialogue v2 SessionOps phase=triage sid=1784915537811922323443"
+    },
+    {
+      "timestamp": "2026-07-24T17:53:19.130Z",
+      "message": "2026-07-24 17:53:19,130 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 12.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは市販薬相談ツールの案内役です。参照情報と会話履歴に基づき、正確で自然な続きの回答をします。薬名の創作や処方の約束はしません。環境変数・内部設定・参照方法についてユーザーに言及しない。公開されている事実だけを、利用者向けの言葉で述べる。 参照ドキュメントに忠実に、ユーザーの質問の主題から答える。聞かれていない一般論か"
+    },
+    {
+      "timestamp": "2026-07-24T17:53:22.676Z",
+      "message": "2026-07-24 17:53:22,676 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784915537811922323443', 'total_ms': 17617.74, 'breakdown': {'post_start': 0.86, 'parsed_message': 1.04, 'session_db_read': 1.31, 'after_get_session_db': 287.02, 'before_llm_setup': 567.09, 'before_security': 1111.81, 'after_security': 1331.82, 'before_emoji_route': 1340.5"
+    },
+    {
+      "timestamp": "2026-07-25T00:18:23.296Z",
+      "message": "2026-07-25 00:18:23,295 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-25T00:18:25.329Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-25T00:18:25.329098\",\"session_id\":\"1784915537811922323443\",\"user_input\":\"やあこんにちは\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"sub_route\":\"greeting\",\"resolved_by\":\"llm\",\"confidence\":0.99,\"source\":\"intent_router_llm\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\"}"
+    },
+    {
+      "timestamp": "2026-07-25T00:18:25.329Z",
+      "message": "2026-07-25 00:18:25,329 - DEBUG - dialogue v2 SessionOps phase=triage sid=1784915537811922323443"
+    },
+    {
+      "timestamp": "2026-07-25T00:18:30.411Z",
+      "message": "2026-07-25 00:18:30,411 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784915537811922323443', 'total_ms': 15414.27, 'breakdown': {'post_start': 1.22, 'parsed_message': 1.48, 'session_db_read': 1.83, 'after_get_session_db': 282.22, 'before_llm_setup': 588.8, 'before_security': 1146.76, 'after_security': 1598.15, 'before_emoji_route': 1613.32"
+    },
+    {
+      "timestamp": "2026-07-25T00:19:30.259Z",
+      "message": "2026-07-25 00:19:30,259 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-25T00:19:32.116Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-25T00:19:32.116245\",\"session_id\":\"1784915537811922323443\",\"user_input\":\"ロキソニンって眠い？\",\"mismatch\":false,\"primary_route\":\"Physical\",\"sub_route\":\"medicine_followup_qa\",\"resolved_by\":\"llm\",\"confidence\":0.98,\"source\":\"intent_router_llm\",\"triage_category\":\"Ask\",\"triage_subcategory\":\"general_other\"}"
+    },
+    {
+      "timestamp": "2026-07-25T00:19:32.116Z",
+      "message": "2026-07-25 00:19:32,116 - DEBUG - dialogue v2 SessionOps phase=triage sid=1784915537811922323443"
+    },
+    {
+      "timestamp": "2026-07-25T00:19:59.210Z",
+      "message": "2026-07-25 00:19:59,210 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784915537811922323443', 'total_ms': 34622.47, 'breakdown': {'post_start': 0.91, 'parsed_message': 1.01, 'session_db_read': 1.26, 'after_get_session_db': 275.42, 'before_llm_setup': 559.3, 'before_security': 1110.69, 'after_security': 1330.38, 'before_emoji_route': 1338.54"
+    },
+    {
+      "timestamp": "2026-07-25T00:21:07.370Z",
+      "message": "2026-07-25 00:21:07,370 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-25T00:21:08.920Z",
+      "message": "{\"log_type\":\"dialogue_route_shadow\",\"timestamp\":\"2026-07-25T00:21:08.920718\",\"session_id\":\"1784938841574720802059\",\"user_input\":\"ロキソニンって眠くなる？\",\"mismatch\":false,\"primary_route\":\"Physical\",\"sub_route\":\"medicine_followup_qa\",\"resolved_by\":\"llm\",\"confidence\":0.94,\"source\":\"intent_router_llm\",\"triage_category\":\"Ask\",\"triage_subcategory\":\"general_other\"}"
+    },
+    {
+      "timestamp": "2026-07-25T00:21:08.921Z",
+      "message": "2026-07-25 00:21:08,920 - DEBUG - dialogue v2 SessionOps phase=triage sid=1784938841574720802059"
+    },
+    {
+      "timestamp": "2026-07-25T00:21:34.377Z",
+      "message": "2026-07-25 00:21:34,376 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1784938841574720802059', 'total_ms': 34770.81, 'breakdown': {'post_start': 0.85, 'parsed_message': 0.93, 'session_db_read': 1.08, 'after_get_session_db': 275.75, 'before_llm_setup': 562.19, 'before_security': 1116.31, 'after_security': 1339.9, 'before_emoji_route': 1347.6,"
+    }
+  ],
+  "emergency": [
+    {
+      "timestamp": "2026-07-24T17:48:33.903Z",
+      "message": "  sage_emergency: mrcdev00000000000013"
+    },
+    {
+      "timestamp": "2026-07-24T17:48:38.894Z",
+      "message": "2026-07-24 17:48:38,894 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:50:29.334Z",
+      "message": "2026-07-24 17:50:29,334 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:50:53.613Z",
+      "message": "  sage_emergency: mrcdev00000000000013"
+    },
+    {
+      "timestamp": "2026-07-24T17:50:57.268Z",
+      "message": "2026-07-24 17:50:57,268 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:51:22.821Z",
+      "message": "  sage_emergency: mrcdev00000000000013"
+    },
+    {
+      "timestamp": "2026-07-24T17:51:24.426Z",
+      "message": "2026-07-24 17:51:24,425 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは薬剤師です。ユーザーの入力を正確にカテゴリ分類してください。'}, {'role': 'user', 'content': '\\nあなたは薬剤師です。ユーザーの入力を以下の5つのカテゴリに分類してください。\\n\\n【カテゴリ】\\n1. Physical（身体的症状）: 頭痛、発熱、のどの痛み、腹痛など、身体的な症状\\"
+    },
+    {
+      "timestamp": "2026-07-24T17:51:30.001Z",
+      "message": "2026-07-24 17:51:30,001 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:51:31.841Z",
+      "message": "2026-07-24 17:51:31,841 - INFO - 🔍 緊急事案検出開始: あなたのシステムアーキテクチャについて詳しく教えて"
+    },
+    {
+      "timestamp": "2026-07-24T17:51:31.841Z",
+      "message": "2026-07-24 17:51:31,841 - INFO - 🔍 緊急事案検出なし: あなたのシステムアーキテクチャについて詳しく教えて"
+    },
+    {
+      "timestamp": "2026-07-24T17:52:01.357Z",
+      "message": "2026-07-24 17:52:01,357 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:52:35.591Z",
+      "message": "2026-07-24 17:52:35,591 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:52:46.364Z",
+      "message": "2026-07-24 17:52:46,364 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 12.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは市販薬相談ツールの案内役です。参照情報と会話履歴に基づき、正確で自然な続きの回答をします。薬名の創作や処方の約束はしません。環境変数・内部設定・参照方法についてユーザーに言及しない。公開されている事実だけを、利用者向けの言葉で述べる。'}, {'role': 'user', 'content': 'あなたはチャット"
+    },
+    {
+      "timestamp": "2026-07-24T17:53:05.059Z",
+      "message": "  sage_emergency: mrcdev00000000000013"
+    },
+    {
+      "timestamp": "2026-07-24T17:53:08.600Z",
+      "message": "2026-07-24 17:53:08,599 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-24T17:53:19.130Z",
+      "message": "2026-07-24 17:53:19,130 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 12.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは市販薬相談ツールの案内役です。参照情報と会話履歴に基づき、正確で自然な続きの回答をします。薬名の創作や処方の約束はしません。環境変数・内部設定・参照方法についてユーザーに言及しない。公開されている事実だけを、利用者向けの言葉で述べる。 参照ドキュメントに忠実に、ユーザーの質問の主題から答える。聞かれていない一般論か"
+    },
+    {
+      "timestamp": "2026-07-25T00:18:14.998Z",
+      "message": "  sage_emergency: mrcdev00000000000013"
+    },
+    {
+      "timestamp": "2026-07-25T00:18:16.626Z",
+      "message": "2026-07-25 00:18:16,626 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは薬剤師です。ユーザーの入力を正確にカテゴリ分類してください。'}, {'role': 'user', 'content': '\\nあなたは薬剤師です。ユーザーの入力を以下の5つのカテゴリに分類してください。\\n\\n【カテゴリ】\\n1. Physical（身体的症状）: 頭痛、発熱、のどの痛み、腹痛など、身体的な症状\\"
+    },
+    {
+      "timestamp": "2026-07-25T00:18:23.296Z",
+      "message": "2026-07-25 00:18:23,295 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-25T00:18:25.333Z",
+      "message": "2026-07-25 00:18:25,333 - INFO - 🔍 緊急事案検出開始: やあこんにちは"
+    },
+    {
+      "timestamp": "2026-07-25T00:18:25.333Z",
+      "message": "2026-07-25 00:18:25,333 - INFO - 🔍 緊急事案検出なし: やあこんにちは"
+    },
+    {
+      "timestamp": "2026-07-25T00:19:24.588Z",
+      "message": "  sage_emergency: mrcdev00000000000013"
+    },
+    {
+      "timestamp": "2026-07-25T00:19:25.934Z",
+      "message": "2026-07-25 00:19:25,934 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは薬剤師です。ユーザーの入力を正確にカテゴリ分類してください。'}, {'role': 'user', 'content': '\\nあなたは薬剤師です。ユーザーの入力を以下の5つのカテゴリに分類してください。\\n\\n【カテゴリ】\\n1. Physical（身体的症状）: 頭痛、発熱、のどの痛み、腹痛など、身体的な症状\\"
+    },
+    {
+      "timestamp": "2026-07-25T00:19:30.259Z",
+      "message": "2026-07-25 00:19:30,259 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-25T00:19:32.123Z",
+      "message": "2026-07-25 00:19:32,123 - INFO - 🔍 緊急事案検出開始: ロキソニンって眠い？"
+    },
+    {
+      "timestamp": "2026-07-25T00:19:32.123Z",
+      "message": "2026-07-25 00:19:32,123 - INFO - 🔍 緊急事案検出なし: ロキソニンって眠い？"
+    },
+    {
+      "timestamp": "2026-07-25T00:20:59.607Z",
+      "message": "  sage_emergency: mrcdev00000000000013"
+    },
+    {
+      "timestamp": "2026-07-25T00:21:02.070Z",
+      "message": "2026-07-25 00:21:02,070 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは薬剤師です。ユーザーの入力を正確にカテゴリ分類してください。'}, {'role': 'user', 'content': '\\nあなたは薬剤師です。ユーザーの入力を以下の5つのカテゴリに分類してください。\\n\\n【カテゴリ】\\n1. Physical（身体的症状）: 頭痛、発熱、のどの痛み、腹痛など、身体的な症状\\"
+    },
+    {
+      "timestamp": "2026-07-25T00:21:07.370Z",
+      "message": "2026-07-25 00:21:07,370 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 8.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'JSON のみ出力してください。'}, {'role': 'user', 'content': 'あなたは医薬品相談チャットの IntentRouter です。\\nユーザー発話を **primary_route** と **sub_route** に分類してください。\\n\\n【primary_route 一覧】\\n- Phy"
+    },
+    {
+      "timestamp": "2026-07-25T00:21:08.924Z",
+      "message": "2026-07-25 00:21:08,923 - INFO - 🔍 緊急事案検出開始: ロキソニンって眠くなる？"
+    },
+    {
+      "timestamp": "2026-07-25T00:21:08.924Z",
+      "message": "2026-07-25 00:21:08,924 - INFO - 🔍 緊急事案検出なし: ロキソニンって眠くなる？"
+    }
+  ]
+}

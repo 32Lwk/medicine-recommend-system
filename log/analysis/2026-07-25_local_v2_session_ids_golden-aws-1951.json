@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "date": "2026-07-25",
+    "report_suffix": "golden-aws-1951",
+    "base_url": "http://127.0.0.1:5003/",
+    "started_at": "2026-07-25T01:45:51.654512+00:00",
+    "elapsed_sec": 20.1,
+    "scenario_count": 1,
+    "total_turns": 1,
+    "auto_pass": 1,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "golden-session-1951-regression",
+      "session_id": "1784943951658388199235",
+      "category": "golden_aws",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

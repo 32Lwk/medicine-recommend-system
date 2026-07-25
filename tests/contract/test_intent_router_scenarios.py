@@ -76,6 +76,14 @@ def _build_session(scenario: dict) -> dict[str, Any]:
             session["_fever_context_active"] = True
         if any(k in text for k in ("消して", "消す", "記憶を消")):
             session["pending_memory_delete"] = {"kind": "memory_delete_confirm"}
+    for bot in scenario.get("setup_bot") or []:
+        msg: dict[str, Any] = {"type": "bot", "content": "bot"}
+        if isinstance(bot, dict):
+            msg.update(bot)
+        session["messages"].append(msg)
+        intent = msg.get("concierge_intent")
+        if intent:
+            session["last_concierge_intent"] = intent
     return session
 
 
@@ -109,6 +117,13 @@ def _normalize_sub_route(sub: str | None) -> str | None:
     if sub is None:
         return None
     return SUB_ROUTE_ALIASES.get(sub, sub)
+
+
+@pytest.fixture(autouse=True)
+def _enable_routing_v2_flags(monkeypatch):
+    monkeypatch.setenv("CHAT_PIPELINE_V2", "true")
+    monkeypatch.setenv("CHAT_PIPELINE_V2_INTENT_ROUTER", "true")
+    monkeypatch.setattr("config.llm_flags._is_pytest_running", lambda: False)
 
 
 @pytest.mark.parametrize("scenario_id", _all_router_scenario_ids())

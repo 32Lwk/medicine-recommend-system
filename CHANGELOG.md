@@ -1,6 +1,53 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月25日**（OTC 上位50画像 R2 完備・推奨除外・TTS/UI・localhost 静的アセット）
+**最終更新日: 2026年7月25日**（NLU/ルーティング統合・AWS ログ分析・副作用 QA ゴールデン再検証）
+
+---
+
+## 2026年7月25日 — NLU/ルーティング統合（Unified Pipeline）・副作用 QA・AWS ログ分析
+
+### 概要
+
+AWS ステージングログで特定した **Concierge follow-up 乖離**（`doc_changelog` 固定）と **ロキソニン副作用 QA の誤 escalation** を、Intent Router v2 有効時に **一括 ON** する 3 層ルーティングで修正。あわせて **AWS CloudWatch ログ分析パイプライン**（GCP 相当）を追加し、ゴールデン 6 セッションを local-v2-chat-test で再検証（**8/8 自動合格**）。
+
+### ルーティング改善（Intent Router v2 サブフラグ一括 ON）
+
+| フラグ | 用途 |
+|--------|------|
+| `ROUTING_UNIFIED_PIPELINE` | Layer1 シグナル + follow-up LLM + legacy router の統合（`RoutingDecision.execution_lock`） |
+| `ROUTING_MEDICINE_SIDE_EFFECT_QA` | 「A って眠い？」等の副作用 QA 専用 route（症状 escalation へ入れない） |
+| `ROUTING_FOLLOWUP_LLM` | 曖昧短文 follow-up の LLM 判定 |
+| `PERF_META_SAFETY_SHORTPATH` | meta 経路の safety_gate 短縮 |
+| `ROUTING_MEDICINE_SIDE_EFFECT_KB` | CSV 未ヒット時 Bedrock KB 補完 |
+
+**主要ファイル**: `src/dialogue/routing/unified_router.py`, `routing_decision.py`, `follow_up_llm.py`, `src/handlers/chat/medicine_side_effect_handlers.py`, `src/services/concierge_execution_sync.py`
+
+**観測性**: `dialogue_route_execution` 構造化ログ、`side_effect_qa_mishandled` ヒューリスティック（AWS/GCP 解析共通）
+
+### バグ修正（副作用 QA）
+
+- `finalize_medicine_qa_response`: DB 保存後に session cookie から `messages` を削除する際、`mark_pipeline_turn_bot_appended` を呼び **pipeline end guard の誤 `system_error` を防止**
+- `main._enrich_v2_test_chat_body`: v2 テスト UA 向け POST 応答に **DB フォールバック付き `latest_bot`** を同梱
+
+### AWS ログ分析基盤
+
+| 種別 | パス |
+|------|------|
+| エクスポート/解析 | `src/analysis/aws_log_export.py`, `aws_cloudwatch_log_parser.py` |
+| CLI | `scripts/export_aws_logs.py`, `analyze_aws_logs.py`, `prepare_aws_log_analysis.py` |
+| スキル | `.cursor/skills/aws-log-analysis/SKILL.md` |
+| 統合レポート | `log/analysis/2026-07-25_downloaded-aws-logs-*.md` |
+
+### ゴールデン再検証（local-v2-chat-test）
+
+| シナリオ | セッション末尾 | 結果 |
+|----------|----------------|------|
+| about / architecture / AWS-GCP（changelog 後） | …8283 | PASS（`concierge_app_about` / `concierge_architecture`、changelog 繰り返しなし） |
+| ロキソニン副作用 QA | …3443 / …2059 | PASS（`sage_qa`、睡眠改善 escalation なし） |
+| 回帰 good | …6483 / …2070 / …1951 | PASS |
+
+フィクスチャ: `tests/fixtures/v2_golden_aws_6_sessions.yaml`  
+実行: `python scripts/local_v2_chat_test_runner.py --scenarios-path tests/fixtures/v2_golden_aws_6_sessions.yaml --report-suffix golden-aws-6-final`
 
 ---
 

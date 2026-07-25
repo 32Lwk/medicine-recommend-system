@@ -1,0 +1,112 @@
+version: 1
+source: log/analysis/downloaded-aws-logs-20260724-20260725-20260725-005002
+description: AWS staging golden 6 sessions — NLU/routing regression (2026-07-25)
+count: 8
+scenarios:
+- id: golden-session-8283-about
+  category: golden_aws
+  wave: nlu-fix
+  description: '8283 T2: about after changelog must not repeat doc_changelog'
+  setup:
+  - 最近の更新内容は？
+  input: あなたについて詳しくおしえて
+  expect:
+    primary_route: Concierge
+    must_have_response: true
+    must_not_contain:
+    - 最終更新日
+    context_keywords:
+    - 相談
+- id: golden-session-8283-architecture
+  category: golden_aws
+  wave: nlu-fix
+  description: '8283 T4: architecture after changelog/about must not repeat doc_changelog'
+  setup:
+  - 最近の更新内容は？
+  - あなたについて詳しく教えて
+  input: あなたのシステムアーキテクチャについて詳しく教えて
+  expect:
+    primary_route: Concierge
+    must_have_response: true
+    must_not_contain:
+    - 最終更新日
+    context_keywords:
+    - PostgreSQL
+- id: golden-session-8283-aws-gcp
+  category: golden_aws
+  wave: nlu-fix
+  description: '8283 T5: AWS/GCP after meta context must not repeat doc_changelog'
+  setup:
+  - 最近の更新内容は？
+  - あなたについて詳しく教えて
+  - あなたのシステムアーキテクチャについて詳しく教えて
+  input: AWSとGCP の違いは？
+  expect:
+    primary_route: Concierge
+    must_have_response: true
+    must_not_contain:
+    - 最終更新日
+    context_keywords:
+    - GCP
+- id: golden-session-3443-side-effect
+  category: golden_aws
+  wave: nlu-fix
+  description: '3443 T7: ロキソニン副作用 QA — must not escalate to sleep symptom reco'
+  input: ロキソニンって眠い？
+  expect:
+    must_have_response: true
+    must_not:
+    - sage_reco_without_age
+    must_not_contain:
+    - 睡眠改善
+    - 年齢を教えて
+    context_keywords:
+    - ロキソニン
+- id: golden-session-2059-side-effect
+  category: golden_aws
+  wave: nlu-fix
+  description: '2059: ロキソニン副作用 QA — must not escalate to sleep symptom reco'
+  input: ロキソニンって眠くなる？
+  expect:
+    must_have_response: true
+    must_not:
+    - sage_reco_without_age
+    must_not_contain:
+    - 睡眠改善
+    - 年齢を教えて
+    context_keywords:
+    - ロキソニン
+- id: golden-session-6483-regression
+  category: golden_aws
+  wave: nlu-fix
+  description: '6483: headache reco then changelog — regression good session'
+  setup:
+  - 頭が痛いです
+  input: 最近の更新内容は？
+  expect:
+    primary_route: Concierge
+    must_have_response: true
+    context_keywords:
+    - 最近
+- id: golden-session-2070-regression
+  category: golden_aws
+  wave: nlu-fix
+  description: '2070: changelog then AWS/GCP — regression good session'
+  setup:
+  - 最近の更新内容教えて
+  input: AWSとGCPって何が違うの？
+  expect:
+    primary_route: Concierge
+    must_have_response: true
+    context_keywords:
+    - GCP
+- id: golden-session-1951-regression
+  category: golden_aws
+  wave: nlu-fix
+  description: '1951: single changelog query — regression good session'
+  input: 最近の更新内容を教えてください。
+  expect:
+    primary_route: Concierge
+    must_have_response: true
+    context_keywords:
+    - 最近

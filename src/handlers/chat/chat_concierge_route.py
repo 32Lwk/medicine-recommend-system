@@ -314,6 +314,16 @@ def try_concierge_response(
     payload = apply_concierge_payload_i18n(session, payload, session_id=sid)
     mark_pipeline_step("concierge_build_payload_end")
     _append_bot_message(session, payload, sid)
+    from src.services.concierge_execution_sync import sync_concierge_execution_metadata
+
+    sync_concierge_execution_metadata(
+        session,
+        sid=sid,
+        resolved_intent=intent,
+        triage_result=triage_result,
+        user_text=llm_text,
+        response_preview=str(payload.get("content") or "")[:500],
+    )
     update_concierge_state(
         session,
         intent,

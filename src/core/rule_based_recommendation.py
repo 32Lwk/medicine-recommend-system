@@ -814,6 +814,18 @@ def rule_based_recommendation(
     
     # 睡眠障害カテゴリの場合、専用の安全性チェックを実行
     if medicine_type == "睡眠障害":
+        try:
+            from config.llm_flags import is_medicine_side_effect_qa_enabled
+            from src.services.medicine_side_effect_routing import is_medicine_side_effect_route
+
+            if is_medicine_side_effect_qa_enabled(session_id) and is_medicine_side_effect_route(
+                user_text
+            ):
+                medicine_type = None
+        except ImportError:
+            pass
+
+    if medicine_type == "睡眠障害":
         if DEBUG_MODE or logger.level <= logging.DEBUG:
             logger.debug(f"\n--- ステップ3.5: 睡眠改善薬専用安全性チェック ---")
         sleep_safety_result = check_sleep_medicine_safety(user_text, user_info, nlu_result, medicine_type)

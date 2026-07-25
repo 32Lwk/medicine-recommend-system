@@ -98,6 +98,9 @@ def finalize_medicine_qa_response(
         session_data["last_activity"] = datetime.now()
         save_session_to_db(sid, session_data)
     if "messages" in session:
+        from src.handlers.chat.chat_pipeline_end_guard import mark_pipeline_turn_bot_appended
+
+        mark_pipeline_turn_bot_appended(session)
         del session["messages"]
         if hasattr(session, "modified"):
             session.modified = True

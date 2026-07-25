@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "date": "2026-07-25",
+    "report_suffix": "golden-aws-6-rerun",
+    "base_url": "http://127.0.0.1:5002/",
+    "started_at": "2026-07-25T01:35:22.044518+00:00",
+    "elapsed_sec": 98.6,
+    "scenario_count": 3,
+    "total_turns": 5,
+    "auto_pass": 0,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "golden-session-8283-architecture",
+      "session_id": "1784943322048275844867",
+      "category": "golden_aws",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-session-3443-side-effect",
+      "session_id": "1784943390661055303729",
+      "category": "golden_aws",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-session-2059-side-effect",
+      "session_id": "1784943405661208549013",
+      "category": "golden_aws",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "date": "2026-07-25",
+    "report_suffix": "golden-aws-6",
+    "base_url": "http://127.0.0.1:5001/",
+    "started_at": "2026-07-25T01:27:28.494441+00:00",
+    "elapsed_sec": 419.9,
+    "scenario_count": 8,
+    "total_turns": 16,
+    "auto_pass": 5,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "golden-session-8283-about",
+      "session_id": "1784942848500395855394",
+      "category": "golden_aws",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-session-8283-architecture",
+      "session_id": "1784942893352850464867",
+      "category": "golden_aws",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-session-8283-aws-gcp",
+      "session_id": "1784942961867330980821",
+      "category": "golden_aws",
+      "persona_id": "",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-session-3443-side-effect",
+      "session_id": "1784943047536811837728",
+      "category": "golden_aws",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-session-2059-side-effect",
+      "session_id": "1784943062904074991870",
+      "category": "golden_aws",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-session-6483-regression",
+      "session_id": "1784943078075632357138",
+      "category": "golden_aws",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-session-2070-regression",
+      "session_id": "1784943208045279385686",
+      "category": "golden_aws",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-session-1951-regression",
+      "session_id": "1784943248976612882415",
+      "category": "golden_aws",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

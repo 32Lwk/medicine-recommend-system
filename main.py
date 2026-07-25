@@ -1035,15 +1035,15 @@ def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, req
                     safe_session[flag] = session_data[flag]
 
 
-def _enrich_v2_test_chat_body(body: dict, session, request: Request) -> dict:
+def _enrich_v2_test_chat_body(body: dict, session, request: Request, sid: str) -> dict:
     """local_v2_chat_test_runner 向け: POST 本文に直近 bot を同梱（DB 同期待ち不要）。"""
     ua = str(request.headers.get("User-Agent") or "")
     if "local-v2-chat-test" not in ua or not isinstance(body, dict):
         return body
     try:
-        from src.handlers.line.line_session import get_latest_bot_message_from_session
+        from src.handlers.line.line_session import resolve_latest_bot_message
 
-        bot = get_latest_bot_message_from_session(session)
+        bot = resolve_latest_bot_message(session, sid)
         if not bot:
             return body
         out = dict(body)
@@ -1078,7 +1078,7 @@ def _post_chat_json_response(request: Request, message: str, sid: str) -> JSONRe
         if not isinstance(body, dict) or not isinstance(status_code, int):
             body = {"error": True, "response": "サーバーから予期しない形式のレスポンスが返されました"}
             status_code = 500
-        body = _enrich_v2_test_chat_body(body, safe_session, request)
+        body = _enrich_v2_test_chat_body(body, safe_session, request, sid)
         return JSONResponse(content=body, status_code=status_code)
     finally:
         if sid:

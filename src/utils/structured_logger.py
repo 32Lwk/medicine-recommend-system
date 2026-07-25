@@ -414,3 +414,43 @@ def emit_dialogue_route_dispatch(
         log_data,
     )
 
+
+def emit_dialogue_route_execution(
+    *,
+    session_id: str,
+    user_input: str,
+    dispatch_sub_route: Optional[str] = None,
+    resolved_concierge_intent: Optional[str] = None,
+    resolved_execution_intent: Optional[str] = None,
+    llm_path: Optional[str] = None,
+    layer_used: Optional[str] = None,
+    mismatch: bool = False,
+    handler: Optional[str] = None,
+    extra: Optional[Dict[str, Any]] = None,
+) -> None:
+    """dispatch 決定と実行 intent の整合性ログ（unified routing 観測）。"""
+    timestamp = datetime.now().isoformat()
+    log_data: Dict[str, Any] = {
+        "log_type": "dialogue_route_execution",
+        "timestamp": timestamp,
+        "session_id": session_id,
+        "user_input": user_input,
+        "dispatch_sub_route": dispatch_sub_route,
+        "resolved_concierge_intent": resolved_concierge_intent,
+        "resolved_execution_intent": resolved_execution_intent,
+        "llm_path": llm_path,
+        "layer_used": layer_used,
+        "mismatch": mismatch,
+        "handler": handler,
+    }
+    if extra:
+        log_data.update(extra)
+
+    _write_to_jsonl("dialogue_route_execution_log.jsonl", log_data)
+    level = "WARNING" if mismatch else "INFO"
+    _write_to_app_log(
+        level,
+        f"Route execution [session_id: {session_id}] mismatch={mismatch}",
+        log_data,
+    )
+

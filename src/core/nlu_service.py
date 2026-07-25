@@ -627,6 +627,21 @@ def hybrid_nlu_extraction(
     ハイブリッドNLU（ルールベース優先、ChatGPT APIフォールバック）
     use_cache=False のときキャッシュ読み書きをスキップ（resolve_nlu 側でマージ後に保存）
     """
+    try:
+        from config.llm_flags import is_medicine_side_effect_qa_enabled
+        from src.services.medicine_side_effect_routing import is_medicine_side_effect_route
+
+        if is_medicine_side_effect_qa_enabled(session_id) and is_medicine_side_effect_route(user_text):
+            return {
+                "symptoms": [],
+                "confidence_score": 0.0,
+                "skip_symptom_extraction": True,
+                "side_effect_qa": True,
+                "source": "side_effect_qa_guard",
+            }
+    except ImportError:
+        pass
+
     if use_cache:
         cached_result = get_cached_nlu_result(user_text, session_id)
         if cached_result:

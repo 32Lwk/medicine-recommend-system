@@ -173,9 +173,10 @@ class DatabaseManager:
         # init_database / connect が False のときの理由（起動ログ用）
         self.startup_skip_reason: Optional[str] = None
         self.last_connect_error: Optional[str] = None
-        # 環境変数から接続プール設定を取得（デフォルト値は小規模環境向け）
+        # 環境変数から接続プール設定を取得（pooler 利用時はデフォルトをやや多めに）
         self.min_connections = int(os.getenv('DB_MIN_CONNECTIONS', 2))
-        self.max_connections = int(os.getenv('DB_MAX_CONNECTIONS', 10))
+        default_max = 20 if _uses_pooler(self.database_url or "") else 10
+        self.max_connections = int(os.getenv('DB_MAX_CONNECTIONS', default_max))
         self.reconnect_retries = int(os.getenv('DB_RECONNECT_RETRIES', '1'))
         self.reconnect_backoff = 1  # 秒
         self._reconnecting = False  # 再帰防止フラグ

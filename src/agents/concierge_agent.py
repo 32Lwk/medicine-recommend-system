@@ -386,6 +386,17 @@ def resolve_concierge_intent(
     from src.services.routing_context import evaluate_store_gate
 
     router_dispatch = bool((triage_result or {}).get("_intent_router_dispatch"))
+    execution_lock = bool(
+        (session or {}).get("_routing_execution_lock")
+        if session is not None and hasattr(session, "get")
+        else False
+    )
+
+    if router_dispatch and execution_lock:
+        locked = (triage_result or {}).get("concierge_intent")
+        if locked:
+            return locked  # type: ignore[return-value]
+
     if not router_dispatch and evaluate_store_gate(
         text,
         triage_result=triage_result,
@@ -405,9 +416,15 @@ def resolve_concierge_intent(
         conversation_history=conversation_history,
         sid=session_id,
     )
-    follow = resolve_concierge_follow_up_intent(text, prior, last_bot=last_bot)
-    if follow:
-        return follow  # type: ignore[return-value]
+    if not (router_dispatch and execution_lock):
+        follow = resolve_concierge_follow_up_intent(text, prior, last_bot=last_bot)
+        if follow:
+            return follow  # type: ignore[return-value]
+
+    if router_dispatch:
+        locked = (triage_result or {}).get("concierge_intent")
+        if locked:
+            return locked  # type: ignore[return-value]
 
     orchestrated = resolve_intent_from_triage(
         triage_result, session, text, sid=session_id, routing_ctx=routing_ctx

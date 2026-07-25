@@ -289,6 +289,24 @@ def _resolve_medicine_context_gate(
     return None
 
 
+def _resolve_side_effect_qa_gate(text: str, sid: str | None = None) -> RouteDecision | None:
+    try:
+        from config.llm_flags import is_medicine_side_effect_qa_enabled
+        from src.services.medicine_side_effect_routing import is_medicine_side_effect_route
+
+        if is_medicine_side_effect_qa_enabled(sid) and is_medicine_side_effect_route(text):
+            return RouteDecision(
+                primary_route="Physical",
+                sub_route="medicine_side_effect_qa",
+                confidence=0.96,
+                resolved_by="gate",
+                source="medicine_side_effect_qa",
+            )
+    except ImportError:
+        pass
+    return None
+
+
 def run_deterministic_gate(
     user_text: str,
     session: Any,
@@ -304,6 +322,10 @@ def run_deterministic_gate(
         return None
 
     triage = triage_result or {}
+
+    side_effect = _resolve_side_effect_qa_gate(text, sid)
+    if side_effect is not None:
+        return side_effect
 
     follow = _resolve_concierge_follow_up(text, session, sid)
     if follow is not None:

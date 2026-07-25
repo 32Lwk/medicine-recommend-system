@@ -456,6 +456,28 @@ def run_chat_post_pipeline(
     _run_moderation_if_needed(ctx)
 
     try:
+        from config.llm_flags import is_medicine_side_effect_qa_enabled
+        from src.services.medicine_side_effect_routing import is_medicine_side_effect_route
+
+        user_msg = ctx.sanitized_message or ctx.user_message
+        if is_medicine_side_effect_qa_enabled(sid) and is_medicine_side_effect_route(user_msg):
+            from src.handlers.chat.medicine_side_effect_handlers import (
+                handle_medicine_side_effect_qa,
+            )
+
+            logger.info("💊 medicine_side_effect_qa early route")
+            return _guard_return(
+                handle_medicine_side_effect_qa(
+                    session,
+                    client_info,
+                    sid,
+                    ctx.original_user_message or user_msg,
+                )
+            )
+    except Exception:
+        logger.debug("medicine_side_effect_qa early route skipped", exc_info=True)
+
+    try:
         from src.services.medicine_context_routing import resolve_medicine_context_route
 
         med_ctx_route = resolve_medicine_context_route(

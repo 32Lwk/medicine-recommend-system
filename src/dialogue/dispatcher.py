@@ -95,7 +95,7 @@ def _apply_decision_to_context(ctx: Any, decision: RouteDecision) -> None:
     elif primary == "Physical":
         if sub == "fever_flow":
             triage["subcategory"] = "fever"
-        elif sub in ("medicine_followup_qa", "symptom_prompt_sports"):
+        elif sub in ("medicine_followup_qa", "medicine_side_effect_qa", "symptom_prompt_sports"):
             triage["subcategory"] = sub
         elif sub and sub != "rule_based_recommend":
             triage["subcategory"] = sub
@@ -116,6 +116,14 @@ def _should_skip_dispatch(decision: RouteDecision) -> bool:
 
 def _log_dispatch(ctx: Any, decision: RouteDecision, *, handled: bool) -> None:
     dialogue_flags: dict[str, bool] | None = None
+    layer_used = None
+    execution_lock = None
+    if isinstance(decision.meta, dict):
+        layer_used = decision.meta.get("layer_used")
+    routing_raw = (ctx.session or {}).get("_routing_decision") if ctx.session else None
+    if isinstance(routing_raw, dict):
+        layer_used = layer_used or routing_raw.get("layer_used")
+        execution_lock = routing_raw.get("execution_lock")
     try:
         from src.dialogue.context import load_dialogue_context
 
@@ -129,7 +137,10 @@ def _log_dispatch(ctx: Any, decision: RouteDecision, *, handled: bool) -> None:
     except Exception:
         pass
     try:
-        from src.utils.structured_logger import emit_dialogue_route_dispatch
+        from src.utils.structured_logger import (
+            emit_dialogue_route_dispatch,
+            emit_dialogue_route_execution,
+        )
 
         emit_dialogue_route_dispatch(
             session_id=ctx.sid or "",
@@ -139,6 +150,20 @@ def _log_dispatch(ctx: Any, decision: RouteDecision, *, handled: bool) -> None:
             handled=handled,
             dialogue_flags=dialogue_flags,
         )
+        resolved_exec = None
+        if ctx.triage_result:
+            resolved_exec = ctx.triage_result.get("concierge_intent")
+        emit_dialogue_route_execution(
+            session_id=ctx.sid or "",
+            user_input=ctx.sanitized_message or ctx.user_message or "",
+            dispatch_sub_route=decision.sub_route,
+            resolved_concierge_intent=resolved_exec,
+            resolved_execution_intent=resolved_exec,
+            layer_used=layer_used,
+            mismatch=False,
+            handler=resolve_handler_name(decision),
+            extra={"execution_lock": execution_lock, "handled": handled},
+        )
     except Exception:
         logger.debug("emit_dialogue_route_dispatch skipped", exc_info=True)
 
@@ -147,10 +172,35 @@ def _dispatch_physical(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
     from src.services.medicine_context_routing import resolve_medicine_context_route
 
     sub = (ctx.session.get("_intent_router_dispatch") or {}).get("sub_route")
+    if not sub and ctx.triage_result:
+        sub = ctx.triage_result.get("subcategory")
+    user_msg = ctx.sanitized_message or ctx.user_message
+
+    try:
+        from config.llm_flags import is_medicine_side_effect_qa_enabled
+        from src.services.medicine_side_effect_routing import is_medicine_side_effect_route
+
+        side_effect_ok = is_medicine_side_effect_qa_enabled(ctx.sid) and (
+            sub == "medicine_side_effect_qa" or is_medicine_side_effect_route(user_msg)
+        )
+        if side_effect_ok:
+            from src.handlers.chat.medicine_side_effect_handlers import (
+                handle_medicine_side_effect_qa,
+            )
+
+            return handle_medicine_side_effect_qa(
+                ctx.session,
+                ctx.client_info,
+                ctx.sid,
+                ctx.original_user_message or user_msg,
+            )
+    except ImportError:
+        pass
+
     ctx_route = resolve_medicine_context_route(
         ctx.session,
         ctx.sid,
-        ctx.sanitized_message or ctx.user_message,
+        user_msg,
         client=ctx.recommendation_client,
         triage_result=ctx.triage_result,
     )

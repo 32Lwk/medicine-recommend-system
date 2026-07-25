@@ -96,6 +96,19 @@ def run_safety_gate(
         return SafetyGateResult()
 
     if phase == "full" and recommendation_client is not None:
+        try:
+            from config.llm_flags import is_meta_safety_shortpath_enabled
+            from src.dialogue.routing.meta_safety_shortpath import (
+                is_meta_safety_shortpath_eligible,
+            )
+
+            if is_meta_safety_shortpath_enabled() and is_meta_safety_shortpath_eligible(
+                triage_result, session
+            ):
+                return SafetyGateResult()
+        except ImportError:
+            pass
+
         emergency_resp = handle_emergency_if_detected(
             session,
             client_info,

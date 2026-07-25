@@ -19,6 +19,24 @@
 | `CHAT_PIPELINE_V2_INTENT_ROUTER` | 既定 ON。`false` で router 全体 OFF |
 | `CHAT_PIPELINE_V2_INTENT_ROUTER_DISPATCH` | 既定 ON。`false` で shadow のみ（旧 orchestrator dispatch） |
 | `CHAT_PIPELINE_V2_INTENT_ROUTER_LLM` | 既定 ON。`false` で gate/triage のみ |
+| `ROUTING_UNIFIED_PIPELINE` | v2 + Intent Router ON 時 **既定 ON**。Concierge follow-up の execution_lock |
+| `ROUTING_MEDICINE_SIDE_EFFECT_QA` | 同上。**副作用 QA** 専用 early route |
+| `ROUTING_FOLLOWUP_LLM` | 同上。曖昧 follow-up の LLM 判定 |
+| `PERF_META_SAFETY_SHORTPATH` | 同上。meta 経路 safety_gate 短縮 |
+| `ROUTING_MEDICINE_SIDE_EFFECT_KB` | 同上。CSV 未ヒット時 KB 補完 |
+
+### Unified Routing（2026-07-25）
+
+Intent Router が正しい `sub_route` を返しても実行層（Concierge regex / dispatcher ゲート）で上書きされていた問題を、`RoutingDecision.execution_lock` と `unified_router.py`（Layer1 シグナル → follow-up LLM → legacy）で解消。
+
+| sub_route | 実行 |
+|-----------|------|
+| `medicine_side_effect_qa` | `handle_medicine_side_effect_qa`（CSV → KB、症状 reco へ入れない） |
+| Concierge meta follow-up | `concierge_app_about` / `concierge_architecture` 等（changelog 固定を禁止） |
+
+**ゴールデン再検証**: `tests/fixtures/v2_golden_aws_6_sessions.yaml` + `--scenarios-path`（AWS staging 6 セッション由来）
+
+**観測**: `dialogue_route_execution` ログ、`log/analysis/*_local_v2_chat_test_golden-aws-6-final.md`
 
 | Wave 1a 実装済み | `DialogueContext` / `ContextProvider` / `SessionOps` / `ResponseEnvelope` / pipeline hook / Web SSE・LINE 配信アダプタ |
 | Wave 1b shadow | `src/dialogue/routing/` gate → LLM map → guards。`dialogue_state.routing` に記録のみ |

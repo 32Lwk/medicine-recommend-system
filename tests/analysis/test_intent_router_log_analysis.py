@@ -8,6 +8,7 @@ def test_measure_intent_router_logs_empty():
     m = measure_intent_router_logs([])
     assert m["shadow_total"] == 0
     assert m["dispatch_total"] == 0
+    assert m["execution_total"] == 0
 
 
 def test_measure_intent_router_logs_shadow_mismatch():

@@ -410,3 +410,59 @@ def is_ux_reco_dedup_enabled() -> bool:
     「ありがとう」「これで終わり」等の終了意図では sage_reco を出さず締め応答へ。
     """
     return _ux_rollout_flag("UX_RECO_DEDUP")
+
+
+def is_unified_router_enabled(sid: str | None = None) -> bool:
+    """Unified routing pipeline（RoutingDecision 単一真実源）。
+
+    Intent Router v2 有効時は既定 ON。
+    CHAT_PIPELINE_V2 系が ON の環境ではカナリアなしで一括適用。
+    明示 false（ROUTING_UNIFIED_PIPELINE=false）でロールバック。
+    """
+    if not is_intent_router_v2_enabled(sid):
+        return False
+    return _v2_subflag_enabled("ROUTING_UNIFIED_PIPELINE")
+
+
+def is_routing_followup_llm_enabled(sid: str | None = None) -> bool:
+    """曖昧短文フォローアップの LLM 再判定。
+
+    Intent Router v2 有効時は既定 ON。OFF 時は rule-based fallback のみ。
+    """
+    if not is_intent_router_v2_enabled(sid):
+        return False
+    return _v2_subflag_enabled("ROUTING_FOLLOWUP_LLM")
+
+
+def is_medicine_side_effect_qa_enabled(sid: str | None = None) -> bool:
+    """推奨履歴なしの医薬品副作用 Q&A ルート。
+
+    Intent Router v2 有効時は既定 ON。
+    「ロキソニンって眠い？」等を symptom NLU / escalation ではなく
+    medicine_side_effect_qa ハンドラへ振り分ける。
+    """
+    if not is_intent_router_v2_enabled(sid):
+        return False
+    return _v2_subflag_enabled("ROUTING_MEDICINE_SIDE_EFFECT_QA")
+
+
+def is_medicine_side_effect_kb_enabled() -> bool:
+    """副作用 Q&A で CSV 未命中時の Bedrock KB RAG 補完。
+
+    v2 有効時は既定 ON。ROUTING_MEDICINE_SIDE_EFFECT_KB=false で無効化。
+    """
+    if not is_chat_pipeline_v2_enabled():
+        return False
+    return _v2_subflag_enabled("ROUTING_MEDICINE_SIDE_EFFECT_KB")
+
+
+def is_meta_safety_shortpath_enabled() -> bool:
+    """Concierge / meta 経路で emergency LLM 分類をスキップ。
+
+    v2 有効時は既定 ON。greeting / doc_changelog / app_about 等の
+    低リスク meta ターンで safety_gate の emergency チェーンを省略する。
+    """
+    if not is_chat_pipeline_v2_enabled():
+        return False
+    return _v2_subflag_enabled("PERF_META_SAFETY_SHORTPATH")
+
