@@ -32,7 +32,10 @@ Intent Router が正しい `sub_route` を返しても実行層（Concierge rege
 | sub_route | 実行 |
 |-----------|------|
 | `medicine_side_effect_qa` | `handle_medicine_side_effect_qa`（CSV → KB、症状 reco へ入れない） |
+| `medicine_qa` | `handle_medicine_information_qa` → `chat_with_medicine_context`（比較・説明・選び方。LLM + ブランド解決 CSV 文脈） |
 | Concierge meta follow-up | `concierge_app_about` / `concierge_architecture` 等（changelog 固定を禁止） |
+
+**医薬品比較 Q&A（2026-07-25 追記）**: 「ロキソニンとイブの違い」等は `medicine_qa` へ。副作用判定の誤ルーティングを `medicine_qa_routing.is_strict_medicine_side_effect_question` で防止。通称解決は [`MEDICINE_BRAND_RESOLVE.md`](MEDICINE_BRAND_RESOLVE.md)。
 
 **ゴールデン再検証**: `tests/fixtures/v2_golden_aws_6_sessions.yaml` + `--scenarios-path`（AWS staging 6 セッション由来）
 

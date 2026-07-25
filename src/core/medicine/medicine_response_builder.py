@@ -158,8 +158,17 @@ def detect_medicine_name_in_query(user_message, medicine_df):
     """
     if medicine_df is None or medicine_df.empty:
         return []
-    detected_medicines = []
+    detected_medicines: list[dict] = []
     user_message_lower = user_message.lower()
+
+    # ブランド通称（ロキソニン・イブ等）— 先頭一致 + 成分エイリアス
+    try:
+        from src.services.medicine_brand_resolve import resolve_brand_hints_in_query
+
+        detected_medicines.extend(resolve_brand_hints_in_query(user_message, medicine_df))
+    except ImportError:
+        pass
+
     for _, row in medicine_df.iterrows():
         ingredients = str(row.get("成分", "")).lower()
         if ingredients:
@@ -194,18 +203,45 @@ def detect_medicine_name_in_query(user_message, medicine_df):
                 "doping_prohibited": row.get("禁止物質あり", ""),
                 "medicine_type": row.get("医薬品の種類", ""),
             })
-    unique_medicines = []
-    seen_names = set()
+    unique_medicines: list[dict] = []
+    seen_names: set[str] = set()
+    seen_hints: set[str] = set()
+    brand_hints = []
+    try:
+        from src.dialogue.routing.context_signals import extract_drug_entities
+        from src.services.medicine_brand_resolve import _brand_prefix_match
+
+        brand_hints = extract_drug_entities(user_message)
+    except ImportError:
+        _brand_prefix_match = None  # type: ignore[assignment]
+
     for med in detected_medicines:
-        if med["product_name"] not in seen_names:
-            unique_medicines.append(med)
-            seen_names.add(med["product_name"])
+        name = str(med.get("product_name") or "")
+        if not name or name in seen_names:
+            continue
+        hint_key = name
+        if brand_hints and _brand_prefix_match:
+            for hint in brand_hints:
+                if _brand_prefix_match(hint, name):
+                    hint_key = hint.lower()
+                    break
+        elif brand_hints:
+            for hint in brand_hints:
+                if name == hint or name.startswith(hint):
+                    hint_key = hint.lower()
+                    break
+        if hint_key in seen_hints:
+            continue
+        unique_medicines.append(med)
+        seen_names.add(name)
+        seen_hints.add(hint_key)
     return unique_medicines[:10]
 
 
 def _short_medicine_use_hint(med: dict, user_message: str) -> str:
     """競技・ドーピング文脈では効能全文の羅列を避け、用途を短くまとめる。"""
     name = str(med.get("product_name") or "")
+    ingredients = str(med.get("ingredients") or "").replace("\n", " ")
     sports_ctx = any(
         k in (user_message or "")
         for k in ("競技", "ドーピング", "陸上", "マラソン", "大会", "レース", "試合")
@@ -215,6 +251,12 @@ def _short_medicine_use_hint(med: dict, user_message: str) -> str:
         if "外用" in med_type or "スプレ" in name or "のど" in name:
             return "のどの炎症・痛み向けの外用薬です。"
         return "感冒症状の緩和向けの総合感冒薬です。"
+    if "ロキソプロフェン" in ingredients:
+        return "解熱鎮痛薬（NSAIDs）で、頭痛・歯痛・生理痛などに用いられます。"
+    if "イブプロフェン" in ingredients:
+        return "解熱鎮痛薬（NSAIDs）で、頭痛・歯痛・生理痛などに用いられます。"
+    if "アセトアミノフェン" in ingredients and "イブプロフェン" not in ingredients:
+        return "解熱鎮痛薬（アセトアミノフェン系）で、熱・痛みの緩和に用いられます。"
     efficacy = (med.get("efficacy") or "").replace("\n", " ").strip()
     if not efficacy:
         return "一般用医薬品です。"
@@ -264,54 +306,29 @@ def _build_structured_qa_from_stream(
     streamed_answer: str,
 ) -> dict:
     """ストリーム済み回答と推奨医薬品メタから構造化 Q&A を組み立てる（重い JSON 生成 LLM を省略）。"""
-    md_parts: list[str] = []
-    doping_parts: list[str] = []
-    has_prohibited = False
-    for i, med in enumerate(recommended_medicines or [], 1):
-        name = med.get("product_name") or f"{i}つ目"
-        ingredients = (med.get("ingredients") or "").replace("\n", "、")[:120]
-        use_hint = _short_medicine_use_hint(med, user_message)
-        md_parts.append(
-            f"**{name}**：主成分は{ingredients}など。{use_hint}"
-        )
-        dop = str(med.get("doping_prohibited") or "")
-        cat = str(med.get("competition_category") or "")
-        if "あり" in dop:
-            has_prohibited = True
-            doping_parts.append(
-                f"**{name}**：禁止物質あり（{cat or '競技会区分要確認'}）。"
-                "競技前の使用は登録販売者・大会主催者にご確認ください。"
-            )
-        else:
-            doping_parts.append(
-                f"**{name}**：リスト記載の禁止物質なし。"
-                "外用薬は主に局所作用ですが、大会規定は要確認です。"
-            )
+    from src.services.medicine_qa_routing import (
+        build_focused_qa_sections,
+        prune_qa_response,
+    )
 
     answer = (streamed_answer or "").strip()
     sports_ctx = any(k in (user_message or "") for k in ("競技", "ドーピング", "陸上", "マラソン"))
+    has_prohibited = any("あり" in str(m.get("doping_prohibited") or "") for m in recommended_medicines or [])
     if sports_ctx and has_prohibited and answer and "禁止" not in answer:
         answer += (
             " 推奨の内服風邪薬には競技で注意が必要な成分が含まれる場合があります。"
             "のどスプレー単剤など代替も検討し、登録販売者にご確認ください。"
         )
 
-    return _sanitize_qa_result({
+    focused = build_focused_qa_sections(user_message, recommended_medicines or [])
+    merged = {
         "answer": answer or "お近くの登録販売者にご相談ください。",
-        "medicine_details": "".join(md_parts) if md_parts else "詳細は登録販売者にご確認ください。",
-        "interactions": (
-            "風邪薬を複数同時に内服しないでください。"
-            "アセトアミノフェン・抗ヒスタミン薬・交感神経興奮成分などの重複に注意し、併用は登録販売者にご相談ください。"
-        ),
-        "doping_check": "".join(doping_parts) if doping_parts else "ドーピング情報を確認してください。",
-        "side_effects": (
-            "眠気・口渇・胃腸障害などが出ることがあります。"
-            "症状が強い場合や長引く場合は医師の受診を検討してください。"
-        ),
-        "consultation_advice": (
-            "持病・妊娠・授乳・他の薬の服用がある場合、競技前の使用については登録販売者または医師にご相談ください。"
-        ),
-    })
+        **focused,
+    }
+    # LLM が既に JSON セクションを返した場合は focused で上書き（テンプレ優先排除）
+    return _sanitize_qa_result(
+        prune_qa_response(merged, user_message, answer=answer)
+    )
 
 
 def chat_with_medicine_context(
@@ -383,35 +400,44 @@ def chat_with_medicine_context(
             print(f"履歴復元エラー: {e}")
     # 推奨医薬品がない場合はルールベース推奨を優先（症状・競技条件などを考慮）
     if not recommended_medicines:
-        try:
-            from src.core.rule_based_recommendation import (
-                rule_based_medicine_recommendation,
-            )
+        from src.services.medicine_qa_routing import should_skip_recommendation_for_medicine_qa
 
+        skip_rule_based = should_skip_recommendation_for_medicine_qa(user_message)
+        if not skip_rule_based:
+            try:
+                from src.core.rule_based_recommendation import (
+                    rule_based_medicine_recommendation,
+                )
+
+                logger.info(
+                    "No recommended_medicines provided. "
+                    "Running rule_based_medicine_recommendation in chat_with_medicine_context."
+                )
+                rule_based_result = rule_based_medicine_recommendation(
+                    user_text=user_message,
+                    user_info={},
+                    client=client,
+                    top_n=3,
+                    session_id=session_id,
+                )
+                if rule_based_result:
+                    rb_medicines = rule_based_result.get("recommended_medicines") or []
+                    if rb_medicines:
+                        recommended_medicines = rb_medicines
+                        logger.info(
+                            f"rule_based_medicine_recommendation returned "
+                            f"{len(recommended_medicines)} medicines for Q&A context."
+                        )
+            except Exception as e:
+                logger.error(
+                    f"rule_based_medicine_recommendation error in chat_with_medicine_context: {e}"
+                )
+        else:
             logger.info(
-                "No recommended_medicines provided. "
-                "Running rule_based_medicine_recommendation in chat_with_medicine_context."
+                "Skipping rule_based_medicine_recommendation for explicit medicine Q&A: %s",
+                user_message[:80],
             )
-            rule_based_result = rule_based_medicine_recommendation(
-                user_text=user_message,
-                user_info={},
-                client=client,
-                top_n=3,
-                session_id=session_id,
-            )
-            if rule_based_result:
-                rb_medicines = rule_based_result.get("recommended_medicines") or []
-                if rb_medicines:
-                    recommended_medicines = rb_medicines
-                    logger.info(
-                        f"rule_based_medicine_recommendation returned "
-                        f"{len(recommended_medicines)} medicines for Q&A context."
-                    )
-        except Exception as e:
-            logger.error(
-                f"rule_based_medicine_recommendation error in chat_with_medicine_context: {e}"
-            )
-    # ルールベースで得られず、質問文に明示的な医薬品名がある場合のみCSV検索
+    # ルールベースで得られず、質問文に明示的な医薬品名がある場合は CSV から文脈を組み立て LLM へ
     if not recommended_medicines:
         try:
             df = pd.read_csv(CSV_PATH)
@@ -419,28 +445,11 @@ def chat_with_medicine_context(
                 user_message, df
             )
             if detected_medicines:
+                recommended_medicines = detected_medicines[:5]
                 logger.info(
-                    "Returning CSV medicine lookup for explicit product names: "
-                    f"{len(detected_medicines)} hit(s)"
+                    "Using CSV-detected medicines as LLM Q&A context: %s hit(s)",
+                    len(recommended_medicines),
                 )
-                medicine_info = ""
-                for i, med in enumerate(detected_medicines[:3], 1):
-                    medicine_info += f"\n💊 **{i}つ目: {med['product_name']}** ({med['manufacturer']})\n"
-                    medicine_info += f"**効能効果:** {med['efficacy']}\n"
-                    medicine_info += f"**成分:** {med['ingredients']}\n"
-                    if med["age_restriction"]:
-                        medicine_info += f"**年齢制限:** {med['age_restriction']}\n"
-                    if med["usage"]:
-                        medicine_info += f"**用法用量:** {med['usage']}\n"
-                    medicine_info += "\n"
-                return {
-                    "answer": f"🔍 **医薬品検索結果**\n\n{medicine_info}\n⚠️ **ご注意**\n・医薬品の使用前には必ず登録販売者や薬剤師にご相談ください\n・アレルギー体質の方は成分を確認してください\n・用法用量を守ってご使用ください",
-                    "medicine_details": "検出された医薬品の情報",
-                    "interactions": "医薬品の相互作用については登録販売者にご相談ください",
-                    "doping_check": "ドーピング検査については各競技団体にご確認ください",
-                    "side_effects": "副作用については登録販売者にご相談ください",
-                    "consultation_advice": "お近くの登録販売者にご相談ください",
-                }
         except Exception as e:
             print(f"医薬品検索エラー: {e}")
     def _mark_qa(detail_code: str) -> None:
@@ -489,6 +498,17 @@ def chat_with_medicine_context(
         memory_section = f"\n{long_term_memory_block.strip()}\n"
     from src.services.bedrock_kb_retrieve import augment_medicine_prompt_with_kb
 
+    from src.dialogue.routing.context_signals import extract_drug_entities
+
+    drug_entities = extract_drug_entities(user_message)
+    comparison_hint = ""
+    if len(drug_entities) >= 2:
+        comparison_hint = (
+            "\n- ユーザーは複数の医薬品について質問しています。"
+            "比較・違い・選び方などの意図を読み取り、各製品の主成分・作用・用途の違いを"
+            "質問に直接答える形で整理してください（羅列だけにしない）。\n"
+        )
+
     prompt_body = f"""
 あなたは医薬品推奨システムです。ユーザーの医薬品に関する質問に、推奨医薬品の情報を基に回答してください。
 {memory_section}
@@ -507,7 +527,7 @@ def chat_with_medicine_context(
 3. スポーツ競技でのドーピング規制対象かどうか
 4. 副作用や注意点
 5. 医師に相談すべき場合
-
+{comparison_hint}
 回答は以下の形式で構造化してください：
 {{
     "answer": "ユーザーへの直接的な回答",
@@ -521,8 +541,10 @@ def chat_with_medicine_context(
 注意：
 - medicine_details では効能効果を箇条書きで羅列せず、質問に応じて「何に使えるか」を短くまとめてください。
 - 推奨医薬品の情報を基に具体的に回答してください
-- 飲み合わせについては、一般的な相互作用を説明してください
-- ドーピングについては、WADA（世界アンチ・ドーピング機関）の規制を参考にしてください
+- 質問に直接関係しない項目（interactions / doping_check / side_effects / consultation_advice / medicine_details）は空文字 "" にしてください。無関係な定型文は書かないでください。
+- 比較質問では answer に比較の要点を書き、medicine_details には製品ごとの成分・用途の違いを簡潔に書いてください。
+- 飲み合わせについては、質問された場合のみ一般的な相互作用を説明してください
+- ドーピングについては、競技・ドーピングの文脈がある場合のみ説明してください
 - 安全性を最優先に考え、不明な点がある場合は医師相談を推奨してください
 - 質問の内容が推奨医薬品の情報では回答できない場合は、「お近くの登録販売者にご相談ください」と回答してください
 """
@@ -643,8 +665,19 @@ def chat_with_medicine_context(
                     }
                 if stream_active and session_id and streamed_answer:
                     parsed_result["answer"] = streamed_answer
-                    emit_qa_sections_from_response(parsed_result, session_id)
-                elif stream_active and session_id:
+                from src.services.medicine_qa_routing import (
+                    build_focused_qa_sections,
+                    prune_qa_response,
+                )
+
+                focused = build_focused_qa_sections(
+                    user_message, recommended_medicines or []
+                )
+                for key, val in focused.items():
+                    if val and not str(parsed_result.get(key) or "").strip():
+                        parsed_result[key] = val
+                parsed_result = prune_qa_response(parsed_result, user_message)
+                if stream_active and session_id:
                     emit_qa_sections_from_response(parsed_result, session_id)
                 _append_physical_handoff_hint(parsed_result, user_message)
                 return _sanitize_qa_result(parsed_result)

@@ -358,6 +358,19 @@ def build_qa_from_chat_response(
     *,
     feedback_context: dict[str, Any] | None = None,
 ) -> StatusDiagnosisV1:
+    if chat_response.get("qa_kind") == "medicine_side_effect_qa":
+        return build_side_effect_qa_from_chat_response(
+            chat_response,
+            feedback_context=feedback_context,
+        )
+    from src.services.medicine_qa_routing import (
+        prune_qa_response,
+        section_title_for_focus,
+    )
+
+    user_message = str((feedback_context or {}).get("user_message") or "")
+    pruned = prune_qa_response(chat_response, user_message)
+    focus = str(pruned.get("qa_focus") or "general")
     section_map = [
         ("medicine_details", "医薬品の詳細"),
         ("interactions", "相互作用の注意"),
@@ -366,15 +379,40 @@ def build_qa_from_chat_response(
         ("consultation_advice", "相談アドバイス"),
     ]
     sections: list[StatusSection] = []
-    for key, title in section_map:
-        val = chat_response.get(key)
+    for key, default_title in section_map:
+        val = pruned.get(key)
         if val and str(val).strip():
+            title = section_title_for_focus(focus, key, default_title)
             sections.append(StatusSection(title=title, items=[str(val).strip()]))
+    return build_qa_status(
+        answer=str(pruned.get("answer") or "回答を取得できませんでした"),
+        sections=sections,
+        feedback_context=feedback_context,
+    )
+
+
+def build_side_effect_qa_from_chat_response(
+    chat_response: dict[str, Any],
+    *,
+    feedback_context: dict[str, Any] | None = None,
+) -> StatusDiagnosisV1:
+    sections: list[StatusSection] = []
+    side_effect_html = str(chat_response.get("side_effect_html") or "").strip()
+    if side_effect_html:
+        section_title = (
+            "参考：添付文書抜粋"
+            if chat_response.get("side_effect_reference")
+            else "副作用の要点"
+        )
+        sections.append(
+            StatusSection(title=section_title, html=side_effect_html)
+        )
     return build_qa_status(
         answer=str(chat_response.get("answer") or "回答を取得できませんでした"),
         sections=sections,
         feedback_context=feedback_context,
-    )
+        title="医薬品相談回答",
+    ).model_copy(update={"kind": "medicine_side_effect_qa"})
 
 
 def build_emergency_status(

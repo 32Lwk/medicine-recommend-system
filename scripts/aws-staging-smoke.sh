@@ -33,26 +33,40 @@ if [[ -n "$EXPECTED_COMMIT" ]]; then
   echo "    expected git_commit prefix: ${EXPECTED_COMMIT:0:7}"
 fi
 
-deadline=$((SECONDS + WAIT_SEC))
-health_ok=0
-while (( SECONDS < deadline )); do
-  if resp="$(curl -sf "${BASE_URL}/health" 2>/dev/null)"; then
-    status="$(printf '%s' "$resp" | jq -r '.status // empty')"
-    commit="$(printf '%s' "$resp" | jq -r '.git_commit // empty')"
-    if [[ "$status" == "ok" ]]; then
-      if [[ -z "$EXPECTED_COMMIT" || "$commit" == "$EXPECTED_COMMIT"* || "$commit" == "${EXPECTED_COMMIT:0:7}"* ]]; then
-        health_ok=1
-        echo "OK /health status=ok git_commit=${commit:-unknown}"
-        break
-      fi
-      echo "    waiting for deploy (current=${commit:-none}, want=${EXPECTED_COMMIT:0:7})..."
-    fi
-  else
-    echo "    waiting for /health..."
+if [[ "${SKIP_HEALTH_WAIT:-0}" == "1" ]]; then
+  echo "    skip /health wait (already verified by wait-staging-health-commit.sh)"
+  resp="$(curl -sf "${BASE_URL}/health" 2>/dev/null)" \
+    || fail "/health unreachable after deploy wait"
+  status="$(printf '%s' "$resp" | jq -r '.status // empty')"
+  commit="$(printf '%s' "$resp" | jq -r '.git_commit // empty')"
+  [[ "$status" == "ok" ]] || fail "/health status=${status:-unknown}"
+  if [[ -n "$EXPECTED_COMMIT" ]]; then
+    [[ "$commit" == "$EXPECTED_COMMIT"* || "$commit" == "${EXPECTED_COMMIT:0:7}"* ]] \
+      || fail "/health commit mismatch after deploy wait (current=${commit:-none})"
   fi
-  sleep "$POLL_SEC"
-done
-(( health_ok == 1 )) || fail "/health not ready within ${WAIT_SEC}s"
+  echo "OK /health status=ok git_commit=${commit:-unknown}"
+else
+  deadline=$((SECONDS + WAIT_SEC))
+  health_ok=0
+  while (( SECONDS < deadline )); do
+    if resp="$(curl -sf "${BASE_URL}/health" 2>/dev/null)"; then
+      status="$(printf '%s' "$resp" | jq -r '.status // empty')"
+      commit="$(printf '%s' "$resp" | jq -r '.git_commit // empty')"
+      if [[ "$status" == "ok" ]]; then
+        if [[ -z "$EXPECTED_COMMIT" || "$commit" == "$EXPECTED_COMMIT"* || "$commit" == "${EXPECTED_COMMIT:0:7}"* ]]; then
+          health_ok=1
+          echo "OK /health status=ok git_commit=${commit:-unknown}"
+          break
+        fi
+        echo "    waiting for deploy (current=${commit:-none}, want=${EXPECTED_COMMIT:0:7})..."
+      fi
+    else
+      echo "    waiting for /health..."
+    fi
+    sleep "$POLL_SEC"
+  done
+  (( health_ok == 1 )) || fail "/health not ready within ${WAIT_SEC}s"
+fi
 
 aws_health="$(curl -sf "${BASE_URL}/health/aws")"
 translation_provider="$(printf '%s' "$aws_health" | jq -r '.translation_provider // empty')"

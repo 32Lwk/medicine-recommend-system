@@ -325,6 +325,7 @@
     if (/^AWS/.test(title || '')) return 'AWS';
     if (/デプロイ|CI\/CD|Pipeline/i.test(title || '')) return t('statusBadgeDeploy') || 'デプロイ';
     if (/医師|受診|相談/.test(title || '')) return t('statusBadgeConsult') || '受診';
+    if (/副作用/.test(title || '')) return '副作用';
     if (/詳細|案内/.test(title || '')) return t('statusBadgeInfo') || '案内';
     if (variant === 'critical' || variant === 'error') return t('statusBadgeImportant') || '重要';
     if (variant === 'caution') return t('statusBadgeCaution') || '注意';

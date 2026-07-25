@@ -51,6 +51,20 @@ def _layer1_deterministic(
             context_features=features.to_dict(),
         )
 
+    from src.services.medicine_qa_routing import is_medicine_information_question
+
+    if is_medicine_information_question(text):
+        return RoutingDecision(
+            primary_route="Physical",
+            sub_route="medicine_qa",
+            confidence=0.94,
+            resolved_by="gate",
+            source="layer1_medicine_qa",
+            execution_lock=True,
+            layer_used="layer1",
+            context_features=features.to_dict(),
+        )
+
     prior = features.prior_route or features.prior_concierge_intent
     if prior == "doc_changelog" and is_explicit_new_meta_topic(text, prior_intent=prior):
         sub = "app_about" if _looks_app_about(text) else "architecture"

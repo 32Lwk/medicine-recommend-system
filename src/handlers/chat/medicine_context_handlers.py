@@ -51,6 +51,19 @@ def handle_medicine_followup_qa(
     return {"status": "ok", "message_count": count}, 200
 
 
+def handle_medicine_information_qa(
+    session: Any,
+    client_info: Any,
+    sid: Optional[str],
+    user_message: str,
+) -> ResponseTuple:
+    """推奨履歴なしの医薬品情報 Q&A（比較・説明など LLM 回答）。"""
+    from src.handlers.chat.chat_medicine_qa_html import run_medicine_question_qa
+
+    count, _ = run_medicine_question_qa(session, client_info, sid, user_message)
+    return {"status": "ok", "message_count": count}, 200
+
+
 def handle_sports_symptom_prompt(
     session: Any,
     sid: Optional[str],

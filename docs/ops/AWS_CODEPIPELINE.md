@@ -98,15 +98,39 @@ export AWS_PROFILE=medicine-recommend-dev
 
 ## パフォーマンス（ECS Express デプロイ遅延）
 
-**調査日 2026-07-22** — `https://aws.medicine.yutok.dev`（ECS Express Mode）
+**調査日 2026-07-22 / 高速化 2026-07-25** — `https://aws.medicine.yutok.dev`（ECS Express Mode）
 
 | 要因 | 内容 | 対策 |
 |------|------|------|
-| CANARY デプロイ | Express Gateway は **ROLLING 不可**。既定 bake 3+3 分で push→反映が 6〜8 分 | `bakeTimeInMinutes=0` / `canaryBakeTimeInMinutes=0` に短縮（`scripts/tune-aws-ecs-performance.sh`） |
+| CANARY デプロイ | Express Gateway は **ROLLING 不可**。既定 bake 3+3 分で push→反映が 6〜8 分 | `bakeTimeInMinutes=0` / `canaryBakeTimeInMinutes=0` に短縮（`scripts/tune-aws-ecs-performance.sh`） — **適用済み** |
+| post_build 直列 | `services-stable` + 毎回 static/KB 同期 + smoke で ~8 分 | **`scripts/codebuild-post-deploy.sh`**（2026-07-25） |
 | CodeBuild | `BUILD_GENERAL1_SMALL`、キャッシュ無効時 ~2 分/回 | `LOCAL_DOCKER_LAYER_CACHE` 有効化、`buildspec.yml` で BuildKit + `--cache-from ECR:latest` |
 | ランタイム同時処理 | タスク定義 `GUNICORN_WORKERS=1` | `GUNICORN_WORKERS=2`（512 CPU / 1024 MiB ステージング向け） |
 | ウォーム `/health` | 50〜150 ms — ALB/タスク自体は速い | 遅延の大半は **デプロイ待ち** と **ビルド** |
 | Secrets 未設定 | `DATABASE_URL` 無し → セッション未永続化、UI が「AI分析中」のまま | `./scripts/setup-aws-ecs-secrets.sh .env` |
+
+### 高速 post_build（精度維持）
+
+`buildspec.yml` post_build は `scripts/codebuild-post-deploy.sh` に委譲。
+
+| 施策 | 効果 | 精度 |
+|------|------|------|
+| `/health` で commit 待ち | `services-stable` より早く **実際に新 revision が応答**した時点で次へ | smoke でも commit 再確認 |
+| 変更パス分岐 | `src/` のみ push 時は static/KB sync をスキップ | 変更一覧が取れない場合は **従来どおり全 sync**（フォールバック） |
+| static / KB / SSOT 並列 | wall clock 短縮 | smoke は **同期完了後**に毎回フル実行 |
+
+変更検知: `scripts/lib/codebuild_deploy_paths.py`（git diff → CodePipeline 前回 commit + GitHub compare → 不明時フル sync）。
+
+Pipeline Source は **`CODEBUILD_CLONE_REF`**（git 履歴取得用）。既存 Pipeline 更新（**admin IAM** — `iam:PassRole` 必要）:
+
+```bash
+export AWS_PROFILE=admin   # または PassRole 権限のあるプロファイル
+./scripts/setup-aws-codepipeline.sh
+```
+
+`CODEBUILD_CLONE_REF` 未適用時は CodePipeline 前回 commit + GitHub compare を試行し、**取れなければ従来どおり全 sync**（精度優先フォールバック）。private repo で compare も使う場合は CodeBuild env に `GITHUB_TOKEN`（Secrets Manager 推奨）を任意設定。
+
+**目安（backend のみ push）**: 反映 ~5 分 / Pipeline 完了 ~7 分（従来 ~11 分）。
 
 一括調整:
 

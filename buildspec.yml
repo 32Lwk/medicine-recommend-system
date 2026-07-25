@@ -41,60 +41,8 @@ phases:
       - docker push "${IMAGE_URI}:latest"
   post_build:
     commands:
-      - |
-        if [ "${CODEBUILD_BUILD_SUCCEEDING:-0}" -ne 1 ]; then
-          echo "Build failed — skip ECS deploy"
-          exit 1
-        fi
-      - echo "==> ECS force redeploy ${ECS_CLUSTER}/${ECS_SERVICE}"
-      - aws ecs update-service --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" --force-new-deployment --region "$AWS_DEFAULT_REGION" --query 'service.serviceName' --output text
-      - echo "==> wait for ECS service stable"
-      - aws ecs wait services-stable --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" --region "$AWS_DEFAULT_REGION"
-      - |
-        if [ "${SYNC_STATIC_TO_S3:-false}" = "true" ]; then
-          echo "==> sync static/ to S3 (CloudFront origin)"
-          bash scripts/sync-static-to-s3.sh --invalidate
-        fi
-      - |
-        if [ "${SYNC_KB_TO_S3:-false}" = "true" ]; then
-          echo "==> sync KB sources (Concierge + Medicine)"
-          bash scripts/sync-all-kb-to-s3.sh || echo "WARN: KB S3 sync failed"
-        fi
-      - |
-        if [ "${KB_INGESTION_ON_PUSH:-false}" = "true" ]; then
-          echo "==> start Managed KB ingestion (async, no wait)"
-          bash scripts/start-managed-kb-ingestion.sh || echo "WARN: KB ingestion start failed"
-        fi
-      - |
-        if [ "${RUN_KB_EVAL:-false}" = "true" ]; then
-          echo "==> KB retrieve eval"
-          .venv/bin/python scripts/eval_medicine_kb.py \
-            --mode both --min-pass-pct 80 --min-interaction-pass 5 \
-            || { echo "WARN: medicine KB eval below threshold"; [ "${KB_EVAL_STRICT:-false}" = "true" ] && exit 1 || true; }
-          .venv/bin/python scripts/eval_concierge_kb.py --min-pass-pct 80 \
-            || echo "WARN: concierge KB eval below threshold"
-        fi
-      - echo "==> Concierge SSOT verify"
-      - bash scripts/verify-concierge-ssot.sh
-      - echo "==> AWS staging smoke (Translate / Polly / CDN / Concierge)"
-      - |
-        smoke_ok=0
-        if [ "${RUN_CONCIERGE_FAQ_CONTRACT:-false}" = "true" ]; then
-          export RUN_CONCIERGE_FAQ_CONTRACT=true
-          bash scripts/concierge-staging-smoke.sh && smoke_ok=1 || smoke_ok=0
-        else
-          bash scripts/aws-staging-smoke.sh && smoke_ok=1 || smoke_ok=0
-        fi
-        if [ "$smoke_ok" -eq 1 ]; then
-          echo "AWS staging smoke passed"
-        else
-          echo "WARN: AWS staging smoke failed (ECS deploy and static sync already applied)."
-          echo "      Typical cause: ECS taskRole lacks translate/polly — run scripts/setup-aws-ecs-task-role.sh (admin IAM)."
-          if [ "${SMOKE_STRICT:-false}" = "true" ]; then
-            exit 1
-          fi
-        fi
-      - echo "Done. ${AWS_STAGING_URL:-https://aws.medicine.yutok.dev}/health"
+      - echo "==> post_deploy (fast path — full verification preserved)"
+      - bash scripts/codebuild-post-deploy.sh
 
 cache:
   paths:

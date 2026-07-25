@@ -457,6 +457,7 @@ def run_chat_post_pipeline(
 
     try:
         from config.llm_flags import is_medicine_side_effect_qa_enabled
+        from src.services.medicine_qa_routing import is_medicine_information_question
         from src.services.medicine_side_effect_routing import is_medicine_side_effect_route
 
         user_msg = ctx.sanitized_message or ctx.user_message
@@ -468,6 +469,20 @@ def run_chat_post_pipeline(
             logger.info("💊 medicine_side_effect_qa early route")
             return _guard_return(
                 handle_medicine_side_effect_qa(
+                    session,
+                    client_info,
+                    sid,
+                    ctx.original_user_message or user_msg,
+                )
+            )
+        if is_medicine_information_question(user_msg):
+            from src.handlers.chat.medicine_context_handlers import (
+                handle_medicine_information_qa,
+            )
+
+            logger.info("💬 medicine_qa early route (information question)")
+            return _guard_return(
+                handle_medicine_information_qa(
                     session,
                     client_info,
                     sid,

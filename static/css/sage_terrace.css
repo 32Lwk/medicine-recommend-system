@@ -1929,6 +1929,16 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
   color: var(--ui-text);
 }
 
+[data-ui-variant="sage"] .ui-bubble--qa .ui-status-advice__text {
+  font-weight: 600;
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, #f4f8fb 0%, #fafcfd 100%);
+  border-radius: 10px;
+  border-left: 3px solid var(--ui-primary, #5a7a94);
+  line-height: 1.65;
+}
+
 .ui-status-advice__text:last-child {
   margin-bottom: 0;
 }
@@ -2430,6 +2440,173 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
 .ui-bubble--status .ui-status-section-card .ui-overlap-card__body,
 .ui-bubble--qa .ui-status-section-card .ui-overlap-card__body {
   padding: 4px 10px 6px;
+}
+
+/* 副作用 Q&A — 成分カード（PMDA 原文の代わりに要点をチップ表示） */
+.ui-side-effect-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ui-side-effect-list--compact {
+  gap: 4px;
+}
+
+.ui-side-effect-details {
+  margin-top: 2px;
+}
+
+.ui-side-effect-details__summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.82em;
+  color: var(--ui-text-muted, #5a6b7a);
+  padding: 4px 0;
+  line-height: 1.45;
+}
+
+.ui-side-effect-details__summary::-webkit-details-marker {
+  display: none;
+}
+
+.ui-side-effect-details__summary::before {
+  content: "▸ ";
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+
+.ui-side-effect-details[open] .ui-side-effect-details__summary::before {
+  transform: rotate(90deg);
+}
+
+.ui-bubble--qa .ui-status-section-card:has(.ui-side-effect-details) {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ui-bubble--qa .ui-status-section-card:has(.ui-side-effect-details) .ui-overlap-card__head {
+  display: none;
+}
+
+.ui-bubble--qa .ui-status-section-card:has(.ui-side-effect-details) .ui-overlap-card__body {
+  padding: 0;
+}
+
+.ui-side-effect-card {
+  border-radius: 8px;
+  border: 1px solid rgba(59, 90, 115, 0.1);
+  background: #fafbfc;
+  padding: 6px 8px;
+}
+
+.ui-side-effect-card--compact {
+  padding: 5px 7px;
+  background: #fff;
+}
+
+.ui-side-effect-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.ui-side-effect-card__name {
+  font-weight: 700;
+  color: var(--ui-primary-dark, #3b5a73);
+  font-size: 0.8em;
+}
+
+.ui-side-effect-card__level {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.65em;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.ui-side-effect-card__level--high {
+  background: #fee4e2;
+  color: #b42318;
+}
+
+.ui-side-effect-card__level--medium {
+  background: #fef0c7;
+  color: #b54708;
+}
+
+.ui-side-effect-card__level--low {
+  background: #dcfae6;
+  color: #067647;
+}
+
+.ui-side-effect-card__group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.ui-side-effect-card__label {
+  flex-shrink: 0;
+  font-size: 0.68em;
+  font-weight: 700;
+  color: var(--ui-text-muted, #5a6b7a);
+}
+
+.ui-side-effect-card__group--serious .ui-side-effect-card__label {
+  color: #b42318;
+}
+
+.ui-side-effect-card__chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  width: 100%;
+}
+
+.ui-side-effect-chip {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.72em;
+  line-height: 1.3;
+  background: #fff;
+  border: 1px solid rgba(59, 90, 115, 0.12);
+  color: var(--ui-text, #334155);
+}
+
+.ui-side-effect-list--compact .ui-side-effect-chip {
+  font-size: 0.68em;
+  padding: 1px 5px;
+}
+
+.ui-side-effect-chip--serious {
+  border-color: #f5c2c7;
+  background: #fff5f5;
+  color: #912018;
+}
+
+.ui-side-effect-chip--more {
+  border-style: dashed;
+  background: transparent;
+  color: var(--ui-text-muted, #5a6b7a);
+  font-size: 0.76em;
+}
+
+.ui-side-effect-footnote {
+  margin: 2px 0 0;
+  font-size: 0.68em;
+  line-height: 1.4;
+  color: var(--ui-text-muted, #5a6b7a);
 }
 
 .ui-bubble--status .ui-status-footnote,

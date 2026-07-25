@@ -48,3 +48,7 @@ def test_unified_router_layer1_side_effect():
 def test_symptom_drowsiness_not_side_effect_route():
     assert not is_medicine_side_effect_route("眠い")
     assert not is_medicine_side_effect_route("最近眠くてつらい")
+
+
+def test_comparison_question_not_side_effect_route():
+    assert not is_medicine_side_effect_route("ロキソニンとイブの違いって何？")

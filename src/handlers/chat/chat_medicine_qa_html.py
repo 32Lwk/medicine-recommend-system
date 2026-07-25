@@ -24,6 +24,7 @@ def build_medicine_qa_html(chat_response: Dict[str, Any]) -> str:
     inter = safe_format_html(chat_response.get("interactions", ""))
     doping = safe_format_html(chat_response.get("doping_check", ""))
     side_eff = safe_format_html(chat_response.get("side_effects", ""))
+    side_effect_html = chat_response.get("side_effect_html", "")
     consult = safe_format_html(chat_response.get("consultation_advice", ""))
     return f"""
 <div class="chat-response">
@@ -32,7 +33,7 @@ def build_medicine_qa_html(chat_response: Dict[str, Any]) -> str:
 {f'<div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px;"><strong>💊 医薬品の詳細:</strong><br>{med_det}</div>' if med_det else ''}
 {f'<div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 5px;"><strong>⚠️ 相互作用の注意:</strong><br>{inter}</div>' if inter else ''}
 {f'<div style="margin-top: 15px; padding: 10px; background: #ffebee; border-radius: 5px;"><strong>🏃 ドーピングチェック:</strong><br>{doping}</div>' if doping else ''}
-{f'<div style="margin-top: 15px; padding: 10px; background: #fce4ec; border-radius: 5px;"><strong>⚕️ 副作用情報:</strong><br>{side_eff}</div>' if side_eff else ''}
+{f'<div style="margin-top: 15px; padding: 10px; background: #fce4ec; border-radius: 5px;"><strong>⚕️ 副作用情報:</strong><br>{side_effect_html or side_eff}</div>' if (side_effect_html or side_eff) else ''}
 {f'<div style="margin-top: 15px; padding: 10px; background: #f1f8e9; border-radius: 5px;"><strong>🩺 相談アドバイス:</strong><br>{consult}</div>' if consult else ''}
 </div>"""
 

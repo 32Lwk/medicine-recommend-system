@@ -1,6 +1,70 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月25日**（NLU/ルーティング統合・AWS ログ分析・副作用 QA ゴールデン再検証）
+**最終更新日: 2026年7月25日**（医薬品比較 Q&A・ブランド通称解決・副作用 UI・CodeBuild post_deploy 高速化）
+
+---
+
+## 2026年7月25日 — 医薬品比較 Q&A・ブランド通称レジストリ・副作用表示 UI・AWS post_deploy
+
+### 概要
+
+「ロキソニンとイブの違い」等の **医薬品比較質問** が副作用 Q&A に誤ルーティングされ、ケイブク（ケイ**イブ**ク部分一致）が誤検出される問題を修正。**意図ベースの `medicine_qa` ルート**、**拡張可能なブランド通称レジストリ**、**質問に関連する補足セクションのみ表示**、**副作用 Q&A の読みやすい UI** を追加。あわせて CodeBuild **post_build を `codebuild-post-deploy.sh` に委譲**し、変更パス分岐でデプロイ時間を短縮。
+
+### 医薬品 Q&A ルーティング（比較 vs 副作用）
+
+| 問題 | 原因 | 修正 |
+|------|------|------|
+| 比較質問 → 副作用 CSV ダンプ | `is_medicine_side_effect_question` の演算子優先順位バグ（`?` 末尾 + 薬名 → 副作用判定） | 厳密判定へ委譲（`medicine_qa_routing.py`） |
+| 比較質問 → 汎用補足テンプレ | `_build_structured_qa_from_stream` が固定テンプレを注入 | `build_focused_qa_sections` + `prune_qa_response` |
+| 「イブ」→ ケイブク | 製品名 **部分一致**（`in`） | **先頭一致** + ブランドレジストリ |
+
+**新 sub_route**: `medicine_qa` — LLM ベース `chat_with_medicine_context`（推奨履歴なし可）
+
+**主要ファイル**:
+
+| ファイル | 役割 |
+|----------|------|
+| `src/services/medicine_qa_routing.py` | 副作用 vs 情報質問の切り分け、補足焦点推定 |
+| `src/services/medicine_brand_resolve.py` | `BRAND_RESOLVE_RULES` レジストリ（通称 → 代表製品） |
+| `src/dialogue/routing/unified_router.py` | Layer1: `medicine_qa` / `medicine_side_effect_qa` |
+| `src/handlers/chat/chat_post_pipeline.py` | early route: 比較 → `medicine_qa` |
+| `src/core/medicine/medicine_response_builder.py` | CSV 検出 → LLM 文脈、ブランド解決統合 |
+
+**テスト**: `tests/routing/test_medicine_qa_routing.py`, `test_medicine_qa_sections.py`, `tests/services/test_medicine_brand_resolve.py`, `tests/dialogue/routing/test_unified_router_medicine_qa.py`
+
+### ブランド通称レジストリ（`BRAND_RESOLVE_RULES`）
+
+11 ブランド / 12 ヒントを登録。`context_signals._MEDICINE_BRAND_HINTS` はレジストリから自動生成。
+
+| 通称 | 代表製品（例） | 備考 |
+|------|----------------|------|
+| イブ / アドビル | イブ | 成分: イブプロフェン |
+| ロキソニン | ロキソニンＳ | preferred 順でフラッグシップ選択 |
+| PL | パイロンＰＬ錠 | `product_name_contains` |
+| ペタミン | カロナールＡ | CSV 未掲載時の成分フォールバック |
+
+詳細: [`docs/dev/MEDICINE_BRAND_RESOLVE.md`](docs/dev/MEDICINE_BRAND_RESOLVE.md)
+
+### 副作用 Q&A UI
+
+| 項目 | 内容 |
+|------|------|
+| `src/services/side_effect_display.py` | PMDA/CSV 副作用原文 → チップ・折りたたみ HTML |
+| `static/css/sage_terrace.css` | `.ui-side-effect-*` スタイル |
+| `static/js/ui/ui_strings.js` | 副作用バッジ i18n |
+| `src/services/status_diagnosis_builder.py` | `build_side_effect_qa_from_chat_response`、QA 補足の焦点タイトル |
+
+### AWS CodeBuild post_deploy 高速化
+
+| 変更 | 内容 |
+|------|------|
+| `buildspec.yml` | post_build を `scripts/codebuild-post-deploy.sh` に委譲 |
+| `scripts/lib/codebuild_deploy_paths.py` | git diff / GitHub compare による変更パス検知 |
+| `scripts/wait-staging-health-commit.sh` | `/health` commit 待ち（`services-stable` より早い） |
+| `scripts/aws-staging-smoke.sh` | ステージング smoke 改善 |
+| `docs/ops/AWS_CODEPIPELINE.md` | 高速 post_build・トラブルシュート更新 |
+
+**目安**: backend のみ push 時 ~11 分 → ~7 分（static/KB sync スキップ時）
 
 ---
 

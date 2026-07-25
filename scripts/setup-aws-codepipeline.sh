@@ -224,7 +224,7 @@ cat > "$PIPE_SPEC" <<EOF
               "ConnectionArn": "${CONN_ARN}",
               "FullRepositoryId": "${GITHUB_REPO}",
               "BranchName": "${GITHUB_BRANCH}",
-              "OutputArtifactFormat": "CODE_ZIP",
+              "OutputArtifactFormat": "CODEBUILD_CLONE_REF",
               "DetectChanges": "true"
             },
             "outputArtifacts": [{ "name": "SourceOutput" }]

@@ -12627,3 +12627,17 @@
 {"timestamp": "2026-07-25T10:44:58.155250", "event_type": "input_validation", "user_id": "ユーザー54", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
 {"timestamp": "2026-07-25T10:45:54.943730", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-25T10:45:54.944745", "event_type": "input_validation", "user_id": "ユーザー55", "input_length": 16, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の更新内容を教えてください。"}}
+{"timestamp": "2026-07-25T12:08:23.756010", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-25T12:08:23.756430", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンって眠くなる？"}}
+{"timestamp": "2026-07-25T12:10:38.298234", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-25T12:10:38.299655", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブの違いって何？"}}
+{"timestamp": "2026-07-25T12:11:53.636955", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-25T12:11:53.637304", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンって眠くなる？"}}
+{"timestamp": "2026-07-25T12:13:36.200416", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-25T12:13:36.200784", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンって眠くなる？"}}
+{"timestamp": "2026-07-25T12:15:37.691861", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-25T12:15:37.692401", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブの違いって何？"}}
+{"timestamp": "2026-07-25T12:16:36.976086", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-25T12:16:36.976367", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブの違いって何？"}}
+{"timestamp": "2026-07-25T12:21:20.193215", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-25T12:21:20.193456", "event_type": "input_validation", "user_id": "ユーザー15", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブの違いって何？"}}

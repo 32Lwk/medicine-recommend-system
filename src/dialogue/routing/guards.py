@@ -67,7 +67,10 @@ def apply_post_route_guards(
             meta={**decision.meta, "original_sub_route": decision.sub_route},
         )
 
-    if decision.primary_route == "Physical" and decision.sub_route == "medicine_side_effect_qa":
+    if decision.primary_route == "Physical" and decision.sub_route in (
+        "medicine_side_effect_qa",
+        "medicine_qa",
+    ):
         return decision
 
     if decision.primary_route == "Physical" and decision.sub_route in (

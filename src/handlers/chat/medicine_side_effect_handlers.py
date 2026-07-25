@@ -11,13 +11,15 @@ from src.services.medicine_side_effect_routing import (
     mentions_drowsiness_side_effect,
     resolve_side_effect_query_subject,
 )
+from src.services.side_effect_display import (
+    build_concise_side_effect_answer,
+    build_drowsiness_answer,
+    build_side_effect_cards_html,
+)
 
 logger = logging.getLogger(__name__)
 
 ResponseTuple = Tuple[dict, int]
-
-_DROWSINESS_KEYWORDS = ("眠気", "傾眠", "眠くなる", "眠い")
-_GI_KEYWORDS = ("胃腸", "胃痛", "下痢", "便秘", "吐き気", "悪心")
 
 
 def _load_otc_df():
@@ -65,49 +67,6 @@ def _side_effect_rows_for_ingredients(ingredients: List[str]) -> List[dict]:
     return rows
 
 
-def _contains_any(text: str, keywords: tuple[str, ...]) -> bool:
-    t = (text or "").lower()
-    return any(k.lower() in t for k in keywords)
-
-
-def _build_drowsiness_answer(product_name: str, side_rows: List[dict]) -> str:
-    drowsiness_hits = []
-    for row in side_rows:
-        symptoms = str(row.get("副作用症状") or "")
-        if _contains_any(symptoms, _DROWSINESS_KEYWORDS):
-            drowsiness_hits.append(str(row.get("成分名") or ""))
-
-    if drowsiness_hits:
-        return (
-            f"「{product_name}」に含まれる成分（{', '.join(drowsiness_hits[:3])}）では、"
-            f"添付文書上「{_join_unique_symptoms(side_rows, _DROWSINESS_KEYWORDS)}」等が報告されています。"
-            "個人差があるため、運転・機械操作の前は注意してください。"
-        )
-
-    if "ロキソニン" in product_name or any("ロキソプロフェン" in str(r.get("成分名", "")) for r in side_rows):
-        return (
-            f"「{product_name}」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として"
-            "挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。"
-            "運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。"
-        )
-
-    return (
-        f"「{product_name}」について、添付文書ベースの情報からは眠気が主要副作用として"
-        "明記されていない場合があります。個人差があるため、眠気を感じたら運転等は控え、"
-        "薬剤師・医師に相談してください。"
-    )
-
-
-def _join_unique_symptoms(rows: List[dict], keywords: tuple[str, ...]) -> str:
-    parts: List[str] = []
-    for row in rows:
-        symptoms = str(row.get("副作用症状") or "")
-        for kw in keywords:
-            if kw in symptoms and kw not in parts:
-                parts.append(kw)
-    return "・".join(parts[:5]) if parts else "眠気"
-
-
 def _build_side_effect_answer(
     user_message: str,
     *,
@@ -115,41 +74,29 @@ def _build_side_effect_answer(
     products: List[dict],
     side_rows: List[dict],
 ) -> Dict[str, Any]:
-    if mentions_drowsiness_side_effect(user_message):
-        answer = _build_drowsiness_answer(product_name, side_rows)
+    is_drowsiness = mentions_drowsiness_side_effect(user_message)
+    if is_drowsiness:
+        answer = build_drowsiness_answer(product_name, side_rows)
     elif side_rows:
-        summaries = []
-        for row in side_rows[:3]:
-            ing = str(row.get("成分名") or "")
-            level = str(row.get("副作用レベル") or "")
-            symptoms = str(row.get("副作用症状") or "")[:200]
-            summaries.append(f"・{ing}（{level}）: {symptoms}")
-        answer = (
-            f"「{product_name}」の副作用情報（添付文書・CSV 根拠）:\n"
-            + "\n".join(summaries)
-            + "\n\n個人差があります。気になる症状が出た場合は使用を中止し、薬剤師・医師に相談してください。"
-        )
+        answer = build_concise_side_effect_answer(product_name, side_rows)
     else:
-        answer = (
-            f"「{product_name}」の副作用情報をデータベースから特定できませんでした。"
-            "製品の添付文書をご確認いただくか、薬剤師・医師にご相談ください。"
-        )
+        answer = build_concise_side_effect_answer(product_name, side_rows)
 
-    side_effects_text = ""
+    side_effect_html = ""
     if side_rows:
-        side_effects_text = "; ".join(
-            f"{r.get('成分名')}: {str(r.get('副作用症状') or '')[:120]}"
-            for r in side_rows[:3]
+        side_effect_html = build_side_effect_cards_html(
+            side_rows,
+            reference_only=is_drowsiness,
         )
 
     return {
         "answer": answer,
-        "medicine_details": product_name,
-        "side_effects": side_effects_text,
-        "consultation_advice": (
-            "市販薬の副作用は個人差があります。"
-            "既存の疾患・併用薬がある場合は使用前に薬剤師・医師に相談してください。"
-        ),
+        "medicine_details": "",
+        "side_effects": "",
+        "side_effect_html": side_effect_html,
+        "side_effect_reference": is_drowsiness,
+        "consultation_advice": "",
+        "qa_kind": "medicine_side_effect_qa",
         "source": "medicine_side_effects.csv",
     }
 

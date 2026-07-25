@@ -10,6 +10,7 @@ from src.services.concierge_agent_history import (
     resolve_last_concierge_intent,
     resolve_prior_meta_intent,
 )
+from src.services.medicine_brand_resolve import MEDICINE_BRAND_HINTS as _MEDICINE_BRAND_HINTS
 
 _AMBIGUOUS_FOLLOW_UP_RE = re.compile(
     r"^(?:詳しく|もっと|続き|他には|それについて|教えて)[。！？!?]*$|"
@@ -43,21 +44,6 @@ _SIDE_EFFECT_QA_RE = re.compile(
 
 _DROWSINESS_SYMPTOM_ONLY_RE = re.compile(
     r"^(?:眠い|眠くなる|眠気が|眠れない)[。！？!?]*$"
-)
-
-_MEDICINE_BRAND_HINTS = (
-    "ロキソニン",
-    "バファリン",
-    "カロナール",
-    "タイレノール",
-    "イブ",
-    "アドビル",
-    "セデス",
-    "PL",
-    "ペタミン",
-    "ルル",
-    "パブロン",
-    "ベンザ",
 )
 
 
@@ -117,19 +103,10 @@ def extract_drug_entities(text: str) -> list[str]:
 
 
 def is_medicine_side_effect_question(text: str) -> bool:
-    t = (text or "").strip()
-    if not t:
-        return False
-    if _SIDE_EFFECT_QA_RE.search(t):
-        return True
-    drugs = extract_drug_entities(t)
-    if not drugs:
-        return False
-    if any(k in t for k in ("副作用", "眠くなる", "眠気", "安全", "飲んでいい", "飲んでもいい")):
-        return True
-    if "眠い" in t and "?" in t or t.endswith(("?", "？")):
-        return True
-    return False
+    """副作用・眠気 Q&A 判定（gate / unified router 用。厳密判定に委譲）。"""
+    from src.services.medicine_qa_routing import is_strict_medicine_side_effect_question
+
+    return is_strict_medicine_side_effect_question(text)
 
 
 def extract_side_effect_subject(text: str) -> str | None:

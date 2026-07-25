@@ -95,7 +95,12 @@ def _apply_decision_to_context(ctx: Any, decision: RouteDecision) -> None:
     elif primary == "Physical":
         if sub == "fever_flow":
             triage["subcategory"] = "fever"
-        elif sub in ("medicine_followup_qa", "medicine_side_effect_qa", "symptom_prompt_sports"):
+        elif sub in (
+            "medicine_followup_qa",
+            "medicine_side_effect_qa",
+            "medicine_qa",
+            "symptom_prompt_sports",
+        ):
             triage["subcategory"] = sub
         elif sub and sub != "rule_based_recommend":
             triage["subcategory"] = sub
@@ -178,6 +183,7 @@ def _dispatch_physical(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
 
     try:
         from config.llm_flags import is_medicine_side_effect_qa_enabled
+        from src.services.medicine_qa_routing import is_medicine_information_question
         from src.services.medicine_side_effect_routing import is_medicine_side_effect_route
 
         side_effect_ok = is_medicine_side_effect_qa_enabled(ctx.sid) and (
@@ -196,6 +202,22 @@ def _dispatch_physical(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
             )
     except ImportError:
         pass
+
+    medicine_qa_ok = sub == "medicine_qa" or (
+        sub in (None, "", "rule_based_recommend")
+        and is_medicine_information_question(user_msg)
+    )
+    if medicine_qa_ok:
+        from src.handlers.chat.medicine_context_handlers import (
+            handle_medicine_information_qa,
+        )
+
+        return handle_medicine_information_qa(
+            ctx.session,
+            ctx.client_info,
+            ctx.sid,
+            ctx.original_user_message or user_msg,
+        )
 
     ctx_route = resolve_medicine_context_route(
         ctx.session,
