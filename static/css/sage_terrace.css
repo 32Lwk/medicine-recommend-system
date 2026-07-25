@@ -2440,6 +2440,12 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
 .ui-bubble--status .ui-status-section-card .ui-overlap-card__body,
 .ui-bubble--qa .ui-status-section-card .ui-overlap-card__body {
   padding: 4px 10px 6px;
+  line-height: 1.55;
+}
+
+.ui-bubble--qa .ui-status-section-card .ui-overlap-card__body strong {
+  font-weight: 600;
+  color: var(--onb-text-primary, inherit);
 }
 
 /* 副作用 Q&A — 成分カード（PMDA 原文の代わりに要点をチップ表示） */

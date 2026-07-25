@@ -65,6 +65,12 @@ def test_build_qa_status_uses_comparison_section_title():
     titles = [s.title for s in diag.sections]
     assert "製品比較" in titles
     assert "ドーピングチェック" not in titles
+    comparison = next(s for s in diag.sections if s.title == "製品比較")
+    assert comparison.html
+    assert "<strong>ロキソニンＳ</strong>" in comparison.html
+    assert "<strong>イブ</strong>" in comparison.html
+    assert "<br>" in comparison.html
+    assert "**" not in comparison.html
 
 
 def test_brand_hint_detects_loxonin_and_ib():

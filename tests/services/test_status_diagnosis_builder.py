@@ -126,6 +126,8 @@ def test_build_qa_from_chat_response():
     )
     assert diag.render == "sage_qa"
     assert diag.sections
+    assert diag.sections[0].html == "詳細テキスト"
+    assert not diag.sections[0].items
     assert diag.feedback_context["user_message"] == "q"
 
 

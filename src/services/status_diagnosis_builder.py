@@ -367,6 +367,7 @@ def build_qa_from_chat_response(
         prune_qa_response,
         section_title_for_focus,
     )
+    from src.services.text_formatter import safe_format_qa_html
 
     user_message = str((feedback_context or {}).get("user_message") or "")
     pruned = prune_qa_response(chat_response, user_message)
@@ -383,7 +384,9 @@ def build_qa_from_chat_response(
         val = pruned.get(key)
         if val and str(val).strip():
             title = section_title_for_focus(focus, key, default_title)
-            sections.append(StatusSection(title=title, items=[str(val).strip()]))
+            body_html = safe_format_qa_html(str(val).strip())
+            if body_html:
+                sections.append(StatusSection(title=title, html=body_html))
     return build_qa_status(
         answer=str(pruned.get("answer") or "回答を取得できませんでした"),
         sections=sections,
