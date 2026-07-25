@@ -82,6 +82,7 @@ def test_success_returns_two_flex_messages():
 
 def test_carousel_has_three_bubbles_with_noimage_hero(monkeypatch):
     monkeypatch.delenv("PUBLIC_SITE_URL", raising=False)
+    monkeypatch.delenv("MEDICINE_IMAGE_CDN_BASE", raising=False)
     messages = build_line_messages_from_bot_message(_success_bot_message())
     carousel = messages[1]["contents"]
     assert carousel["type"] == "carousel"

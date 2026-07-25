@@ -138,6 +138,13 @@
     };
   }
 
+  function imageVersionForSlug(slug, med) {
+    if (med && med.image_version) return String(med.image_version);
+    var versions = (typeof window !== 'undefined' && window.OTC_IMAGE_VERSIONS) || null;
+    if (versions && slug && versions[slug]) return String(versions[slug]);
+    return '';
+  }
+
   function imageUrlFromMed(med) {
     var keys = ['image_url', 'imageUrl', 'hero_url', 'product_image_url'];
     for (var j = 0; j < keys.length; j++) {
@@ -155,7 +162,10 @@
     }
     if (!slug) return null;
     var ext = med.image_ext || 'webp';
-    return String(base).replace(/\/?$/, '/') + slug + '.' + String(ext).replace(/^\./, '');
+    var url = String(base).replace(/\/?$/, '/') + encodeURIComponent(slug) + '.' + String(ext).replace(/^\./, '');
+    var version = imageVersionForSlug(slug, med);
+    if (version) url += '?v=' + encodeURIComponent(version);
+    return url;
   }
 
   function splitUsageField(usageText) {

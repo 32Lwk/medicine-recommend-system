@@ -395,6 +395,8 @@ def save_local_webp(local_dir: Path, slug: str, body: bytes) -> Path:
 def upload_to_r2(slug: str, body: bytes) -> str:
     import boto3
 
+    from src.services.medicine_image_urls import record_otc_image_version
+
     bucket = os.getenv("R2_BUCKET", "medicine-recommend-otc-images")
     endpoint = os.getenv("R2_S3_ENDPOINT", "").strip()
     access_key = os.getenv("R2_ACCESS_KEY_ID", "").strip()
@@ -415,8 +417,23 @@ def upload_to_r2(slug: str, body: bytes) -> str:
         Key=key,
         Body=body,
         ContentType="image/webp",
+        CacheControl="public, max-age=300, must-revalidate",
     )
+    record_otc_image_version(slug, body)
+    _try_purge_cdn_cache(slug)
     return f"https://images.yutok.dev/{key}"
+
+
+def _try_purge_cdn_cache(slug: str) -> None:
+    """CLOUDFLARE_API_TOKEN / CLOUDFLARE_ZONE_ID があれば CDN キャッシュをパージ。"""
+    if not os.getenv("CLOUDFLARE_API_TOKEN") or not os.getenv("CLOUDFLARE_ZONE_ID"):
+        return
+    try:
+        from scripts.purge_otc_cdn_cache import purge_urls, _build_urls
+
+        purge_urls(_build_urls(slug))
+    except Exception as exc:
+        print(f"[warn] CDN purge skipped for {slug}: {exc}", file=sys.stderr)
 
 
 def write_outputs(out_dir: Path, candidates: list[Candidate], *, meta: dict[str, Any]) -> None:

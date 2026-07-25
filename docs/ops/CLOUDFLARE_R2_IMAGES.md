@@ -50,6 +50,15 @@ curl -sI https://images.yutok.dev/otc/test.webp
 # → HTTP/1.1 200
 ```
 
+**画像差し替え後**: R2 のオブジェクトは即時更新されるが、`images.yutok.dev` 経由では Cloudflare CDN が旧画像を最大 4 時間キャッシュする。差し替え直後に反映するには CDN パージが必要。
+
+```bash
+# .env に CLOUDFLARE_API_TOKEN / CLOUDFLARE_ZONE_ID を設定後
+.venv/bin/python scripts/purge_otc_cdn_cache.py スカイブブロンのどスプレー
+```
+
+アプリ側は `data/otc_image_versions.json` の hash を `?v=` クエリに付与し、キャッシュ済み URL でも新画像を取得できる（`src/services/medicine_image_urls.py`）。
+
 ## ログ推奨上位 OTC の一括同期（マツキヨココカラ → R2）
 
 推奨ログ頻度上位（既定 200 件）を [scripts/sync_otc_images_from_matsukiyo.py](../../scripts/sync_otc_images_from_matsukiyo.py) で取得・アップロードする。

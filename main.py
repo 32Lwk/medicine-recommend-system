@@ -582,6 +582,12 @@ def _medicine_image_cdn_base() -> str:
     return get_medicine_image_cdn_base()
 
 
+def _otc_image_versions_json() -> str:
+    from src.services.medicine_image_urls import load_otc_image_versions
+
+    return json.dumps(load_otc_image_versions(), ensure_ascii=False)
+
+
 def _tts_provider() -> str:
     from config.aws_features import get_tts_provider
 
@@ -626,6 +632,7 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
             "runtime_client_config_json": runtime_client_config_json,
             "ui_variant": ui_variant,
             "medicine_image_cdn_base": _medicine_image_cdn_base(),
+            "otc_image_versions_json": _otc_image_versions_json(),
             "tts_provider": _tts_provider(),
         },
         status_code=status_code,
