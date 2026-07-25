@@ -1,6 +1,61 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月25日**（SSE 副作用 Q&A 表示復旧・医薬品比較 Q&A・CodeBuild post_deploy 高速化）
+**最終更新日: 2026年7月26日**（PMDA OTC Cloud 完走・KB re-ingest・orphans クローズ）
+
+---
+
+## 2026年7月26日 — PMDA OTC Cloud 完走・KB re-ingest・orphans 分析クローズ
+
+### 概要
+
+Cloud Agent（`cursor/pmda-otc-live-fetch-07ea`）で **OTC 7,495 品目の PMDA live 完走**（~14.5h）を main にマージ。続けて **C-3（S3 sync → Bedrock re-ingest → eval）** を実施。orphans 1,240 件の分析を記録し **受け入れクローズ**。
+
+### PMDA OTC Cloud live（Phase 2）
+
+| 指標 | 値 |
+|------|-----|
+| otc pending | **0**（done 6,011 / orphans 1,240 / 82.9%） |
+| CSV | **7,495 行保持**（PMDA 優先 merge） |
+| HTTP | 13,929 / errors 0 / ~14.5h |
+| Cloud GO/NO-GO | GO（403/429=0） |
+| pytest | pmda 13 + golden 45 passed |
+
+**新規スクリプト**: `run_live_fetch_otc_cloud.py`, `archive_otc_pmda_applied.py`, `test_pmda_otc_parse.py`
+
+**95% ヒット率**: 未達（PMDA 未掲載品 ~17%）。orphans は baseline CSV 100% 保持 → **再 fetch 不要**と判定。
+
+詳細: [`docs/ops/PMDA_DATA_IMPORT.md`](docs/ops/PMDA_DATA_IMPORT.md) / `log/analysis/pmda_cloud_otc_complete_20260725.json`
+
+### orphans 1,240 — クローズ
+
+| 項目 | 内容 |
+|------|------|
+| 判定 | **closed_accepted** |
+| 主因 | PMDA 未掲載 / 短ブランド名 / 正規化不足（205 件） |
+| カテゴリ偏り | なし（~15–20%/カテゴリ） |
+
+`log/analysis/pmda_otc_orphans_analysis_20260726.json`
+
+### C-3 Medicine KB 反映
+
+| 指標 | 値 |
+|------|-----|
+| ingestion | **GYSI8GXCRO** COMPLETE（failed 0） |
+| modified docs | 19,921 |
+| eval pass_all | **65%**（13/20）— 目標 80% **未達** |
+| eval score_pass | 70% |
+| 相互作用 eval | **5/5** 維持 |
+
+OTC bulk 更新後、usage / sideeffect / doping / age 系 retrieval が低下。データ正本・ingestion は成功。eval 改善は follow-up。
+
+`log/analysis/medicine_kb_pmda_reflect_20260726.json` / `medicine_kb_pmda_eval_20260726.json`
+
+### Phase 1 正本（ix/se reparse）— 引き続き有効
+
+| CSV | 合計 | PMDA | 品質 |
+|-----|------|------|------|
+| interactions | 180 | 107 | 100% OK |
+| side_effects | 271 | 237 | 100% OK |
 
 ---
 

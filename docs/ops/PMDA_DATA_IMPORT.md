@@ -337,7 +337,64 @@ orphans: `log/analysis/pmda_otc_orphans_20260725.json`
 **KB / eval（Cloud 環境）**
 
 - `scripts/build_medicine_kb_documents.py` まで完了（products 7,495）
-- S3 sync / Bedrock re-ingest / `eval_medicine_kb.py` は **AWS 未設定のため未実施**（ローカルまたは AWS 資格情報あり環境で C-3 続き）
+- C-3（S3 sync / Bedrock re-ingest / eval）は AWS 資格情報あり環境で `./scripts/reflect_medicine_kb.sh --skip-reparse` を実行
+
+### orphans 1,240 件 — 分析・クローズ（2026-07-26）
+
+**判定: 受け入れ（closed）** — 95% ヒット率は PMDA otcSearch の掲載ギャップにより構造的に未達。全件再 fetch は ROI 低。
+
+| 項目 | 値 |
+|------|-----|
+| 件数 / 理由 | **1,240** / 全て `not_found` |
+| ヒット率 | **82.9%**（6,011 / 7,251 unique keys） |
+| CSV 保持 | 効能・用法 **100%**（baseline 維持）、年齢制限 43.5% |
+| カテゴリ偏り | なし（各カテゴリ ~15–20% で均等） |
+
+**推定原因（ヒューリスティック）**
+
+| 原因 | 件数 | 割合 |
+|------|------|------|
+| PMDA 未掲載 / 表記不一致 | 437 | 35.2% |
+| 短いブランド名 | 346 | 27.9% |
+| 正規化不足（改善余地 ~205 件） | 205 | 16.5% |
+| 漢方・生薬系命名 | 108 | 8.7% |
+| 液剤バリアント | 83 | 6.7% |
+| 大手旧 SKU | 61 | 4.9% |
+
+**今後の方針**
+
+- orphans は CSV / KB 既存 MD のまま運用（RAG 欠落なし）
+- 改善する場合: `normalize_product_search_name()` の追加ルールのみ（+2–5 pt 見込み）
+- **禁止**: orphans 向け全件再 fetch（14h+、95% 未到達の可能性大）
+
+詳細: `log/analysis/pmda_otc_orphans_analysis_20260726.json`
+
+### C-3 KB 反映（2026-07-26）
+
+```bash
+AWS_PROFILE=admin ./scripts/reflect_medicine_kb.sh --skip-reparse
+```
+
+| 指標 | 値 |
+|------|-----|
+| ingestion job | **GYSI8GXCRO** — COMPLETE |
+| scanned | 19,961 |
+| modified | 19,921 |
+| new | 10 |
+| failed | **0** |
+| 所要 | ~46 min |
+
+**eval**（`log/analysis/medicine_kb_pmda_eval_20260726.json`）:
+
+| 指標 | 値 | 目標 |
+|------|-----|------|
+| pass_all (raw) | **65%**（13/20） | 80% **未達** |
+| score_pass | **70%**（14/20） | — |
+| 相互作用 | **5/5** | OK |
+
+OTC 7,495 件の bulk 更新後、usage / sideeffect / doping / age 系シナリオでスコア・prefix 不一致が増加。相互作用は維持。改善は別 issue（chunk メタデータ・eval fixture 見直し）。
+
+詳細: `log/analysis/medicine_kb_pmda_reflect_20260726.json`
 
 ## ロールバック
 

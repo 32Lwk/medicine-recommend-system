@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-07-26T00:00:00+00:00",
+  "phase": "pmda_otc_orphans_closed",
+  "status": "closed_accepted",
+  "summary": {
+    "orphan_count": 1240,
+    "unique_keys_processed": 7251,
+    "hit_rate_pct": 82.9,
+    "target_hit_rate_pct": 95.0,
+    "verdict": "95% target not achievable without PMDA catalog gap; orphans retain full baseline CSV (efficacy/usage 100%)",
+    "recommendation": "No full re-fetch. Optional normalization tweaks for ~205 rows (+2-5pt max)."
+  },
+  "reasons": {
+    "not_found": 1240
+  },
+  "category_orphan_rate": {
+    "外用薬(皮膚)": {"orphan": 538, "total": 3252, "pct": 16.5},
+    "解熱鎮痛薬": {"orphan": 252, "total": 1252, "pct": 20.1},
+    "風邪薬": {"orphan": 199, "total": 1159, "pct": 17.2},
+    "目薬": {"orphan": 130, "total": 770, "pct": 16.9},
+    "鼻炎用薬": {"orphan": 67, "total": 437, "pct": 15.3},
+    "更年期障害": {"orphan": 38, "total": 316, "pct": 12.0},
+    "胃腸薬": {"orphan": 26, "total": 163, "pct": 16.0}
+  },
+  "name_patterns": {
+    "has_latin": 627,
+    "has_dosage_form": 536,
+    "short_name_le6": 236,
+    "normalization_would_change": 387
+  },
+  "heuristic_root_cause": {
+    "pmda_absent_or_name_mismatch": 437,
+    "short_brand_name": 346,
+    "normalization_insufficient": 205,
+    "herbal_kampo_naming": 108,
+    "liquid_variant": 83,
+    "major_mfr_legacy_sku": 61
+  },
+  "top_manufacturer_orphan_rates": [
+    {"manufacturer": "一元製薬", "orphan": 27, "total": 28, "pct": 96.4},
+    {"manufacturer": "武田コンシューマーヘルスケア", "orphan": 14, "total": 15, "pct": 93.3},
+    {"manufacturer": "日本ゼトック", "orphan": 35, "total": 40, "pct": 87.5},
+    {"manufacturer": "廣貫堂", "orphan": 43, "total": 69, "pct": 62.3}
+  ],
+  "csv_data_preserved": {
+    "efficacy_filled": "1240/1240",
+    "usage_filled": "1240/1240",
+    "age_restriction_filled": "540/1240"
+  },
+  "source_orphans_json": "log/analysis/pmda_otc_orphans_20260725.json",
+  "cloud_complete_json": "log/analysis/pmda_cloud_otc_complete_20260725.json"
+}
