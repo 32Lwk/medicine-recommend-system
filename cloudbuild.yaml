@@ -30,7 +30,6 @@ steps:
         CACHE_IMAGE="$${IMAGE_BASE}:${_CACHE_TAG}"
         echo "==> pull cache image (ignore if missing)"
         docker pull "$${CACHE_IMAGE}" || true
-        printf '%s' "${COMMIT_SHA}" > /workspace/.ci-commit-sha
         echo "==> docker build (BuildKit + cache-from)"
         export DOCKER_BUILDKIT=1
         docker build \

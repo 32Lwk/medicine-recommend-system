@@ -2,15 +2,24 @@
 FROM public.ecr.aws/docker/library/python:3.11-slim AS build-meta
 
 WORKDIR /src
-
-# CI（CodeBuild / Cloud Build）は .ci-commit-sha / build-arg で渡す。ローカルは deploy スクリプトが生成。
-COPY scripts/write_build_meta.py scripts/
-RUN mkdir -p static
-COPY .ci-commit-sha /tmp/.ci-commit-sha
+ARG GIT_COMMIT=
 ARG GIT_COMMIT_DATE=
-RUN COMMIT="$(tr -d '\n' < /tmp/.ci-commit-sha)" \
- && GIT_COMMIT="$COMMIT" GIT_COMMIT_DATE="${GIT_COMMIT_DATE:-$(date -u +%Y-%m-%d)}" \
-    python3 scripts/write_build_meta.py
+ARG COMMIT_SHA=
+ENV GIT_COMMIT=${GIT_COMMIT:-${COMMIT_SHA}} \
+    GIT_COMMIT_DATE=${GIT_COMMIT_DATE}
+
+# CI（CodeBuild / Cloud Build）は build-arg で渡す。ローカルは static/build-meta.json をフォールバック。
+# CodeBuild 等は .git を含まないため COPY .git は行わない（write_build_meta.py が env / 既存 JSON を参照）。
+COPY scripts/write_build_meta.py scripts/
+COPY static/build-meta.json static/
+# ARG を RUN 直前に再宣言 — cache-from 利用時も GIT_COMMIT 変更で RUN を無効化
+ARG GIT_COMMIT=
+ARG GIT_COMMIT_DATE=
+ENV GIT_COMMIT=${GIT_COMMIT} GIT_COMMIT_DATE=${GIT_COMMIT_DATE}
+# CI では repo 同梱の build-meta.json（古いコミットの可能性）を使わない
+RUN COMMIT="${GIT_COMMIT:-${COMMIT_SHA}}" \
+ && if [ -n "$COMMIT" ]; then echo '{}' > static/build-meta.json; fi \
+ && GIT_COMMIT="$COMMIT" python3 scripts/write_build_meta.py
 
 FROM public.ecr.aws/docker/library/python:3.11-slim
 
@@ -35,9 +44,7 @@ COPY legacy/ legacy/
 COPY src/ src/
 COPY templates/ templates/
 COPY static/ static/
-RUN rm -f static/build-meta.json
 COPY --from=build-meta /src/static/build-meta.json static/build-meta.json
-COPY .ci-commit-sha /tmp/.ci-commit-sha
 COPY scripts/write_build_meta.py scripts/
 COPY scripts/write_changelog_digest.py scripts/
 COPY docs/public/ docs/public/
@@ -45,10 +52,19 @@ COPY docs/concierge/ docs/concierge/
 COPY docs/ops/ docs/ops/
 COPY CHANGELOG.md ./
 
+# build-arg が渡された場合は build-meta ステージの結果を上書きする
+ARG GIT_COMMIT=
 ARG GIT_COMMIT_DATE=
-RUN COMMIT="$(tr -d '\n' < /tmp/.ci-commit-sha)" \
- && GIT_COMMIT="$COMMIT" GIT_COMMIT_DATE="${GIT_COMMIT_DATE:-$(date -u +%Y-%m-%d)}" \
-    python3 scripts/write_build_meta.py \
+ARG COMMIT_SHA=
+ENV GIT_COMMIT=${GIT_COMMIT:-${COMMIT_SHA}} \
+    GIT_COMMIT_DATE=${GIT_COMMIT_DATE}
+# ARG を RUN 直前に再宣言 — cache-from 利用時も GIT_COMMIT 変更で RUN を無効化
+ARG GIT_COMMIT=
+ARG GIT_COMMIT_DATE=
+ENV GIT_COMMIT=${GIT_COMMIT} GIT_COMMIT_DATE=${GIT_COMMIT_DATE}
+RUN COMMIT="${GIT_COMMIT:-${COMMIT_SHA}}" \
+ && if [ -n "$COMMIT" ]; then echo '{}' > static/build-meta.json; fi \
+ && GIT_COMMIT="$COMMIT" python3 scripts/write_build_meta.py \
  && python3 scripts/write_changelog_digest.py
 
 # Cloud Run のデフォルトポート（環境変数 PORT が渡される）

@@ -37,8 +37,6 @@ aws ecr get-login-password --region "$REGION" | \
 echo "==> pull cache image (ignore if missing)"
 docker pull "$IMAGE" || true
 
-echo -n "${COMMIT}" > .ci-commit-sha
-
 echo "==> docker build --platform linux/amd64 (BuildKit + cache-from)"
 export DOCKER_BUILDKIT=1
 docker build --platform linux/amd64 \

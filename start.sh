@@ -2,14 +2,29 @@
 # Gunicorn起動スクリプト
 # コマンドライン引数でタイムアウトを明示的に指定
 
-# イメージに焼き込んだ build-meta.json を実行時 ENV へ反映（Cloud Run の古い GIT_COMMIT 上書き防止）
+# Cloud Run / ECS が注入した GIT_COMMIT を優先。未設定時のみ build-meta.json を参照。
 META_FILE="/app/static/build-meta.json"
 if [ -f "$META_FILE" ]; then
   eval "$(python3 - <<'PY'
 import json
+import os
+import re
 import shlex
 
+_HEX = re.compile(r"^[0-9a-f]{7,40}$", re.I)
+
+def _valid_commit(value: str) -> bool:
+    return bool(_HEX.match((value or "").strip()))
+
 try:
+    env_commit = os.environ.get("GIT_COMMIT", "").strip()
+    env_date = os.environ.get("GIT_COMMIT_DATE", "").strip()
+    if _valid_commit(env_commit):
+        short = env_commit[:7]
+        print(f"export GIT_COMMIT={shlex.quote(short)}")
+        if env_date:
+            print(f"export GIT_COMMIT_DATE={shlex.quote(env_date[:10])}")
+        raise SystemExit(0)
     with open("/app/static/build-meta.json", encoding="utf-8") as fh:
         meta = json.load(fh)
     commit = str(meta.get("gitCommitShort") or "").strip()
@@ -18,6 +33,8 @@ try:
         print(f"export GIT_COMMIT={shlex.quote(commit)}")
     if date:
         print(f"export GIT_COMMIT_DATE={shlex.quote(date)}")
+except SystemExit:
+    pass
 except Exception:
     pass
 PY
