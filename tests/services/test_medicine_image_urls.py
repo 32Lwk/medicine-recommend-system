@@ -47,6 +47,14 @@ def test_cdn_from_product_name():
     assert ".webp" in url
 
 
+def test_cloud_run_fallback_cdn_base(monkeypatch):
+    from config.aws_features import get_medicine_image_cdn_base
+
+    monkeypatch.delenv("MEDICINE_IMAGE_CDN_BASE", raising=False)
+    monkeypatch.setenv("K_SERVICE", "medicine-recommend")
+    assert get_medicine_image_cdn_base() == "https://images.yutok.dev/otc/"
+
+
 def test_image_slug_override():
     med = {"product_name": "x", "image_slug": "test"}
     assert resolve_medicine_image_url(med) == "https://images.yutok.dev/otc/test.webp"
@@ -62,7 +70,14 @@ def test_medicine_has_ready_image_uses_manifest(monkeypatch, tmp_path):
     mod.invalidate_otc_image_versions_cache()
 
     assert medicine_has_ready_image({"product_name": "イブA錠"})
-    assert not medicine_has_ready_image({"product_name": "イブ"})
+    assert medicine_has_ready_image({"product_name": "イブ"})
+    assert not medicine_has_ready_image({"product_name": "存在しないテスト用製品XYZ"})
+
+
+def test_resolve_otc_image_slug_alias_maps_ib_to_ib_a():
+    from src.services.medicine_image_urls import resolve_medicine_image_slug
+
+    assert resolve_medicine_image_slug({"product_name": "イブ"}) == "イブA錠"
 
 
 def test_enrich_sets_image_url():

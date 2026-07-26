@@ -105,6 +105,9 @@ def get_personalize_tracking_id() -> str:
 def get_medicine_image_cdn_base() -> str:
     """例: https://images.yutok.dev/otc/ （末尾スラッシュ付き）"""
     base = _env("MEDICINE_IMAGE_CDN_BASE")
+    # Cloud Run 等で env 未注入時のフォールバック（cloudbuild.yaml と同一 CDN）
+    if not base and os.getenv("K_SERVICE"):
+        base = "https://images.yutok.dev/otc/"
     if not base:
         return ""
     return base.rstrip("/") + "/"

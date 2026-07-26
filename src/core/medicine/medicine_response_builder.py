@@ -739,6 +739,26 @@ def chat_with_medicine_context(
         _mark_qa("side_effect_check")
         stream_active = is_streaming_active(session_id)
         streamed_answer = ""
+        if stream_active and session_id and "product_image" in qa_focuses:
+            try:
+                from src.services.processing_status import set_processing_flow
+
+                set_processing_flow(session_id, "ask_qa")
+            except Exception:
+                pass
+            _mark_qa("answer_compose")
+            _mark_qa("format_response")
+            parsed = _build_structured_qa_from_stream(
+                user_message,
+                recommended_medicines,
+                "",
+                qa_focuses=qa_focuses,
+                conversation_history=conversation_history,
+                user_attributes=user_attributes,
+            )
+            _append_physical_handoff_hint(parsed, user_message)
+            return parsed
+
         if stream_active and session_id:
             try:
                 from src.services.processing_status import set_processing_flow

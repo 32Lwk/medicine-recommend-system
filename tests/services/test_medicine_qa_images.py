@@ -26,7 +26,8 @@ def test_build_product_image_answer_text_two_products():
             {"product_name": "イブ", "ingredients": "イブプロフェン"},
         ]
     )
-    assert "まだ準備できていません" in text
+    assert "パッケージ画像です" in text
+    assert "まだ準備できていません" not in text
     assert "ロキソニンＳ" in text
     assert "イブ" in text
     assert "主成分" in text

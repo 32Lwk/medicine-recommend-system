@@ -17,6 +17,11 @@ _JAN_KEYS = ("jan", "jan_code", "JAN", "product_id")
 _VERSIONS_PATH = Path(__file__).resolve().parents[2] / "data" / "otc_image_versions.json"
 _versions_cache: dict[str, str] | None = None
 
+# 通称・短い製品名 → R2 上の画像スラッグ（ブランド名と object key が異なる場合）
+OTC_IMAGE_SLUG_ALIASES: dict[str, str] = {
+    "イブ": "イブA錠",
+}
+
 
 def _pick_str(data: Mapping[str, Any], keys: tuple[str, ...]) -> str:
     for key in keys:
@@ -89,16 +94,24 @@ def record_otc_image_version(slug: str, body: bytes) -> str:
     return version
 
 
+def resolve_otc_image_slug_alias(slug: str) -> str:
+    """R2 画像キー用スラッグへ通称を正規化する。"""
+    key = (slug or "").strip()
+    if not key:
+        return ""
+    return OTC_IMAGE_SLUG_ALIASES.get(key, key)
+
+
 def resolve_medicine_image_slug(medicine: Mapping[str, Any]) -> str:
     explicit = _pick_str(medicine, _SLUG_KEYS)
     if explicit:
-        return explicit
+        return resolve_otc_image_slug_alias(explicit)
     jan = _pick_str(medicine, _JAN_KEYS)
     if jan:
-        return re.sub(r"[^\w\-]", "", jan)
+        return resolve_otc_image_slug_alias(re.sub(r"[^\w\-]", "", jan))
     name = _pick_str(medicine, ("product_name", "name"))
     manufacturer = _pick_str(medicine, ("manufacturer", "maker"))
-    return slugify_product_name(name, manufacturer)
+    return resolve_otc_image_slug_alias(slugify_product_name(name, manufacturer))
 
 
 def build_medicine_image_cdn_url(

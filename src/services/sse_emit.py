@@ -360,6 +360,18 @@ def pseudo_stream_advice(
             time.sleep(delay_sec)
 
 
+def qa_sse_preview_enabled() -> bool:
+    """True のときのみ qa_delta / qa_section を SSE 送信（暫定 streaming-qa 用）。"""
+    import os
+
+    return os.getenv("QA_SSE_PREVIEW_ENABLED", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+
+
 def emit_qa_delta(
     chunk: str,
     session_id: Optional[str] = None,
@@ -367,7 +379,7 @@ def emit_qa_delta(
     section: str = "answer",
 ) -> None:
     """医薬品 Q&A: 回答本文などセクション単位のテキストストリーム"""
-    if not chunk:
+    if not chunk or not qa_sse_preview_enabled():
         return
     emit_sse_event(
         "qa_delta",
@@ -383,7 +395,7 @@ def emit_qa_section(
     session_id: Optional[str] = None,
 ) -> None:
     """医薬品 Q&A: 構造化セクション（相互作用等）の HTML 追送"""
-    if not html or not section:
+    if not html or not section or not qa_sse_preview_enabled():
         return
     emit_sse_event(
         "qa_section",
@@ -397,6 +409,8 @@ def emit_qa_sections_from_response(
     session_id: Optional[str] = None,
 ) -> None:
     """完成した Q&A 応答から追加セクションを SSE 配信"""
+    if not qa_sse_preview_enabled():
+        return
     from src.services.medicine_qa_html import safe_format_html
 
     product_images_html = str(chat_response.get("product_images_html") or "").strip()

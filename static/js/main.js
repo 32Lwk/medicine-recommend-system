@@ -1341,6 +1341,17 @@
         return isSageUi();
     }
 
+    /** 医薬品 Q&A: 途中の streaming-qa を出さず done の ui-bubble--qa で一括描画 */
+    function shouldBulkRenderSageQa() {
+        if (window.SAGE_QA_BULK_RENDER === true) {
+            return true;
+        }
+        if (window.SAGE_QA_BULK_RENDER === false) {
+            return false;
+        }
+        return true;
+    }
+
     function isSeasonDecorationEnabled() {
         const v = localStorage.getItem('seasonDecorationEnabled');
         return v === null || v === 'true';
@@ -6549,6 +6560,7 @@
         saveChatCache(sid, merged);
         removeStreamingChatBubble();
         removeStreamingRecommendation();
+        removeStreamingQaResponse();
         return applyBotResponseSession(
             { session_id: sid, messages: merged },
             { preserveStatusCards: false, forceRender: true }
@@ -11360,7 +11372,15 @@ function appendQaDelta(text, section) {
 
     function tryPromoteStreamingQaResponse(message, index) {
         const diag = message && message.diagnosis;
-        if (!diag || !diag.is_question) {
+        const isLegacyQa = diag && diag.is_question;
+        const isSageQa =
+            isSageDiagnosisMessage(message)
+            && diag
+            && (
+                diag.render === 'sage_qa'
+                || (diag.render === 'sage_status' && diag.kind === 'medicine_qa')
+            );
+        if (!isLegacyQa && !isSageQa) {
             return false;
         }
         const wrapper =
@@ -11371,6 +11391,17 @@ function appendQaDelta(text, section) {
             return false;
         }
         const messageKey = getMessageDomKey(message);
+        if (isSageQa) {
+            wrapper.classList.remove('streaming-qa');
+            wrapper.removeAttribute('data-streaming-qa');
+            wrapper.className = 'message bot';
+            wrapper.setAttribute('data-message-id', messageKey);
+            wrapper.setAttribute('data-message-index', String(index));
+            wrapper.innerHTML = '';
+            mountSageBotMessage(wrapper, message);
+            streamingQaEl = null;
+            return true;
+        }
         const serverHtml = (message.content || '').trim();
         const isServerError = serverHtml.indexOf('システムエラー') >= 0;
         if (!isServerError && serverHtml.includes('chat-response')) {
@@ -11389,11 +11420,20 @@ function appendQaDelta(text, section) {
     }
 
     function removeOrphanedStreamingBubbles() {
-        if (awaitingPostResponse && hasActiveStreamingContent()) {
-            return;
-        }
         const chatMessages = document.getElementById('chatMessages');
         if (!chatMessages) {
+            return;
+        }
+        // Sage QA 確定後は ui-bubble--qa のみ残す。途中 streaming-qa は常に除去する。
+        chatMessages.querySelectorAll('[data-streaming-qa="true"]').forEach(function (node) {
+            node.remove();
+        });
+        if (streamingQaEl && !streamingQaEl.isConnected) {
+            streamingQaEl = null;
+        } else if (streamingQaEl && streamingQaEl.hasAttribute('data-streaming-qa')) {
+            streamingQaEl = null;
+        }
+        if (awaitingPostResponse && hasActiveStreamingContent()) {
             return;
         }
         chatMessages.querySelectorAll('[data-streaming-chat="true"]').forEach(function (node) {
@@ -11403,12 +11443,6 @@ function appendQaDelta(text, section) {
             streamingChatEl = null;
         } else if (streamingChatEl && !streamingChatEl.hasAttribute('data-streaming-chat')) {
             streamingChatEl = null;
-        }
-        chatMessages.querySelectorAll('[data-streaming-qa="true"]').forEach(function (node) {
-            node.remove();
-        });
-        if (streamingQaEl && !streamingQaEl.isConnected) {
-            streamingQaEl = null;
         }
         chatMessages.querySelectorAll('[data-streaming-recommendation="true"]').forEach(function (node) {
             node.remove();
@@ -11898,12 +11932,22 @@ function appendQaDelta(text, section) {
                         appendChatDelta(ev.data.text);
                     });
                 }
-                if (ev.event === 'qa_delta' && ev.data && ev.data.text) {
+                if (
+                    !shouldBulkRenderSageQa()
+                    && ev.event === 'qa_delta'
+                    && ev.data
+                    && ev.data.text
+                ) {
                     revealStreamingChunk(function () {
                         appendQaDelta(ev.data.text, ev.data.section);
                     });
                 }
-                if (ev.event === 'qa_section' && ev.data && ev.data.html) {
+                if (
+                    !shouldBulkRenderSageQa()
+                    && ev.event === 'qa_section'
+                    && ev.data
+                    && ev.data.html
+                ) {
                     revealStreamingChunk(function () {
                         appendQaSectionHtml(ev.data.section, ev.data.html);
                     });
