@@ -1,0 +1,91 @@
+# GPT 多ターン会話 — 文脈を保持したまま意図がずれないかを検証
+# turns: 各 turn で GPT がユーザー発話を生成し、routing + 文脈保持を判定
+
+sessions:
+  - id: mt-gpt-reco-side-usage
+    description: "推奨 → 副作用 → 用法の自然な流れ"
+    recommended_medicines: ["ロキソニン"]
+    seed_history:
+      - role: user
+        content: "頭がガンガンする"
+      - role: assistant
+        content: "ロキソニンをご検討ください"
+    turns:
+      - intent_hint: side_effect
+        style: "若者言葉"
+        expect_focuses: ["side_effect"]
+        expect_unified_route: false
+      - intent_hint: usage
+        style: "カジュアル省略"
+        expect_focuses: ["usage"]
+        expect_clarify: false
+
+  - id: mt-gpt-cmp-then-side
+    description: "比較のあと指示語で副作用（比較に引き戻されない）"
+    recommended_medicines: ["ロキソニン", "イブ"]
+    seed_history:
+      - role: user
+        content: "ロキソニンとイブで迷ってる"
+      - role: assistant
+        content: "それぞれ特徴があります。効き目ならロキソニンが候補です"
+    turns:
+      - intent_hint: comparison
+        style: "関西弁"
+        expect_focuses: ["comparison"]
+      - intent_hint: side_effect
+        style: "超省略"
+        expect_focuses: ["side_effect"]
+        expect_not_focuses: ["comparison"]
+        expect_unified_route: false
+
+  - id: mt-gpt-child-age-ix
+    description: "子どもの年齢文脈 → 市販可否 → 併用"
+    seed_history:
+      - role: user
+        content: "小学3年の子どもが熱っぽいです"
+      - role: assistant
+        content: "症状を教えてください"
+    turns:
+      - intent_hint: age
+        style: "日常会話"
+        expect_focuses: ["age"]
+      - intent_hint: interaction
+        style: "丁寧"
+        expect_focuses: ["interaction"]
+        # 推奨はまだ無い想定でも、風邪薬同士の併用を聞けるようにする
+        recommended_medicines: ["カロナールA"]
+
+  - id: mt-gpt-photo-ing-alcohol
+    description: "写真 → 成分 → お酒"
+    recommended_medicines: ["バファリンA"]
+    seed_history:
+      - role: user
+        content: "バファリンについて知りたい"
+      - role: assistant
+        content: "解熱鎮痛の市販薬です"
+    turns:
+      - intent_hint: product_image
+        style: "SNS省略"
+        expect_focuses: ["product_image"]
+      - intent_hint: ingredient
+        style: "英語混じり"
+        expect_focuses: ["ingredient"]
+      - intent_hint: interaction
+        style: "日常口語"
+        expect_focuses: ["interaction"]
+
+  - id: mt-gpt-doping-follow
+    description: "大会文脈の深掘り"
+    recommended_medicines: ["カロナールA"]
+    seed_history:
+      - role: user
+        content: "来週ハーフマラソンがあります。頭痛もします"
+      - role: assistant
+        content: "カロナールAをご検討ください"
+    turns:
+      - intent_hint: doping
+        style: "敬語"
+        expect_focuses: ["doping"]
+      - intent_hint: usage
+        style: "カジュアル"
+        expect_focuses: ["usage"]

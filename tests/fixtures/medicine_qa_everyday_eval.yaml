@@ -365,6 +365,77 @@ scenarios:
     expect_information_question: true
     expect_clarify: false
 
+  # --- wave3: ソフト言い回し（キーワード非依存・文脈/LLM向け） ---
+  - id: edy3-soft-se-after
+    style: soft
+    query: "それ飲んだあと、なんかぼーっとしてきて心配"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+
+  - id: edy3-soft-us-timing
+    style: soft
+    query: "タイミング的にはご飯といっしょがいいのかな"
+    recommended_medicines: ["イブ"]
+    expect_focuses: ["usage"]
+    expect_information_question: true
+
+  - id: edy3-soft-ix-drink
+    style: soft
+    query: "今晚ちょっとお付き合いがあるんだけど、先に飲んでも平気？"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["interaction"]
+    expect_information_question: true
+
+  - id: edy3-soft-age
+    style: soft
+    query: "うちのちびっ子でもいけるやつ？"
+    expect_focuses: ["age"]
+    expect_information_question: true
+    conversation_history:
+      - role: user
+        content: "幼稚園児なんです"
+      - role: assistant
+        content: "症状は？"
+
+  - id: edy3-soft-photo
+    style: soft
+    query: "店頭で見分けたいから見た目だけ知りたい"
+    recommended_medicines: ["カロナールA"]
+    expect_focuses: ["product_image"]
+    expect_information_question: true
+
+  - id: edy3-soft-cmp
+    style: soft
+    query: "結局どっち寄りのほうが自分向き？"
+    recommended_medicines: ["ロキソニン", "イブ"]
+    expect_focuses: ["comparison"]
+    expect_information_question: true
+
+  - id: edy3-soft-age-otc-follow
+    style: soft
+    description: "幼稚園文脈のあと、年齢を繰り返さず市販可否を聞く"
+    query: "熱に市販薬でいい？"
+    conversation_history:
+      - role: user
+        content: "幼稚園の子どもが熱っぽいです"
+      - role: assistant
+        content: "症状を教えてください"
+    expect_focuses: ["age"]
+    expect_information_question: true
+
+  - id: edy3-soft-age-ok-short
+    style: soft
+    description: "保育園文脈 + 短い可否"
+    query: "市販薬使っても大丈夫？"
+    conversation_history:
+      - role: user
+        content: "保育園の息子がぐったりしてます"
+      - role: assistant
+        content: "熱はありますか"
+    expect_focuses: ["age"]
+    expect_information_question: true
+
 sessions:
   - id: edy-ctx-anaphora-usage
     style: context

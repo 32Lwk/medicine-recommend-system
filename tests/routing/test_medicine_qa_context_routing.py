@@ -55,3 +55,32 @@ def test_efficacy_and_side_effect_uses_unified_route():
         q,
         recommended_medicines=[{"product_name": "ロキソニン"}],
     )
+
+
+def test_life_stage_history_otc_suitability_is_age():
+    """幼稚園など個別語を増やさず、ライフステージ文脈+可否質問で age。"""
+    history = [
+        {"role": "user", "content": "幼稚園の子どもが熱っぽいです"},
+        {"role": "assistant", "content": "症状を教えてください"},
+    ]
+    q = "熱に市販薬でいい？"
+    focuses = infer_medicine_qa_focuses(
+        q,
+        conversation_history=history,
+        use_llm_enrichment=False,
+    )
+    assert "age" in focuses
+
+
+def test_symptom_only_followup_is_not_age():
+    history = [
+        {"role": "user", "content": "幼稚園の子どもが熱っぽいです"},
+        {"role": "assistant", "content": "症状を教えてください"},
+    ]
+    q = "咳も出ているし、少し元気がないようです。"
+    focuses = infer_medicine_qa_focuses(
+        q,
+        conversation_history=history,
+        use_llm_enrichment=False,
+    )
+    assert "age" not in focuses

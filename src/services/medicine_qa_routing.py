@@ -484,6 +484,47 @@ def _has_ingredient_intent(text: str) -> bool:
     return any(k in t for k in _INGREDIENT_KEYWORDS)
 
 
+def _history_has_life_stage_context(blob: str) -> bool:
+    """履歴に年齢・ライフステージ（小児〜高齢・妊娠等）の手がかりがあるか。
+
+    学校種ごとの個別列挙ではなく、既存のライフステージ語彙＋数値年齢で見る。
+    """
+    if not blob:
+        return False
+    blob_l = blob.lower()
+    if any((k in blob_l) if k.isascii() else (k in blob) for k in _AGE_KEYWORDS):
+        return True
+    if re.search(r"\d+歳", blob) or _AGE_GRADE_RE.search(blob):
+        return True
+    return False
+
+
+def _looks_medicine_suitability_ask(text: str) -> bool:
+    """市販薬・服用の可否を問う型か（症状の追加報告ではない）。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    # 症状追記だけ（「咳も出ている」「元気がない」等）を年齢 intent にしない
+    medicineish = bool(
+        re.search(r"薬|市販|OTC|服用|飲|使|解熱|鎮痛|pill|tablet|medicine|drug", t, re.I)
+    )
+    # 可否・適合の問い（個別副作用語の列挙ではなく「使えるか」型）
+    okish = bool(
+        re.search(
+            r"大丈夫|平気|飲める|使える|よい|良い|いい|宜|まだ早|"
+            r"いける|無理|OK|ok|safe|can\b",
+            t,
+            re.I,
+        )
+    )
+    questionish = bool(re.search(r"[?？]|どう|かな|ん？|教えて|知りたい", t))
+    if medicineish and (okish or questionish):
+        return True
+    if okish and questionish:
+        return True
+    return False
+
+
 def _has_age_intent(
     text: str,
     *,
@@ -501,24 +542,16 @@ def _has_age_intent(
         if re.search(r"\b(?:take|ok|safe|can)\b", t, re.I) or "？" in t or "?" in t:
             return True
     attrs = user_attributes or {}
-    if attrs.get("age"):
-        if any(k in t for k in ("使える", "飲める", "大丈夫", "市販", "子")):
-            return True
+    if attrs.get("age") and _looks_medicine_suitability_ask(t):
+        return True
     if conversation_history:
         blob = " ".join(
             str(m.get("content") or m.get("message") or "")
             for m in conversation_history[-6:]
             if isinstance(m, dict)
         )
-        if re.search(
-            r"\d+歳|\d+代|小学|小[1-6１-６]|小児|未就学|妊婦|妊娠|高齢",
-            blob,
-        ):
-            if any(
-                k in t
-                for k in ("使える", "飲める", "大丈夫", "市販", "子", "年齢", "平気", "OTC")
-            ):
-                return True
+        if _history_has_life_stage_context(blob) and _looks_medicine_suitability_ask(t):
+            return True
     return False
 
 

@@ -237,12 +237,18 @@ def _is_drug_like_token(token: str) -> bool:
         t,
     ):
         return False
-    # 会話フィラー・述語句・指示語句は薬剤名ではない
-    if re.fullmatch(r"[ぁ-んーっ]+", t) and len(t) >= 5:
+    # 会話フィラー・述語句・指示語句は薬剤名ではない（形態・品詞っぽさで除外）
+    hiragana_ratio = (
+        sum(1 for ch in t if "ぁ" <= ch <= "ん" or ch in "ーっ") / max(len(t), 1)
+    )
+    if hiragana_ratio >= 0.75 and len(t) >= 5:
         return False
     if re.search(r"^(?:これ|それ|あれ|この|その|あの)", t):
         return False
     if "って" in t:
+        return False
+    # 連用・終助詞っぽい形態は会話文（個別症状語の列挙ではない）
+    if re.search(r"(?:してき|てきて|なんだけど|なのかな|ってきて)", t):
         return False
     if re.search(
         r"(?:たい|だけど|けど|聞き|ちょっと|どうなん|どう思う|教えて|知りたい|平気|大丈夫)",
