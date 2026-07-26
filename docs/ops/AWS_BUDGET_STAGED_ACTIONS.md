@@ -23,6 +23,13 @@ ECS Express 縮小 / env 最小化 / CodeBuild KB 停止 / ECS 完全停止
 | #5 | 90% | 実際 | **ECS タスク 0** + CodePipeline 自動デプロイ停止 |
 | #6 | 100% | 実際 | 同上（冪等・再実行可） |
 
+### メール通知先
+
+| Alert | kawashima | yuto.k_1028 | tachibana@heptagon |
+|-------|-----------|-------------|---------------------|
+| #1–#4（50–80%） | ✅ | — | — |
+| #5–#6（90–100%） | ✅ | ✅ | ✅ |
+
 **注意**: ALB / WAF / Secrets / Pipeline 基本料金は停止後も課金される。
 
 ## 1. インフラ作成（1回）
@@ -33,7 +40,11 @@ export AWS_PROFILE=admin   # iam:CreateRole が必要
 ./scripts/apply-aws-budget-notifications.sh
 ```
 
-`apply-aws-budget-notifications.sh` は予算 **My Monthly Cost Budget** の 6 アラートを一括設定する。メール変更:
+`apply-aws-budget-notifications.sh` は予算 **My Monthly Cost Budget** の 6 アラートを一括設定する。
+
+**注意**: 全通知の削除→再作成は ALARM 中に再送メールが発生する。購読者だけ変える場合は `aws budgets delete-subscriber` / `create-subscriber` を使う。
+
+メール変更:
 
 ```bash
 BUDGET_EMAIL_PRIMARY=you@example.com BUDGET_EMAIL_SECONDARY=you2@example.com \

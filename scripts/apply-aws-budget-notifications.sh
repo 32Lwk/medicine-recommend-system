@@ -108,27 +108,23 @@ delete_notification "NotificationType=ACTUAL,ComparisonOperator=GREATER_THAN,Thr
 delete_notification "NotificationType=FORECASTED,ComparisonOperator=GREATER_THAN,Threshold=100"
 
 echo "==> Create staged notifications"
-# Alert #1: 50% actual — email only
+# Alert #1: 50% actual — primary email only
 create_notification "NotificationType=ACTUAL,ComparisonOperator=GREATER_THAN,Threshold=50" \
-  "SubscriptionType=EMAIL,Address=${EMAIL_PRIMARY}" \
-  "SubscriptionType=EMAIL,Address=${EMAIL_HEPTAGON}"
+  "SubscriptionType=EMAIL,Address=${EMAIL_PRIMARY}"
 
-# Alert #2: 60% forecast — email + SNS stage1 (downsize)
+# Alert #2: 60% forecast — primary email + SNS stage1 (downsize)
 create_notification "NotificationType=FORECASTED,ComparisonOperator=GREATER_THAN,Threshold=60" \
   "SubscriptionType=EMAIL,Address=${EMAIL_PRIMARY}" \
-  "SubscriptionType=EMAIL,Address=${EMAIL_HEPTAGON}" \
   "SubscriptionType=SNS,Address=${SNS_STAGE1}"
 
-# Alert #3: 75% actual — email + SNS stage2 (minimal env)
+# Alert #3: 75% actual — primary email + SNS stage2 (minimal env)
 create_notification "NotificationType=ACTUAL,ComparisonOperator=GREATER_THAN,Threshold=75" \
   "SubscriptionType=EMAIL,Address=${EMAIL_PRIMARY}" \
-  "SubscriptionType=EMAIL,Address=${EMAIL_HEPTAGON}" \
   "SubscriptionType=SNS,Address=${SNS_STAGE2}"
 
-# Alert #4: 80% actual — email + SNS stage3 (KB sync off)
+# Alert #4: 80% actual — primary email + SNS stage3 (KB sync off)
 create_notification "NotificationType=ACTUAL,ComparisonOperator=GREATER_THAN,Threshold=80" \
   "SubscriptionType=EMAIL,Address=${EMAIL_PRIMARY}" \
-  "SubscriptionType=EMAIL,Address=${EMAIL_HEPTAGON}" \
   "SubscriptionType=SNS,Address=${SNS_STAGE3}"
 
 # Alert #5: 90% actual — all emails + SNS stage4 (stop)
