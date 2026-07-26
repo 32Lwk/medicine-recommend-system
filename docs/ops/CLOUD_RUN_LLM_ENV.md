@@ -51,6 +51,8 @@ gcloud run services update medicine-recommend \
 
 - CPU 常時割り当て: Cloud Run コンソール「CPU は常に割り当てる」を有効化（詳細は [CAPACITY_PLANNING.md](CAPACITY_PLANNING.md)）
 - 起動プローブ: `cloudbuild.yaml` で `GET /health` を startup probe に設定（新リビジョンがトラフィック受付前に起動完了を待つ）
+- メモリ: **1Gi** 以上推奨（Local RAG BM25 がワーカーあたり約 240MiB。`GUNICORN_WORKERS=2` だと 512Mi では OOM しやすい）
+- Local RAG の BM25 warmup は lifespan をブロックせずバックグラウンド実行（同期だと startup probe が失敗する）
 - `DATABASE_URL` は Neon **pooler** ホスト（`-pooler`）を使用
 - デプロイ後 `/admin/system_status` で `database.available=true` を確認
 
