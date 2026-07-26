@@ -173,7 +173,7 @@
                         details: [
                             {
                                 summary: "改善・開発の進捗",
-                                description: "本番に反映済みの改善と、この dev 環境で検証中の項目です。Chat Pipeline v2 が有効なため、応答や表示が変わる場合があります。",
+                                description: "本番（GCP）・AWS ステージングに反映済みの改善と、この dev 環境で検証中の項目です。",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask → FastAPI への移行", defaultChecked: true },
@@ -188,21 +188,23 @@
                                     { text: "入力ガード・セキュリティ強化", defaultChecked: true },
                                     { text: "店舗・施設案内の精度向上", defaultChecked: true },
                                     { text: "Concierge 文脈ルーティング", defaultChecked: true },
-                                    { text: "Chat Pipeline v2（IntentRouter PRIMARY・dispatch 最適化）" },
-                                    { text: "入力ブロックのカテゴリ別応答" },
-                                    { text: "管理画面（admin）Sage Terrace UI 刷新" },
-                                    { text: "本番カナリア展開の準備" },
-                                    { text: "応答速度の最適化" },
+                                    { text: "Chat Pipeline v2（IntentRouter PRIMARY・dispatch 最適化）", defaultChecked: true },
+                                    { text: "入力ブロックのカテゴリ別応答", defaultChecked: true },
+                                    { text: "管理画面（admin）Sage Terrace UI 刷新", defaultChecked: true },
+                                    { text: "AWS ステージング（ECS Express / CodePipeline）", defaultChecked: true },
+                                    { text: "Medicine QA（製品画像・比較・文脈ルーティング）", defaultChecked: true },
+                                    { text: "Local RAG（医薬品ナレッジベース）", defaultChecked: true },
+                                    { text: "Concierge 更新履歴・技術 Q&A", defaultChecked: true },
+                                    { text: "OTC 製品画像 CDN（Cloudflare R2）", defaultChecked: true },
+                                    { text: "応答速度・デプロイ時間の最適化" },
+                                    { text: "AWS Bedrock Knowledge Base 連携" },
+                                    { text: "Cloud Run 起動安定化・ビルドメタ自動化" },
                                     { text: "音声入力の改善" },
                                     { text: "体調推定（計画中）" },
                                     { text: "パーソナライズ機能（計画中）" }
                                 ]
                             }
                         ],
-                        footnote: {
-                            summary: "開発リポジトリは GitLab に一時移行中",
-                            body: "GitHub アカウント停止に伴い、2026年6月から開発リポジトリを GitLab に一時移行しています。サービスの機能や内容への影響はありません。"
-                        },
                         links: [
                             {
                                 text: "🌐 本番環境(安定版)を開く",
@@ -494,7 +496,7 @@
                         details: [
                             {
                                 summary: "Improvements & progress",
-                                description: "Shipped improvements and items validated in this dev environment. Chat Pipeline v2 is enabled here, so responses and UI may differ.",
+                                description: "Shipped improvements on production (GCP) and AWS staging, plus items validated in this dev environment.",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Migration from Flask to FastAPI", defaultChecked: true },
@@ -509,21 +511,23 @@
                                     { text: "Input guards and security hardening", defaultChecked: true },
                                     { text: "Store and facility guidance improvements", defaultChecked: true },
                                     { text: "Concierge context routing", defaultChecked: true },
-                                    { text: "Chat Pipeline v2 (IntentRouter PRIMARY, dispatch optimization)" },
-                                    { text: "Categorized input-block responses" },
-                                    { text: "Admin Sage Terrace UI refresh" },
-                                    { text: "Production canary preparation" },
-                                    { text: "Response latency optimization" },
+                                    { text: "Chat Pipeline v2 (IntentRouter PRIMARY, dispatch optimization)", defaultChecked: true },
+                                    { text: "Categorized input-block responses", defaultChecked: true },
+                                    { text: "Admin Sage Terrace UI refresh", defaultChecked: true },
+                                    { text: "AWS staging (ECS Express / CodePipeline)", defaultChecked: true },
+                                    { text: "Medicine QA (product images, comparison, context routing)", defaultChecked: true },
+                                    { text: "Local RAG (medicine knowledge base)", defaultChecked: true },
+                                    { text: "Concierge changelog & technical Q&A", defaultChecked: true },
+                                    { text: "OTC product image CDN (Cloudflare R2)", defaultChecked: true },
+                                    { text: "Response latency & deploy time optimization" },
+                                    { text: "AWS Bedrock Knowledge Base integration" },
+                                    { text: "Cloud Run startup stability & build meta automation" },
                                     { text: "Better voice input" },
                                     { text: "Health state estimation (planned)" },
                                     { text: "Personalization features (planned)" }
                                 ]
                             }
                         ],
-                        footnote: {
-                            summary: "Dev repo temporarily on GitLab",
-                            body: "Since June 2026, our repository has temporarily moved to GitLab due to a GitHub account suspension. Service features and content are unaffected."
-                        },
                         links: [
                             {
                                 text: "🌐 Open production (stable)",
@@ -827,7 +831,7 @@
                         details: [
                             {
                                 summary: "개선·개발 진행",
-                                description: "운영에 반영된 개선과 이 dev 환경에서 검증 중인 항목입니다. Chat Pipeline v2가 활성화되어 있어 응답·표시가 달라질 수 있습니다.",
+                                description: "운영(GCP)·AWS 스테이징에 반영된 개선과 이 dev 환경에서 검증 중인 항목입니다.",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask에서 FastAPI로 이전", defaultChecked: true },
@@ -842,21 +846,23 @@
                                     { text: "입력 가드·보안 강화", defaultChecked: true },
                                     { text: "매장·시설 안내 정확도 향상", defaultChecked: true },
                                     { text: "Concierge 문맥 라우팅", defaultChecked: true },
-                                    { text: "Chat Pipeline v2(IntentRouter PRIMARY·dispatch 최적화)" },
-                                    { text: "입력 차단 카테고리별 응답" },
-                                    { text: "관리 화면(admin) Sage Terrace UI 개편" },
-                                    { text: "운영 카나리아 준비" },
-                                    { text: "응답 속도 최적화" },
+                                    { text: "Chat Pipeline v2(IntentRouter PRIMARY·dispatch 최적화)", defaultChecked: true },
+                                    { text: "입력 차단 카테고리별 응답", defaultChecked: true },
+                                    { text: "관리 화면(admin) Sage Terrace UI 개편", defaultChecked: true },
+                                    { text: "AWS 스테이징(ECS Express / CodePipeline)", defaultChecked: true },
+                                    { text: "Medicine QA(제품 이미지·비교·문맥 라우팅)", defaultChecked: true },
+                                    { text: "Local RAG(의약품 지식베이스)", defaultChecked: true },
+                                    { text: "Concierge 업데이트 이력·기술 Q&A", defaultChecked: true },
+                                    { text: "OTC 제품 이미지 CDN(Cloudflare R2)", defaultChecked: true },
+                                    { text: "응답 속도·배포 시간 최적화" },
+                                    { text: "AWS Bedrock Knowledge Base 연동" },
+                                    { text: "Cloud Run 기동 안정화·빌드 메타 자동화" },
                                     { text: "음성 입력 개선" },
                                     { text: "컨디션 추정(계획)" },
                                     { text: "개인화 기능(계획)" }
                                 ]
                             }
                         ],
-                        footnote: {
-                            summary: "개발 리포지토리는 GitLab으로 일시 이전 중",
-                            body: "GitHub 계정 정지에 따라 2026년 6월부터 개발 리포지토리를 GitLab으로 일시 이전했습니다. 서비스 기능·내용에는 영향이 없습니다."
-                        },
                         links: [
                             {
                                 text: "🌐 운영 환경(안정판) 열기",
@@ -1148,7 +1154,7 @@
                         details: [
                             {
                                 summary: "改进与开发进度",
-                                description: "已上线改进与本 dev 环境验证中的项目。已启用 Chat Pipeline v2，回复与界面可能有所变化。",
+                                description: "已上线至生产（GCP）与 AWS 预发环境的改进，以及本 dev 环境验证中的项目。",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "从 Flask 迁移至 FastAPI", defaultChecked: true },
@@ -1163,21 +1169,23 @@
                                     { text: "输入拦截与安全加固", defaultChecked: true },
                                     { text: "门店与设施指引精度提升", defaultChecked: true },
                                     { text: "Concierge 上下文路由", defaultChecked: true },
-                                    { text: "Chat Pipeline v2（IntentRouter PRIMARY、dispatch 优化）" },
-                                    { text: "输入拦截分类响应" },
-                                    { text: "管理后台 Sage Terrace UI 刷新" },
-                                    { text: "生产金丝雀上线准备" },
-                                    { text: "响应速度优化" },
+                                    { text: "Chat Pipeline v2（IntentRouter PRIMARY、dispatch 优化）", defaultChecked: true },
+                                    { text: "输入拦截分类响应", defaultChecked: true },
+                                    { text: "管理后台 Sage Terrace UI 刷新", defaultChecked: true },
+                                    { text: "AWS 预发（ECS Express / CodePipeline）", defaultChecked: true },
+                                    { text: "Medicine QA（产品图片、对比、上下文路由）", defaultChecked: true },
+                                    { text: "Local RAG（药品知识库）", defaultChecked: true },
+                                    { text: "Concierge 更新记录与技术 Q&A", defaultChecked: true },
+                                    { text: "OTC 产品图片 CDN（Cloudflare R2）", defaultChecked: true },
+                                    { text: "响应速度与部署时间优化" },
+                                    { text: "AWS Bedrock Knowledge Base 对接" },
+                                    { text: "Cloud Run 启动稳定化与构建元数据自动化" },
                                     { text: "语音输入改进" },
                                     { text: "身体状况推断（规划中）" },
                                     { text: "个性化功能（规划中）" }
                                 ]
                             }
                         ],
-                        footnote: {
-                            summary: "开发仓库已暂时迁至 GitLab",
-                            body: "因 GitHub 账号停用，自 2026 年 6 月起开发仓库已暂时迁至 GitLab。服务功能与内容不受影响。"
-                        },
                         links: [
                             {
                                 text: "🌐 打开生产环境（稳定版）",
