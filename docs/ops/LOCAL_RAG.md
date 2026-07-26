@@ -63,20 +63,23 @@ E2E fixture（`tests/fixtures/medicine_qa_e2e.yaml`）に比較・写真・成�
 
 ### Medicine QA ロバストネス eval（Phase C）
 
-日常口語・方言・指示語 follow-up・GPT 会話シミュレーションで **routing（focus / clarify / unified / info_q）** を検証。
+日常口語・方言・指示語 follow-up・GPT 会話／多ターンで **routing（focus / clarify / unified / info_q）+ 意図 fidelity + 文脈保持** を検証。
 
 | 評価 | 目標 | コマンド |
 |------|------|----------|
-| 固定 everyday + context | 100% | `eval_medicine_qa_robustness.py` |
-| + GPT 会話 | ≥ 90% | `--with-gpt-conversation` |
-| + LLM 言い換え stress | ≥ 90% | `--with-llm-stress`（`MEDICINE_QA_FOCUS_LLM` 自動 ON） |
+| 固定 everyday + context + sim + meta | 100% | `eval_medicine_qa_robustness.py` |
+| + GPT 単発会話 | ≥ 90% | `--with-gpt-conversation` |
+| + GPT 多ターン | ≥ 90% | `--with-gpt-multiturn` |
+| + LLM 言い換え stress | ≥ 90% | `--with-llm-stress`（`MEDICINE_QA_FOCUS_LLM=auto` 推奨） |
 
 - スクリプト: [`scripts/eval_medicine_qa_robustness.py`](../scripts/eval_medicine_qa_robustness.py)
-- Fixture: `tests/fixtures/medicine_qa_everyday_eval.yaml`（31 単発 + 12 文脈）, `medicine_qa_gpt_conversation.yaml`
+- Fixture: `medicine_qa_everyday_eval.yaml`, `medicine_qa_gpt_conversation.yaml`, `medicine_qa_gpt_multiturn.yaml`, `medicine_qa_conversation_sim.yaml`, `meta_topic_everyday_eval.yaml`
+- focus LLM: [`src/services/medicine_qa_focus_llm.py`](../src/services/medicine_qa_focus_llm.py) — 構造的曖昧さ時のみ
 - 技術詳細: [`docs/dev/MEDICINE_QA_ROUTING.md`](../dev/MEDICINE_QA_ROUTING.md)
 - 成果物: `log/analysis/medicine_qa_robustness_eval.json`
 
-**2026-07-26 結果**: 固定 43/43、GPT + LLM stress 含む 74/75 (98.7%)
+**2026-07-26 結果（ライブ GPT 含む）**: **253/253 (100%)**  
+（everyday 64 / context 22 / llm_stress 54 / conversation_sim 50 / meta 25 / gpt 27 / gpt_multiturn 11）
 
 ## コスト目安（~10k retrieve/日）
 

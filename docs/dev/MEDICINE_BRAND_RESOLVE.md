@@ -124,7 +124,7 @@ _rule(
 | `product_image` | 写真見せて |
 | `side_effect` | 副作用（単独→ CSV、効き目+副作用→ unified） |
 
-**文脈 routing**（2026-07-26）: 比較履歴があっても指示語副作用 follow-up は `comparison` にしない。アルコール併用・年齢 slot・ドーピング slot は履歴 + 現発話の suitability で判定。詳細は [`MEDICINE_QA_ROUTING.md`](MEDICINE_QA_ROUTING.md)。
+**文脈 routing**（2026-07-26）: 比較履歴があっても指示語副作用 follow-up は `comparison` にしない。アルコール併用・年齢／ライフステージ・ドーピングは履歴文脈 + 現発話の可否質問の型で判定（学校種別の個別列挙に依存しない）。曖昧時は `medicine_qa_focus_llm` が focus を補完。詳細は [`MEDICINE_QA_ROUTING.md`](MEDICINE_QA_ROUTING.md)。
 
 比較 retrieve 時は `route_medicine_docs` が CSV brand 解決で **2 製品分**の product doc URI を返す。
 
