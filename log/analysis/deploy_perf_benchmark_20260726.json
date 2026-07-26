@@ -1,0 +1,67 @@
+{
+  "measured_at": "2026-07-26T19:10:00+09:00",
+  "commit_perf": "de0a517",
+  "commit_cache_benchmark": "9d718c0",
+  "baseline_commit": "c3381e5",
+  "notes": [
+    "de0a517 includes Dockerfile/cloudbuild/buildspec changes (KB layer rebuilt once).",
+    "9d718c0 is empty commit to measure Docker layer cache on unchanged tree.",
+    "GCP /health git_commit stale (388694c) on 9d718c0 due to build-meta stage cache-from reuse — fix pending with .commit_sha cache bust."
+  ],
+  "aws_codebuild_seconds": {
+    "baseline_c3381e5": {
+      "total": 291,
+      "BUILD": 70,
+      "POST_BUILD": 188
+    },
+    "perf_de0a517": {
+      "total": 396,
+      "BUILD": 91,
+      "POST_BUILD": 272
+    },
+    "cache_9d718c0": {
+      "total": 321,
+      "BUILD": 53,
+      "POST_BUILD": 236
+    },
+    "delta_cache_vs_baseline": {
+      "total": -30,
+      "BUILD": -17,
+      "POST_BUILD": 48
+    },
+    "delta_cache_vs_perf": {
+      "total": -75,
+      "BUILD": -38,
+      "POST_BUILD": -36
+    }
+  },
+  "aws_pipeline_seconds": {
+    "baseline_c3381e5": 401,
+    "perf_de0a517": 492,
+    "cache_9d718c0": 430
+  },
+  "gcp_cloud_build_seconds": {
+    "baseline_c3381e5": {
+      "total": 323,
+      "steps": [103, 64, 94]
+    },
+    "perf_de0a517": {
+      "total": 315,
+      "steps_build_push_deploy": [92, 63, 96],
+      "steps": 2
+    },
+    "cache_9d718c0": {
+      "total": 256,
+      "steps_build_push_deploy": [75, 51, 75]
+    },
+    "delta_cache_vs_baseline_total": -67,
+    "delta_cache_vs_baseline_pct": -20.7
+  },
+  "health_after_deploy": {
+    "aws": "9d718c0 ok",
+    "gcp": "388694c stale (cache bug)"
+  },
+  "smoke": {
+    "aws_post_build": "SUCCEEDED both runs"
+  }
+}

@@ -12,6 +12,9 @@ ENV GIT_COMMIT=${GIT_COMMIT:-${COMMIT_SHA}} \
 # CodeBuild 等は .git を含まないため COPY .git は行わない（write_build_meta.py が env / 既存 JSON を参照）。
 COPY scripts/write_build_meta.py scripts/
 COPY static/build-meta.json static/
+# ARG を RUN 直前に再宣言 — cache-from 利用時も GIT_COMMIT 変更で RUN を無効化
+ARG GIT_COMMIT=
+ARG GIT_COMMIT_DATE=
 RUN python3 scripts/write_build_meta.py
 
 FROM public.ecr.aws/docker/library/python:3.11-slim
@@ -51,6 +54,9 @@ ARG GIT_COMMIT_DATE=
 ARG COMMIT_SHA=
 ENV GIT_COMMIT=${GIT_COMMIT:-${COMMIT_SHA}} \
     GIT_COMMIT_DATE=${GIT_COMMIT_DATE}
+# ARG を RUN 直前に再宣言 — cache-from 利用時も GIT_COMMIT 変更で RUN を無効化
+ARG GIT_COMMIT=
+ARG GIT_COMMIT_DATE=
 RUN python3 scripts/write_build_meta.py \
  && python3 scripts/write_changelog_digest.py
 
