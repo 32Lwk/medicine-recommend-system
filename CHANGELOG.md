@@ -26,7 +26,7 @@ AWS ログ解析で顕在化した **(1) 比較 Q&A の製品ライン揺れ** �
 | 問題 | 対応 |
 |------|------|
 | IntentRouter は `architecture` なのに sticky follow-up が `doc_changelog` / `app_about` を優先 | `resolve_concierge_intent` で **router_dispatch を sticky より先に採用** |
-| changelog 後の独立質問が継続扱い | `is_explicit_new_meta_topic` / `looks_like_substantive_meta_question` で構造判定。layer1 topic break を全メタ prior に拡大 |
+| changelog 後の独立質問が継続扱い／同一話題の深掘りまで切れる | `suggest_meta_intent_family` で話題ファミリー単位に判定。同一ファミリー深掘りは sticky、異ファミリーは topic break。汎用「もっと詳しく」はファミリー未定で prior 継承 |
 | 非 deep で ops ドキュメント未注入 → 運用事実の推測回答 | architecture は **常に technical + ops SSOT**。AWS/GCP 等の運用質問を deep 相当に |
 | Local RAG の技術コーパス不足 | ops（LOCAL_RAG / GCP ADR / Cloud Run LLM env 等）+ `docs/dev` を index。architecture pool に `local/dev/` 追加 |
 
@@ -41,6 +41,8 @@ AWS ログ解析で顕在化した **(1) 比較 Q&A の製品ライン揺れ** �
 ```
 比較「違い」→ medicine_qa / 眠気 → medicine_side_effect_qa（layer1）
 同一セッションでバファリン代表製品がピン固定
+eval_medicine_qa_robustness 43/43、eval_medicine_qa_e2e（local KB）19/19
+meta topic / follow-up / brand pin シナリオ smoke 8/8
 ```
 
 ---

@@ -318,18 +318,13 @@ def resolve_concierge_follow_up_intent(
 ) -> Optional[str]:
     """Gate / orchestrator 共用。基本フォローアップ後、フラグ ON 時は拡張検出。
 
-    独立したメタ／技術質問は sticky follow-up に落とさず None を返し、
-    IntentRouter / meta_triage に委ねる。
+    直前と異なるメタ intent ファミリーへの転換は sticky せず None を返し、
+    IntentRouter / meta_triage に委ねる。同一ファミリー内の深掘りは継続する。
     """
     try:
-        from src.dialogue.routing.context_signals import (
-            is_explicit_new_meta_topic,
-            looks_like_substantive_meta_question,
-        )
+        from src.dialogue.routing.context_signals import is_explicit_new_meta_topic
 
         if is_explicit_new_meta_topic(text, prior_intent=prior_intent):
-            return None
-        if looks_like_substantive_meta_question(text):
             return None
     except ImportError:
         pass

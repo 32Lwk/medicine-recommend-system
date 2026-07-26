@@ -19,15 +19,21 @@ def test_format_changelog_deploy_subtitle_date_only(monkeypatch):
     assert "c1fe06a" not in subtitle
 
 
-def test_build_changelog_ui_sections_first_has_commit(monkeypatch):
+def test_build_changelog_ui_sections_commit_only_when_detailed(monkeypatch):
+    """概要カードはユーザー向けに commit を出さず、detailed 時のみ付与する。"""
     monkeypatch.setattr(
         "src.content.changelog_digest.load_build_meta",
         lambda: {"gitCommitShort": "c1fe06a"},
     )
     _, releases = load_changelog_digest(max_releases=2)
-    sections = build_changelog_ui_sections(releases, max_releases=2)
-    assert sections[0].get("commit") == "c1fe06a"
-    assert not any(s.get("commit") for s in sections[1:])
+    summary = build_changelog_ui_sections(releases, max_releases=2, detailed=False)
+    assert summary
+    assert not any(s.get("commit") for s in summary)
+
+    detailed = build_changelog_ui_sections(releases, max_releases=2, detailed=True)
+    assert detailed
+    assert detailed[0].get("commit") == "c1fe06a"
+    assert not any(s.get("commit") for s in detailed[1:])
 
 
 def test_build_changelog_ui_sections_merges_same_date(monkeypatch):
