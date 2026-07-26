@@ -39,6 +39,8 @@ Intent Router が正しい `sub_route` を返しても実行層（Concierge rege
 
 **日常口語・文脈 routing（2026-07-26 追記）**: 指示語 follow-up・アルコール併用・年齢/ドーピング slot・効き目+副作用複合を `infer_medicine_qa_focuses` で一般化。eval は [`MEDICINE_QA_ROUTING.md`](MEDICINE_QA_ROUTING.md) 参照。
 
+**製品画像・比較 UI（2026-07-26 追記）**: パッケージ画像は SSE/JSON 両経路で `product_images_html` を付与。比較・選び方セクションは `ui-qa-product-line` HTML。画像未準備時は「まだ準備できていません」+ 成分 1 文（サーバー生成）。[`MEDICINE_QA_ROUTING.md`](MEDICINE_QA_ROUTING.md) 参照。
+
 **SSE `done` と副作用 Q&A（2026-07-25）**: `handle_medicine_side_effect_qa` 完了後、`finalize_medicine_qa_response` が DB に保存した bot メッセージを SSE `done.bot_message` に載せる。in-memory `session["messages"]` が空の場合は `chat_stream._messages_for_sse_done()` が DB から復元。処理バブル残留（「AI分析中」のまま）を防止。
 
 **ゴールデン再検証**: `tests/fixtures/v2_golden_aws_6_sessions.yaml` + `--scenarios-path`（AWS staging 6 セッション由来）

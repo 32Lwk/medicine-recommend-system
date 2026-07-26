@@ -145,6 +145,21 @@ def _is_managed_cdn_url(url: str) -> bool:
     return bool(base and url.startswith(base))
 
 
+def medicine_has_ready_image(medicine: Mapping[str, Any] | None) -> bool:
+    """otc_image_versions 登録済み、または管理外 https URL がある場合 True。"""
+    if not medicine:
+        return False
+    for key in _IMAGE_URL_KEYS:
+        val = str(medicine.get(key) or "").strip()
+        if val.startswith("https://") or val.startswith("http://"):
+            if not _is_managed_cdn_url(val):
+                return True
+    slug = resolve_medicine_image_slug(medicine)
+    if slug and slug in load_otc_image_versions():
+        return True
+    return False
+
+
 def enrich_medicine_image_url(medicine: dict[str, Any]) -> dict[str, Any]:
     """image_url / product_image_url を CDN 規則で補完（外部 https は尊重）。"""
     row = dict(medicine)

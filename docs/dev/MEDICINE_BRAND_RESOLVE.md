@@ -113,7 +113,11 @@ _rule(
 
 **Clarify**: 「この薬」「さっきの薬」等、指示語のみで推奨履歴なし → `needs_medicine_clarification` → 確認質問（症状推奨に入れない）。
 
-補足セクションは `build_focused_qa_sections` + `prune_qa_response` で **質問に関連する項目のみ**表示（複合 intent は union）。製品写真は `medicine_qa_images.attach_product_images_to_response`（未配置時プレースホルダー「画像準備中」）。
+補足セクションは `build_focused_qa_sections` + `prune_qa_response` で **質問に関連する項目のみ**表示（複合 intent は union）。
+
+**製品画像**（2026-07-26）: `medicine_qa_images.build_product_images_html` — 推奨同型 Noimage / CDN hero。回答は `build_product_image_answer_text` でサーバー統一（準備状況 + 成分 1 文）。詳細は [`MEDICINE_QA_ROUTING.md`](MEDICINE_QA_ROUTING.md) の製品画像セクション。
+
+**比較 HTML**（2026-07-26）: `_qa_product_line_html` で製品名と説明を1ブロック化。選び方は成分別（ロキソプロフェン vs イブプロフェン）。
 
 ---
 

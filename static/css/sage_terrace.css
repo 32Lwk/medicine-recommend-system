@@ -2462,46 +2462,53 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
 }
 
 .ui-qa-product-images {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
   gap: 12px;
   margin: 8px 0 4px;
-  max-height: 220px;
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.ui-qa-product-images--count-1 {
+  grid-template-columns: minmax(160px, 240px);
+}
+
+.ui-qa-product-images--count-2 {
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
 }
 
 .ui-qa-product-images__item {
-  flex: 0 0 auto;
-  max-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  max-width: none;
   margin: 0;
 }
 
-.ui-qa-product-images__img {
+.ui-qa-product-images__item .ui-med-image--card {
   width: 100%;
-  max-height: 120px;
-  object-fit: contain;
   border-radius: 8px;
-  background: var(--ui-med-image-bg, #f4f6f8);
+  overflow: hidden;
 }
 
-.ui-qa-product-images__ph {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 80px;
-  border-radius: 8px;
-  background: var(--ui-med-image-bg, #f4f6f8);
-  color: var(--ui-med-image-placeholder-text, #6b7280);
-  font-size: 0.75em;
-  text-align: center;
-  padding: 8px;
+.ui-qa-product-images__item .ui-med-image--placeholder.ui-med-image--card {
+  min-height: 96px;
 }
 
 .ui-qa-product-images__caption {
-  margin-top: 4px;
-  font-size: 0.72em;
+  margin-top: 0;
+  font-size: 0.82em;
+  font-weight: 600;
   text-align: center;
   color: var(--ui-text-secondary, #555);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.ui-bubble--qa .ui-status-section-card:has(.ui-qa-product-images) .ui-overlap-card__body {
+  padding-bottom: 10px;
 }
 
 /* 副作用 Q&A — 成分カード（PMDA 原文の代わりに要点をチップ表示） */

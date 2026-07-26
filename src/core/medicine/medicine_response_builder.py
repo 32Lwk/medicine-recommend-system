@@ -301,46 +301,24 @@ def _sanitize_qa_result(result: dict) -> dict:
     return out
 
 
-_IMAGE_DENIAL_MARKERS = (
-    "お見せできません",
-    "表示ができません",
-    "見せられません",
-    "表示できません",
-    "直接お見せ",
-    "画像を直接",
-)
-
-
-def _product_image_answer_names(recommended_medicines: list) -> str:
-    return "、".join(
-        str(m.get("product_name") or "")
-        for m in recommended_medicines[:3]
-        if m.get("product_name")
-    )
-
-
-def _is_image_denial_answer(answer: str) -> bool:
-    text = (answer or "").strip()
-    return any(marker in text for marker in _IMAGE_DENIAL_MARKERS)
-
-
 def _apply_product_image_answer(
     parsed: dict,
     *,
     qa_focuses: list[str],
     recommended_medicines: list,
+    user_message: str = "",
 ) -> dict:
-    if "product_image" not in qa_focuses:
+    if "product_image" not in qa_focuses or not recommended_medicines:
         return parsed
+    if not str(parsed.get("product_images_html") or "").strip():
+        return parsed
+    from src.services.medicine_qa_images import build_product_image_answer_text
+
     out = dict(parsed)
-    answer = str(out.get("answer") or "").strip()
-    names = _product_image_answer_names(recommended_medicines)
-    if _is_image_denial_answer(answer) or not answer:
-        out["answer"] = (
-            f"{names}のパッケージ画像です。"
-            if names
-            else "パッケージ画像を表示しました。"
-        )
+    out["answer"] = build_product_image_answer_text(
+        recommended_medicines,
+        user_message=user_message,
+    )
     return out
 
 
@@ -370,6 +348,7 @@ def _finalize_structured_qa_response(
             out,
             qa_focuses=fs,
             recommended_medicines=recommended_medicines,
+            user_message=user_message,
         )
     return _sanitize_qa_result(out)
 
@@ -721,8 +700,9 @@ def chat_with_medicine_context(
             if "product_image" in qa_focuses:
                 answer_prompt += (
                     "\n【重要】パッケージ画像は回答の下に別セクションで表示されます。"
-                    "「画像を見せられない」「この画面では表示できない」等とは書かず、"
-                    "製品の簡単な説明のみ書いてください。\n"
+                    "回答文はサーバー側で自動生成するため、ここでは空文字でも構いません。"
+                    "「画像を見せられない」「この画面では表示できない」等とは書かないでください。"
+                    "画像が未整備の場合は「まだ準備できていません」と表現してください。\n"
                 )
             answer_prompt = augment_medicine_prompt_with_kb(
                 user_message,

@@ -112,7 +112,7 @@ def test_product_image_focus_excludes_comparison():
     assert focuses == ["product_image"]
 
 
-def test_streaming_qa_attaches_product_images_and_fixes_denial_answer():
+def test_streaming_qa_attaches_product_images_and_unifies_answer():
     msg = "ロキソニンとイブの画像見せて"
     meds = [
         {"product_name": "ロキソニンＳ", "ingredients": "ロキソプロフェン"},
@@ -127,7 +127,10 @@ def test_streaming_qa_attaches_product_images_and_fixes_denial_answer():
     assert "product_images_html" in parsed
     assert "ui-qa-product-images" in parsed["product_images_html"]
     assert "お見せできません" not in parsed["answer"]
-    assert "パッケージ画像" in parsed["answer"]
+    assert "見せられません" not in parsed["answer"]
+    assert "まだ準備できていません" in parsed["answer"]
+    assert "ロキソプロフェン" in parsed["answer"]
+    assert "イブプロフェン" in parsed["answer"]
     assert not parsed.get("interactions")
 
 

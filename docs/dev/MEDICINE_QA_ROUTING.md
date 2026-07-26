@@ -44,6 +44,40 @@
 | `product_image` | 写真・箱・パッケージ | パッケージ見たい |
 | `general` | 上記いずれも未命中 | LLM 補完候補 |
 
+**`product_image` と `comparison` の排他**: 写真 intent が付く発話では比較 focus を付けない（「ロキソニンとイブの画像見せて」で比較セクションが出ない）。
+
+---
+
+## 製品画像 Q&A（2026-07-26）
+
+**正本**: `src/services/medicine_qa_images.py`  
+**配線**: `medicine_response_builder._finalize_structured_qa_response`  
+**準備判定**: `medicine_image_urls.medicine_has_ready_image`
+
+### 回答文案（サーバー生成）
+
+LLM のストリーム回答は `product_image` focus 時 **上書き** され、以下の形式に統一される。
+
+| 状態 | 冒頭例 |
+|------|--------|
+| 全製品準備済 | 「A、Bのパッケージ画像です。」 |
+| 全製品未準備 | 「A、Bのパッケージ画像はまだ準備できていません。」 |
+| 2 製品・片方のみ | 「Aのパッケージ画像を表示しました。Bのパッケージ画像はまだ準備できていません。」 |
+| 3 製品以上・混在 | 「A、B、Cのうち、A、Bのパッケージ画像を表示しました。Cの…」 |
+
+末尾に **成分・用途 1 文**（`build_product_image_answer_text` → `_product_image_summary_sentence`）を常に付与。
+
+### UI
+
+- HTML: `build_product_images_html` — 推奨と同型 `ui-med-image--card`
+- 未配置 / CDN 404: Noimage ラベルまたは `static/line/medicine-noimage-hero.png`（`onerror`）
+- CSS: `.ui-qa-product-images` グリッド（`sage_terrace.css`）
+
+### 比較・選び方案内 HTML
+
+- `_comparison_lines` / `_pick_advice_lines` → `_qa_product_line_html`（Markdown 改行崩れ防止）
+- セクションタイトル: 比較=`製品比較`、選び方=`選び方のポイント`（`section_title_for_focuses`）
+
 ---
 
 ## 文脈解決
@@ -114,7 +148,9 @@ Fixtures: `tests/fixtures/medicine_qa_everyday_eval.yaml`, `medicine_qa_gpt_conv
 ```bash
 .venv/bin/pytest tests/routing/test_medicine_qa_routing.py \
   tests/routing/test_medicine_qa_multi_focus.py \
-  tests/routing/test_medicine_qa_context_routing.py -q
+  tests/routing/test_medicine_qa_context_routing.py \
+  tests/routing/test_medicine_qa_sections.py \
+  tests/services/test_medicine_qa_images.py -q
 ```
 
 ---

@@ -18,6 +18,15 @@ def _cdn_base(monkeypatch):
     monkeypatch.setenv("MEDICINE_IMAGE_CDN_BASE", "https://images.yutok.dev/otc")
 
 
+@pytest.fixture(autouse=True)
+def _reset_otc_image_versions_cache():
+    from src.services.medicine_image_urls import invalidate_otc_image_versions_cache
+
+    invalidate_otc_image_versions_cache()
+    yield
+    invalidate_otc_image_versions_cache()
+
+
 def test_explicit_https_preserved():
     med = {"product_name": "イブA錠", "image_url": "https://example.com/a.png"}
     assert resolve_medicine_image_url(med) == "https://example.com/a.png"
@@ -41,6 +50,19 @@ def test_cdn_from_product_name():
 def test_image_slug_override():
     med = {"product_name": "x", "image_slug": "test"}
     assert resolve_medicine_image_url(med) == "https://images.yutok.dev/otc/test.webp"
+
+
+def test_medicine_has_ready_image_uses_manifest(monkeypatch, tmp_path):
+    from src.services import medicine_image_urls as mod
+    from src.services.medicine_image_urls import medicine_has_ready_image
+
+    manifest = tmp_path / "versions.json"
+    manifest.write_text('{"イブA錠": "deadbeef"}\n', encoding="utf-8")
+    monkeypatch.setattr(mod, "_VERSIONS_PATH", manifest)
+    mod.invalidate_otc_image_versions_cache()
+
+    assert medicine_has_ready_image({"product_name": "イブA錠"})
+    assert not medicine_has_ready_image({"product_name": "イブ"})
 
 
 def test_enrich_sets_image_url():

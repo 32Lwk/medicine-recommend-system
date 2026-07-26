@@ -1,0 +1,33 @@
+{
+  "summary": {
+    "generated_at": "2026-07-26T04:10:48.688809+00:00",
+    "total": 1,
+    "uploaded": 0,
+    "skipped_exists": 1,
+    "not_found": 0,
+    "review_rejected": 0,
+    "errors": 0,
+    "by_source": {}
+  },
+  "items": [
+    {
+      "product_name": "ストナデイタイム",
+      "manufacturer": "佐藤製薬",
+      "medicine_type": "風邪薬",
+      "recommendation_count": 3,
+      "slug": "ストナデイタイム",
+      "source": "missing_top200",
+      "official_url": "https://shop.r10s.jp/reg-kenseido/cabinet/09109438/09109528/imgrc0161558158.jpg",
+      "r2_status": "pending",
+      "processed_at": "2026-07-26T04:10:47.763130+00:00",
+      "status": "skipped_exists",
+      "note": "",
+      "candidate_urls": [
+        "https://shop.r10s.jp/reg-kenseido/cabinet/09109438/09109528/imgrc0161558158.jpg",
+        "https://shop.r10s.jp/reg-kenseido/cabinet/09109438/09109528/imgrc0152100533.jpg"
+      ],
+      "research_note": "佐藤製薬ストナ公式+楽天 reg-kenseido。ストナデイタイム錠パッケージ (stona.jp公式はのどスプレー画像のため楽天URLに修正)",
+      "r2_url": "https://images.yutok.dev/otc/ストナデイタイム.webp"
+    }
+  ]
+}

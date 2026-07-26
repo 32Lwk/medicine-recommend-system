@@ -12649,3 +12649,13 @@
 {"timestamp": "2026-07-26T12:28:09.610863", "event_type": "input_validation", "user_id": "ユーザー10", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブの画像見せて"}}
 {"timestamp": "2026-07-26T12:36:10.744627", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-26T12:36:10.744849", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "カロナールの画像を見せて"}}
+{"timestamp": "2026-07-26T13:00:14.909413", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-26T13:00:14.909829", "event_type": "input_validation", "user_id": "ユーザー10", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "カロナールの画像を見せて"}}
+{"timestamp": "2026-07-26T13:01:10.813657", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-26T13:01:10.814173", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブどっちがいい？"}}
+{"timestamp": "2026-07-26T13:01:51.052167", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-26T13:01:51.052413", "event_type": "input_validation", "user_id": "ユーザー10", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブの画像見せて"}}
+{"timestamp": "2026-07-26T13:05:02.292485", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-26T13:05:02.292781", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブの画像見せて"}}
+{"timestamp": "2026-07-26T13:05:34.205672", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-26T13:05:34.206227", "event_type": "input_validation", "user_id": "ユーザー10", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "カロナールの画像見せて"}}

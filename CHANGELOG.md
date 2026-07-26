@@ -1,6 +1,57 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月26日**（Medicine QA ロバストネス・Local RAG・日常表現 routing）
+**最終更新日: 2026年7月26日**（Medicine QA 製品画像 UI・比較セクション改善）
+
+---
+
+## 2026-07-26 — Medicine QA 製品画像・比較セクション UI
+
+### 概要
+
+医薬品相談（`medicine_qa`）の **製品比較・選び方・パッケージ画像** 表示を Sage Terrace UI で統一。ストリーミング経路でも画像 HTML を付与し、LLM の「見せられない」回答をサーバー生成文案に置き換える。
+
+### 比較・選び方セクション（`medicine_qa_routing.py`）
+
+| 改善 | 内容 |
+|------|------|
+| HTML 構造化 | `_qa_product_line_html` — 製品名と「：」が改行で分断されない `ui-qa-product-line` |
+| NSAIDs 括弧 | 製品比較から `（NSAIDs…）` 表記を削除（用途は `_short_medicine_use_hint` で簡潔化） |
+| 選び方 | `_pick_hint_for_medicine` — ロキソプロフェン＝効き目重視、イブプロフェン＝マイルド |
+| focus 排他 | `product_image` intent 時は `comparison` を付けない（画像質問に比較セクションが混入しない） |
+
+### 製品画像（`medicine_qa_images.py`）
+
+| 項目 | 内容 |
+|------|------|
+| UI | 推奨カルーセル同型の `ui-med-image--card` + Noimage（`medicine-noimage-hero.png` / `onerror`） |
+| レイアウト | グリッド（1 製品 max 240px / 2 製品 2 列）— `sage_terrace.css` / `shell.css` |
+| 回答文案 | `build_product_image_answer_text` — LLM 出力に依存せずサーバー統一生成 |
+| 未準備 | 「見せられない」ではなく **「まだ準備できていません」** + 成分・用途 1 文 |
+| 一部のみ準備済 | 製品名を明示（例: 「ロキソニンSを表示しました。イブはまだ準備できていません。」） |
+| 3 製品以上混在 | 「A、B、Cのうち、A、Bを表示しました。Cは…」形式 |
+| 準備判定 | `medicine_has_ready_image` — `otc_image_versions.json` 登録 or 管理外 https |
+
+### ストリーミング配線（`medicine_response_builder.py`）
+
+- `_finalize_structured_qa_response` — JSON / SSE ストリーム両経路で `attach_product_images_to_response` + 統一 answer
+- `_apply_product_image_answer` — `product_image` focus 時は常に `build_product_image_answer_text` を適用
+- 画像 intent 用 answer プロンプト — 「見せられない」禁止・準備中表現を指示
+
+### テスト
+
+```bash
+.venv/bin/pytest tests/routing/test_medicine_qa_sections.py \
+  tests/services/test_medicine_qa_images.py \
+  tests/services/test_medicine_image_urls.py -q
+```
+
+詳細: [`docs/dev/MEDICINE_QA_ROUTING.md`](docs/dev/MEDICINE_QA_ROUTING.md)（製品画像セクション）
+
+### OTC 画像 manifest（同期作業）
+
+- `data/otc_image_versions.json` — CDN キャッシュバスティング用 slug 追加
+- `scripts/sync_top50_otc_images.py` / `scripts/sync_otc_images_retry.py` / `scripts/otc_image_multi_source.py`
+- 成果物: `log/analysis/otc_image_sync_bulk/`
 
 ---
 
