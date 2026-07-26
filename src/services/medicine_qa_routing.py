@@ -80,6 +80,7 @@ _AGE_KEYWORDS = (
     "小児",
     "子供",
     "こども",
+    "子ども",
     "未就学",
     "小学生",
     "中学生",
@@ -90,11 +91,45 @@ _AGE_KEYWORDS = (
     "乳児",
     "幼児",
     "乳幼児",
+    "妊婦",
+    "妊娠",
+    "授乳",
+    "高齢",
+    "おじい",
+    "おばあ",
+    "爺",
+    "婆",
     "何才",
+    "kids",
+    "child",
+    "children",
+    "pregnant",
+    "pregnancy",
+    "elderly",
 )
-_AGE_GRADE_RE = re.compile(r"小[1-6１-６]|中[1-3１-３]|高[1-3１-３]")
-_ANAPHORA_MARKERS = ("この薬", "その薬", "あの薬", "それ", "あれ", "先ほど", "さっき", "これ", "この")
-_DOSE_INTERVAL_RE = re.compile(r"何時間|間隔|空け|また飲|4時間")
+_AGE_GRADE_RE = re.compile(r"小[1-6１-６]|中[1-3１-３]|高[1-3１-３]|\d+\s*代")
+_ANAPHORA_MARKERS = (
+    "この薬",
+    "その薬",
+    "あの薬",
+    "それ",
+    "あれ",
+    "先ほど",
+    "さっき",
+    "これ",
+    "この",
+    "こちら",
+    "そちら",
+    "あちら",
+    "that",
+    "this medicine",
+    "the medicine",
+    "the drug",
+)
+_DOSE_INTERVAL_RE = re.compile(r"何時間|間隔|空け|また飲|4時間|何時間おき")
+_VAGUE_OPINION_RE = re.compile(
+    r"^(?:どう思う|やばくない|大丈夫|平気|どうなの|どうなん)[？?。！!…]*$"
+)
 
 _SPORTS_KEYWORDS = (
     "競技",
@@ -109,6 +144,10 @@ _SPORTS_KEYWORDS = (
     "trackmeet",
     "anti-doping",
     "antidoping",
+    "marathon",
+    "race",
+    "competition",
+    "doping",
 )
 _INTERACTION_KEYWORDS = (
     "併用",
@@ -118,6 +157,9 @@ _INTERACTION_KEYWORDS = (
     "同時に",
     "同時",
     "同日",
+    "ダブル",
+    "重ね飲み",
+    "併用注意",
 )
 _ALCOHOL_KEYWORDS = (
     "お酒",
@@ -131,18 +173,22 @@ _ALCOHOL_KEYWORDS = (
     "晩酌",
     "飲み会",
     "乾杯",
+    "チューハイ",
+    "酎ハイ",
+    "ハイボール",
+    "缶チューハイ",
 )
 _EFFICACY_KEYWORDS_RE = re.compile(r"効き目|効果|効く|効き|どれくらい効")
 _USAGE_KEYWORDS = ("飲み方", "用法", "用量", "何錠", "いつ飲", "食後", "食前", "空腹", "ご飯", "頻度", "何回", "何度")
 _SIDE_EFFECT_CAUSAL_DRINK_RE = re.compile(
-    r"飲(?:ん?だ(?:ら|と|れば)|ん?で(?:も|)?|む(?:と|たら|れば)|め(?:ば|る))"
+    r"飲(?:ん?だ(?:ら|と|れば|後|あと)|ん?で(?:も|から|)?|む(?:と|たら|れば)|め(?:ば|る))"
 )
 # 副作用トピックの症状クラス（特定フレーズ列挙ではなく身体反応カテゴリ）
 _SIDE_EFFECT_SYMPTOM_RE = re.compile(
-    r"眠い|眠く|眠気|ガチ眠|爆睡|sleepy|drowsy|"
+    r"眠い|眠く|眠気|ガチ眠|爆睡|sleepy|drows(?:y|iness)|side\s*effects?|"
     r"だる|むか|ムカ|吐き気|nausea|dizzy|dizziness|めまい|"
     r"じんましん|発疹|皮疹|かゆ|痒|rash|"
-    r"お腹|胃.*(?:痛|キツ|むか|ムカ)|腹パン|キツ",
+    r"お腹|胃.*(?:痛|キツ|むか|ムカ|優し|負担)|(?:優し|負担).{0,4}胃|腹パン|キツ",
     re.IGNORECASE,
 )
 _SIDE_EFFECT_NORMALCY_RE = re.compile(
@@ -444,11 +490,16 @@ def _has_age_intent(
     conversation_history: list[dict[str, Any]] | None = None,
     user_attributes: dict[str, Any] | None = None,
 ) -> bool:
+    """年齢・ライフステージ（小児/妊婦/高齢等）の服用可否トピックか。"""
     t = (text or "").strip()
-    if any(k in t for k in _AGE_KEYWORDS):
+    if any(k in t.lower() for k in _AGE_KEYWORDS):
         return True
     if re.search(r"\d+歳", t) or _AGE_GRADE_RE.search(t):
         return True
+    # English: can kids take ...
+    if re.search(r"\b(?:kids?|children|child|pregnant|elderly)\b", t, re.I):
+        if re.search(r"\b(?:take|ok|safe|can)\b", t, re.I) or "？" in t or "?" in t:
+            return True
     attrs = user_attributes or {}
     if attrs.get("age"):
         if any(k in t for k in ("使える", "飲める", "大丈夫", "市販", "子")):
@@ -459,7 +510,10 @@ def _has_age_intent(
             for m in conversation_history[-6:]
             if isinstance(m, dict)
         )
-        if re.search(r"\d+歳|小学|小[1-6１-６]|小児|未就学", blob):
+        if re.search(
+            r"\d+歳|\d+代|小学|小[1-6１-６]|小児|未就学|妊婦|妊娠|高齢",
+            blob,
+        ):
             if any(
                 k in t
                 for k in ("使える", "飲める", "大丈夫", "市販", "子", "年齢", "平気", "OTC")
@@ -536,8 +590,20 @@ def _has_usage_intent(
 
 
 def _is_anaphoric_reference(text: str) -> bool:
+    """指示語・省略参照（日英）。薬剤名がなくても文脈依存の follow-up を検出。"""
     t = (text or "").strip()
-    return any(m in t for m in _ANAPHORA_MARKERS)
+    if not t:
+        return False
+    if any(m in t for m in _ANAPHORA_MARKERS):
+        return True
+    # English: "Is it okay to drink/take that?"
+    if re.search(r"\b(?:that|this|it)\b", t, re.I) and re.search(
+        r"\b(?:drink|take|ok|okay|safe|fine|medicine|drug|pill)\b",
+        t,
+        re.I,
+    ):
+        return True
+    return False
 
 
 def _has_informational_intent(text: str) -> bool:
@@ -584,6 +650,9 @@ def _has_side_effect_topic_intent(text: str) -> bool:
             return True
         # 「飲んだらじんましんっぽくなった」等、因果＋症状は副作用トピック
         if _SIDE_EFFECT_CAUSAL_DRINK_RE.search(t):
+            return True
+        # 「これ胃に優しい？」— 指示語＋胃負担の確認
+        if _is_anaphoric_reference(t) and re.search(r"胃|優し|負担", t):
             return True
     return False
 
@@ -855,18 +924,26 @@ def needs_medicine_clarification(
     recommended_medicines: list[dict[str, Any]] | None = None,
     conversation_history: list[dict[str, Any]] | None = None,
 ) -> bool:
-    """履歴なしで指示語のみのとき Clarify。"""
+    """薬が特定できない曖昧発話のとき Clarify。"""
     t = (user_message or "").strip()
-    if not _is_anaphoric_reference(t):
-        return False
     if recommended_medicines:
         return False
+
+    has_substance = False
     if conversation_history:
         from src.services.local_rag_context import extract_context_substances
 
-        if extract_context_substances(conversation_history):
-            return False
-    return True
+        has_substance = bool(extract_context_substances(conversation_history))
+    if has_substance:
+        return False
+
+    if _is_anaphoric_reference(t):
+        return True
+    # 「どう思う？」「やばくない？」等、評価だけ・対象薬なし
+    if len(t) <= 16 and _VAGUE_OPINION_RE.search(t):
+        if not _resolve_medicine_entities(t, conversation_history=conversation_history):
+            return True
+    return False
 
 
 def is_generic_qa_boilerplate(text: str) -> bool:

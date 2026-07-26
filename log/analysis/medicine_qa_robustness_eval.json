@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-07-26T07:08:11.649810+00:00",
+  "timestamp": "2026-07-26T07:25:28.642958+00:00",
   "summary": {
-    "total": 153,
-    "pass": 153,
+    "total": 234,
+    "pass": 234,
     "pass_pct": 100.0,
-    "skipped": 19,
+    "skipped": 0,
     "by_suite": {
       "everyday": {
         "pass": 56,
@@ -14,6 +14,10 @@
         "pass": 22,
         "total": 22
       },
+      "llm_stress": {
+        "pass": 54,
+        "total": 54
+      },
       "conversation_sim": {
         "pass": 50,
         "total": 50
@@ -21,6 +25,10 @@
       "meta_everyday": {
         "pass": 25,
         "total": 25
+      },
+      "gpt": {
+        "pass": 27,
+        "total": 27
       }
     }
   },
@@ -1140,6 +1148,825 @@
       "pass": true
     },
     {
+      "id": "llm-stress-edy-se-slang-sleepy-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-se-slang-sleepy",
+      "query": "ロキソプロフェンを服用したところ、非常に眠気を感じるのですが、これは一般的なことなのでしょうか？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-slang-sleepy-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-se-slang-sleepy",
+      "query": "ロキソ飲んだらめっちゃ眠たくなるんやけど、これ普通なん？",
+      "checks": {
+        "focuses_ok": false,
+        "clarify_ok": true,
+        "unified_ok": false,
+        "info_q_ok": true,
+        "side_route_ok": false,
+        "llm_judge_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-slang-sleepy-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-se-slang-sleepy",
+      "query": "ロキソ飲んだらすごく sleepy なんだけど、これって普通のことなの？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-dialect-stomach-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-se-dialect-stomach",
+      "query": "イブを飲んでお腹が張ることがあるかもしれませんが、仕方がないでしょうか？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-dialect-stomach-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-se-dialect-stomach",
+      "query": "イブ飲んでお腹パンパンになるわ、しゃあないやろ？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-dialect-stomach-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-se-dialect-stomach",
+      "query": "イブを飲んでお腹痛くなるの、しょうがないかな？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-cmp-casual-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-cmp-casual",
+      "query": "ロキソプロフェンとイブプロフェンの違いについて教えていただけますでしょうか。",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-cmp-casual-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-cmp-casual",
+      "query": "ロキソとイブって、どこが違うんやろ？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-cmp-casual-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-cmp-casual",
+      "query": "ロキソとイブって、どんな違いがあるの？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-photo-casual-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-photo-casual",
+      "query": "カロナールの箱を拝見したいのですが。",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-photo-casual-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-photo-casual",
+      "query": "カロナールの箱、ちょっと見せてくれへん？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-photo-casual-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-photo-casual",
+      "query": "Can I see what the Calonal box looks like?",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-ing-casual-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-ing-casual",
+      "query": "バファリンにはどのような成分が含まれているのでしょうか。",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-ing-casual-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-ing-casual",
+      "query": "バファリンって何が入ってるんやろ？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-ing-casual-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-ing-casual",
+      "query": "バファリンの成分って何が入ってるの？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-age-casual-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-age-casual",
+      "query": "小学5年生でもイブを飲んでもよろしいでしょうか？",
+      "checks": {
+        "focuses_ok": false,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "llm_judge_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-age-casual-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-age-casual",
+      "query": "小5でもイブって飲んでええんかな？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-age-casual-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-age-casual",
+      "query": "Can a fifth grader drinkイブ?",
+      "checks": {
+        "focuses_ok": false,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "llm_judge_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-dop-casual-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-dop-casual",
+      "query": "マラソン前にロキソプロフェンを使用してもよろしいでしょうか？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-dop-casual-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-dop-casual",
+      "query": "マラソン前にロキソ使うん、ええんかな？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-dop-casual-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-dop-casual",
+      "query": "マラソン前にロキソ使ってもいいの？ドーピングにならないかな？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-ix-casual-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-ix-casual",
+      "query": "ロキソプロフェンとワルファリンを一緒に服用した場合、問題があるでしょうか？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-ix-casual-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-ix-casual",
+      "query": "ロキソとワルファ一緒に飲んだらアカンのちゃう？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-ix-casual-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-ix-casual",
+      "query": "ロキソとワルファを mix して飲んだらヤバいかな？",
+      "checks": {
+        "focuses_ok": false,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "llm_judge_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-us-casual-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-us-casual",
+      "query": "解熱剤は何時間開けて服用すればよろしいでしょうか？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-us-casual-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-us-casual",
+      "query": "解熱剤、何時間おいたらええん？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-us-casual-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-us-casual",
+      "query": "解熱剤って、どれくらい時間を空けてからまた使えばいいのかな？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-clarify-anaphora-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-clarify-anaphora",
+      "query": "こちらを飲んでも問題ありませんでしょうか？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-clarify-anaphora-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-clarify-anaphora",
+      "query": "それ飲んでええん？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-clarify-anaphora-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-clarify-anaphora",
+      "query": "Is it okay to take that?",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-mixed-photo-side-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-mixed-photo-side",
+      "query": "ロキソニンの副作用についてと、パッケージの画像をお見せいただけますか。",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-mixed-photo-side-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-mixed-photo-side",
+      "query": "ロキソの副作用とかパッケージ、見せてもらえる？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-mixed-photo-side-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-mixed-photo-side",
+      "query": "ロキソのside effectsとpackage見せて。",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-pick-casual-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-pick-casual",
+      "query": "ロキソプロフェンとイブプロフェンのどちらが良いでしょうか？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-pick-casual-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-pick-casual",
+      "query": "ロキソとイブ、どっちがええかな？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-pick-casual-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-pick-casual",
+      "query": "ロキソプロフェンとイブプロフェン、どっちがbetterかな？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-polite-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-se-polite",
+      "query": "ロキソプロフェンを服用すると、眠気が出ることは一般的でしょうか。",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-polite-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-se-polite",
+      "query": "ロキソプロフェンて、眠たくなることあるんかな？",
+      "checks": {
+        "focuses_ok": false,
+        "clarify_ok": true,
+        "unified_ok": false,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "llm_judge_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-polite-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-se-polite",
+      "query": "ロキソプロフェンって、sleepinessが出ることってよくあるの？",
+      "checks": {
+        "focuses_ok": false,
+        "clarify_ok": true,
+        "unified_ok": false,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "llm_judge_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-ing-polite-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-ing-polite",
+      "query": "カロナールの主成分について教えていただけますでしょうか。",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-ing-polite-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-ing-polite",
+      "query": "カロナールの成分って何なん？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-ing-polite-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-ing-polite",
+      "query": "カロナールのメイン成分って何ですか？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-photo-enmix-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-photo-enmix",
+      "query": "Loxoninのパッケージの写真を見せていただけますでしょうか。",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-photo-enmix-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-photo-enmix",
+      "query": "Loxoninのパッケージの写真、見せてくれへん？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-photo-enmix-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-photo-enmix",
+      "query": "Can you show me a picture of the Loxonin package?",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-enmix-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-se-enmix",
+      "query": "イブプロフェンを服用すると眠気が出るのは普通なのでしょうか？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-enmix-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-se-enmix",
+      "query": "イブプロフェン飲んだら、眠たくなるん普通なん？",
+      "checks": {
+        "focuses_ok": false,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "llm_judge_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-enmix-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-se-enmix",
+      "query": "Is it normal to feel sleepy from taking ibuprofen?",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-us-frequency-casual-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-us-frequency-casual",
+      "query": "カロナールは1日に何回まで服用可能でしょうか。",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-us-frequency-casual-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-us-frequency-casual",
+      "query": "カロナールって1日に何回まで飲んだらええんやろ？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-us-frequency-casual-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-us-frequency-casual",
+      "query": "カロナールって、1日に何回までtakeしていいの？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-kansai-0",
+      "suite": "llm_stress",
+      "style": "敬語",
+      "seed_id": "edy-se-kansai",
+      "query": "ロキソを服用すると非常に眠気を感じるのですが、それは問題ないのでしょうか？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-kansai-1",
+      "suite": "llm_stress",
+      "style": "関西弁",
+      "seed_id": "edy-se-kansai",
+      "query": "ロキソ飲んだらめっちゃ眠たなるけど、ええん？",
+      "checks": {
+        "focuses_ok": false,
+        "clarify_ok": true,
+        "unified_ok": false,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "llm_judge_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "llm-stress-edy-se-kansai-2",
+      "suite": "llm_stress",
+      "style": "英語混じり",
+      "seed_id": "edy-se-kansai",
+      "query": "ロキソ飲んだらすごくスリーピーになるけど大丈夫かな？",
+      "checks": {
+        "focuses_ok": false,
+        "clarify_ok": true,
+        "unified_ok": false,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "llm_judge_ok": true
+      },
+      "pass": true
+    },
+    {
       "id": "sim-edy2-side-after-reco-c0",
       "suite": "conversation_sim",
       "style": "side_effect",
@@ -2215,194 +3042,435 @@
       "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-side-slang",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-side-slang-若者言葉・超省略",
       "suite": "gpt",
-      "query": "",
+      "style": "若者言葉・超省略",
+      "template_id": "qa-gpt-ctx-side-slang",
+      "query": "それ飲んだら、眠気とかだるさとか出る感じ？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-side-slang",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-side-slang-関西弁",
       "suite": "gpt",
-      "query": "",
+      "style": "関西弁",
+      "template_id": "qa-gpt-ctx-side-slang",
+      "query": "それ飲んだら、眠くなったりだるくなったりせえへんかな？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-usage-anaphora",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-usage-anaphora-カジュアル省略",
       "suite": "gpt",
-      "query": "",
+      "style": "カジュアル省略",
+      "template_id": "qa-gpt-ctx-usage-anaphora",
+      "query": "これ、食前に飲むんだっけ？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-usage-anaphora",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-usage-anaphora-敬語",
       "suite": "gpt",
-      "query": "",
+      "style": "敬語",
+      "template_id": "qa-gpt-ctx-usage-anaphora",
+      "query": "この薬はどのくらいの頻度で飲めばいいですか？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-age-child",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-age-child-日常会話",
       "suite": "gpt",
-      "query": "",
+      "style": "日常会話",
+      "template_id": "qa-gpt-ctx-age-child",
+      "query": "最近、熱が出ているんですが、年齢制限のある解熱剤は使えますか？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-age-child",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-age-child-関西弁",
       "suite": "gpt",
-      "query": "",
+      "style": "関西弁",
+      "template_id": "qa-gpt-ctx-age-child",
+      "query": "この解熱剤、娘の年齢で使えるんかな？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-photo",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-photo-SNS省略",
       "suite": "gpt",
-      "query": "",
+      "style": "SNS省略",
+      "template_id": "qa-gpt-ctx-photo",
+      "query": "この薬のパッケージの写真を見せてもらえますか？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-photo",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-photo-英語混じり",
       "suite": "gpt",
-      "query": "",
+      "style": "英語混じり",
+      "template_id": "qa-gpt-ctx-photo",
+      "query": "この薬のパッケージの写真を見せてもらえますか？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-mixed",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-mixed-日常口語",
       "suite": "gpt",
-      "query": "",
+      "style": "日常口語",
+      "template_id": "qa-gpt-ctx-mixed",
+      "query": "この薬の副作用で眠くなったりだるくなったりすることってありますか？それに、パッケージの写真も見せてもらえますか？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-ix",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-ix-超省略",
       "suite": "gpt",
-      "query": "",
+      "style": "超省略",
+      "template_id": "qa-gpt-ctx-ix",
+      "query": "それと一緒に飲んでも大丈夫ですか？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-ix",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-ix-敬語",
       "suite": "gpt",
-      "query": "",
+      "style": "敬語",
+      "template_id": "qa-gpt-ctx-ix",
+      "query": "ロキソニンと一緒に飲んでも大丈夫な薬はありますか？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-cmp",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-cmp-カジュアル",
       "suite": "gpt",
-      "query": "",
+      "style": "カジュアル",
+      "template_id": "qa-gpt-ctx-cmp",
+      "query": "どっちが痛み止めとして効果的なのかな？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-cmp",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-cmp-関西弁",
       "suite": "gpt",
-      "query": "",
+      "style": "関西弁",
+      "template_id": "qa-gpt-ctx-cmp",
+      "query": "どっちが効き目強いんやろ？それとも副作用とか違うんかな？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-doping",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-doping-若者言葉",
       "suite": "gpt",
-      "query": "",
+      "style": "若者言葉",
+      "template_id": "qa-gpt-ctx-doping",
+      "query": "それ、ドーピングに引っかかることあるかな？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-doping",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-doping-敬語",
       "suite": "gpt",
-      "query": "",
+      "style": "敬語",
+      "template_id": "qa-gpt-ctx-doping",
+      "query": "その薬は大会前に使用してもドーピングに引っかかる可能性がありますか？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-ingredient",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-ingredient-超省略",
       "suite": "gpt",
-      "query": "",
+      "style": "超省略",
+      "template_id": "qa-gpt-ctx-ingredient",
+      "query": "この薬の成分は何ですか？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-ingredient",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-ingredient-英語混じり",
       "suite": "gpt",
-      "query": "",
+      "style": "英語混じり",
+      "template_id": "qa-gpt-ctx-ingredient",
+      "query": "そのバファリンAにはどんな成分が入っているの？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-alcohol",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-alcohol-日常口語",
       "suite": "gpt",
-      "query": "",
+      "style": "日常口語",
+      "template_id": "qa-gpt-ctx-alcohol",
+      "query": "ロキソニンを飲むときに、他に市販の薬やお酒を一緒に飲んでも大丈夫かな？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
     },
     {
-      "id": "gpt-qa-gpt-ctx-alcohol",
-      "pass": true,
-      "skip": "no_openai",
+      "id": "gpt-qa-gpt-ctx-alcohol-関西弁",
       "suite": "gpt",
-      "query": "",
+      "style": "関西弁",
+      "template_id": "qa-gpt-ctx-alcohol",
+      "query": "それ飲んでる間にお酒飲んでも大丈夫なんかな？",
       "checks": {
-        "skipped_no_openai": true
-      }
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-cmp-after-reco-SNS省略",
+      "suite": "gpt",
+      "style": "SNS省略",
+      "template_id": "qa-gpt-ctx-cmp-after-reco",
+      "query": "ロキソニンとイブ、どちらが効果的なのか、どんな違いがあるの？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-cmp-after-reco-敬語",
+      "suite": "gpt",
+      "style": "敬語",
+      "template_id": "qa-gpt-ctx-cmp-after-reco",
+      "query": "ロキソニンとイブでは、効果や副作用にどのような違いがありますか？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-usage-meal-若者言葉",
+      "suite": "gpt",
+      "style": "若者言葉",
+      "template_id": "qa-gpt-ctx-usage-meal",
+      "query": "イブって食前に飲むの？それとも食後に飲んだほうがいいの？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-usage-meal-英語混じり",
+      "suite": "gpt",
+      "style": "英語混じり",
+      "template_id": "qa-gpt-ctx-usage-meal",
+      "query": "イブは食前に飲むのがいいのかな、それとも食後でも大丈夫？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-side-anaphora-超省略",
+      "suite": "gpt",
+      "style": "超省略",
+      "template_id": "qa-gpt-ctx-side-anaphora",
+      "query": "これ、眠気とかだるさの副作用ある？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-side-anaphora-関西弁",
+      "suite": "gpt",
+      "style": "関西弁",
+      "template_id": "qa-gpt-ctx-side-anaphora",
+      "query": "それ、飲んだ後に眠くなることあるん？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-age-kindergarten-日常会話",
+      "suite": "gpt",
+      "style": "日常会話",
+      "template_id": "qa-gpt-ctx-age-kindergarten",
+      "query": "市販の解熱剤は何歳から使えるんでしょうか？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-age-kindergarten-丁寧",
+      "suite": "gpt",
+      "style": "丁寧",
+      "template_id": "qa-gpt-ctx-age-kindergarten",
+      "query": "市販の解熱剤は何歳から使えるのでしょうか？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true,
+        "intent_fidelity_ok": true
+      },
+      "pass": true
     }
   ]
 }
