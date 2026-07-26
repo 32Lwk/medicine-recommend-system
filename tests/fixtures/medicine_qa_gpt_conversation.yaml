@@ -94,5 +94,104 @@ templates:
         content: "それぞれ特徴があります"
     styles:
       - "カジュアル"
+      - "関西弁"
     intent_hint: "comparison"
     expect_focuses: ["comparison"]
+
+  - id: qa-gpt-ctx-doping
+    description: "大会前のドーピング確認"
+    setup_history:
+      - role: user
+        content: "来週マラソンがあります"
+      - role: assistant
+        content: "カロナールAをご検討ください"
+    styles:
+      - "若者言葉"
+      - "敬語"
+    intent_hint: "doping"
+    expect_focuses: ["doping"]
+    recommended_medicines: ["カロナールA"]
+
+  - id: qa-gpt-ctx-ingredient
+    description: "推奨後の成分確認"
+    setup_history:
+      - role: user
+        content: "頭痛が続きます"
+      - role: assistant
+        content: "バファリンAをご検討ください"
+    styles:
+      - "超省略"
+      - "英語混じり"
+    intent_hint: "ingredient"
+    expect_focuses: ["ingredient"]
+    recommended_medicines: ["バファリンA"]
+
+  - id: qa-gpt-ctx-alcohol
+    description: "推奨後の飲酒・併用"
+    setup_history:
+      - role: user
+        content: "肩こりがつらい"
+      - role: assistant
+        content: "ロキソニンを推奨します"
+    styles:
+      - "日常口語"
+      - "関西弁"
+    intent_hint: "interaction"
+    expect_focuses: ["interaction"]
+    recommended_medicines: ["ロキソニン"]
+
+  - id: qa-gpt-ctx-cmp-after-reco
+    description: "推奨後に別候補との比較"
+    setup_history:
+      - role: user
+        content: "頭痛です"
+      - role: assistant
+        content: "ロキソニンをおすすめします。イブも候補です"
+    styles:
+      - "SNS省略"
+      - "敬語"
+    intent_hint: "comparison"
+    expect_focuses: ["comparison"]
+    recommended_medicines: ["ロキソニン", "イブ"]
+
+  - id: qa-gpt-ctx-usage-meal
+    description: "推奨後の食前食後"
+    setup_history:
+      - role: user
+        content: "歯が痛い"
+      - role: assistant
+        content: "イブをご検討ください"
+    styles:
+      - "若者言葉"
+      - "英語混じり"
+    intent_hint: "usage"
+    expect_focuses: ["usage"]
+    recommended_medicines: ["イブ"]
+
+  - id: qa-gpt-ctx-side-anaphora
+    description: "推奨後の指示語だけで副作用"
+    setup_history:
+      - role: user
+        content: "熱がある"
+      - role: assistant
+        content: "カロナールAを推奨します"
+    styles:
+      - "超省略"
+      - "関西弁"
+    intent_hint: "side_effect"
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+    recommended_medicines: ["カロナールA"]
+
+  - id: qa-gpt-ctx-age-kindergarten
+    description: "幼児の市販可否（年齢を聞き返さず、使えるかを聞く）"
+    setup_history:
+      - role: user
+        content: "幼稚園の子どもが熱っぽいです"
+      - role: assistant
+        content: "症状を教えてください"
+    styles:
+      - "日常会話"
+      - "丁寧"
+    intent_hint: "age"
+    expect_focuses: ["age"]

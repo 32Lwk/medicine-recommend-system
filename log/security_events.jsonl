@@ -12659,3 +12659,4 @@
 {"timestamp": "2026-07-26T13:05:02.292781", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブの画像見せて"}}
 {"timestamp": "2026-07-26T13:05:34.205672", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-26T13:05:34.206227", "event_type": "input_validation", "user_id": "ユーザー10", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "カロナールの画像見せて"}}
+{"timestamp": "2026-07-26T06:56:15.418297", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}

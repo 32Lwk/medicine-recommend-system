@@ -13,19 +13,27 @@ from src.services.concierge_agent_history import (
 from src.services.medicine_brand_resolve import MEDICINE_BRAND_HINTS as _MEDICINE_BRAND_HINTS
 
 _AMBIGUOUS_FOLLOW_UP_RE = re.compile(
-    r"^(?:詳しく|もっと|続き|他には|それについて|教えて)[。！？!?]*$|"
-    r"^(?:詳しく|もっと).{0,8}(?:教えて|説明)[。！？!?]*$"
+    r"^(?:詳しく|もっと|続き|他には|それについて|教えて|それで|もう少し)[。！？!?.っ]*$|"
+    r"^(?:詳しく|もっと|もう少し).{0,8}(?:教えて|説明|だけ)[。！？!?]*$"
 )
 
 _DOC_CHANGELOG_CONTINUATION_RE = re.compile(
     r"^(?:もっと|さらに|詳しく|続き|他には|他の更新|更新内容|変更点)"
 )
 
+# changelog 固有の継続（汎用の「もっと詳しく」等は含めない）
+_DOC_CHANGELOG_TOPIC_RE = re.compile(
+    r"(?:他の更新|更新内容|変更点|最近の(?:更新|変更|アップデート)|"
+    r"アップデート|チェンジログ|changelog|リリースノート|更新履歴|"
+    r"(?:いつ|いつ頃).{0,8}(?:反映|リリース|更新)|"
+    r"(?:反映|リリース).{0,8}(?:いつ|時期))",
+    re.IGNORECASE,
+)
+
 _APP_ABOUT_TOPIC_RE = re.compile(
-    r"あなた(?:について|は|が)|"
-    r"(?:この|本)?(?:サービス|アプリ|システム)(?:について|は|の)|"
+    r"あなた(?:について|は|が|の役割|って)|"
+    r"(?:この|本)?(?:サービス|アプリ|システム|チャット)(?:について|は|の|って|で)|"
     r"Sage\s*Terrace|"
-    r"何が(?:できる|出来る)|"
     r"使い方|"
     r"誰が(?:作|開発|運営)",
     re.IGNORECASE,
@@ -33,7 +41,8 @@ _APP_ABOUT_TOPIC_RE = re.compile(
 
 _TOPIC_INFRA_COMPARE_RE = re.compile(
     r"aws|gcp|cloud\s*run|インフラ|アーキテクチャ|architecture|"
-    r"マルチ[\s　\-]*エージェント|デプロイ|バックエンド",
+    r"マルチ[\s　\-]*エージェント|デプロイ|バックエンド|裏側|"
+    r"仕組み|内部構成",
     re.IGNORECASE,
 )
 
@@ -134,25 +143,122 @@ def is_symptom_drowsiness_declaration(text: str) -> bool:
     return False
 
 
-def is_explicit_new_meta_topic(text: str, *, prior_intent: str | None = None) -> bool:
+def suggest_meta_intent_family(text: str) -> str | None:
+    """
+    発話からメタ intent ファミリーを推定する（ルーティング用の粗い信号）。
+
+    返り値は app_about / architecture / doc_changelog / capabilities 等。
+    曖昧な継続（もっと詳しく）は None。
+    フレーズ列挙ではなく、話題ファミリー単位で判定する。
+    """
     t = (text or "").strip()
     if not t:
-        return False
+        return None
+
+    try:
+        from src.services.concierge_agent_history import (
+            is_architecture_explanation_question,
+            is_assistant_persona_question,
+        )
+    except ImportError:
+        is_architecture_explanation_question = lambda _t: False  # type: ignore
+        is_assistant_persona_question = lambda _t: False  # type: ignore
+
+    # 明確な話題シグナルを先に確定し、その後で汎用深掘りを未定扱いにする
+    if is_assistant_persona_question(t):
+        return "app_about"
     if _APP_ABOUT_TOPIC_RE.search(t):
+        # 「このサービスってどういう仕組み？」は architecture 優先
+        if _TOPIC_INFRA_COMPARE_RE.search(t) or is_architecture_explanation_question(t):
+            return "architecture"
+        return "app_about"
+    if is_architecture_explanation_question(t) or _TOPIC_INFRA_COMPARE_RE.search(t):
+        return "architecture"
+    # changelog 固有語のみファミリー確定（汎用継続フレーズはここに落とさない）
+    if _DOC_CHANGELOG_TOPIC_RE.search(t) and len(t) <= 48:
+        return "doc_changelog"
+    # 能力・対応範囲（言語・チャネル・できること）
+    if re.search(
+        r"(英語|多言語|対応言語|何語|使える|できますか|何が?できる|出来る|"
+        r"LINE|ライン)",
+        t,
+        re.I,
+    ):
+        return "capabilities"
+
+    # 汎用の深掘り（もっと詳しく / 続き 等）はファミリー未定。
+    # sticky follow-up が prior intent を継承できるようにする。
+    if is_ambiguous_short_follow_up(t):
+        return None
+    return None
+
+
+def looks_like_substantive_meta_question(text: str) -> bool:
+    """短い継続（もっと詳しく）ではなく、独立したメタ／技術質問っぽいか。"""
+    t = (text or "").strip()
+    if not t or len(t) < 4:
+        return False
+    if suggest_meta_intent_family(t):
         return True
-    if is_architecture_explanation_question(t):
-        return True
-    if prior_intent == "doc_changelog" and _TOPIC_INFRA_COMPARE_RE.search(t):
-        return True
+    if is_ambiguous_short_follow_up(t):
+        return False
+    # 「〜は？」「違いは？」など独立質問。構造で判定。
+    if re.search(r"[?？]$", t) and len(t) <= 40:
+        if re.search(
+            r"(違い|なに|何|どう|誰|だれ|仕組み|構成|役割|担当|エージェント|"
+            r"デプロイ|システム|インフラ)",
+            t,
+            re.IGNORECASE,
+        ):
+            return True
     return False
 
 
+def is_explicit_new_meta_topic(text: str, *, prior_intent: str | None = None) -> bool:
+    """
+    直前メタ話題からの「話題転換」か。
+
+    同一ファミリー内の深掘り（architecture → Cloud Runは？）は False。
+    ファミリーが変わる場合（doc_changelog → AWS/GCP、app_about → アーキテクチャ）は True。
+    """
+    t = (text or "").strip()
+    if not t:
+        return False
+
+    suggested = suggest_meta_intent_family(t)
+    if not suggested:
+        # ファミリー不明でも、十分な独立質問で prior と食い違う可能性があれば転換候補
+        if prior_intent and looks_like_substantive_meta_question(t):
+            # 曖昧継続は除外済み。prior と無関係な独立質問として転換扱い。
+            return True
+        return False
+
+    if not prior_intent:
+        return True
+
+    # 同一ファミリー内は継続（sticky follow-up / layer1 継続を許可）
+    if suggested == prior_intent:
+        return False
+
+    # 例: architecture 中の Cloud Run → 継続 / changelog → AWS/GCP → 転換
+    # 汎用「もっと詳しく」は suggested=None で上の分岐により継続
+    return True
+
+
 def is_doc_changelog_continuation(text: str) -> bool:
+    """直前が doc_changelog のときの汎用・固有の継続発話か。"""
     t = (text or "").strip()
     if not t or len(t) > 40:
         return False
-    if is_explicit_new_meta_topic(t, prior_intent="doc_changelog"):
+    # 他ファミリーが明示されているときは changelog 継続ではない
+    family = suggest_meta_intent_family(t)
+    if family and family != "doc_changelog":
         return False
+    if _DOC_CHANGELOG_TOPIC_RE.search(t):
+        return True
+    # 汎用深掘り（もっと詳しく / それで？ 等）も changelog 文脈では継続扱い
+    if is_ambiguous_short_follow_up(t):
+        return True
     return bool(_DOC_CHANGELOG_CONTINUATION_RE.search(t))
 
 

@@ -153,20 +153,26 @@ def get_medicine_details(recommended_medicines, medicine_list):
     return detailed_medicines
 
 
-def detect_medicine_name_in_query(user_message, medicine_df):
+def detect_medicine_name_in_query(user_message, medicine_df, *, session=None):
     """
-    ユーザーの質問から医薬品名を検出する
+    ユーザーの質問から医薬品名を検出する。
+
+    session がある場合はセッション内ブランドピンを優先する。
     """
     if medicine_df is None or medicine_df.empty:
         return []
     detected_medicines: list[dict] = []
     user_message_lower = user_message.lower()
 
-    # ブランド通称（ロキソニン・イブ等）— 先頭一致 + 成分エイリアス
+    # ブランド通称（ロキソニン・イブ等）— 先頭一致 + 成分エイリアス + session pin
     try:
         from src.services.medicine_brand_resolve import resolve_brand_hints_in_query
 
-        detected_medicines.extend(resolve_brand_hints_in_query(user_message, medicine_df))
+        detected_medicines.extend(
+            resolve_brand_hints_in_query(
+                user_message, medicine_df, session=session
+            )
+        )
     except ImportError:
         pass
 
@@ -403,12 +409,23 @@ def chat_with_medicine_context(
     session_id=None,
     *,
     long_term_memory_block=None,
+    session=None,
 ):
     """
     会話履歴と推奨医薬品の情報をChatGPTに渡して、医薬品に関する質問に回答する
     """
     if client is None:
         client = _default_openai_client
+
+    # session_id から session を補完（ブランドピン永続化用）
+    if session is None and session_id:
+        try:
+            from src.services.session_manager import get_session_from_db
+
+            session = get_session_from_db(session_id)
+        except Exception:
+            session = None
+
     system_intro_keywords = [
         "あなたについて",
         "あなたは",
@@ -447,6 +464,32 @@ def chat_with_medicine_context(
             "side_effects": "",
             "consultation_advice": "",
         }
+
+    # 発話にブランド通称がある場合は、履歴推奨より先にブランド解決+セッションピンを適用
+    try:
+        from src.dialogue.routing.context_signals import extract_drug_entities
+
+        if extract_drug_entities(user_message):
+            df_early = pd.read_csv(CSV_PATH)
+            brand_hits = detect_medicine_name_in_query(
+                user_message, df_early, session=session
+            )
+            if brand_hits:
+                recommended_medicines = brand_hits[:5]
+                logger.info(
+                    "Using brand-resolved (+session pin) medicines as Q&A context: %s",
+                    [m.get("product_name") for m in recommended_medicines],
+                )
+                if session is not None and session_id:
+                    try:
+                        from src.services.session_manager import save_session_to_db
+
+                        save_session_to_db(session_id, session)
+                    except Exception:
+                        logger.debug("qa_brand_pins persist skipped", exc_info=True)
+    except Exception as e:
+        logger.debug("early brand resolve skipped: %s", e)
+
     if not recommended_medicines and conversation_history:
         try:
             for hist in reversed(conversation_history):
@@ -506,7 +549,7 @@ def chat_with_medicine_context(
         try:
             df = pd.read_csv(CSV_PATH)
             detected_medicines = detect_medicine_name_in_query(
-                user_message, df
+                user_message, df, session=session
             )
             if detected_medicines:
                 recommended_medicines = detected_medicines[:5]
@@ -514,6 +557,13 @@ def chat_with_medicine_context(
                     "Using CSV-detected medicines as LLM Q&A context: %s hit(s)",
                     len(recommended_medicines),
                 )
+                if session is not None and session_id:
+                    try:
+                        from src.services.session_manager import save_session_to_db
+
+                        save_session_to_db(session_id, session)
+                    except Exception:
+                        logger.debug("qa_brand_pins persist skipped", exc_info=True)
         except Exception as e:
             print(f"医薬品検索エラー: {e}")
     def _mark_qa(detail_code: str) -> None:
@@ -587,17 +637,30 @@ def chat_with_medicine_context(
     drug_entities = extract_drug_entities(user_message)
     comparison_hint = ""
     if len(drug_entities) >= 2:
+        pinned_names = ", ".join(
+            str(m.get("product_name") or "")
+            for m in (recommended_medicines or [])
+            if m.get("product_name")
+        )
+        pin_note = (
+            f"\n- 本ターンで比較対象として確定した製品: {pinned_names}。"
+            "会話中にユーザーが別製品を明示しない限り、この製品ラインを維持してください。"
+            if pinned_names
+            else ""
+        )
         if is_comparison_pick_question(user_message) and len(drug_entities) == 2:
             comparison_hint = (
                 "\n- 2製品の比較で「どちらが良い」系の質問です。"
                 "条件別（胃に優しい/効き目/就寝前等）の選び方を示しつつ、"
-                "個人差があるため断定せず登録販売者相談を促してください。\n"
+                "個人差があるため断定せず登録販売者相談を促してください。"
+                f"{pin_note}\n"
             )
         else:
             comparison_hint = (
                 "\n- ユーザーは複数の医薬品について質問しています。"
                 "比較・違い・選び方などの意図を読み取り、各製品の主成分・作用・用途の違いを"
-                "質問に直接答える形で整理してください（羅列だけにしない）。\n"
+                "質問に直接答える形で整理してください（羅列だけにしない）。"
+                f"{pin_note}\n"
             )
 
     age_note = ""

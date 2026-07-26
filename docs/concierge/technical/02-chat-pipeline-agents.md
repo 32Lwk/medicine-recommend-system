@@ -29,9 +29,15 @@
 ## Concierge の技術質問応答
 
 - **intent**: `architecture`（仕組み・インフラ・API/SSE・マルチエージェント）
-- **参照**: `docs/concierge/technical/*.md` + `concierge_knowledge.ja.json` +（AWS 時）Bedrock KB retrieve
+- **参照**: `docs/concierge/technical/*.md` + `concierge_knowledge.ja.json` +（AWS 時）Bedrock KB retrieve。architecture は **technical + ops SSOT** を常時注入（運用事実の推測回答を抑制）
 - **更新履歴**: `doc_changelog` — `CHANGELOG.md` ダイジェスト（`static/changelog-digest.json`）
 - **深掘り**: 「詳しく」「デプロイ」「クロスクラウド」等で拡張参照＋長文回答モード
+- **話題ファミリー（2026-07-26）**: `suggest_meta_intent_family`（`context_signals.py`）
+  - 同一ファミリー（例: changelog 深掘り）→ sticky 継続
+  - 異ファミリー（例: changelog → AWS/GCP 構成）→ topic break
+  - 汎用「もっと詳しく」はファミリー未定のため prior 継承（誤って changelog にピンしない）
+  - IntentRouter の `router_dispatch` は sticky follow-up より優先
+  - layer1 でメタ topic break を `medicine_qa` より先に判定（「AWS と GCP の違い」誤爆防止）
 
 ## SSE（Server-Sent Events）
 

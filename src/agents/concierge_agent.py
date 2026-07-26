@@ -392,9 +392,11 @@ def resolve_concierge_intent(
         else False
     )
 
-    if router_dispatch and execution_lock:
+    # IntentRouter が meta sub_route を決めたら sticky follow-up より優先する。
+    # （changelog 後の architecture / app_about が doc_changelog に固定される回帰を防ぐ）
+    if router_dispatch:
         locked = (triage_result or {}).get("concierge_intent")
-        if locked:
+        if locked and locked != "general_other":
             return locked  # type: ignore[return-value]
 
     if not router_dispatch and evaluate_store_gate(
@@ -416,15 +418,10 @@ def resolve_concierge_intent(
         conversation_history=conversation_history,
         sid=session_id,
     )
-    if not (router_dispatch and execution_lock):
+    if not execution_lock:
         follow = resolve_concierge_follow_up_intent(text, prior, last_bot=last_bot)
         if follow:
             return follow  # type: ignore[return-value]
-
-    if router_dispatch:
-        locked = (triage_result or {}).get("concierge_intent")
-        if locked:
-            return locked  # type: ignore[return-value]
 
     orchestrated = resolve_intent_from_triage(
         triage_result, session, text, sid=session_id, routing_ctx=routing_ctx
@@ -1771,11 +1768,15 @@ def _invoke_meta_concierge_llm(
         "薬名の創作や処方の約束はしません。"
         "環境変数・内部設定・参照方法についてユーザーに言及しない。"
         "公開されている事実だけを、利用者向けの言葉で述べる。"
+        "ユーザーの意図と会話の文脈を優先し、直前トピックに引きずられて別の質問に答えない。"
     )
-    if deep and intent == "architecture":
+    if intent == "architecture":
         system_content += (
-            " 参照ドキュメントに忠実に、ユーザーの質問の主題から答える。"
-            "聞かれていない一般論から始めない。医療診断や症状への具体助言は行わない。"
+            " 参照ドキュメントと運用事実に忠実に、ユーザーの質問の主題から答える。"
+            "ドキュメントに無い構成・URL・サービス名は推測で補わない。"
+            "GCP 本番と AWS ステージングの役割は参照に従い、混同しない。"
+            "聞かれていない一般論や更新履歴の羅列から始めない。"
+            "医療診断や症状への具体助言は行わない。"
         )
     elif (
         intent == "architecture"

@@ -178,6 +178,7 @@ def run_medicine_question_qa(
         conversation_history,
         latest_recommended_medicines,
         session_id=sid,
+        session=session,
     )
     if latest_recommended_medicines and not str(chat_response.get("answer") or "").strip():
         from src.core.medicine.medicine_response_builder import (

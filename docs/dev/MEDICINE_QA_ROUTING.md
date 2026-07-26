@@ -39,12 +39,22 @@
 | `interaction` | 併用語・**アルコール** | ワイン飲んでるけど平気？ |
 | `usage` | 用法・頻度・食前食後（副作用因果と分離） | それ、どのくらいの頻度で？ |
 | `ingredient` | 成分・中身 | 何入ってる？ |
-| `age` | 年齢語 + 履歴 slot | 風邪薬 OTC で平気？（履歴: 小学2年） |
+| `age` | 年齢語、または **履歴のライフステージ文脈 + 市販薬可否の型** | 熱に市販薬でいい？（履歴: 幼稚園の子ども） |
 | `doping` | 競技語 + 履歴 slot | それ使っていい？（履歴: マラソン） |
 | `product_image` | 写真・箱・パッケージ | パッケージ見たい |
 | `general` | 上記いずれも未命中 | LLM 補完候補 |
 
 **`product_image` と `comparison` の排他**: 写真 intent が付く発話では比較 focus を付けない（「ロキソニンとイブの画像見せて」で比較セクションが出ない）。
+
+### 年齢・ライフステージ（一般化）
+
+学校種ごとのキーワード追加ではなく、次の **型** で判定する（正本: `_has_age_intent`）。
+
+1. `_history_has_life_stage_context` — 履歴に小児〜高齢・妊娠等のライフステージ語彙／数値年齢がある
+2. `_looks_medicine_suitability_ask` — 現発話が市販薬・服用の可否を問う型（症状の追加報告だけは除外）
+
+例: 履歴「幼稚園の子どもが熱っぽい」+「市販薬使っても大丈夫？」→ `age`。  
+「咳も出ているし元気がない」だけの追記 → `age` にしない。
 
 ---
 
@@ -102,7 +112,8 @@ LLM のストリーム回答は `product_image` focus 時 **上書き** され�
 
 ### 副作用 vs 用法
 
-`_SIDE_EFFECT_CAUSAL_DRINK_RE`（飲むと / 飲んだら / 飲めば）+ 副作用 topic → **usage にしない**。
+`_SIDE_EFFECT_CAUSAL_DRINK_RE`（飲むと / 飲んだら / 飲めば / 飲んだあと）+ 副作用 topic → **usage にしない**。  
+会話フィラーを薬剤エンティティと誤認すると ambiguity LLM がスキップされるため、`local_rag_query._is_drug_like_token` はひらがな優勢の句を拒否寄りにする。
 
 ### 効き目 + 副作用
 
@@ -110,14 +121,22 @@ LLM のストリーム回答は `product_image` focus 時 **上書き** され�
 
 ---
 
-## LLM 補完（任意）
+## LLM 補完（構造的曖昧さ時のみ）
+
+**正本**: `src/services/medicine_qa_focus_llm.py`
 
 | 変数 | デフォルト | 説明 |
 |------|-----------|------|
-| `MEDICINE_QA_FOCUS_LLM` | `false` | rule が `general` のみ + 文脈あり → LLM で focus 推定 |
+| `MEDICINE_QA_FOCUS_LLM` | `auto`（未設定時） | `auto`/未設定: OpenAI client があれば ON。`0/false/off` で強制 OFF、`1/true/on` で強制 ON |
 | `MEDICINE_QA_FOCUS_LLM_MODEL` | `gpt-4o-mini` | 補完モデル |
 
-オフライン eval では `--with-llm-stress` 時に自動 ON。本番は latency / コストに応じて明示設定。
+**呼ばれる条件**（コスト抑制）:
+
+- rule focus が `general` のみ
+- focus 衝突（例: `side_effect`∩`usage`, `interaction`∩`comparison`, `age`∩`usage`）
+- 文脈あり + 固有ブランドが薄い +（指示語 or 短い疑問・心配）
+
+失敗時は rule focuses をそのまま返す。フレーズ一致ではなく **ユーザーが知りたいこと** を優先するプロンプト。
 
 ---
 
@@ -130,18 +149,33 @@ LLM のストリーム回答は `product_image` focus 時 **上書き** され�
 ## 評価
 
 ```bash
-# 固定 43 問（日常 + 文脈）
-MEDICINE_RAG_PROVIDER=local .venv/bin/python scripts/eval_medicine_qa_robustness.py
+# 固定 everyday + context（+ meta / conversation_sim）
+MEDICINE_RAG_PROVIDER=local MEDICINE_QA_FOCUS_LLM=auto \
+  .venv/bin/python scripts/eval_medicine_qa_robustness.py
 
-# GPT 会話 + LLM 言い換え stress
-MEDICINE_RAG_PROVIDER=local .venv/bin/python scripts/eval_medicine_qa_robustness.py \
-  --with-gpt-conversation --with-llm-stress
+# GPT 単発会話 + 多ターン文脈 + LLM 言い換え stress
+MEDICINE_RAG_PROVIDER=local MEDICINE_QA_FOCUS_LLM=auto \
+  .venv/bin/python scripts/eval_medicine_qa_robustness.py \
+  --with-gpt-conversation --with-gpt-multiturn \
+  --with-llm-stress --llm-stress-variants 3
 
 # E2E 配線 19 問
 MEDICINE_RAG_PROVIDER=local .venv/bin/python scripts/eval_medicine_qa_e2e.py
 ```
 
-Fixtures: `tests/fixtures/medicine_qa_everyday_eval.yaml`, `medicine_qa_gpt_conversation.yaml`
+| スイート | 内容 |
+|---------|------|
+| everyday / soft | 日常・方言・ソフト言い回し |
+| context | 履歴付き follow-up |
+| llm_stress | 固定シードの言い換え生成 → routing |
+| conversation_sim | テンプレ follow-up |
+| meta_everyday | Concierge 話題 sticky / topic break |
+| gpt | ライブ GPT 患者発話 + 意図 fidelity |
+| gpt_multiturn | 多ターン文脈保持 |
+
+**2026-07-26 結果（ライブ GPT 含む）**: **253/253 (100%)** — 成果物 `log/analysis/medicine_qa_robustness_eval.json`
+
+Fixtures: `medicine_qa_everyday_eval.yaml`, `medicine_qa_gpt_conversation.yaml`, `medicine_qa_gpt_multiturn.yaml`, `medicine_qa_conversation_sim.yaml`, `meta_topic_everyday_eval.yaml`
 
 ### pytest
 
@@ -150,7 +184,8 @@ Fixtures: `tests/fixtures/medicine_qa_everyday_eval.yaml`, `medicine_qa_gpt_conv
   tests/routing/test_medicine_qa_multi_focus.py \
   tests/routing/test_medicine_qa_context_routing.py \
   tests/routing/test_medicine_qa_sections.py \
-  tests/services/test_medicine_qa_images.py -q
+  tests/services/test_medicine_qa_images.py \
+  tests/services/test_medicine_qa_focus_llm.py -q
 ```
 
 ---
@@ -159,4 +194,5 @@ Fixtures: `tests/fixtures/medicine_qa_everyday_eval.yaml`, `medicine_qa_gpt_conv
 
 - [`LOCAL_RAG.md`](../ops/LOCAL_RAG.md) — retrieve eval・環境変数
 - [`CHAT_PIPELINE_V2.md`](CHAT_PIPELINE_V2.md) — sub_route 一覧
-- [`MEDICINE_BRAND_RESOLVE.md`](MEDICINE_BRAND_RESOLVE.md) — 通称解決
+- [`MEDICINE_BRAND_RESOLVE.md`](MEDICINE_BRAND_RESOLVE.md) — 通称解決・セッションピン
+- Concierge meta: `src/dialogue/routing/context_signals.py`（`suggest_meta_intent_family`）

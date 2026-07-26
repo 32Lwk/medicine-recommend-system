@@ -1,6 +1,100 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月26日**（Medicine QA 製品画像 UI・比較セクション改善）
+**最終更新日: 2026年7月26日**（Medicine QA 文脈／LLM 補完・ロバストネス 253/253）
+
+---
+
+## 2026-07-26 — Medicine QA 文脈一般化・focus LLM・GPT 多ターン検証（253/253）
+
+### 概要
+
+ユーザー視点の **日常表現・省略・多ターン文脈** でも意図を汲めるよう、単語リスト合わせ込みではなく **ライフステージ文脈の型・構造的曖昧さ時の LLM 補完・GPT 会話 fidelity** で Medicine QA / Concierge meta を強化。ライブ GPT を含むロバストネス評価 **253/253 (100%)**。
+
+### Medicine QA — 意図推定の一般化
+
+| 項目 | 内容 |
+|------|------|
+| 年齢 | `_history_has_life_stage_context` + `_looks_medicine_suitability_ask` — 履歴のライフステージ + 市販薬可否の型（学校種別の個別追加に依存しない） |
+| 副作用 vs 用法 | 「飲んだあとぼーっと…」等は因果＋身体変化で `side_effect`（usage 誤爆を抑制） |
+| エンティティ衛生 | `local_rag_query._is_drug_like_token` — ひらがな多い会話フィラーを薬剤名と誤認しない |
+| focus LLM | `medicine_qa_focus_llm.py` — `MEDICINE_QA_FOCUS_LLM=auto` でクライアント有時 ON。**general のみ / focus 衝突 / 短文・指示語 follow-up** のときだけ呼ぶ |
+| セッションピン | `medicine_qa_session_pins.py` — 比較再質問の代表製品揺れを抑制（詳細は下記エントリ） |
+
+### Concierge meta — 話題ファミリー
+
+| 項目 | 内容 |
+|------|------|
+| ファミリー sticky | `suggest_meta_intent_family` — 同一ファミリー深掘りは継続、異ファミリーは topic break |
+| layer1 優先 | AWS/GCP「違い」等のメタ topic break を medicine_qa より先に判定 |
+| router_dispatch | IntentRouter 結果を sticky follow-up より優先 |
+
+### 評価・テスト
+
+| スイート | 結果 |
+|---------|------|
+| everyday（soft 言い回し含む） | 64/64 |
+| context | 22/22 |
+| llm_stress | 54/54 |
+| conversation_sim | 50/50 |
+| meta_everyday | 25/25 |
+| gpt（ライブ・意図 fidelity） | 27/27 |
+| gpt_multiturn（ライブ・文脈保持） | 11/11 |
+| **合計** | **253/253 (100%)** |
+
+```bash
+MEDICINE_RAG_PROVIDER=local MEDICINE_QA_FOCUS_LLM=auto \
+  .venv/bin/python scripts/eval_medicine_qa_robustness.py \
+  --with-gpt-conversation --with-gpt-multiturn --with-llm-stress --llm-stress-variants 3
+```
+
+- Fixtures: `medicine_qa_everyday_eval.yaml`, `medicine_qa_gpt_conversation.yaml`, `medicine_qa_gpt_multiturn.yaml`, `medicine_qa_conversation_sim.yaml`, `meta_topic_everyday_eval.yaml`
+- 成果物: `log/analysis/medicine_qa_robustness_eval.json`
+- 技術正本: [`docs/dev/MEDICINE_QA_ROUTING.md`](docs/dev/MEDICINE_QA_ROUTING.md)
+
+---
+
+## 2026-07-26 — セッション内ブランドピン・技術 Q&A 文脈／根拠強化
+
+### 概要
+
+AWS ログ解析で顕在化した **(1) 比較 Q&A の製品ライン揺れ** と **(2) 技術質問が更新履歴・誤構成に引きずられる問題** を、フレーズ列挙ではなく **セッション文脈 + IntentRouter 優先 + SSOT/RAG 根拠** で改善。
+
+### Medicine QA — セッション内ブランドピン
+
+| 項目 | 内容 |
+|------|------|
+| 新規 | `src/services/medicine_qa_session_pins.py` — `qa_brand_pins` を session / user_attributes に保持 |
+| 解決 | `resolve_brand_hints_in_query(..., session=)` がピン優先。明示製品名のみ上書き |
+| 配線 | `chat_with_medicine_context` / `chat_medicine_qa_html` / followup が session を渡す |
+| 照合 | 全角／半角英数 fold（`ロキソニンＳ`↔`ロキソニンS`, `パイロンＰＬ`↔`パイロンPL`） |
+
+**効果**: 「バファリン」比較の再質問で A ↔ プレミアムが入れ替わる揺れを抑制。
+
+### Concierge 技術 Q&A — sticky 回避と根拠
+
+| 問題 | 対応 |
+|------|------|
+| IntentRouter は `architecture` なのに sticky follow-up が `doc_changelog` / `app_about` を優先 | `resolve_concierge_intent` で **router_dispatch を sticky より先に採用** |
+| changelog 後の独立質問が継続扱い／同一話題の深掘りまで切れる | `suggest_meta_intent_family` で話題ファミリー単位に判定。同一ファミリー深掘りは sticky、異ファミリーは topic break。汎用「もっと詳しく」はファミリー未定で prior 継承 |
+| 日常口語・英語混じり・会話シミュレーションで意図取りこぼし | 症状クラス／年齢ライフステージ／併用・外観の一般化。会話フィラーを薬剤エンティティ誤認しないよう `_is_drug_like_token` を拒否寄りに。layer1 でメタ topic break を medicine_qa より優先（AWS/GCP「違い」誤爆防止） |
+| 非 deep で ops ドキュメント未注入 → 運用事実の推測回答 | architecture は **常に technical + ops SSOT**。AWS/GCP 等の運用質問を deep 相当に |
+| Local RAG の技術コーパス不足 | ops（LOCAL_RAG / GCP ADR / Cloud Run LLM env 等）+ `docs/dev` を index。architecture pool に `local/dev/` 追加 |
+
+### テスト
+
+- `tests/services/test_medicine_qa_session_pins.py`
+- `tests/routing/test_meta_topic_break_flexible.py`
+- 既存 parity / brand resolve / medicine_qa_routing
+
+### 検証メモ（ローカル）
+
+```
+比較「違い」→ medicine_qa / 眠気 → medicine_side_effect_qa（layer1）
+同一セッションでバファリン代表製品がピン固定
+eval_medicine_qa_e2e（local KB）19/19
+meta topic everyday pytest + follow-up / brand pin
+（ロバストネス最終結果は上記 253/253 エントリ参照）
+```
 
 ---
 

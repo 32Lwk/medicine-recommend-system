@@ -1,7 +1,49 @@
 {
   "source": "CHANGELOG.md",
-  "header_date": "2026年7月25日（SSE 副作用 Q&A 表示復旧・医薬品比較 Q&A・CodeBuild post_deploy 高速化）",
+  "header_date": "2026年7月26日（Medicine QA 文脈／LLM 補完・ロバストネス 253/253）",
   "releases": [
+    {
+      "heading": "2026-07-26 — Medicine QA 文脈一般化・focus LLM・GPT 多ターン検証（253/253）",
+      "overview": "ユーザー視点の 日常表現・省略・多ターン文脈 でも意図を汲めるよう、単語リスト合わせ込みではなく ライフステージ文脈の型・構造的曖昧さ時の LLM 補完・GPT 会話 fidelity で Medicine QA / Concierge meta を強化。ライブ GPT を含むロバストネス評価 253/253 (100%)。",
+      "highlights": [
+        "Fixtures: medicine_qa_everyday_eval.yaml, medicine_qa_gpt_conversation.yaml, medicine_qa_gpt_multiturn.yaml, medicine_qa_conversation_sim.y…",
+        "成果物: log/analysis/medicine_qa_robustness_eval.json",
+        "技術正本: docs/dev/MEDICINE_QA_ROUTING.md"
+      ]
+    },
+    {
+      "heading": "2026-07-26 — セッション内ブランドピン・技術 Q&A 文脈／根拠強化",
+      "overview": "AWS ログ解析で顕在化した (1) 比較 Q&A の製品ライン揺れ と (2) 技術質問が更新履歴・誤構成に引きずられる問題 を、フレーズ列挙ではなく セッション文脈 + IntentRouter 優先 + SSOT/RAG 根拠 で改善。",
+      "highlights": [
+        "既存 parity / brand resolve / medicine_qa_routing"
+      ]
+    },
+    {
+      "heading": "2026-07-26 — Medicine QA 製品画像・比較セクション UI",
+      "overview": "医薬品相談（medicine_qa）の 製品比較・選び方・パッケージ画像 表示を Sage Terrace UI で統一。ストリーミング経路でも画像 HTML を付与し、LLM の「見せられない」回答をサーバー生成文案に置き換える。",
+      "highlights": [
+        "_finalize_structured_qa_response — JSON / SSE ストリーム両経路で attach_product_images_to_response + 統一 answer",
+        "_apply_product_image_answer — product_image focus 時は常に build_product_image_answer_text を適用",
+        "画像 intent 用 answer プロンプト — 「見せられない」禁止・準備中表現を指示",
+        "data/otc_image_versions.json — CDN キャッシュバスティング用 slug 追加",
+        "scripts/sync_top50_otc_images.py / scripts/sync_otc_images_retry.py / scripts/otc_image_multi_source.py",
+        "成果物: log/analysis/otc_image_sync_bulk/"
+      ]
+    },
+    {
+      "heading": "2026年7月26日 — Medicine QA ロバストネス・Local RAG・文脈 routing",
+      "overview": "医薬品 Q&A の 日常口語・方言・指示語 follow-up・複合 intent に耐える routing を一般化。Local RAG（BM25 + 文脈 query）と multi-focus retrieve を統合し、固定 eval 43/43・GPT 会話 + LLM stress 含む 75 問中 74+ PASS を達成。",
+      "highlights": [
+        "medicine_qa_html.py / chat_medicine_qa_html.py — 製品写真・multi-focus セクション",
+        "flex_messages.py — LINE Flex QA hero",
+        "dispatcher.py / chat_post_pipeline.py — session 文脈付き focus 推定"
+      ]
+    },
+    {
+      "heading": "2026年7月26日 — PMDA OTC Cloud 完走・KB re-ingest・orphans 分析クローズ",
+      "overview": "Cloud Agent（cursor/pmda-otc-live-fetch-07ea）で OTC 7,495 品目の PMDA live 完走（~14.5h）を main にマージ。続けて C-3（S3 sync → Bedrock re-ingest → eval） を実施。orphans 1,240 件の分析を記録し 受け入れクローズ。",
+      "highlights": []
+    },
     {
       "heading": "2026年7月25日 — SSE 副作用 Q&A 表示復旧・医薬品比較 Q&A・CodeBuild post_deploy 高速化",
       "overview": "AWS ステージングで 「ロキソニンって眠くなる？」 等の副作用 Q&A がバックエンド正常完了後も 処理バブル（AI分析中）のまま になる不具合を修正。あわせて 医薬品比較 Q&A ルーティング・ブランド通称レジストリ・副作用 UI、および CodeBuild post_build 高速化（精度維持） を反映。",
@@ -28,73 +70,6 @@
         "イブプロフェン錠200S のパッケージ画像（JAN 判明時 or ユーザー提供素材）",
         "RECOMMENDATION_EXCLUDED_PRODUCTS の設定ファイル化（CSV / YAML）",
         "上位50以外の推奨頻度品目の継続同期（sync_otc_images_from_matsukiyo --limit 200 の定期実行）"
-      ]
-    },
-    {
-      "heading": "2026年7月24日 — PMDA 正本 → Medicine KB 反映（§17 フィルタ・reflect 実行）",
-      "overview": "§11 副作用パーサーに §17 臨床成績 終端を追加し、品質フィルタ section17_leak で混入行を reject。正本 CSV を再生成後 scripts/reflect_medicine_kb.sh で Medicine Managed KB へ反映。ingestion job OG6SSAO4QN COMPLETE、eval 相互作用 5/5。",
-      "highlights": []
-    },
-    {
-      "heading": "2026年7月24日 — Step 5-F 完了（CodePipeline KB 検証）",
-      "overview": "Dual KB RAG Phase 5 の最終検証。ingestion failed=0、Medicine / Concierge eval が CI 閾値を満たし、CodePipeline 上の KB sync も成功。",
-      "highlights": [
-        "pyenv 回避 → /usr/bin/python3.11 + ensurepip + pip install pandas",
-        "PATH 制限時に aws CLI を /usr/local/bin から復元（132643c で aws 不在により sync 失敗していた問題を 138c0ff で修正）"
-      ]
-    },
-    {
-      "heading": "2026年7月24日 — CHANGELOG ダイジェスト・ステータス UI 改善",
-      "overview": "Concierge / ステータスパネルの「最近の更新」表示を、開発者向けノイズを減らしユーザー向け文言に整える。",
-      "highlights": []
-    },
-    {
-      "heading": "2026年7月24日 — PMDA 正本再生成（raw HTML 永続化・パーサー修正・品質フィルタ）",
-      "overview": "PMDA live fetch で取得した 添付文書 HTML を data/pmda/raw/ に永続化し、パーサー根本原因（§マーカー空白不一致・全文フォールバック・merge バグ）を修正。680 件 raw から正本 CSV を再生成。方針は live のみ（catalog expansion 復元なし）。手動 curated 行（出典空欄）は保持。",
-      "highlights": [
-        "§10/§11 マーカーの 空白対応（10.2 併用注意 vs 旧 10.2併用注意）",
-        "PMDA ページ ボイラープレート除去（JavaScript 案内・ヘッダー等）",
-        "セクション未検出時の 全文フォールバック廃止（空文字返却）",
-        "§11 終端に 17. 臨床成績 / 18. 薬効 を追加（後半: §17 要約切り捨て + section17_leak フィルタ）",
-        "interactions: partner 周辺 最大 500 字の §10 由来説明",
-        "side_effects: §11 要約（最大 800 字・句点境界で切り詰め）",
-        "live_replace=True 時、旧 PMDA 行が残り続ける OR 条件バグを修正",
-        "正しい挙動: 手動行（出典空欄）のみ保持 + 新 PMDA 行で全置換",
-        "680 ファイル（detail_html あり 484 / empty_section 196）",
-        "fetch 時 fetch_ingredient_live.py が save_ingredient_raw() を呼び出し",
-        "再パースは detail_html から（保存済み section10_text は使わない）",
-        "catalog expansion（~2,869 行テンプレート）は復元しない — RAG/KB 上の情報価値が低く、重複テンプレが多数",
-        "live + raw 再パース が正本の唯一の再生成経路",
-        "purge → KB 前の残課題: interactions 複数薬剤混在（~27/107）— 次イテレーションで §10 表行単位パース",
-        "~~side_effects §17 臨床成績混入~~ → §17 終端 + section17_leak で解消（2026-07-24 後半）",
-        "docs/ops/PMDA_DATA_IMPORT.md: raw 永続化・reparse・品質ゲート・正本評価を追記",
-        "data/DATA_CATALOG.md: pmda/raw/ を追記",
-        "pmda_canonical_eval_report.json — before/after 品質メトリクス",
-        "pmda_bedrock_eval.json — Bedrock 評価（クォータ時は error 記録）",
-        "bedrock_eval_samples.json — 評価用サンプル行"
-      ]
-    },
-    {
-      "heading": "2026年7月24日 — Dual KB RAG Phase 1.5–5（ingestion 修正・パイプライン・Ask sanitize）",
-      "overview": "AWS ステージング Managed KB（Concierge 2CNAGQ2V4P / Medicine 30BCEJCJHA）の RAG 品質向上と運用自動化の骨格を実装。Medicine eval: raw 80%（16/20）/ runtime 85%（17/20）、相互作用 5/5 hard gate。ingestion failed 7,494 → 0（metadata boolean → string 修正）。",
-      "highlights": [
-        "7,494 製品 MD + interactions / side_effects / kanpo / efficacy",
-        "トピックガイド: medicine/topics/（服用間隔・年齢制限・NSAID 高齢者）",
-        "ドーピングガイド: medicine/doping/pseudoephedrine.md",
-        "product MD 固定見出し（用法・用量 / 年齢制限 / ドーピング）",
-        "metadata 全値 string 化（Bedrock ingestion 要件）",
-        "raw CSV は S3 非 sync（sync-medicine-kb-to-s3.sh --exclude raw/*）",
-        "src/services/bedrock_kb_retrieve.py: build_medicine_retrieval_query() / build_concierge_retrieval_query() 拡張",
-        "src/core/medicine/medicine_response_builder.py: KB augment + Ask sanitize",
-        "src/core/explanation_generator.py: Explanation KB citation（方式 A）",
-        "src/agents/concierge_agent.py: Managed KB 接続",
-        "src/services/concierge_output_sanitize.py: sanitize_medicine_ask_output()",
-        "docs/ops/AWS_BEDROCK_KB.md: raw 除外・ingestion トラブルシュート（boolean metadata）",
-        "docs/ops/AWS_CODEPIPELINE.md: KB env 段階ロールアウト・IAM 要件",
-        "docs/ops/AWS_STAGING_CHECKLIST.md: Phase 5 KB 自動化チェック",
-        "docs/ops/GCP_RAG_MIGRATION_ADR.md: Option C 推奨（staging Bedrock / GCP 本番レガシー）",
-        "push 毎 ingestion は コスト増 — 運用負荷が高い場合は KB_INGESTION_ON_PUSH=false + 手動 reflect_medicine_kb.sh も可",
-        "推奨順位（physical_orchestrator.py）は 変更なし"
       ]
     }
   ]

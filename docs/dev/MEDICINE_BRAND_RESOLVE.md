@@ -82,6 +82,23 @@ _rule(
 
 ---
 
+## セッション内ブランドピン（2026-07-26）
+
+**正本**: `src/services/medicine_qa_session_pins.py`
+
+| 項目 | 内容 |
+|------|------|
+| 保存先 | `session["qa_brand_pins"]` と `user_attributes["qa_brand_pins"]` |
+| 優先 | 同一セッションで一度解決した代表製品を再質問でも維持 |
+| 上書き | ユーザーが具体製品名（例: バファリンプレミアム）を明示したときのみ |
+| API | `resolve_brand_hints_in_query(..., session=)` / `resolve_products_with_session_pins` |
+
+**目的**: 「バファリン」比較で A ↔ プレミアムがターンごとに入れ替わる揺れを防ぐ。フレーズ固定ではなく **文脈スロット** として扱う。
+
+全角／半角英数は `_fold_alnum` で照合（`ロキソニンＳ` ↔ `ロキソニンS`）。
+
+---
+
 ## 医薬品 Q&A との連携
 
 | ルート | 条件 | ハンドラ |
@@ -107,7 +124,7 @@ _rule(
 | `product_image` | 写真見せて |
 | `side_effect` | 副作用（単独→ CSV、効き目+副作用→ unified） |
 
-**文脈 routing**（2026-07-26）: 比較履歴があっても指示語副作用 follow-up は `comparison` にしない。アルコール併用・年齢 slot・ドーピング slot は履歴 + 現発話の suitability で判定。詳細は [`MEDICINE_QA_ROUTING.md`](MEDICINE_QA_ROUTING.md)。
+**文脈 routing**（2026-07-26）: 比較履歴があっても指示語副作用 follow-up は `comparison` にしない。アルコール併用・年齢／ライフステージ・ドーピングは履歴文脈 + 現発話の可否質問の型で判定（学校種別の個別列挙に依存しない）。曖昧時は `medicine_qa_focus_llm` が focus を補完。詳細は [`MEDICINE_QA_ROUTING.md`](MEDICINE_QA_ROUTING.md)。
 
 比較 retrieve 時は `route_medicine_docs` が CSV brand 解決で **2 製品分**の product doc URI を返す。
 

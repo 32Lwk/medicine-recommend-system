@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any
 
 from config.llm_flags import is_unified_router_enabled
@@ -10,6 +11,12 @@ from src.dialogue.routing.context_signals import (
     extract_context_features,
     is_explicit_new_meta_topic,
     is_medicine_side_effect_question,
+)
+
+_INFRA_TOPIC_RE = re.compile(
+    r"aws|gcp|cloud\s*run|ecs|codepipeline|bedrock|インフラ|アーキテクチャ|"
+    r"architecture|マルチ[\s　\-]*エージェント|デプロイ|バックエンド|仕組み|構成",
+    re.IGNORECASE,
 )
 from src.dialogue.routing.follow_up_llm import resolve_follow_up_route
 from src.dialogue.routing.guards import apply_post_route_guards
@@ -71,6 +78,67 @@ def _layer1_deterministic(
             context_features=features.to_dict(),
         )
 
+    prior = features.prior_route or features.prior_concierge_intent
+    # メタ／技術の話題転換は medicine_qa（「違い」比較誤爆）より先に解決する。
+    # ただしメタ family シグナルが無い薬比較などは medicine_qa へフォールスルー。
+    if prior in (
+        "doc_changelog",
+        "app_about",
+        "capabilities",
+        "architecture",
+        "doc_privacy",
+        "doc_terms",
+        "doc_operator",
+        "doc_consultation",
+        "doc_app_overview",
+    ) and is_explicit_new_meta_topic(text, prior_intent=prior):
+        from src.dialogue.routing.context_signals import suggest_meta_intent_family
+        from src.services.concierge_agent_history import (
+            is_architecture_explanation_question,
+            is_who_is_answering_question,
+        )
+
+        fam = suggest_meta_intent_family(text)
+        who = is_who_is_answering_question(text)
+        infra = bool(
+            _INFRA_TOPIC_RE.search(text) or is_architecture_explanation_question(text)
+        )
+        about = _looks_app_about(text)
+        if fam or who or infra or about:
+            if who:
+                sub = "app_about"
+            elif fam == "architecture" or (infra and fam != "app_about"):
+                sub = "architecture"
+            elif fam in ("doc_changelog", "capabilities", "app_about"):
+                sub = fam
+            elif about:
+                sub = "app_about"
+            else:
+                sub = fam or "app_about"
+            return RoutingDecision(
+                primary_route="Concierge",
+                sub_route=sub,
+                confidence=0.94,
+                resolved_by="gate",
+                source="layer1_topic_break",
+                execution_lock=True,
+                layer_used="layer1",
+                context_features=features.to_dict(),
+                follow_up={"topic_break": True, "prior": prior},
+            )
+
+    if features.is_doc_changelog_continuation and prior == "doc_changelog":
+        return RoutingDecision(
+            primary_route="Concierge",
+            sub_route="doc_changelog",
+            confidence=0.93,
+            resolved_by="gate",
+            source="layer1_changelog_continue",
+            execution_lock=True,
+            layer_used="layer1",
+            context_features=features.to_dict(),
+        )
+
     from src.services.medicine_qa_routing import is_medicine_information_question
 
     if is_medicine_information_question(text):
@@ -80,33 +148,6 @@ def _layer1_deterministic(
             confidence=0.94,
             resolved_by="gate",
             source="layer1_medicine_qa",
-            execution_lock=True,
-            layer_used="layer1",
-            context_features=features.to_dict(),
-        )
-
-    prior = features.prior_route or features.prior_concierge_intent
-    if prior == "doc_changelog" and is_explicit_new_meta_topic(text, prior_intent=prior):
-        sub = "app_about" if _looks_app_about(text) else "architecture"
-        return RoutingDecision(
-            primary_route="Concierge",
-            sub_route=sub,
-            confidence=0.94,
-            resolved_by="gate",
-            source="layer1_topic_break",
-            execution_lock=True,
-            layer_used="layer1",
-            context_features=features.to_dict(),
-            follow_up={"topic_break": True, "prior": prior},
-        )
-
-    if features.is_doc_changelog_continuation and prior == "doc_changelog":
-        return RoutingDecision(
-            primary_route="Concierge",
-            sub_route="doc_changelog",
-            confidence=0.93,
-            resolved_by="gate",
-            source="layer1_changelog_continue",
             execution_lock=True,
             layer_used="layer1",
             context_features=features.to_dict(),
