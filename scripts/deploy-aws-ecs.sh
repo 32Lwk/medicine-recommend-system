@@ -43,6 +43,7 @@ docker build --platform linux/amd64 \
   --cache-from "$IMAGE" \
   --build-arg BUILDKIT_INLINE_CACHE=1 \
   --build-arg "GIT_COMMIT=${COMMIT}" \
+  --build-arg "COMMIT_SHA=${COMMIT}" \
   --build-arg "GIT_COMMIT_DATE=${COMMIT_DATE}" \
   -t "$IMAGE" \
   .

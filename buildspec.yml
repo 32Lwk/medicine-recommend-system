@@ -42,6 +42,7 @@ phases:
           --cache-from "${IMAGE_URI}:latest" \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
           --build-arg "GIT_COMMIT=${GIT_COMMIT}" \
+          --build-arg "COMMIT_SHA=${GIT_COMMIT}" \
           --build-arg "GIT_COMMIT_DATE=${GIT_COMMIT_DATE}" \
           -t "${IMAGE_URI}:latest" .
       - docker push "${IMAGE_URI}:latest"
