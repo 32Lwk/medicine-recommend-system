@@ -1,5 +1,5 @@
 # Git / IDE / ローカル専用
-.git
+# .git は Docker ビルド時の write_build_meta（コミット日・ハッシュ）解決に必要（最終イメージには含めない）
 .github
 .cursor
 .vscode

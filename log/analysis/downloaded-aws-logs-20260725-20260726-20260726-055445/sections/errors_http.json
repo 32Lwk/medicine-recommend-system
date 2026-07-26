@@ -1,0 +1,297 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 27,
+    "by_status": {
+      "400": 14,
+      "403": 3,
+      "404": 10
+    },
+    "by_path": {
+      "UNKNOWN /v1/speech (400)": 14,
+      "UNKNOWN /knowledgebases/30BCEJCJHA/retrieve (403)": 3,
+      "UNKNOWN /robots.txt (404)": 3,
+      "UNKNOWN /apple-touch-icon-precomposed.png (404)": 2,
+      "UNKNOWN /apple-touch-icon.png (404)": 2,
+      "UNKNOWN /h (404)": 2,
+      "UNKNOWN /.env (404)": 1
+    },
+    "slow_endpoints_ge_5s": {},
+    "samples": [
+      {
+        "timestamp": "2026-07-25T02:45:13.699Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T02:45:13.701Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/apple-touch-icon.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T03:05:21.820Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T03:05:21.828Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T03:18:08.628Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T03:18:08.634Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T03:33:00.675Z",
+        "status": 403,
+        "method": "UNKNOWN",
+        "path": "/knowledgebases/30BCEJCJHA/retrieve",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T03:33:08.607Z",
+        "status": 403,
+        "method": "UNKNOWN",
+        "path": "/knowledgebases/30BCEJCJHA/retrieve",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T03:33:18.663Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T03:33:18.670Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T03:39:52.932Z",
+        "status": 403,
+        "method": "UNKNOWN",
+        "path": "/knowledgebases/30BCEJCJHA/retrieve",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T03:42:01.715Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T03:42:01.724Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T03:53:20.550Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T03:53:20.562Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T17:41:46.741Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T17:41:46.747Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T20:11:15.080Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/robots.txt",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-25T21:41:01.940Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/robots.txt",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T00:10:47.480Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/robots.txt",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T03:28:33.878Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T04:39:48.113Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/apple-touch-icon.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T04:39:48.141Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T05:12:18.859Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/h",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T05:12:26.076Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/h",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T05:18:07.837Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T05:18:08.457Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 0,
+    "top_patterns": [],
+    "samples": []
+  }
+}

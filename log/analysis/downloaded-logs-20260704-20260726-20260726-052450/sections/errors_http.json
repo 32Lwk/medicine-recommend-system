@@ -1,0 +1,788 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 65,
+    "by_status": {
+      "401": 8,
+      "404": 55,
+      "405": 2
+    },
+    "by_path": {
+      "GET /apple-touch-icon.png (404)": 24,
+      "GET /apple-touch-icon-precomposed.png (404)": 24,
+      "GET /api/main_sessions (401)": 8,
+      "GET /robots.txt (404)": 3,
+      "GET /line/webhook (405)": 2,
+      "GET /apple-touch-icon-120x120-precomposed.png (404)": 2,
+      "GET /apple-touch-icon-120x120.png (404)": 2
+    },
+    "slow_endpoints_ge_5s": {
+      "PATCH /api/sessions/activity": {
+        "count": 1945,
+        "min": 0.001,
+        "max": 69.067,
+        "avg": 0.684,
+        "median": 0.607,
+        "p95": 0.668
+      },
+      "GET /api/sessions": {
+        "count": 4709,
+        "min": 0.001,
+        "max": 69.087,
+        "avg": 0.569,
+        "median": 0.336,
+        "p95": 0.64
+      },
+      "POST /line/webhook": {
+        "count": 11,
+        "min": 0.365,
+        "max": 15.373,
+        "avg": 4.252,
+        "median": 0.42,
+        "p95": 15.373
+      },
+      "GET /admin": {
+        "count": 21,
+        "min": 0.002,
+        "max": 21.052,
+        "avg": 6.041,
+        "median": 0.032,
+        "p95": 21.05
+      },
+      "GET /favicon.ico": {
+        "count": 21,
+        "min": 0.002,
+        "max": 13.028,
+        "avg": 0.685,
+        "median": 0.01,
+        "p95": 0.356
+      },
+      "GET /apple-touch-icon-precomposed.png": {
+        "count": 24,
+        "min": 0.003,
+        "max": 15.561,
+        "avg": 1.325,
+        "median": 0.092,
+        "p95": 13.64
+      },
+      "GET /": {
+        "count": 53,
+        "min": 0.003,
+        "max": 21.306,
+        "avg": 4.455,
+        "median": 0.111,
+        "p95": 21.224
+      },
+      "POST /api/chat/stream": {
+        "count": 22,
+        "min": 4.81,
+        "max": 182.158,
+        "avg": 30.38,
+        "median": 14.668,
+        "p95": 182.09
+      },
+      "GET /api/main_sessions": {
+        "count": 26,
+        "min": 0.003,
+        "max": 15.445,
+        "avg": 4.833,
+        "median": 3.41,
+        "p95": 15.3
+      },
+      "GET /api/main_session": {
+        "count": 60,
+        "min": 0.314,
+        "max": 38.73,
+        "avg": 3.798,
+        "median": 1.568,
+        "p95": 22.718
+      }
+    },
+    "samples": [
+      {
+        "timestamp": "2026-07-04T12:21:19.297668Z",
+        "status": 405,
+        "method": "GET",
+        "path": "/line/webhook",
+        "latency_s": 0.002627719,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00158-dt6",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-04T13:08:59.879192Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.174546534,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00158-dt6",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-04T13:08:59.880224Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.173089795,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00158-dt6",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-04T14:18:03.433033Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.163725567,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00158-dt6",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-04T14:18:03.433510Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.162994517,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00158-dt6",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-05T02:47:43.859430Z",
+        "status": 401,
+        "method": "GET",
+        "path": "/api/main_sessions",
+        "latency_s": 15.288982778,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00158-dt6",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-05T02:47:52.981437Z",
+        "status": 401,
+        "method": "GET",
+        "path": "/api/main_sessions",
+        "latency_s": 0.005321499,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00158-dt6",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-07T06:04:48.624778Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.169626838,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00158-dt6",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-07T06:04:48.627047Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.315178761,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00158-dt6",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-07T06:04:48.663981Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.279955328,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00158-dt6",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-07T06:04:49.271905Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.003561129,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00158-dt6",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-08T09:57:15.447866Z",
+        "status": 405,
+        "method": "GET",
+        "path": "/line/webhook",
+        "latency_s": 0.002692259,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-08T14:58:50.340423Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.356515157,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-08T14:58:50.341187Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.348446537,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-09T07:10:33.109939Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-120x120-precomposed.png",
+        "latency_s": 0.21199024,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-09T07:10:33.419002Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.075339795,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-09T07:10:33.419653Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.004059806,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-09T07:10:33.475927Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-120x120.png",
+        "latency_s": 0.003495234,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-09T07:10:33.593396Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.00350062,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-09T07:10:33.694257Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.003445955,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-09T13:39:56.021693Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.186713794,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-09T13:39:56.025223Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.186460889,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-11T07:48:34.424360Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 15.560904415,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-11T07:48:34.443576Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.080352708,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-12T02:48:01.306293Z",
+        "status": 401,
+        "method": "GET",
+        "path": "/api/main_sessions",
+        "latency_s": 15.004848435,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-12T02:48:10.312897Z",
+        "status": 401,
+        "method": "GET",
+        "path": "/api/main_sessions",
+        "latency_s": 0.002631253,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-12T16:45:09.552254Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 13.639527827,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-12T16:45:09.552948Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.207532669,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-15T05:37:06.365136Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.004630969,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-15T05:37:06.367135Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.107946827,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-15T15:48:50.939577Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.00306177,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-15T15:48:51.038230Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.003443204,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-15T15:48:51.230107Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.003074915,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-15T15:48:51.316330Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.002902382,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-16T03:22:33.601764Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.251879698,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-16T03:22:34.047084Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.003340511,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-16T03:26:14.289153Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.004290753,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-16T03:26:14.289312Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.003812718,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-16T04:03:57.518996Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.003354799,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-16T04:03:57.519630Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.004999877,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-19T02:48:19.955786Z",
+        "status": 401,
+        "method": "GET",
+        "path": "/api/main_sessions",
+        "latency_s": 15.30010661,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-19T02:48:29.126307Z",
+        "status": 401,
+        "method": "GET",
+        "path": "/api/main_sessions",
+        "latency_s": 0.003689958,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-19T08:05:20.805563Z",
+        "status": 401,
+        "method": "GET",
+        "path": "/api/main_sessions",
+        "latency_s": 15.445324204,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-19T08:05:29.800178Z",
+        "status": 401,
+        "method": "GET",
+        "path": "/api/main_sessions",
+        "latency_s": 0.005109671,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-20T16:50:32.695106Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.197399032,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-20T16:50:32.695255Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.198698179,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-21T12:31:13.247938Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.076637857,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-21T12:31:13.619436Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.004248208,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-21T13:04:45.214074Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.004756619,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-21T13:04:45.216780Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.004013293,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-22T08:24:23.867454Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.005185836,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-22T08:24:23.870028Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.08469922,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00160-72s",
+        "commit_sha": "a7455d2bb00b2538316be114a876bf78f10f4544"
+      },
+      {
+        "timestamp": "2026-07-24T12:57:38.274303Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-120x120-precomposed.png",
+        "latency_s": 0.230899638,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00179-4zm",
+        "commit_sha": "4f454a041a06afa408bbaf4747555034aebc79ca"
+      },
+      {
+        "timestamp": "2026-07-24T12:57:38.692268Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-120x120.png",
+        "latency_s": 0.003229542,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00179-4zm",
+        "commit_sha": "4f454a041a06afa408bbaf4747555034aebc79ca"
+      },
+      {
+        "timestamp": "2026-07-24T12:57:38.903602Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.00735865,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00179-4zm",
+        "commit_sha": "4f454a041a06afa408bbaf4747555034aebc79ca"
+      },
+      {
+        "timestamp": "2026-07-24T12:57:39.042775Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.002763959,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00179-4zm",
+        "commit_sha": "4f454a041a06afa408bbaf4747555034aebc79ca"
+      },
+      {
+        "timestamp": "2026-07-25T17:41:25.295161Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.00470854,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00191-zlz",
+        "commit_sha": "20db7301a51327e690a6f7c64bb966a53bf8e10c"
+      },
+      {
+        "timestamp": "2026-07-25T17:41:34.960875Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.00366309,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00191-zlz",
+        "commit_sha": "20db7301a51327e690a6f7c64bb966a53bf8e10c"
+      },
+      {
+        "timestamp": "2026-07-25T17:42:13.740387Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.09808999,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00191-zlz",
+        "commit_sha": "20db7301a51327e690a6f7c64bb966a53bf8e10c"
+      },
+      {
+        "timestamp": "2026-07-26T04:47:00.419989Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.107829571,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00191-zlz",
+        "commit_sha": "20db7301a51327e690a6f7c64bb966a53bf8e10c"
+      },
+      {
+        "timestamp": "2026-07-26T04:47:00.420296Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.005543398,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00191-zlz",
+        "commit_sha": "20db7301a51327e690a6f7c64bb966a53bf8e10c"
+      },
+      {
+        "timestamp": "2026-07-26T05:03:23.638097Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.003933688,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00191-zlz",
+        "commit_sha": "20db7301a51327e690a6f7c64bb966a53bf8e10c"
+      },
+      {
+        "timestamp": "2026-07-26T05:03:23.641508Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.003877338,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00191-zlz",
+        "commit_sha": "20db7301a51327e690a6f7c64bb966a53bf8e10c"
+      },
+      {
+        "timestamp": "2026-07-26T05:11:39.552294Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.447332213,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00196-pmj",
+        "commit_sha": "7ea6bb17ae0a47134a97d286c798960d13cbb092"
+      },
+      {
+        "timestamp": "2026-07-26T05:11:40.198708Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.005206899,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00196-pmj",
+        "commit_sha": "7ea6bb17ae0a47134a97d286c798960d13cbb092"
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 4,
+    "top_patterns": [
+      {
+        "message": "STARTUP HTTP probe failed 24 times consecutively for container \"placeholder-1\" on port 8080 path \"/health\". The instance",
+        "count": 4
+      }
+    ],
+    "samples": [
+      {
+        "timestamp": "2026-07-26T04:02:49.733166Z",
+        "severity": "ERROR",
+        "message": "STARTUP HTTP probe failed 24 times consecutively for container \"placeholder-1\" on port 8080 path \"/health\". The instance was not started.\nConnection failed with status ERROR_TIMEOUT.",
+        "revision": "medicine-recommend-dev-00192-l9g"
+      },
+      {
+        "timestamp": "2026-07-26T04:18:40.906724Z",
+        "severity": "ERROR",
+        "message": "STARTUP HTTP probe failed 24 times consecutively for container \"placeholder-1\" on port 8080 path \"/health\". The instance was not started.\nConnection failed with status ERROR_TIMEOUT.",
+        "revision": "medicine-recommend-dev-00193-cw2"
+      },
+      {
+        "timestamp": "2026-07-26T04:19:43.321845Z",
+        "severity": "ERROR",
+        "message": "STARTUP HTTP probe failed 24 times consecutively for container \"placeholder-1\" on port 8080 path \"/health\". The instance was not started.\nConnection failed with status ERROR_TIMEOUT.",
+        "revision": "medicine-recommend-dev-00194-hs9"
+      },
+      {
+        "timestamp": "2026-07-26T04:29:08.740218Z",
+        "severity": "ERROR",
+        "message": "STARTUP HTTP probe failed 24 times consecutively for container \"placeholder-1\" on port 8080 path \"/health\". The instance was not started.\nConnection failed with status ERROR_TIMEOUT.",
+        "revision": "medicine-recommend-dev-00195-99t"
+      }
+    ]
+  }
+}

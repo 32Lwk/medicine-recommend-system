@@ -1,0 +1,366 @@
+{
+  "webhook_request_stats": {
+    "count": 13,
+    "min": 0.003,
+    "max": 15.373,
+    "avg": 3.598,
+    "median": 0.405,
+    "p95": 14.596
+  },
+  "webhook_status_counts": {
+    "200": 11,
+    "405": 2
+  },
+  "job_lock_events": [
+    {
+      "timestamp": "2026-07-04T11:01:24.199697Z",
+      "message": "[2026-07-04 11:01:24 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T11:01:24.199734Z",
+      "message": "[2026-07-04 11:01:24 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T11:01:24.815603Z",
+      "message": "[2026-07-04 11:01:24 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T11:01:24.815653Z",
+      "message": "[2026-07-04 11:01:24 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T11:14:28.863614Z",
+      "message": "[2026-07-04 11:14:28 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T11:14:28.864666Z",
+      "message": "[2026-07-04 11:14:28 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T11:32:59.429429Z",
+      "message": "[2026-07-04 11:32:59 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T11:32:59.429432Z",
+      "message": "[2026-07-04 11:32:59 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T11:33:11.574538Z",
+      "message": "[2026-07-04 11:33:11 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T11:33:11.608120Z",
+      "message": "[2026-07-04 11:33:11 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T12:13:32.034850Z",
+      "message": "[2026-07-04 12:13:32 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T12:13:32.035061Z",
+      "message": "[2026-07-04 12:13:32 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T12:16:26.549960Z",
+      "message": "[2026-07-04 12:16:26 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T12:16:26.550239Z",
+      "message": "[2026-07-04 12:16:26 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T12:46:48.962618Z",
+      "message": "[2026-07-04 12:46:48 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T12:46:49.035944Z",
+      "message": "[2026-07-04 12:46:49 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T13:09:05.971787Z",
+      "message": "[2026-07-04 13:09:05 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T13:09:05.971790Z",
+      "message": "[2026-07-04 13:09:05 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T13:09:09.896652Z",
+      "message": "[2026-07-04 13:09:09 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T13:09:09.896736Z",
+      "message": "[2026-07-04 13:09:09 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T13:20:17.944796Z",
+      "message": "[2026-07-04 13:20:17 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T13:20:17.944854Z",
+      "message": "[2026-07-04 13:20:17 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T13:24:19.033911Z",
+      "message": "[2026-07-04 13:24:19 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T13:24:19.042030Z",
+      "message": "[2026-07-04 13:24:19 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T13:54:06.811385Z",
+      "message": "[2026-07-04 13:54:06 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T13:54:06.811388Z",
+      "message": "[2026-07-04 13:54:06 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T14:10:08.982393Z",
+      "message": "[2026-07-04 14:10:08 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T14:10:08.988757Z",
+      "message": "[2026-07-04 14:10:08 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T14:18:06.504409Z",
+      "message": "[2026-07-04 14:18:06 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T14:18:06.504427Z",
+      "message": "[2026-07-04 14:18:06 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T14:33:19.021243Z",
+      "message": "[2026-07-04 14:33:19 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T14:33:19.041565Z",
+      "message": "[2026-07-04 14:33:19 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T15:16:07.899353Z",
+      "message": "[2026-07-04 15:16:07 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T15:16:07.899438Z",
+      "message": "[2026-07-04 15:16:07 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T15:37:29.020741Z",
+      "message": "[2026-07-04 15:37:29 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T15:37:29.030716Z",
+      "message": "[2026-07-04 15:37:29 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T16:37:50.351403Z",
+      "message": "[2026-07-04 16:37:50 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T16:37:50.351424Z",
+      "message": "[2026-07-04 16:37:50 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T16:53:09.023595Z",
+      "message": "[2026-07-04 16:53:09 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T16:53:09.031623Z",
+      "message": "[2026-07-04 16:53:09 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T19:12:01.428212Z",
+      "message": "[2026-07-04 19:12:01 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T19:12:01.428276Z",
+      "message": "[2026-07-04 19:12:01 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T19:12:02.148599Z",
+      "message": "[2026-07-04 19:12:02 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T19:12:02.148603Z",
+      "message": "[2026-07-04 19:12:02 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T19:23:08.130252Z",
+      "message": "[2026-07-04 19:23:08 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T19:23:08.147588Z",
+      "message": "[2026-07-04 19:23:08 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T19:27:09.031726Z",
+      "message": "[2026-07-04 19:27:09 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T19:27:09.052109Z",
+      "message": "[2026-07-04 19:27:09 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T20:33:39.349726Z",
+      "message": "[2026-07-04 20:33:39 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T20:33:39.360553Z",
+      "message": "[2026-07-04 20:33:39 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-04T20:48:58.999528Z",
+      "message": "[2026-07-04 20:48:59 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-04T20:48:59.046336Z",
+      "message": "[2026-07-04 20:48:59 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-05T00:20:38.699930Z",
+      "message": "[2026-07-05 00:20:38 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T00:20:38.699936Z",
+      "message": "[2026-07-05 00:20:38 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T01:26:09.067601Z",
+      "message": "[2026-07-05 01:26:09 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-05T01:26:09.069698Z",
+      "message": "[2026-07-05 01:26:09 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-05T02:47:53.182960Z",
+      "message": "[2026-07-05 02:47:53 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T02:47:53.183023Z",
+      "message": "[2026-07-05 02:47:53 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T03:03:09.100892Z",
+      "message": "[2026-07-05 03:03:09 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-05T03:03:09.115126Z",
+      "message": "[2026-07-05 03:03:09 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-05T05:21:30.942226Z",
+      "message": "[2026-07-05 05:21:30 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T05:21:30.942257Z",
+      "message": "[2026-07-05 05:21:30 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T05:36:39.033794Z",
+      "message": "[2026-07-05 05:36:39 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-05T05:36:39.049985Z",
+      "message": "[2026-07-05 05:36:39 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-05T07:20:51.142747Z",
+      "message": "[2026-07-05 07:20:51 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T07:20:51.142805Z",
+      "message": "[2026-07-05 07:20:51 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T07:20:51.179021Z",
+      "message": "[2026-07-05 07:20:51 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T07:20:51.179066Z",
+      "message": "[2026-07-05 07:20:51 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T07:25:44.268940Z",
+      "message": "[2026-07-05 07:25:44 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-05T07:25:44.276042Z",
+      "message": "[2026-07-05 07:25:44 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-05T07:35:59.102393Z",
+      "message": "[2026-07-05 07:35:59 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-05T07:35:59.121698Z",
+      "message": "[2026-07-05 07:35:59 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-05T08:41:47.746414Z",
+      "message": "[2026-07-05 08:41:47 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T08:41:47.746921Z",
+      "message": "[2026-07-05 08:41:47 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T08:57:49.135270Z",
+      "message": "[2026-07-05 08:57:49 +0000] [3] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-05T08:57:49.148435Z",
+      "message": "[2026-07-05 08:57:49 +0000] [2] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-05T15:03:09.153476Z",
+      "message": "[2026-07-05 15:03:09 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T15:03:09.153497Z",
+      "message": "[2026-07-05 15:03:09 +0000] [2] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T15:03:09.438911Z",
+      "message": "[2026-07-05 15:03:09 +0000] [3] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-05T15:03:09.438999Z",
+      "message": "[2026-07-05 15:03:09 +0000] [2] [INFO] Waiting for application startup."
+    }
+  ],
+  "line_text_messages": [
+    {
+      "timestamp": "2026-07-04T11:44:55.747006Z",
+      "message": "2026-07-04 11:44:55,747 - INFO - LINE text message userId=U20a3beee49563dcd07bb3dd0fc1ca32c sid=line:U20a3beee49563dcd07bb3dd0fc1ca32c text=やあ"
+    },
+    {
+      "timestamp": "2026-07-04T11:45:51.768612Z",
+      "message": "2026-07-04 11:45:51,768 - INFO - LINE text message userId=U20a3beee49563dcd07bb3dd0fc1ca32c sid=line:U20a3beee49563dcd07bb3dd0fc1ca32c text=再評価"
+    },
+    {
+      "timestamp": "2026-07-04T13:54:17.112519Z",
+      "message": "2026-07-04 13:54:17,113 - INFO - LINE text message userId=U20a3beee49563dcd07bb3dd0fc1ca32c sid=line:U20a3beee49563dcd07bb3dd0fc1ca32c text=風邪です"
+    },
+    {
+      "timestamp": "2026-07-05T08:41:54.136017Z",
+      "message": "2026-07-05 08:41:54,137 - INFO - LINE text message userId=U20a3beee49563dcd07bb3dd0fc1ca32c sid=line:U20a3beee49563dcd07bb3dd0fc1ca32c text=のどが痛いです"
+    },
+    {
+      "timestamp": "2026-07-23T17:16:50.541886Z",
+      "message": "2026-07-23 17:16:50,542 - INFO - LINE text message userId=U20a3beee49563dcd07bb3dd0fc1ca32c sid=line:U20a3beee49563dcd07bb3dd0fc1ca32c text=頭痛いです"
+    },
+    {
+      "timestamp": "2026-07-23T17:17:09.323966Z",
+      "message": "2026-07-23 17:17:09,324 - INFO - LINE text message userId=U20a3beee49563dcd07bb3dd0fc1ca32c sid=line:U20a3beee49563dcd07bb3dd0fc1ca32c text=履歴削除して"
+    },
+    {
+      "timestamp": "2026-07-23T17:17:20.145538Z",
+      "message": "2026-07-23 17:17:20,145 - INFO - LINE text message userId=U20a3beee49563dcd07bb3dd0fc1ca32c sid=line:U20a3beee49563dcd07bb3dd0fc1ca32c text=頭が痛いです"
+    }
+  ]
+}

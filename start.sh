@@ -2,6 +2,28 @@
 # Gunicorn起動スクリプト
 # コマンドライン引数でタイムアウトを明示的に指定
 
+# イメージに焼き込んだ build-meta.json を実行時 ENV へ反映（Cloud Run の古い GIT_COMMIT 上書き防止）
+META_FILE="/app/static/build-meta.json"
+if [ -f "$META_FILE" ]; then
+  eval "$(python3 - <<'PY'
+import json
+import shlex
+
+try:
+    with open("/app/static/build-meta.json", encoding="utf-8") as fh:
+        meta = json.load(fh)
+    commit = str(meta.get("gitCommitShort") or "").strip()
+    date = str(meta.get("gitCommitDateIso") or "").strip()
+    if commit:
+        print(f"export GIT_COMMIT={shlex.quote(commit)}")
+    if date:
+        print(f"export GIT_COMMIT_DATE={shlex.quote(date)}")
+except Exception:
+    pass
+PY
+)"
+fi
+
 # 環境変数からタイムアウトを取得（デフォルト: 300秒・LINE/推奨の長時間処理向け）
 GUNICORN_TIMEOUT=${GUNICORN_TIMEOUT:-300}
 GUNICORN_GRACEFUL_TIMEOUT=${GUNICORN_GRACEFUL_TIMEOUT:-60}

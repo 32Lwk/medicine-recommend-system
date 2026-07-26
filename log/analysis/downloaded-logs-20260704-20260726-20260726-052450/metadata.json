@@ -1,0 +1,54 @@
+{
+  "source_path": "/Users/yuto/medicine recomended/log/raw/downloaded-logs-20260704-20260726-20260726-052450.json",
+  "source_name": "downloaded-logs-20260704-20260726-20260726-052450.json",
+  "entry_count": 76062,
+  "time_range": {
+    "start": "2026-07-04T11:01:16.089867Z",
+    "end": "2026-07-26T05:24:49.906343Z"
+  },
+  "services": {
+    "medicine-recommend-dev": 76062
+  },
+  "primary_service": "medicine-recommend-dev",
+  "revisions": {
+    "medicine-recommend-dev-00158-dt6": 30083,
+    "medicine-recommend-dev-00173-jr7": 26153,
+    "medicine-recommend-dev-00160-72s": 13952,
+    "medicine-recommend-dev-00191-zlz": 1591,
+    "medicine-recommend-dev-00162-b4h": 1560,
+    "medicine-recommend-dev-00196-pmj": 636,
+    "medicine-recommend-dev-00156-z8b": 151,
+    "medicine-recommend-dev-00161-s4k": 149,
+    "medicine-recommend-dev-00179-4zm": 117,
+    "medicine-recommend-dev-00180-btw": 108,
+    "medicine-recommend-dev-00163-xsf": 64,
+    "medicine-recommend-dev-00170-p49": 55,
+    "medicine-recommend-dev-00181-tqd": 55,
+    "medicine-recommend-dev-00188-m9n": 55,
+    "medicine-recommend-dev-00164-gqg": 54,
+    "medicine-recommend-dev-00166-dhc": 54,
+    "medicine-recommend-dev-00167-rzj": 54,
+    "medicine-recommend-dev-00169-zf5": 54,
+    "medicine-recommend-dev-00171-mbk": 54,
+    "medicine-recommend-dev-00174-fsc": 54
+  },
+  "commit_shas": {
+    "a7455d2bb00b2538316be114a876bf78f10f4544": 44235,
+    "5056825e13295c5051ec5acdce600f1ea617cc23": 26152,
+    "20db7301a51327e690a6f7c64bb966a53bf8e10c": 1590,
+    "28485df5c96e75ee56734c9d0e7eb9ff36b93a2b": 1558,
+    "7ea6bb17ae0a47134a97d286c798960d13cbb092": 635,
+    "1b10fc9b9696d3070e227dc8cb5f173e8bb6a70c": 147,
+    "4f454a041a06afa408bbaf4747555034aebc79ca": 116,
+    "594950d2d8a1d3780963122d7cc4f046da9b89da": 107,
+    "74b7fde8b5963e816f538ceaa534f55b8fda838f": 63,
+    "04cf8d647bb524ae46592d1ffb8137c8274a61de": 53
+  },
+  "severity_counts": {
+    "INFO": 8505,
+    "DEFAULT": 67441,
+    "NOTICE": 40,
+    "WARNING": 65,
+    "ERROR": 11
+  }
+}

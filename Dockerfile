@@ -1,4 +1,24 @@
 # CodeBuild / AWS: Docker Hub 429 回避のため Public ECR ミラーを使用
+FROM public.ecr.aws/docker/library/python:3.11-slim AS build-meta
+
+WORKDIR /src
+ARG GIT_COMMIT=
+ARG GIT_COMMIT_DATE=
+ARG COMMIT_SHA=
+ENV GIT_COMMIT=${GIT_COMMIT:-${COMMIT_SHA}} \
+    GIT_COMMIT_DATE=${GIT_COMMIT_DATE}
+
+# Cloud Build の自動生成ビルド（build-arg 未設定）でも .git からコミットを解決する
+COPY .git ./.git
+COPY scripts/write_build_meta.py scripts/
+COPY static/build-meta.json static/
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git \
+    && python3 scripts/write_build_meta.py \
+    && apt-get purge -y git \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* /src/.git
+
 FROM public.ecr.aws/docker/library/python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1 \
@@ -17,6 +37,7 @@ COPY legacy/ legacy/
 COPY src/ src/
 COPY templates/ templates/
 COPY static/ static/
+COPY --from=build-meta /src/static/build-meta.json static/build-meta.json
 COPY scripts/write_build_meta.py scripts/
 COPY scripts/write_changelog_digest.py scripts/
 COPY scripts/build_medicine_kb_documents.py scripts/
@@ -29,8 +50,7 @@ COPY CHANGELOG.md ./
 # Local RAG コーパス（build/ は .gitignore — イメージ内で生成）
 RUN python3 scripts/build_medicine_kb_documents.py
 
-# Cloud Run 等 .git なし環境向け: ビルド引数から Git メタを ENV と static/build-meta.json に焼き込む
-# リポジトリ同梱の static/build-meta.json がある場合は COPY 済み。未設定時のみビルド引数で上書き。
+# build-arg が渡された場合は build-meta ステージの結果を上書きする
 ARG GIT_COMMIT=
 ARG GIT_COMMIT_DATE=
 ARG COMMIT_SHA=
@@ -51,4 +71,3 @@ RUN chmod +x start.sh
 
 # FastAPI（main:app）を Gunicorn + UvicornWorker で起動
 CMD ["./start.sh"]
-
