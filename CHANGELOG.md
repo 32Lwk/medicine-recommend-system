@@ -42,10 +42,10 @@ AWS ログ解析で顕在化した **(1) 比較 Q&A の製品ライン揺れ** �
 ```
 比較「違い」→ medicine_qa / 眠気 → medicine_side_effect_qa（layer1）
 同一セッションでバファリン代表製品がピン固定
-eval_medicine_qa_robustness（everyday+context+conversation_sim+meta）153/153
+eval_medicine_qa_robustness（everyday+context+llm_stress+conversation_sim+meta+gpt）234/234
 eval_medicine_qa_e2e（local KB）19/19
 meta topic everyday pytest + follow-up / brand pin
-※ ライブ GPT 会話は OPENAI_API_KEY がある環境で --with-gpt-conversation
+GPT 会話は意図 fidelity 判定付き（聞き返し生成を不合格）
 ```
 
 ---
