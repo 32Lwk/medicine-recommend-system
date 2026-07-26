@@ -171,6 +171,23 @@ def _particle_profile_json() -> str:
         return json.dumps(get_particle_profile(None, datetime.now(jst)), ensure_ascii=False)
 
 
+def _start_local_rag_warmup_background() -> None:
+    """BM25 index をバックグラウンドで preload（/health をブロックしない）。"""
+    try:
+        import threading
+
+        from src.services.local_rag_retrieve import warmup_local_rag_index
+
+        threading.Thread(
+            target=warmup_local_rag_index,
+            name="local-rag-warmup",
+            daemon=True,
+        ).start()
+        logger.info("Local RAG BM25 index warmup started in background")
+    except Exception as rag_err:
+        logger.warning("Startup local RAG warmup skipped: %s", rag_err)
+
+
 @asynccontextmanager
 async def _app_lifespan(app: FastAPI):
     try:
@@ -191,12 +208,9 @@ async def _app_lifespan(app: FastAPI):
             ensure_product_index()
         except Exception as idx_err:
             logger.warning("Startup product index warmup skipped: %s", idx_err)
-        try:
-            from src.services.local_rag_retrieve import warmup_local_rag_index
-
-            warmup_local_rag_index()
-        except Exception as rag_err:
-            logger.warning("Startup local RAG warmup skipped: %s", rag_err)
+        # Local RAG BM25 は約 6 万 chunk・数十秒かかるため lifespan をブロックしない。
+        # 同期 warmup だと Cloud Run startup probe（/health）が失敗する。
+        _start_local_rag_warmup_background()
     except Exception as e:
         logger.warning(
             "⚠️ Database startup unexpected error: %s. Feedback features will be disabled.",

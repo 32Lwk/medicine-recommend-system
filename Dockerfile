@@ -41,8 +41,11 @@ RUN python3 scripts/write_build_meta.py \
 
 # Cloud Run のデフォルトポート（環境変数 PORT が渡される）
 # FastAPI は ASGI のため sync ワーカー不可（未設定時のフォールバック）
+# Workers 既定 1: Local RAG BM25（~240MiB/worker）で 512Mi インスタンスの OOM を避ける。
+# AWS ECS 等はタスク定義で GUNICORN_WORKERS=2 を上書き可能。
 ENV PORT=8080 \
-    GUNICORN_WORKER_CLASS=uvicorn.workers.UvicornWorker
+    GUNICORN_WORKER_CLASS=uvicorn.workers.UvicornWorker \
+    GUNICORN_WORKERS=1
 
 RUN chmod +x start.sh
 

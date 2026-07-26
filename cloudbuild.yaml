@@ -52,12 +52,16 @@ steps:
       - |
         COMMIT_DATE="$(cat /workspace/_commit_date.txt)"
         IMAGE="$(cat /workspace/_image_ref.txt)"
+        # Local RAG BM25 はワーカーあたり ~240MiB。2 workers でも OOM しないよう 1Gi を確保。
+        # startup probe は /health（DB/RAG 非依存）。failureThreshold=36 → 最大約 180s。
         gcloud run deploy "${_SERVICE_NAME}" \
           --image="$${IMAGE}" \
           --region="${_DEPLOY_REGION}" \
           --platform=managed \
+          --memory=1Gi \
+          --cpu=1 \
           --update-env-vars "GIT_COMMIT=${COMMIT_SHA},GIT_COMMIT_DATE=$${COMMIT_DATE},MEDICINE_IMAGE_CDN_BASE=https://images.yutok.dev/otc/" \
-          --startup-probe=httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=3,periodSeconds=5,failureThreshold=24 \
+          --startup-probe=httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=3,periodSeconds=5,failureThreshold=36 \
           --quiet
 
 options:
