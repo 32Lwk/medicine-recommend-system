@@ -1,0 +1,782 @@
+[
+  {
+    "product_name": "エスタックイブファインＥＸ",
+    "manufacturer": "エスエス製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 6,
+    "slug": "エスタックイブファインEX",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/koyamadrug/cabinet/12217305//p05/4987300069011-1.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "バファリンかぜＥＸ錠《瓶》",
+    "manufacturer": "ライオン",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 6,
+    "slug": "バファリンかぜEX錠瓶",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/n-yakuhin/cabinet/syouhin11/4903301010982.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "仁壽",
+    "manufacturer": "建林松鶴堂",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 5,
+    "slug": "仁壽",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/kyorindo/cabinet/item7/4987126202722.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "暖中錠",
+    "manufacturer": "大峰堂薬品工業",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 5,
+    "slug": "暖中錠",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/koto-p/cabinet/itempic11/4987304041013.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "新スキントールＳ",
+    "manufacturer": "雪の元本店",
+    "medicine_type": "外用薬（皮膚）",
+    "recommendation_count": 5,
+    "slug": "新スキントールS",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drug-sakura/cabinet/item04/4979949000777-5.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "フジコールＩＰ錠",
+    "manufacturer": "三宝製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 4,
+    "slug": "フジコールIP錠",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/genki-e-shop-hanshin/cabinet/b/4968250903112.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "サンワ白虎加人参湯エキス細粒",
+    "manufacturer": "三和生薬",
+    "medicine_type": "外用薬（のど）",
+    "recommendation_count": 4,
+    "slug": "サンワ白虎加人参湯エキス細粒",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/y-koto/cabinet/itempic11/4987327047146.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ニタンダ麻杏甘石湯エキス顆粒",
+    "manufacturer": "二反田薬品工業",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 4,
+    "slug": "ニタンダ麻杏甘石湯エキス顆粒",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/akibaoo-r/cabinet/gi1049/4930342520057.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ヤマサンシャゼンソウ",
+    "manufacturer": "小島漢方",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 4,
+    "slug": "ヤマサンシャゼンソウ",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/gold/ds-kotobukiya/img2/item/4993512243231.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ストナデイタイム",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 3,
+    "slug": "ストナデイタイム",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon26/4987316012827m.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "グロンサンゴールド錠Ａ",
+    "manufacturer": "廣貫堂",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 3,
+    "slug": "グロンサンゴールド錠A",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/ads01/cabinet/p05/4987306045132.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "エイクレス",
+    "manufacturer": "大石膏盛堂",
+    "medicine_type": "外用薬（皮膚）",
+    "recommendation_count": 3,
+    "slug": "エイクレス",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/kyorindo/cabinet/item11/4987475118491.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "コリクリアーＳローション",
+    "manufacturer": "東光薬品工業",
+    "medicine_type": "外用薬（皮膚）",
+    "recommendation_count": 3,
+    "slug": "コリクリアーSローション",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/koyamadrug/cabinet/12217305//p05/4987973113837-1.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "オムニンエース",
+    "manufacturer": "オール薬品工業",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 3,
+    "slug": "オムニンエース",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/koubetanpopo/cabinet/take01/pake201902/y4987299222626.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ウチダの大黄牡丹皮湯",
+    "manufacturer": "ウチダ和漢薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 3,
+    "slug": "ウチダの大黄牡丹皮湯",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/k-benkyo/cabinet/shohin204/4987359200199.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ザッツ",
+    "manufacturer": "武田コンシューマーヘルスケア",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 3,
+    "slug": "ザッツ",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drug-sakura/cabinet/item06/4987316011097.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "新リバヘルスゴールド",
+    "manufacturer": "大峰堂薬品工業",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 2,
+    "slug": "新リバヘルスゴールド",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/hb-eshop/cabinet/shouhin/05998122/4987306008007.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "清風散",
+    "manufacturer": "摩耶堂製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 2,
+    "slug": "清風散",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/welpark/cabinet/10686711/4987045109287a.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ヒストミンせき止め液ＮＸ",
+    "manufacturer": "小林薬品工業",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 2,
+    "slug": "ヒストミンせき止め液NX",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/welpark/cabinet/202508shouhin05/4987336771513a.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナカジマキキョウ末",
+    "manufacturer": "中嶋生薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 2,
+    "slug": "ナカジマキキョウ末",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon40/4936246100753.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "再春痛散湯エキス顆粒",
+    "manufacturer": "再春館製薬所",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 2,
+    "slug": "再春痛散湯エキス顆粒",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/kobe-menken/cabinet/kihon03/4987174729011.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ウチダの麻黄附子細辛湯",
+    "manufacturer": "ウチダ和漢薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 1,
+    "slug": "ウチダの麻黄附子細辛湯",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/phmikawa2/cabinet/kihon7/498735901072910.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "新セキリック液",
+    "manufacturer": "米田薬品",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 1,
+    "slug": "新セキリック液",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/nissin-yk/cabinet/04191107/10056731/12732928/4975979202327.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "クールワンせき止めＧＸプラス",
+    "manufacturer": "テイカ製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 1,
+    "slug": "クールワンせき止めGXプラス",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon53/te_4987060009616.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "カコナールせき止め液Ｗ",
+    "manufacturer": "日新薬品工業",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 1,
+    "slug": "カコナールせき止め液W",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugaozora/cabinet/gazou23/4987040051024.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "のどスッキリスプレーＡＣ",
+    "manufacturer": "健栄製薬",
+    "medicine_type": "外用薬（のど）",
+    "recommendation_count": 1,
+    "slug": "のどスッキリスプレーAC",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/fortress/cabinet/products/06713660/4987286318271medeal.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "清痛顆粒",
+    "manufacturer": "第一薬品工業",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 1,
+    "slug": "清痛顆粒",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/genki-e-shop-hanshin/cabinet/j/4987305116819.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "クミアイ解熱鎮痛錠",
+    "manufacturer": "協同薬品",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 1,
+    "slug": "クミアイ解熱鎮痛錠",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/benkyo/cabinet/shohin14/4987847021442.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "竹参かぜまる",
+    "manufacturer": "タキザワ漢方廠",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 1,
+    "slug": "竹参かぜまる",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/pmone/cabinet/4987045054556s3.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ササイサン",
+    "manufacturer": "和漢薬研究所",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 1,
+    "slug": "ササイサン",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/ds-kotobukiya/cabinet/10548348/4987301780533.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "フラーリンＪ粒",
+    "manufacturer": "剤盛堂薬品",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 1,
+    "slug": "フラーリンJ粒",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/leaf-land/cabinet/medication/herbal-medicine/4987474377141-1.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "東洋漢方のセンナ顆粒Ｓ（分包）",
+    "manufacturer": "東洋漢方製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "東洋漢方のセンナ顆粒S分包",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/ladydrugplus/cabinet/pic808/4979654021968_1.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ミカサ浣腸Ｎ４０",
+    "manufacturer": "ムネ製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "ミカサ浣腸N40",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon17/4987203001439.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "コトブキ浣腸４０",
+    "manufacturer": "ムネ製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "コトブキ浣腸40",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon21/4987388014019.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "コトブキ浣腸４０パステル",
+    "manufacturer": "ムネ製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "コトブキ浣腸40パステル",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/beisia/cabinet/drug/set3/4987388034208-5_00.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "コトブキ浣腸３０パステル",
+    "manufacturer": "ムネ製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "コトブキ浣腸30パステル",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/hanaxhanadrug/cabinet/default/itemrobot_iyakuhin1/4987388015016.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "コリイス浣腸３０",
+    "manufacturer": "ムネ製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "コリイス浣腸30",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/hanaxhanadrug/cabinet/default/itemrobot_iyakuhin1/4987388013012.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "本草センナ錠",
+    "manufacturer": "本草製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "本草センナ錠",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/sundrug/cabinet/68/4987334201081.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "新バック液",
+    "manufacturer": "全薬工業",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "新バック液",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/fortress/cabinet/products/06713660/4976652016255medeal.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ソルマックＥＸ２",
+    "manufacturer": "大鵬薬品工業",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "ソルマックEX2",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/jism/cabinet/0429/4987117396201.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ストーゼ胃腸内服液",
+    "manufacturer": "東宝製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "ストーゼ胃腸内服液",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/fuseyakuten/cabinet/202503/4987239127516.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ガロール健芯液",
+    "manufacturer": "健創製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "ガロール健芯液",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/fortress/cabinet/products/12374699/4987103052449mede.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ワクナガ生薬胃腸薬",
+    "manufacturer": "湧永製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "ワクナガ生薬胃腸薬",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/leaf-land/cabinet/medication/gastrointestinal/4968250169310.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "オウレンいけだや",
+    "manufacturer": "延寿堂",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "オウレンいけだや",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/mikawaph/cabinet/kihon6/4987466109040.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "オウレン末いけだや",
+    "manufacturer": "延寿堂",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "オウレン末いけだや",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon40/4936246100784.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "新新胃腸薬Ｓ",
+    "manufacturer": "新新薬品工業",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "新新胃腸薬S",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon70/4987074301553.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "イスロ胃腸ドリンクＳ",
+    "manufacturer": "ゼネル薬工粉河",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "イスロ胃腸ドリンクS",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/mprice-shop/cabinet/l/20260525fk/4962720202132.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "大光丸",
+    "manufacturer": "大佛堂製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "大光丸",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/k-benkyo/cabinet/shohin14/4987110001737.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "オウレンダイコー",
+    "manufacturer": "大晃生薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "オウレンダイコー",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon45/4979654026741.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "オウレン末ダイコー",
+    "manufacturer": "大晃生薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "オウレン末ダイコー",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon40/4936246100821.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "大草胃腸薬内服液３０",
+    "manufacturer": "大草薬品",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "大草胃腸薬内服液30",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/kenkoumate/cabinet/4976084021308.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "救胆",
+    "manufacturer": "島伊兵衛薬品",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "救胆",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/fortress/cabinet/products/12374699/4987061015791mede.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナカジマオウレン",
+    "manufacturer": "中嶋生薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "ナカジマオウレン",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/kobe-menken/cabinet/dw11/4936246100777.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナカジマオウレン末",
+    "manufacturer": "中嶋生薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "ナカジマオウレン末",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon40/4936246100784.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "御百草丸Ｕ",
+    "manufacturer": "二反田薬品工業",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "御百草丸U",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/benkyo/cabinet/okihai01/4987352002813mail.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "日野百草丸",
+    "manufacturer": "日野製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "日野百草丸",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon35/4987364004010.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "百草丸プラス",
+    "manufacturer": "日野製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "百草丸プラス",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon35/4987364004010.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "増田胃腸薬",
+    "manufacturer": "増田製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "増田胃腸薬",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon29/4954391104617.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ヤマサンオウレン末",
+    "manufacturer": "小島漢方",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "ヤマサンオウレン末",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/doremi/cabinet/new4/4979654026673.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ヤマサンオウレン",
+    "manufacturer": "小島漢方",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "ヤマサンオウレン",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/koyama-p/cabinet/1drug/1/4987138390158.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "トチモトのオウレンＰ",
+    "manufacturer": "栃本天海堂",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "トチモトのオウレンP",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/kusurinoaoki/cabinet/tochimoto/4987466751829.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "トチモトのオウレン末Ｐ",
+    "manufacturer": "栃本天海堂",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "トチモトのオウレン末P",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/phmikawa2/cabinet/kihon6/4987466109040.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "薬草健胃薬Ｆ",
+    "manufacturer": "富士薬品",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "薬草健胃薬F",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/fujiyaku/cabinet/item23/4987524071326.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "恵命我神散Ｓ＜細粒＞",
+    "manufacturer": "老舗恵命堂",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "恵命我神散S細粒",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/kiraramagic/cabinet/03744007/07367706/11225517/4955982030117.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "フラーリンＪ錠",
+    "manufacturer": "剤盛堂薬品",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "フラーリンJ錠",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/doremi/cabinet/new4/4987474000070.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "はらはら薬「翁丸」",
+    "manufacturer": "日本製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "はらはら薬翁丸",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/benkyo/cabinet/okihai01/4989719100101teikei.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ニチイ胃腸内服液",
+    "manufacturer": "日本医薬品製造",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "ニチイ胃腸内服液",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/mitsuikanpou/cabinet/09440267/40-4987307120142-1.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "やまと丸",
+    "manufacturer": "日本医薬品製造",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "やまと丸",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/energy/cabinet/nopoint/4987364231539-mail.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "複方熊胆円",
+    "manufacturer": "キョクトウ",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "複方熊胆円",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/benkyo/cabinet/shohin18/4987360075663.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "複方熊胆丸",
+    "manufacturer": "キョクトウ",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "複方熊胆丸",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/benkyo/cabinet/shohin18/4987360075663.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "新マルコターンソフト",
+    "manufacturer": "廣貫堂",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "新マルコターンソフト",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/apriceonline/cabinet/images_all/4964312031014.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "熊膽圓Ｓ",
+    "manufacturer": "廣貫堂",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "熊膽圓S",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/k-benkyo/cabinet/shohin18/4987360075663.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "イスロンＧⅡ",
+    "manufacturer": "パナケイア製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "イスロンGII",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/protoolshop/cabinet/703/4992873046703.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "タブローンＭⅡ",
+    "manufacturer": "パナケイア製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "タブローンMII",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/kikui-p/cabinet/11957289/4901577063060.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パンジアス顆粒",
+    "manufacturer": "第一薬品工業",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "パンジアス顆粒",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/jetdrug/cabinet/p05/4987241139460-01.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ハイウルソグリーンＳ",
+    "manufacturer": "テイカ製薬",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "ハイウルソグリーンS",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/benkyo/cabinet/shohin126/4987316093116.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "新グリーン胃腸薬ＤＸ",
+    "manufacturer": "第一薬品工業",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "新グリーン胃腸薬DX",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/jetdrug/cabinet/p05-04/4987107170675-02.jpg",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "胃腸薬エースプラス",
+    "manufacturer": "ダイト",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "胃腸薬エースプラス",
+    "source": "missing_top200",
+    "official_url": "https://tshop.r10s.jp/jetdrug/cabinet/p05-04/4987107627162-01.jpg",
+    "r2_status": "pending"
+  }
+]

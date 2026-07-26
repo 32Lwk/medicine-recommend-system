@@ -633,7 +633,9 @@ body[data-ui-variant="sage"] {
 }
 
 [data-ui-variant="sage"] .chat-input.ui-input-bar {
-  padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+  --sage-input-control-size: 38px;
+  --sage-input-bar-inset-x: 4px;
+  padding: 8px var(--sage-input-bar-inset-x) calc(8px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--sage-bar-border);
   background: var(--sage-bar-bg);
 }
@@ -641,8 +643,10 @@ body[data-ui-variant="sage"] {
 [data-ui-variant="sage"] .chat-input .ui-input-row {
   display: flex;
   gap: 6px;
-  align-items: flex-end;
+  align-items: center;
   margin: 0;
+  width: 100%;
+  min-width: 0;
 }
 
 [data-ui-variant="sage"] .chat-input .message-input-field {
@@ -650,10 +654,11 @@ body[data-ui-variant="sage"] {
   min-width: 0;
   border: 1px solid var(--ui-border);
   border-radius: 999px;
-  min-height: 38px;
+  min-height: var(--sage-input-control-size);
   max-height: 120px;
   background: #fff;
   box-shadow: none;
+  align-self: center;
 }
 
 [data-ui-variant="sage"] .chat-input .message-input-field:focus-within {
@@ -665,13 +670,20 @@ body[data-ui-variant="sage"] {
   width: 100%;
   border: none;
   border-radius: 0;
-  min-height: 38px;
+  min-height: var(--sage-input-control-size);
   max-height: 120px;
   padding: 8px 12px;
-  font-size: max(16px, 0.85rem);
+  font-size: var(--sage-chat-copy-fs, var(--font-size-base, 1rem));
   line-height: 1.4;
   background: transparent;
   box-shadow: none;
+  box-sizing: border-box;
+}
+
+[data-ui-variant="sage"] .chat-input #messageInput.ui-textarea::placeholder {
+  font-size: var(--sage-chat-copy-fs, var(--font-size-base, 1rem));
+  color: var(--ui-text-muted);
+  opacity: 1;
 }
 
 [data-ui-variant="sage"] .chat-input #messageInput.ui-textarea:focus {
@@ -680,39 +692,54 @@ body[data-ui-variant="sage"] {
   box-shadow: none;
 }
 
-[data-ui-variant="sage"] .chat-input .ui-mic,
-[data-ui-variant="sage"] .chat-input .mic-btn.ui-mic {
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
-  min-height: 38px;
-  padding: 0;
+/* main.css の .mic-btn / .chat-input button を上書き（直径＝入力欄の高さ） */
+body[data-ui-variant="sage"] .chat-input .ui-mic,
+body[data-ui-variant="sage"] .chat-input .mic-btn.ui-mic,
+body[data-ui-variant="sage"] .chat-input #micBtn.mic-btn.ui-mic,
+body[data-ui-variant="sage"] .chat-input .ui-send,
+body[data-ui-variant="sage"] .chat-input button[type="submit"].ui-send {
+  width: var(--sage-input-control-size) !important;
+  height: var(--sage-input-control-size) !important;
+  min-width: var(--sage-input-control-size) !important;
+  min-height: var(--sage-input-control-size) !important;
+  max-width: var(--sage-input-control-size) !important;
+  max-height: var(--sage-input-control-size) !important;
+  padding: 0 !important;
   border-radius: 50%;
-  font-size: 1rem;
-  display: grid;
+  font-size: calc(var(--sage-chat-copy-fs, var(--font-size-base, 1rem)) * 0.875);
+  line-height: 1;
+  display: grid !important;
   place-items: center;
   border: none;
-  flex-shrink: 0;
+  flex: 0 0 var(--sage-input-control-size) !important;
+  align-self: center;
+  box-sizing: border-box;
 }
 
-[data-ui-variant="sage"] .chat-input .ui-send {
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
-  min-height: 38px;
-  padding: 0;
-  border-radius: 50%;
-  font-size: 1rem;
-  line-height: 1;
-  display: grid;
-  place-items: center;
-  border: none;
+body[data-ui-variant="sage"] .chat-input .ui-mic,
+body[data-ui-variant="sage"] .chat-input .mic-btn.ui-mic,
+body[data-ui-variant="sage"] .chat-input #micBtn.mic-btn.ui-mic {
   flex-shrink: 0;
+  margin-left: calc(-1 * var(--sage-input-bar-inset-x, 4px));
+  transform: none !important;
+}
+
+body[data-ui-variant="sage"] .chat-input .ui-send,
+body[data-ui-variant="sage"] .chat-input button[type="submit"].ui-send {
+  flex-shrink: 0;
+  margin-right: calc(-1 * var(--sage-input-bar-inset-x, 4px));
   background: var(--ui-primary);
   color: #fff;
 }
 
-[data-ui-variant="sage"] .chat-input .ui-send:hover {
+body[data-ui-variant="sage"] .chat-input .mic-btn.ui-mic:hover,
+body[data-ui-variant="sage"] .chat-input #micBtn.mic-btn.ui-mic:hover {
+  transform: none !important;
+  box-shadow: none;
+}
+
+body[data-ui-variant="sage"] .chat-input .ui-send:hover,
+body[data-ui-variant="sage"] .chat-input button[type="submit"].ui-send:hover {
   background: var(--ui-primary-dark);
 }
 

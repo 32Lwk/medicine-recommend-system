@@ -64,6 +64,8 @@ def summarize(results: list[dict[str, Any]]) -> dict[str, Any]:
 def merge_results(out_dir: Path) -> dict[str, Any]:
     merged: list[dict[str, Any]] = []
     for p in sorted(out_dir.glob("results_batch_*.json")):
+        if p.stem.endswith("_retry"):
+            continue
         merged.extend(json.loads(p.read_text(encoding="utf-8")))
     summary = {**summarize(merged), "items": merged}
     (out_dir / "results_all.json").write_text(

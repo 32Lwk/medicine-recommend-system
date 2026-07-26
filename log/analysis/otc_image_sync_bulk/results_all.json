@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-26T03:59:38.944363+00:00",
+  "generated_at": "2026-07-26T04:18:05.536299+00:00",
   "total": 443,
-  "uploaded": 146,
-  "skipped_exists": 68,
-  "not_found": 229,
+  "uploaded": 168,
+  "skipped_exists": 124,
+  "not_found": 151,
   "review_rejected": 0,
   "download_error": 0,
   "upload_error": 0,
@@ -5176,11 +5176,10 @@
       "recommendation_count": 6,
       "slug": "エスタックイブファインEX",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/koyamadrug/cabinet/12217305//p05/4987300069011-1.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:37:40.981026+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/エスタックイブファインEX.webp"
     },
     {
       "product_name": "バファリンかぜＥＸ錠《瓶》",
@@ -5189,11 +5188,10 @@
       "recommendation_count": 6,
       "slug": "バファリンかぜEX錠瓶",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/n-yakuhin/cabinet/syouhin11/4903301010982.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:37:52.215450+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/バファリンかぜEX錠瓶.webp"
     },
     {
       "product_name": "仁壽",
@@ -5202,11 +5200,10 @@
       "recommendation_count": 5,
       "slug": "仁壽",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/kyorindo/cabinet/item7/4987126202722.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:37:58.990021+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/仁壽.webp"
     },
     {
       "product_name": "暖中錠",
@@ -5215,11 +5212,10 @@
       "recommendation_count": 5,
       "slug": "暖中錠",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/koto-p/cabinet/itempic11/4987304041013.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:38:02.314625+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/暖中錠.webp"
     },
     {
       "product_name": "新スキントールＳ",
@@ -5228,11 +5224,10 @@
       "recommendation_count": 5,
       "slug": "新スキントールS",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drug-sakura/cabinet/item04/4979949000777-5.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:38:05.829291+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/新スキントールS.webp"
     },
     {
       "product_name": "フジコールＩＰ錠",
@@ -5241,11 +5236,10 @@
       "recommendation_count": 4,
       "slug": "フジコールIP錠",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/genki-e-shop-hanshin/cabinet/b/4968250903112.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:38:17.138235+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/フジコールIP錠.webp"
     },
     {
       "product_name": "サンワ白虎加人参湯エキス細粒",
@@ -5254,11 +5248,10 @@
       "recommendation_count": 4,
       "slug": "サンワ白虎加人参湯エキス細粒",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/y-koto/cabinet/itempic11/4987327047146.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:38:23.671138+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/サンワ白虎加人参湯エキス細粒.webp"
     },
     {
       "product_name": "ニタンダ麻杏甘石湯エキス顆粒",
@@ -5267,11 +5260,10 @@
       "recommendation_count": 4,
       "slug": "ニタンダ麻杏甘石湯エキス顆粒",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/akibaoo-r/cabinet/gi1049/4930342520057.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:38:30.361381+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ニタンダ麻杏甘石湯エキス顆粒.webp"
     },
     {
       "product_name": "ヤマサンシャゼンソウ",
@@ -5280,11 +5272,10 @@
       "recommendation_count": 4,
       "slug": "ヤマサンシャゼンソウ",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/gold/ds-kotobukiya/img2/item/4993512243231.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:38:37.148374+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ヤマサンシャゼンソウ.webp"
     },
     {
       "product_name": "ストナデイタイム",
@@ -5293,11 +5284,10 @@
       "recommendation_count": 3,
       "slug": "ストナデイタイム",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon26/4987316012827m.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:38:44.456726+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ストナデイタイム.webp"
     },
     {
       "product_name": "グロンサンゴールド錠Ａ",
@@ -5306,11 +5296,10 @@
       "recommendation_count": 3,
       "slug": "グロンサンゴールド錠A",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/ads01/cabinet/p05/4987306045132.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:38:50.402038+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/グロンサンゴールド錠A.webp"
     },
     {
       "product_name": "エイクレス",
@@ -5319,11 +5308,10 @@
       "recommendation_count": 3,
       "slug": "エイクレス",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/kyorindo/cabinet/item11/4987475118491.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:39:02.255335+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/エイクレス.webp"
     },
     {
       "product_name": "コリクリアーＳローション",
@@ -5332,11 +5320,10 @@
       "recommendation_count": 3,
       "slug": "コリクリアーSローション",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/koyamadrug/cabinet/12217305//p05/4987973113837-1.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:39:05.447648+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/コリクリアーSローション.webp"
     },
     {
       "product_name": "オムニンエース",
@@ -5345,11 +5332,10 @@
       "recommendation_count": 3,
       "slug": "オムニンエース",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/koubetanpopo/cabinet/take01/pake201902/y4987299222626.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:39:13.150793+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/オムニンエース.webp"
     },
     {
       "product_name": "ウチダの大黄牡丹皮湯",
@@ -5358,11 +5344,10 @@
       "recommendation_count": 3,
       "slug": "ウチダの大黄牡丹皮湯",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/k-benkyo/cabinet/shohin204/4987359200199.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:39:18.533789+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ウチダの大黄牡丹皮湯.webp"
     },
     {
       "product_name": "ザッツ",
@@ -5371,11 +5356,10 @@
       "recommendation_count": 3,
       "slug": "ザッツ",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drug-sakura/cabinet/item06/4987316011097.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:39:24.091508+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ザッツ.webp"
     },
     {
       "product_name": "新リバヘルスゴールド",
@@ -5384,11 +5368,10 @@
       "recommendation_count": 2,
       "slug": "新リバヘルスゴールド",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/hb-eshop/cabinet/shouhin/05998122/4987306008007.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:39:27.993350+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/新リバヘルスゴールド.webp"
     },
     {
       "product_name": "清風散",
@@ -5397,11 +5380,10 @@
       "recommendation_count": 2,
       "slug": "清風散",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/welpark/cabinet/10686711/4987045109287a.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:39:35.062441+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/清風散.webp"
     },
     {
       "product_name": "ヒストミンせき止め液ＮＸ",
@@ -5410,11 +5392,10 @@
       "recommendation_count": 2,
       "slug": "ヒストミンせき止め液NX",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/welpark/cabinet/202508shouhin05/4987336771513a.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:39:40.606447+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ヒストミンせき止め液NX.webp"
     },
     {
       "product_name": "ナカジマキキョウ末",
@@ -5423,11 +5404,10 @@
       "recommendation_count": 2,
       "slug": "ナカジマキキョウ末",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon40/4936246100753.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:39:51.582416+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ナカジマキキョウ末.webp"
     },
     {
       "product_name": "再春痛散湯エキス顆粒",
@@ -5436,11 +5416,10 @@
       "recommendation_count": 2,
       "slug": "再春痛散湯エキス顆粒",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/kobe-menken/cabinet/kihon03/4987174729011.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:39:58.335749+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/再春痛散湯エキス顆粒.webp"
     },
     {
       "product_name": "ウチダの麻黄附子細辛湯",
@@ -5449,11 +5428,10 @@
       "recommendation_count": 1,
       "slug": "ウチダの麻黄附子細辛湯",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/phmikawa2/cabinet/kihon7/498735901072910.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:40:06.207263+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ウチダの麻黄附子細辛湯.webp"
     },
     {
       "product_name": "新セキリック液",
@@ -5462,11 +5440,10 @@
       "recommendation_count": 1,
       "slug": "新セキリック液",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/nissin-yk/cabinet/04191107/10056731/12732928/4975979202327.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:40:11.487721+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/新セキリック液.webp"
     },
     {
       "product_name": "クールワンせき止めＧＸプラス",
@@ -5475,11 +5452,10 @@
       "recommendation_count": 1,
       "slug": "クールワンせき止めGXプラス",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon53/te_4987060009616.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:40:19.975932+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/クールワンせき止めGXプラス.webp"
     },
     {
       "product_name": "カコナールせき止め液Ｗ",
@@ -5488,11 +5464,10 @@
       "recommendation_count": 1,
       "slug": "カコナールせき止め液W",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drugaozora/cabinet/gazou23/4987040051024.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:40:26.966808+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/カコナールせき止め液W.webp"
     },
     {
       "product_name": "のどスッキリスプレーＡＣ",
@@ -5501,11 +5476,10 @@
       "recommendation_count": 1,
       "slug": "のどスッキリスプレーAC",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/fortress/cabinet/products/06713660/4987286318271medeal.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:40:40.160139+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/のどスッキリスプレーAC.webp"
     },
     {
       "product_name": "清痛顆粒",
@@ -5514,11 +5488,10 @@
       "recommendation_count": 1,
       "slug": "清痛顆粒",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/genki-e-shop-hanshin/cabinet/j/4987305116819.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:40:51.157848+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/清痛顆粒.webp"
     },
     {
       "product_name": "クミアイ解熱鎮痛錠",
@@ -5527,11 +5500,10 @@
       "recommendation_count": 1,
       "slug": "クミアイ解熱鎮痛錠",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/benkyo/cabinet/shohin14/4987847021442.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:40:55.920287+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/クミアイ解熱鎮痛錠.webp"
     },
     {
       "product_name": "竹参かぜまる",
@@ -5540,11 +5512,10 @@
       "recommendation_count": 1,
       "slug": "竹参かぜまる",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/pmone/cabinet/4987045054556s3.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:41:03.487878+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/竹参かぜまる.webp"
     },
     {
       "product_name": "ササイサン",
@@ -5553,11 +5524,10 @@
       "recommendation_count": 1,
       "slug": "ササイサン",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/ds-kotobukiya/cabinet/10548348/4987301780533.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:41:10.631694+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ササイサン.webp"
     },
     {
       "product_name": "フラーリンＪ粒",
@@ -5566,11 +5536,10 @@
       "recommendation_count": 1,
       "slug": "フラーリンJ粒",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/leaf-land/cabinet/medication/herbal-medicine/4987474377141-1.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:41:15.270822+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/フラーリンJ粒.webp"
     },
     {
       "product_name": "東洋漢方のセンナ顆粒Ｓ（分包）",
@@ -5579,11 +5548,10 @@
       "recommendation_count": 0,
       "slug": "東洋漢方のセンナ顆粒S分包",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/ladydrugplus/cabinet/pic808/4979654021968_1.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:41:22.043447+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/東洋漢方のセンナ顆粒S分包.webp"
     },
     {
       "product_name": "ミカサ浣腸Ｎ４０",
@@ -5592,11 +5560,10 @@
       "recommendation_count": 0,
       "slug": "ミカサ浣腸N40",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon17/4987203001439.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:41:34.976835+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ミカサ浣腸N40.webp"
     },
     {
       "product_name": "コトブキ浣腸４０",
@@ -5605,11 +5572,10 @@
       "recommendation_count": 0,
       "slug": "コトブキ浣腸40",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon21/4987388014019.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:41:42.388546+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/コトブキ浣腸40.webp"
     },
     {
       "product_name": "コトブキ浣腸４０パステル",
@@ -5618,11 +5584,10 @@
       "recommendation_count": 0,
       "slug": "コトブキ浣腸40パステル",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/beisia/cabinet/drug/set3/4987388034208-5_00.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:41:49.730223+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/コトブキ浣腸40パステル.webp"
     },
     {
       "product_name": "コトブキ浣腸３０パステル",
@@ -5631,11 +5596,10 @@
       "recommendation_count": 0,
       "slug": "コトブキ浣腸30パステル",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/hanaxhanadrug/cabinet/default/itemrobot_iyakuhin1/4987388015016.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:41:56.813734+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/コトブキ浣腸30パステル.webp"
     },
     {
       "product_name": "コリイス浣腸３０",
@@ -5644,11 +5608,10 @@
       "recommendation_count": 0,
       "slug": "コリイス浣腸30",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/hanaxhanadrug/cabinet/default/itemrobot_iyakuhin1/4987388013012.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:42:04.330403+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/コリイス浣腸30.webp"
     },
     {
       "product_name": "本草センナ錠",
@@ -5657,11 +5620,10 @@
       "recommendation_count": 0,
       "slug": "本草センナ錠",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/sundrug/cabinet/68/4987334201081.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:42:12.063328+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/本草センナ錠.webp"
     },
     {
       "product_name": "新バック液",
@@ -5670,11 +5632,10 @@
       "recommendation_count": 0,
       "slug": "新バック液",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/fortress/cabinet/products/06713660/4976652016255medeal.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:42:20.943108+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/新バック液.webp"
     },
     {
       "product_name": "ソルマックＥＸ２",
@@ -5683,11 +5644,10 @@
       "recommendation_count": 0,
       "slug": "ソルマックEX2",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/jism/cabinet/0429/4987117396201.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:42:25.359091+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ソルマックEX2.webp"
     },
     {
       "product_name": "ストーゼ胃腸内服液",
@@ -5696,11 +5656,10 @@
       "recommendation_count": 0,
       "slug": "ストーゼ胃腸内服液",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/fuseyakuten/cabinet/202503/4987239127516.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:42:31.557381+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ストーゼ胃腸内服液.webp"
     },
     {
       "product_name": "ガロール健芯液",
@@ -5709,11 +5668,10 @@
       "recommendation_count": 0,
       "slug": "ガロール健芯液",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/fortress/cabinet/products/12374699/4987103052449mede.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:42:39.278129+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ガロール健芯液.webp"
     },
     {
       "product_name": "ワクナガ生薬胃腸薬",
@@ -5722,11 +5680,10 @@
       "recommendation_count": 0,
       "slug": "ワクナガ生薬胃腸薬",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/leaf-land/cabinet/medication/gastrointestinal/4968250169310.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:42:47.756743+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ワクナガ生薬胃腸薬.webp"
     },
     {
       "product_name": "オウレンいけだや",
@@ -5735,11 +5692,10 @@
       "recommendation_count": 0,
       "slug": "オウレンいけだや",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/mikawaph/cabinet/kihon6/4987466109040.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:42:54.936940+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/オウレンいけだや.webp"
     },
     {
       "product_name": "オウレン末いけだや",
@@ -5748,11 +5704,10 @@
       "recommendation_count": 0,
       "slug": "オウレン末いけだや",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon40/4936246100784.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:43:02.122593+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/オウレン末いけだや.webp"
     },
     {
       "product_name": "新新胃腸薬Ｓ",
@@ -5761,11 +5716,10 @@
       "recommendation_count": 0,
       "slug": "新新胃腸薬S",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon70/4987074301553.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:43:08.527670+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/新新胃腸薬S.webp"
     },
     {
       "product_name": "イスロ胃腸ドリンクＳ",
@@ -5774,11 +5728,10 @@
       "recommendation_count": 0,
       "slug": "イスロ胃腸ドリンクS",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/mprice-shop/cabinet/l/20260525fk/4962720202132.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:43:17.602083+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/イスロ胃腸ドリンクS.webp"
     },
     {
       "product_name": "大光丸",
@@ -5787,11 +5740,10 @@
       "recommendation_count": 0,
       "slug": "大光丸",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/k-benkyo/cabinet/shohin14/4987110001737.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:43:29.372734+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/大光丸.webp"
     },
     {
       "product_name": "オウレンダイコー",
@@ -5800,11 +5752,10 @@
       "recommendation_count": 0,
       "slug": "オウレンダイコー",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon45/4979654026741.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:43:33.923446+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/オウレンダイコー.webp"
     },
     {
       "product_name": "オウレン末ダイコー",
@@ -5813,11 +5764,10 @@
       "recommendation_count": 0,
       "slug": "オウレン末ダイコー",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon40/4936246100821.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:43:38.257994+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/オウレン末ダイコー.webp"
     },
     {
       "product_name": "大草胃腸薬内服液３０",
@@ -5826,11 +5776,10 @@
       "recommendation_count": 0,
       "slug": "大草胃腸薬内服液30",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/kenkoumate/cabinet/4976084021308.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:43:45.039927+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/大草胃腸薬内服液30.webp"
     },
     {
       "product_name": "救胆",
@@ -5839,11 +5788,10 @@
       "recommendation_count": 0,
       "slug": "救胆",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/fortress/cabinet/products/12374699/4987061015791mede.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:43:52.624923+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/救胆.webp"
     },
     {
       "product_name": "ナカジマオウレン",
@@ -5852,11 +5800,10 @@
       "recommendation_count": 0,
       "slug": "ナカジマオウレン",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/kobe-menken/cabinet/dw11/4936246100777.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:43:55.697156+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ナカジマオウレン.webp"
     },
     {
       "product_name": "ナカジマオウレン末",
@@ -5865,11 +5812,10 @@
       "recommendation_count": 0,
       "slug": "ナカジマオウレン末",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon40/4936246100784.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:44:01.211589+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/ナカジマオウレン末.webp"
     },
     {
       "product_name": "御百草丸Ｕ",
@@ -5878,11 +5824,10 @@
       "recommendation_count": 0,
       "slug": "御百草丸U",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/benkyo/cabinet/okihai01/4987352002813mail.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:44:08.087657+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/御百草丸U.webp"
     },
     {
       "product_name": "日野百草丸",
@@ -5890,12 +5835,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "日野百草丸",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon35/4987364004010.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:44:16.085773+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:16:47.272458+00:00",
+      "source_image_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon35/4987364004010.jpg",
+      "review_score": 100,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/日野百草丸.webp",
+      "r2_url": "https://images.yutok.dev/otc/日野百草丸.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "百草丸プラス",
@@ -5904,11 +5853,10 @@
       "recommendation_count": 0,
       "slug": "百草丸プラス",
       "source": "missing_top200",
-      "official_url": "",
+      "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon35/4987364004010.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:44:19.230246+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "status": "skipped_exists",
+      "r2_url": "https://images.yutok.dev/otc/百草丸プラス.webp"
     },
     {
       "product_name": "増田胃腸薬",
@@ -5916,12 +5864,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "増田胃腸薬",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon29/4954391104617.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:44:26.401596+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:16:48.509574+00:00",
+      "source_image_url": "https://tshop.r10s.jp/drugpure/cabinet/kihon29/4954391104617.jpg",
+      "review_score": 100,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/増田胃腸薬.webp",
+      "r2_url": "https://images.yutok.dev/otc/増田胃腸薬.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "ヤマサンオウレン末",
@@ -5929,12 +5881,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "ヤマサンオウレン末",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/doremi/cabinet/new4/4979654026673.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:44:31.530823+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:16:49.563562+00:00",
+      "source_image_url": "https://tshop.r10s.jp/doremi/cabinet/new4/4979654026673.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/ヤマサンオウレン末.webp",
+      "r2_url": "https://images.yutok.dev/otc/ヤマサンオウレン末.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "ヤマサンオウレン",
@@ -5942,12 +5898,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "ヤマサンオウレン",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/koyama-p/cabinet/1drug/1/4987138390158.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:44:38.484791+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:16:50.563423+00:00",
+      "source_image_url": "https://tshop.r10s.jp/koyama-p/cabinet/1drug/1/4987138390158.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/ヤマサンオウレン.webp",
+      "r2_url": "https://images.yutok.dev/otc/ヤマサンオウレン.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "トチモトのオウレンＰ",
@@ -5955,12 +5915,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "トチモトのオウレンP",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/kusurinoaoki/cabinet/tochimoto/4987466751829.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:44:44.569225+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:16:51.619325+00:00",
+      "source_image_url": "https://tshop.r10s.jp/kusurinoaoki/cabinet/tochimoto/4987466751829.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/トチモトのオウレンP.webp",
+      "r2_url": "https://images.yutok.dev/otc/トチモトのオウレンP.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "トチモトのオウレン末Ｐ",
@@ -5968,12 +5932,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "トチモトのオウレン末P",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/phmikawa2/cabinet/kihon6/4987466109040.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:44:53.999255+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:16:52.728026+00:00",
+      "source_image_url": "https://tshop.r10s.jp/phmikawa2/cabinet/kihon6/4987466109040.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/トチモトのオウレン末P.webp",
+      "r2_url": "https://images.yutok.dev/otc/トチモトのオウレン末P.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "薬草健胃薬Ｆ",
@@ -5981,12 +5949,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "薬草健胃薬F",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/fujiyaku/cabinet/item23/4987524071326.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:45:04.513121+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:16:53.821395+00:00",
+      "source_image_url": "https://tshop.r10s.jp/fujiyaku/cabinet/item23/4987524071326.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/薬草健胃薬F.webp",
+      "r2_url": "https://images.yutok.dev/otc/薬草健胃薬F.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "恵命我神散Ｓ＜細粒＞",
@@ -5994,12 +5966,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "恵命我神散S細粒",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/kiraramagic/cabinet/03744007/07367706/11225517/4955982030117.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:45:14.054851+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:16:54.883266+00:00",
+      "source_image_url": "https://tshop.r10s.jp/kiraramagic/cabinet/03744007/07367706/11225517/4955982030117.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/恵命我神散S細粒.webp",
+      "r2_url": "https://images.yutok.dev/otc/恵命我神散S細粒.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "フラーリンＪ錠",
@@ -6007,12 +5983,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "フラーリンJ錠",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/doremi/cabinet/new4/4987474000070.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:45:21.837506+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:16:55.937086+00:00",
+      "source_image_url": "https://tshop.r10s.jp/doremi/cabinet/new4/4987474000070.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/フラーリンJ錠.webp",
+      "r2_url": "https://images.yutok.dev/otc/フラーリンJ錠.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "はらはら薬「翁丸」",
@@ -6020,12 +6000,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "はらはら薬翁丸",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/benkyo/cabinet/okihai01/4989719100101teikei.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:45:28.763110+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:16:57.020014+00:00",
+      "source_image_url": "https://tshop.r10s.jp/benkyo/cabinet/okihai01/4989719100101teikei.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/はらはら薬翁丸.webp",
+      "r2_url": "https://images.yutok.dev/otc/はらはら薬翁丸.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "ニチイ胃腸内服液",
@@ -6033,12 +6017,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "ニチイ胃腸内服液",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/mitsuikanpou/cabinet/09440267/40-4987307120142-1.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:45:40.044870+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:16:58.204525+00:00",
+      "source_image_url": "https://tshop.r10s.jp/mitsuikanpou/cabinet/09440267/40-4987307120142-1.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/ニチイ胃腸内服液.webp",
+      "r2_url": "https://images.yutok.dev/otc/ニチイ胃腸内服液.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "やまと丸",
@@ -6046,12 +6034,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "やまと丸",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/energy/cabinet/nopoint/4987364231539-mail.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:45:46.633464+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:16:59.231540+00:00",
+      "source_image_url": "https://tshop.r10s.jp/energy/cabinet/nopoint/4987364231539-mail.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/やまと丸.webp",
+      "r2_url": "https://images.yutok.dev/otc/やまと丸.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "複方熊胆円",
@@ -6059,12 +6051,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "複方熊胆円",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/benkyo/cabinet/shohin18/4987360075663.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:45:51.548347+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:17:00.281357+00:00",
+      "source_image_url": "https://tshop.r10s.jp/benkyo/cabinet/shohin18/4987360075663.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/複方熊胆円.webp",
+      "r2_url": "https://images.yutok.dev/otc/複方熊胆円.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "複方熊胆丸",
@@ -6072,12 +6068,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "複方熊胆丸",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/benkyo/cabinet/shohin18/4987360075663.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:45:56.081155+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:17:01.411842+00:00",
+      "source_image_url": "https://tshop.r10s.jp/benkyo/cabinet/shohin18/4987360075663.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/複方熊胆丸.webp",
+      "r2_url": "https://images.yutok.dev/otc/複方熊胆丸.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "新マルコターンソフト",
@@ -6085,12 +6085,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "新マルコターンソフト",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/apriceonline/cabinet/images_all/4964312031014.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:46:01.485771+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:17:02.596476+00:00",
+      "source_image_url": "https://tshop.r10s.jp/apriceonline/cabinet/images_all/4964312031014.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/新マルコターンソフト.webp",
+      "r2_url": "https://images.yutok.dev/otc/新マルコターンソフト.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "熊膽圓Ｓ",
@@ -6098,12 +6102,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "熊膽圓S",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/k-benkyo/cabinet/shohin18/4987360075663.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:46:09.699790+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:17:03.796072+00:00",
+      "source_image_url": "https://tshop.r10s.jp/k-benkyo/cabinet/shohin18/4987360075663.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/熊膽圓S.webp",
+      "r2_url": "https://images.yutok.dev/otc/熊膽圓S.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "イスロンＧⅡ",
@@ -6111,12 +6119,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "イスロンGII",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/protoolshop/cabinet/703/4992873046703.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:46:15.377450+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:17:04.870399+00:00",
+      "source_image_url": "https://tshop.r10s.jp/protoolshop/cabinet/703/4992873046703.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/イスロンGII.webp",
+      "r2_url": "https://images.yutok.dev/otc/イスロンGII.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "タブローンＭⅡ",
@@ -6124,12 +6136,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "タブローンMII",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/kikui-p/cabinet/11957289/4901577063060.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:46:22.453311+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:17:05.900004+00:00",
+      "source_image_url": "https://tshop.r10s.jp/kikui-p/cabinet/11957289/4901577063060.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/タブローンMII.webp",
+      "r2_url": "https://images.yutok.dev/otc/タブローンMII.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "パンジアス顆粒",
@@ -6137,12 +6153,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "パンジアス顆粒",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/jetdrug/cabinet/p05/4987241139460-01.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:46:27.905478+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:17:07.008457+00:00",
+      "source_image_url": "https://tshop.r10s.jp/jetdrug/cabinet/p05/4987241139460-01.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/パンジアス顆粒.webp",
+      "r2_url": "https://images.yutok.dev/otc/パンジアス顆粒.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "ハイウルソグリーンＳ",
@@ -6150,12 +6170,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "ハイウルソグリーンS",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/benkyo/cabinet/shohin126/4987316093116.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:46:33.946792+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:17:08.063573+00:00",
+      "source_image_url": "https://tshop.r10s.jp/benkyo/cabinet/shohin126/4987316093116.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/ハイウルソグリーンS.webp",
+      "r2_url": "https://images.yutok.dev/otc/ハイウルソグリーンS.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "新グリーン胃腸薬ＤＸ",
@@ -6163,12 +6187,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "新グリーン胃腸薬DX",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/jetdrug/cabinet/p05-04/4987107170675-02.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:46:44.859266+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:17:09.240608+00:00",
+      "source_image_url": "https://tshop.r10s.jp/jetdrug/cabinet/p05-04/4987107170675-02.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/新グリーン胃腸薬DX.webp",
+      "r2_url": "https://images.yutok.dev/otc/新グリーン胃腸薬DX.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "胃腸薬エースプラス",
@@ -6176,12 +6204,16 @@
       "medicine_type": "胃腸薬",
       "recommendation_count": 0,
       "slug": "胃腸薬エースプラス",
-      "source": "missing_top200",
-      "official_url": "",
+      "source": "official_url",
+      "official_url": "https://tshop.r10s.jp/jetdrug/cabinet/p05-04/4987107627162-01.jpg",
       "r2_status": "pending",
-      "processed_at": "2026-07-26T03:46:56.612734+00:00",
-      "status": "not_found",
-      "note": "matsukiyo search: no match"
+      "processed_at": "2026-07-26T04:17:10.406982+00:00",
+      "source_image_url": "https://tshop.r10s.jp/jetdrug/cabinet/p05-04/4987107627162-01.jpg",
+      "review_score": 90,
+      "review_reasons": [],
+      "local_path": "/Users/yuto/medicine recomended/static/otc/胃腸薬エースプラス.webp",
+      "r2_url": "https://images.yutok.dev/otc/胃腸薬エースプラス.webp",
+      "status": "uploaded"
     },
     {
       "product_name": "タイレノールＡ",

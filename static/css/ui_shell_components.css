@@ -2496,6 +2496,7 @@ body:has(#app > .ui-app) #app {
 
 .ui-input-bar--compact .ui-input-row {
   gap: 6px;
+  align-items: center;
 }
 
 .ui-input-row {
