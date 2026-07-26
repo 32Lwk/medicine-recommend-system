@@ -202,6 +202,169 @@ scenarios:
     expect_information_question: true
     expect_clarify: false
 
+# --- wave2: 口語・方言・英語混じり・症状クラス・年齢ライフステージ ---
+  - id: edy2-se-sns-drowsy
+    style: sns
+    query: "ロキソ飲んだら爆睡なんだけどこれ副作用？"
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+    expect_side_effect_route: true
+
+  - id: edy2-se-typo-rash
+    style: typo
+    query: "バファ飲んだらじんましんっぽくなったんだけど平気？"
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+
+  - id: edy2-se-kansai-stomach
+    style: dialect
+    query: "イブ飲んで胃がムカムカするねん、しゃーなし？"
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+
+  - id: edy2-se-enmix-nausea
+    style: english_mix
+    query: "Loxoninでnauseaくるのってnormal？"
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+
+  - id: edy2-se-enmix-dizzy
+    style: english_mix
+    query: "Loxoninでdizzyになるのnormal？"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+
+  - id: edy2-cmp-sns
+    style: sns
+    query: "ロキソvsイブどっち派？理由知りたい"
+    recommended_medicines: ["ロキソニン", "イブ"]
+    expect_focuses: ["comparison"]
+    expect_information_question: true
+
+  - id: edy2-cmp-enmix
+    style: english_mix
+    query: "イブとバファリン、which is better for頭痛？"
+    recommended_medicines: ["イブ", "バファリンA"]
+    expect_focuses: ["comparison"]
+    expect_information_question: true
+
+  - id: edy2-us-sns-interval
+    style: sns
+    query: "解熱剤また飲んでいいの何時間後？"
+    expect_focuses: ["usage"]
+    expect_information_question: true
+
+  - id: edy2-us-typo-dose
+    style: typo
+    query: "ロキソ何錠ずつ飲めばええの"
+    expect_focuses: ["usage"]
+    expect_information_question: true
+
+  - id: edy2-ing-active-en
+    style: english_mix
+    query: "ロキソのactive ingredient教えて"
+    expect_focuses: ["ingredient"]
+    expect_information_question: true
+
+  - id: edy2-ing-typo-aspirin
+    style: typo
+    query: "アスピンって成分なに？"
+    expect_focuses: ["ingredient"]
+    expect_information_question: true
+
+  - id: edy2-age-kindergarten
+    style: dialect
+    query: "幼稚園児でもカロナール飲んでええん？"
+    recommended_medicines: ["カロナールA"]
+    expect_focuses: ["age"]
+    expect_information_question: true
+
+  - id: edy2-age-junior-high
+    style: polite
+    query: "中学生でもロキソニンを飲んで問題ないでしょうか。"
+    expect_focuses: ["age"]
+    expect_information_question: true
+
+  - id: edy2-age-baby
+    style: casual
+    query: "赤ちゃんに使える解熱剤ある？"
+    expect_focuses: ["age"]
+    expect_information_question: true
+
+  - id: edy2-dop-track-meet
+    style: english_mix
+    query: "明日track meetあるんだけどイブOK？"
+    expect_focuses: ["doping"]
+    expect_information_question: true
+
+  - id: edy2-ix-banchaku
+    style: sns
+    query: "解熱剤飲んだあと晩酌ってどうなん"
+    expect_focuses: ["interaction"]
+    expect_information_question: true
+
+  - id: edy2-ix-same-day
+    style: polite
+    query: "風邪薬とイブを同日に飲んでも大丈夫でしょうか。"
+    expect_focuses: ["interaction"]
+    expect_information_question: true
+
+  - id: edy2-ix-warfarin-no-cmp
+    style: dialect
+    query: "ワルファリン飲んでるねんけどロキソ平気？"
+    expect_focuses: ["interaction"]
+    expect_not_focuses: ["comparison"]
+    expect_information_question: true
+
+  - id: edy2-photo-appearance
+    style: casual
+    query: "見た目どんな感じ"
+    recommended_medicines: ["イブ"]
+    expect_focuses: ["product_image"]
+    expect_information_question: true
+
+  - id: edy2-photo-typo
+    style: typo
+    query: "バファの見た目見せてくれ"
+    recommended_medicines: ["バファリンA"]
+    expect_focuses: ["product_image"]
+    expect_information_question: true
+
+  - id: edy2-clarify-vague-this
+    style: anaphora
+    query: "これってどうなん？"
+    expect_clarify: true
+
+  - id: edy2-clarify-sns-that
+    style: sns
+    query: "さっきのやつ大丈夫？"
+    expect_clarify: true
+
+  - id: edy2-mixed-photo-ing
+    style: mixed
+    query: "イブの成分と箱の写真どっちも見たい"
+    recommended_medicines: ["イブ"]
+    expect_focuses: ["ingredient", "product_image"]
+    expect_unified_route: true
+    expect_information_question: true
+
+  - id: edy2-mixed-us-se
+    style: mixed
+    query: "ロキソの飲み方教えて。副作用も気になる"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["usage", "side_effect"]
+    expect_unified_route: true
+    expect_information_question: true
+
+  - id: edy2-anaphora-us-reco
+    style: anaphora
+    query: "それ何時間おきに飲めばいいの"
+    recommended_medicines: ["カロナールA"]
+    expect_focuses: ["usage"]
+    expect_information_question: true
+    expect_clarify: false
+
 sessions:
   - id: edy-ctx-anaphora-usage
     style: context
@@ -371,3 +534,151 @@ sessions:
     expect_focuses: ["side_effect"]
     expect_information_question: true
     expect_unified_route: true
+
+  - id: edy2-ctx-sns-side
+    style: context
+    description: "推奨後のSNS風・副作用確認"
+    history:
+    - role: user
+      content: "頭がガンガンする"
+    - role: assistant
+      content: "ロキソニンをご検討ください"
+    - role: user
+      content: "それ飲むとガチ眠くなんない？"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+    expect_side_effect_route: true
+
+  - id: edy2-ctx-kansai-usage
+    style: context
+    description: "関西弁・用法 follow-up"
+    history:
+    - role: user
+      content: "熱が出てきたわ"
+    - role: assistant
+      content: "カロナールAをお試しください"
+    - role: user
+      content: "それ食前でもええん？"
+    recommended_medicines: ["カロナールA"]
+    expect_focuses: ["usage"]
+    expect_information_question: true
+    expect_clarify: false
+
+  - id: edy2-ctx-cmp-pick
+    style: context
+    description: "2剤提示後のざっくり比較"
+    history:
+    - role: user
+      content: "ロキソニンとイブで迷ってます"
+    - role: assistant
+      content: "どちらも解熱鎮痛の候補です"
+    - role: user
+      content: "胃に優しそうな方どれ"
+    recommended_medicines: ["ロキソニン", "イブ"]
+    expect_focuses: ["comparison"]
+    expect_information_question: true
+
+  - id: edy2-ctx-dop-race
+    style: context
+    description: "大会文脈後のドーピング"
+    history:
+    - role: user
+      content: "週末に駅伝あります"
+    - role: assistant
+      content: "カロナールAをご検討ください"
+    - role: user
+      content: "それ大会前に使って大丈夫？"
+    recommended_medicines: ["カロナールA"]
+    expect_focuses: ["doping"]
+    expect_information_question: true
+
+  - id: edy2-ctx-ix-drink
+    style: context
+    description: "推奨後の酒との併用"
+    history:
+    - role: user
+      content: "歯が痛いです"
+    - role: assistant
+      content: "ロキソニンをお試しください"
+    - role: user
+      content: "今夜飲み会あるんだけど一緒にヤバい？"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["interaction"]
+    expect_information_question: true
+
+  - id: edy2-ctx-photo-enmix
+    style: context
+    description: "英語混じりでパッケージ要求"
+    history:
+    - role: user
+      content: "頭痛です"
+    - role: assistant
+      content: "イブをおすすめします"
+    - role: user
+      content: "そのpackage photo見たい"
+    recommended_medicines: ["イブ"]
+    expect_focuses: ["product_image"]
+    expect_information_question: true
+
+  - id: edy2-ctx-anaphora-side-after-cmp
+    style: context
+    description: "比較会話後の副作用（比較誤検出なし）"
+    history:
+    - role: user
+      content: "ロキソとイブどっちがいい？"
+    - role: assistant
+      content: "ロキソニンを推奨します"
+    - role: user
+      content: "じゃあロキソでいく"
+    - role: assistant
+      content: "承知しました"
+    - role: user
+      content: "それ飲むと胃キツくなる？"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+    expect_not_focuses: ["comparison"]
+
+  - id: edy2-ctx-mixed-photo-side
+    style: context
+    description: "推奨後の副作用+見た目"
+    history:
+    - role: user
+      content: "熱っぽいです"
+    - role: assistant
+      content: "カロナールAをご検討ください"
+    - role: user
+      content: "副作用ある？箱も見せて"
+    recommended_medicines: ["カロナールA"]
+    expect_focuses: ["product_image", "side_effect"]
+    expect_unified_route: true
+    expect_information_question: true
+
+  - id: edy2-ctx-vague-usage-switch
+    style: context
+    description: "推奨確定後のざっくり用法"
+    history:
+    - role: user
+      content: "生理痛がつらい"
+    - role: assistant
+      content: "イブが候補です"
+    - role: user
+      content: "これどうやって飲めばいいの"
+    recommended_medicines: ["イブ"]
+    expect_focuses: ["usage"]
+    expect_information_question: true
+    expect_clarify: false
+
+  - id: edy2-ctx-age-school
+    style: context
+    description: "学年共有後のOTC可否"
+    history:
+    - role: user
+      content: "娘が小学5年なんです"
+    - role: assistant
+      content: "症状を教えてください"
+    - role: user
+      content: "市販の解熱剤ってまだ早い？"
+    expect_focuses: ["age"]
+    expect_information_question: true

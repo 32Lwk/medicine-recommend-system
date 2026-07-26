@@ -28,6 +28,8 @@ except ImportError:
 
 EVERYDAY_FIXTURE = ROOT / "tests/fixtures/medicine_qa_everyday_eval.yaml"
 GPT_FIXTURE = ROOT / "tests/fixtures/medicine_qa_gpt_conversation.yaml"
+CONVERSATION_SIM_FIXTURE = ROOT / "tests/fixtures/medicine_qa_conversation_sim.yaml"
+META_EVERYDAY_FIXTURE = ROOT / "tests/fixtures/meta_topic_everyday_eval.yaml"
 
 
 def _recommended(raw: Any) -> List[Dict[str, Any]]:
@@ -226,13 +228,115 @@ def _run_llm_stress(seeds: List[Dict[str, Any]], *, variants: int = 2) -> List[D
     return rows
 
 
+def _evaluate_conversation_sim(template: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """固定候補 follow-up で GPT 会話シミュレーション相当を検証（API 不要）。"""
+    rows: List[Dict[str, Any]] = []
+    setup = list(template.get("setup_history") or [])
+    candidates = [str(c).strip() for c in (template.get("candidate_follow_ups") or []) if str(c).strip()]
+    for idx, follow_up in enumerate(candidates):
+        history = list(setup) + [{"role": "user", "content": follow_up}]
+        merged = {
+            **template,
+            "conversation_history": history,
+            "recommended_medicines": template.get("recommended_medicines"),
+            "query": follow_up,
+        }
+        checks = _check_routing(follow_up, merged, history=history)
+        rows.append(
+            {
+                "id": f"{template.get('id')}-c{idx}",
+                "suite": "conversation_sim",
+                "style": template.get("intent_hint") or "sim",
+                "template_id": template.get("id"),
+                "query": follow_up,
+                "checks": checks,
+                "pass": all(checks.values()),
+            }
+        )
+    return rows
+
+
+def _evaluate_meta_everyday(case: Dict[str, Any]) -> Dict[str, Any]:
+    from src.dialogue.routing.context_signals import (
+        is_explicit_new_meta_topic,
+        suggest_meta_intent_family,
+    )
+    from src.services.concierge_agent_history import resolve_concierge_follow_up_intent
+
+    query = str(case.get("query") or "").strip()
+    prior = case.get("prior_intent")
+    if prior is not None:
+        prior = str(prior)
+
+    checks: Dict[str, bool] = {}
+    fam = suggest_meta_intent_family(query)
+    expect_fam = case.get("expect_family")
+    checks["family_ok"] = fam == expect_fam
+
+    if "expect_topic_break" in case and prior is not None:
+        checks["topic_break_ok"] = is_explicit_new_meta_topic(
+            query, prior_intent=prior
+        ) == bool(case.get("expect_topic_break"))
+    else:
+        checks["topic_break_ok"] = True
+
+    sticky = resolve_concierge_follow_up_intent(query, prior)
+    if case.get("expect_follow_up_sticky"):
+        checks["sticky_ok"] = sticky == prior
+    else:
+        checks["sticky_ok"] = sticky is None
+
+    expect_sub = case.get("expect_unified_sub_route")
+    if expect_sub:
+        from src.dialogue.routing.unified_router import resolve_unified_route
+
+        session = {"messages": []}
+        if prior:
+            session = {
+                "messages": [
+                    {"type": "user", "content": "prev"},
+                    {
+                        "type": "bot",
+                        "content": "応答",
+                        "concierge_intent": prior,
+                    },
+                ],
+                "last_concierge_intent": prior,
+            }
+        decision = resolve_unified_route(
+            query,
+            session,
+            f"meta-{case.get('id')}",
+            triage_result={"category": "Other"},
+        )
+        checks["unified_sub_ok"] = decision.sub_route == expect_sub
+    else:
+        checks["unified_sub_ok"] = True
+
+    return {
+        "id": case.get("id"),
+        "suite": "meta_everyday",
+        "style": prior or "null_prior",
+        "query": query,
+        "checks": checks,
+        "pass": all(checks.values()),
+    }
+
+
 def _evaluate_gpt_template(template: Dict[str, Any], *, style: str) -> Dict[str, Any]:
     from src.core.llm_client import chat_completion_create, extract_completion_text
     from src.core.openai_client import client as openai_client
 
     tid = template.get("id")
     if not openai_client:
-        return {"id": f"gpt-{tid}", "pass": False, "skip": "no_openai", "suite": "gpt"}
+        return {
+            "id": f"gpt-{tid}",
+            "pass": True,
+            "skip": "no_openai",
+            "suite": "gpt",
+            "query": "",
+            "checks": {"skipped_no_openai": True},
+        }
 
     model = os.getenv("MEDICINE_QA_GPT_MODEL", os.getenv("LOCAL_RAG_GPT_CONV_MODEL", "gpt-4o-mini"))
     setup = list(template.get("setup_history") or [])
@@ -311,7 +415,27 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Medicine QA robustness eval")
     parser.add_argument("--everyday-fixture", type=Path, default=EVERYDAY_FIXTURE)
     parser.add_argument("--gpt-fixture", type=Path, default=GPT_FIXTURE)
+    parser.add_argument(
+        "--conversation-sim-fixture",
+        type=Path,
+        default=CONVERSATION_SIM_FIXTURE,
+    )
+    parser.add_argument("--meta-fixture", type=Path, default=META_EVERYDAY_FIXTURE)
     parser.add_argument("--with-gpt-conversation", action="store_true")
+    parser.add_argument(
+        "--with-conversation-sim",
+        action="store_true",
+        default=True,
+        help="固定候補 follow-up の会話シミュレーション（既定 ON）",
+    )
+    parser.add_argument("--no-conversation-sim", action="store_true")
+    parser.add_argument(
+        "--with-meta-everyday",
+        action="store_true",
+        default=True,
+        help="メタ話題の日常表現スイート（既定 ON）",
+    )
+    parser.add_argument("--no-meta-everyday", action="store_true")
     parser.add_argument("--with-llm-stress", action="store_true")
     parser.add_argument("--llm-stress-variants", type=int, default=2)
     parser.add_argument("--output", type=Path, default=None)
@@ -337,18 +461,34 @@ def main() -> int:
             os.environ.setdefault("MEDICINE_QA_FOCUS_LLM", "1")
             rows.extend(_run_llm_stress(scenarios, variants=max(1, args.llm_stress_variants)))
 
+    if args.with_conversation_sim and not args.no_conversation_sim:
+        if args.conversation_sim_fixture.is_file():
+            sim_data = yaml.safe_load(
+                args.conversation_sim_fixture.read_text(encoding="utf-8")
+            ) or {}
+            for tpl in sim_data.get("templates") or []:
+                rows.extend(_evaluate_conversation_sim(tpl))
+
+    if args.with_meta_everyday and not args.no_meta_everyday:
+        if args.meta_fixture.is_file():
+            meta_data = yaml.safe_load(args.meta_fixture.read_text(encoding="utf-8")) or {}
+            for case in meta_data.get("cases") or []:
+                rows.append(_evaluate_meta_everyday(case))
+
     if args.with_gpt_conversation and args.gpt_fixture.is_file():
         tpl_data = yaml.safe_load(args.gpt_fixture.read_text(encoding="utf-8")) or {}
         for tpl in tpl_data.get("templates") or []:
             for style in tpl.get("styles") or []:
                 rows.append(_evaluate_gpt_template(tpl, style=str(style)))
 
-    passed = sum(1 for r in rows if r.get("pass"))
-    total = len(rows)
+    scored = [r for r in rows if not r.get("skip")]
+    skipped = [r for r in rows if r.get("skip")]
+    passed = sum(1 for r in scored if r.get("pass"))
+    total = len(scored)
     pass_pct = round(100.0 * passed / total, 1) if total else 0.0
 
     by_suite: Dict[str, Dict[str, int]] = {}
-    for r in rows:
+    for r in scored:
         su = str(r.get("suite") or "unknown")
         by_suite.setdefault(su, {"pass": 0, "total": 0})
         by_suite[su]["total"] += 1
@@ -356,7 +496,13 @@ def main() -> int:
 
     report = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "summary": {"total": total, "pass": passed, "pass_pct": pass_pct, "by_suite": by_suite},
+        "summary": {
+            "total": total,
+            "pass": passed,
+            "pass_pct": pass_pct,
+            "skipped": len(skipped),
+            "by_suite": by_suite,
+        },
         "results": rows,
     }
     out = args.output or ROOT / "log/analysis/medicine_qa_robustness_eval.json"

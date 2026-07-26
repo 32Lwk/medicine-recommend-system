@@ -1,0 +1,178 @@
+# メタ／技術 Q&A — 日常表現での話題ファミリー・sticky / topic break
+# expect_family: suggest_meta_intent_family の結果（汎用深掘りは null）
+# expect_topic_break: prior があるときのみ意味を持つ（null prior は省略可）
+
+cases:
+  - id: meta-edy-chg-deepen-more
+    prior_intent: doc_changelog
+    query: "もっと詳しく"
+    expect_family: null
+    expect_topic_break: false
+    expect_follow_up_sticky: true
+
+  - id: meta-edy-chg-deepen-recent
+    prior_intent: doc_changelog
+    query: "最近の変更って他にもある？"
+    expect_family: doc_changelog
+    expect_topic_break: false
+    expect_follow_up_sticky: true
+
+  - id: meta-edy-chg-deepen-when
+    prior_intent: doc_changelog
+    query: "いつ頃反映されたの？"
+    expect_family: doc_changelog
+    expect_topic_break: false
+    expect_follow_up_sticky: true
+
+  - id: meta-edy-chg-deepen-sorede
+    prior_intent: doc_changelog
+    query: "それで？"
+    expect_family: null
+    expect_topic_break: false
+    expect_follow_up_sticky: true
+
+  - id: meta-edy-chg-break-aws
+    prior_intent: doc_changelog
+    query: "AWSとGCPの違いは？"
+    expect_family: architecture
+    expect_topic_break: true
+    expect_follow_up_sticky: false
+    expect_unified_sub_route: architecture
+
+  - id: meta-edy-chg-break-about
+    prior_intent: doc_changelog
+    query: "このチャットって何ができるの？"
+    expect_family: app_about
+    expect_topic_break: true
+    expect_follow_up_sticky: false
+
+  - id: meta-edy-chg-break-who
+    prior_intent: doc_changelog
+    query: "あんた誰？自己紹介して"
+    expect_family: app_about
+    expect_topic_break: true
+    expect_follow_up_sticky: false
+
+  - id: meta-edy-arch-deepen-sse
+    prior_intent: architecture
+    query: "SSEについてもうちょっと"
+    expect_family: null
+    expect_topic_break: false
+    expect_follow_up_sticky: true
+
+  - id: meta-edy-arch-deepen-cloud-run
+    prior_intent: architecture
+    query: "Cloud Runのところ詳しく"
+    expect_family: architecture
+    expect_topic_break: false
+    expect_follow_up_sticky: true
+
+  - id: meta-edy-arch-deepen-casual
+    prior_intent: architecture
+    query: "インフラざっくりどうなってるん"
+    expect_family: architecture
+    expect_topic_break: false
+    expect_follow_up_sticky: true
+
+  - id: meta-edy-arch-deepen-a-bit
+    prior_intent: architecture
+    query: "もう少しだけ"
+    expect_family: null
+    expect_topic_break: false
+    expect_follow_up_sticky: true
+
+  - id: meta-edy-arch-break-changelog
+    prior_intent: architecture
+    query: "最近のアップデート教えて"
+    expect_family: doc_changelog
+    expect_topic_break: true
+    expect_follow_up_sticky: false
+
+  - id: meta-edy-arch-break-who
+    prior_intent: architecture
+    query: "今回答してるのってだれ？"
+    expect_family: app_about
+    expect_topic_break: true
+    expect_follow_up_sticky: false
+    expect_unified_sub_route: app_about
+
+  - id: meta-edy-arch-break-caps
+    prior_intent: architecture
+    query: "で、このアプリで何ができるの？"
+    expect_family: app_about
+    expect_topic_break: true
+    expect_follow_up_sticky: false
+
+  - id: meta-edy-about-deepen
+    prior_intent: app_about
+    query: "もう少しあなたの役割教えて"
+    expect_family: app_about
+    expect_topic_break: false
+    expect_follow_up_sticky: true
+
+  - id: meta-edy-about-break-arch
+    prior_intent: app_about
+    query: "アーキテクチャーは？"
+    expect_family: architecture
+    expect_topic_break: true
+    expect_follow_up_sticky: false
+    expect_unified_sub_route: architecture
+
+  - id: meta-edy-about-break-chg
+    prior_intent: app_about
+    query: "更新履歴ある？"
+    expect_family: doc_changelog
+    expect_topic_break: true
+    expect_follow_up_sticky: false
+
+  - id: meta-edy-caps-deepen-lang
+    prior_intent: capabilities
+    query: "英語でも使えますか"
+    expect_family: capabilities
+    expect_topic_break: false
+    expect_follow_up_sticky: true
+
+  - id: meta-edy-caps-deepen-line
+    prior_intent: capabilities
+    query: "LINEからも同じことできる？"
+    expect_family: capabilities
+    expect_topic_break: false
+    expect_follow_up_sticky: true
+
+  - id: meta-edy-caps-break-arch
+    prior_intent: capabilities
+    query: "裏側の構成どうなってるの"
+    expect_family: architecture
+    expect_topic_break: true
+    expect_follow_up_sticky: false
+
+  - id: meta-edy-caps-break-about
+    prior_intent: capabilities
+    query: "あなたって何者？"
+    expect_family: app_about
+    expect_topic_break: true
+    expect_follow_up_sticky: false
+
+  - id: meta-edy-null-arch-casual
+    prior_intent: null
+    query: "このサービスってどういう仕組み？"
+    expect_family: architecture
+    expect_follow_up_sticky: false
+
+  - id: meta-edy-null-caps-sns
+    prior_intent: null
+    query: "何できるのこれ"
+    expect_family: capabilities
+    expect_follow_up_sticky: false
+
+  - id: meta-edy-null-about-kansai
+    prior_intent: null
+    query: "あんた何者やねん"
+    expect_family: app_about
+    expect_follow_up_sticky: false
+
+  - id: meta-edy-null-chg-polite
+    prior_intent: null
+    query: "最近の更新内容を教えてください"
+    expect_family: doc_changelog
+    expect_follow_up_sticky: false

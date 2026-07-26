@@ -237,6 +237,18 @@ def _is_drug_like_token(token: str) -> bool:
         t,
     ):
         return False
+    # 会話フィラー・述語句・指示語句は薬剤名ではない
+    if re.fullmatch(r"[ぁ-んーっ]+", t) and len(t) >= 5:
+        return False
+    if re.search(r"^(?:これ|それ|あれ|この|その|あの)", t):
+        return False
+    if "って" in t:
+        return False
+    if re.search(
+        r"(?:たい|だけど|けど|聞き|ちょっと|どうなん|どう思う|教えて|知りたい|平気|大丈夫)",
+        t,
+    ):
+        return False
     if t in _BRAND_SHORTHANDS:
         return True
     if re.search(r"(?:薬|剤|錠|カプセル|滴|点鼻)$", t) and len(t) <= 8:
@@ -251,9 +263,14 @@ def _is_drug_like_token(token: str) -> bool:
         return False
     if re.search(r"(?:飲んだら|なるわ|ある人|おる|きつく|張っ|ことある|眠たく)", t):
         return False
+    # カタカナ製品名らしい形、または薬名接尾を優先（曖昧なひらがな句は落とす）
+    if re.fullmatch(r"[ァ-ヶーA-Za-z]{3,12}", t):
+        return True
+    if re.search(r"(?:ニン|シン|リン|ミン|ゾール|キシン|フェン)$", t):
+        return True
     return len(t) >= 4 and not re.search(
         r"^(?:心配|避け|大会|マラソン|熱下げ|頭痛)", t
-    )
+    ) and not re.fullmatch(r"[ぁ-んーっ]+", t)
 
 
 def _explicit_substance_mention_count(query: str) -> int:

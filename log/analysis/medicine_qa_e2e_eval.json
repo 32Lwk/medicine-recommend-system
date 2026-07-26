@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-07-26T06:57:15.849893+00:00",
+  "timestamp": "2026-07-26T07:07:52.599682+00:00",
   "provider": "local",
   "summary": {
     "total": 19,
@@ -151,7 +151,7 @@
       "unified_ok": true,
       "side_route_ok": true,
       "qa_focuses": [
-        "comparison"
+        "interaction"
       ],
       "provider": "local_rag",
       "source_uris": [

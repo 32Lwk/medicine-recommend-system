@@ -1,17 +1,26 @@
 {
-  "timestamp": "2026-07-26T06:56:04.348092+00:00",
+  "timestamp": "2026-07-26T07:08:11.649810+00:00",
   "summary": {
-    "total": 43,
-    "pass": 43,
+    "total": 153,
+    "pass": 153,
     "pass_pct": 100.0,
+    "skipped": 19,
     "by_suite": {
       "everyday": {
-        "pass": 31,
-        "total": 31
+        "pass": 56,
+        "total": 56
       },
       "context": {
-        "pass": 12,
-        "total": 12
+        "pass": 22,
+        "total": 22
+      },
+      "conversation_sim": {
+        "pass": 50,
+        "total": 50
+      },
+      "meta_everyday": {
+        "pass": 25,
+        "total": 25
       }
     }
   },
@@ -451,6 +460,356 @@
       "pass": true
     },
     {
+      "id": "edy2-se-sns-drowsy",
+      "suite": "everyday",
+      "style": "sns",
+      "query": "ロキソ飲んだら爆睡なんだけどこれ副作用？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-se-typo-rash",
+      "suite": "everyday",
+      "style": "typo",
+      "query": "バファ飲んだらじんましんっぽくなったんだけど平気？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-se-kansai-stomach",
+      "suite": "everyday",
+      "style": "dialect",
+      "query": "イブ飲んで胃がムカムカするねん、しゃーなし？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-se-enmix-nausea",
+      "suite": "everyday",
+      "style": "english_mix",
+      "query": "Loxoninでnauseaくるのってnormal？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-se-enmix-dizzy",
+      "suite": "everyday",
+      "style": "english_mix",
+      "query": "Loxoninでdizzyになるのnormal？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-cmp-sns",
+      "suite": "everyday",
+      "style": "sns",
+      "query": "ロキソvsイブどっち派？理由知りたい",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-cmp-enmix",
+      "suite": "everyday",
+      "style": "english_mix",
+      "query": "イブとバファリン、which is better for頭痛？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-us-sns-interval",
+      "suite": "everyday",
+      "style": "sns",
+      "query": "解熱剤また飲んでいいの何時間後？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-us-typo-dose",
+      "suite": "everyday",
+      "style": "typo",
+      "query": "ロキソ何錠ずつ飲めばええの",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ing-active-en",
+      "suite": "everyday",
+      "style": "english_mix",
+      "query": "ロキソのactive ingredient教えて",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ing-typo-aspirin",
+      "suite": "everyday",
+      "style": "typo",
+      "query": "アスピンって成分なに？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-age-kindergarten",
+      "suite": "everyday",
+      "style": "dialect",
+      "query": "幼稚園児でもカロナール飲んでええん？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-age-junior-high",
+      "suite": "everyday",
+      "style": "polite",
+      "query": "中学生でもロキソニンを飲んで問題ないでしょうか。",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-age-baby",
+      "suite": "everyday",
+      "style": "casual",
+      "query": "赤ちゃんに使える解熱剤ある？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-dop-track-meet",
+      "suite": "everyday",
+      "style": "english_mix",
+      "query": "明日track meetあるんだけどイブOK？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ix-banchaku",
+      "suite": "everyday",
+      "style": "sns",
+      "query": "解熱剤飲んだあと晩酌ってどうなん",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ix-same-day",
+      "suite": "everyday",
+      "style": "polite",
+      "query": "風邪薬とイブを同日に飲んでも大丈夫でしょうか。",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ix-warfarin-no-cmp",
+      "suite": "everyday",
+      "style": "dialect",
+      "query": "ワルファリン飲んでるねんけどロキソ平気？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-photo-appearance",
+      "suite": "everyday",
+      "style": "casual",
+      "query": "見た目どんな感じ",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-photo-typo",
+      "suite": "everyday",
+      "style": "typo",
+      "query": "バファの見た目見せてくれ",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-clarify-vague-this",
+      "suite": "everyday",
+      "style": "anaphora",
+      "query": "これってどうなん？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-clarify-sns-that",
+      "suite": "everyday",
+      "style": "sns",
+      "query": "さっきのやつ大丈夫？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-mixed-photo-ing",
+      "suite": "everyday",
+      "style": "mixed",
+      "query": "イブの成分と箱の写真どっちも見たい",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-mixed-us-se",
+      "suite": "everyday",
+      "style": "mixed",
+      "query": "ロキソの飲み方教えて。副作用も気になる",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-anaphora-us-reco",
+      "suite": "everyday",
+      "style": "anaphora",
+      "query": "それ何時間おきに飲めばいいの",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
       "id": "edy-ctx-anaphora-usage",
       "suite": "context",
       "style": "context",
@@ -629,6 +988,1421 @@
         "side_route_ok": true
       },
       "pass": true
+    },
+    {
+      "id": "edy2-ctx-sns-side",
+      "suite": "context",
+      "style": "context",
+      "query": "それ飲むとガチ眠くなんない？",
+      "description": "推奨後のSNS風・副作用確認",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ctx-kansai-usage",
+      "suite": "context",
+      "style": "context",
+      "query": "それ食前でもええん？",
+      "description": "関西弁・用法 follow-up",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ctx-cmp-pick",
+      "suite": "context",
+      "style": "context",
+      "query": "胃に優しそうな方どれ",
+      "description": "2剤提示後のざっくり比較",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ctx-dop-race",
+      "suite": "context",
+      "style": "context",
+      "query": "それ大会前に使って大丈夫？",
+      "description": "大会文脈後のドーピング",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ctx-ix-drink",
+      "suite": "context",
+      "style": "context",
+      "query": "今夜飲み会あるんだけど一緒にヤバい？",
+      "description": "推奨後の酒との併用",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ctx-photo-enmix",
+      "suite": "context",
+      "style": "context",
+      "query": "そのpackage photo見たい",
+      "description": "英語混じりでパッケージ要求",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ctx-anaphora-side-after-cmp",
+      "suite": "context",
+      "style": "context",
+      "query": "それ飲むと胃キツくなる？",
+      "description": "比較会話後の副作用（比較誤検出なし）",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ctx-mixed-photo-side",
+      "suite": "context",
+      "style": "context",
+      "query": "副作用ある？箱も見せて",
+      "description": "推奨後の副作用+見た目",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ctx-vague-usage-switch",
+      "suite": "context",
+      "style": "context",
+      "query": "これどうやって飲めばいいの",
+      "description": "推奨確定後のざっくり用法",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "edy2-ctx-age-school",
+      "suite": "context",
+      "style": "context",
+      "query": "市販の解熱剤ってまだ早い？",
+      "description": "学年共有後のOTC可否",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-side-after-reco-c0",
+      "suite": "conversation_sim",
+      "style": "side_effect",
+      "template_id": "sim-edy2-side-after-reco",
+      "query": "ガチ眠いんだけど普通？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-side-after-reco-c1",
+      "suite": "conversation_sim",
+      "style": "side_effect",
+      "template_id": "sim-edy2-side-after-reco",
+      "query": "それ飲むと胃ムカムカする？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-side-after-reco-c2",
+      "suite": "conversation_sim",
+      "style": "side_effect",
+      "template_id": "sim-edy2-side-after-reco",
+      "query": "副作用ってなにがあるん",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-side-after-reco-c3",
+      "suite": "conversation_sim",
+      "style": "side_effect",
+      "template_id": "sim-edy2-side-after-reco",
+      "query": "Loxoninでdizzyになるのnormal？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-side-after-reco-c4",
+      "suite": "conversation_sim",
+      "style": "side_effect",
+      "template_id": "sim-edy2-side-after-reco",
+      "query": "めっちゃだるくなることある？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-usage-anaphora-c0",
+      "suite": "conversation_sim",
+      "style": "usage",
+      "template_id": "sim-edy2-usage-anaphora",
+      "query": "それ何時間空ければいい？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-usage-anaphora-c1",
+      "suite": "conversation_sim",
+      "style": "usage",
+      "template_id": "sim-edy2-usage-anaphora",
+      "query": "食後の方がいい？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-usage-anaphora-c2",
+      "suite": "conversation_sim",
+      "style": "usage",
+      "template_id": "sim-edy2-usage-anaphora",
+      "query": "1日なん回まで？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-usage-anaphora-c3",
+      "suite": "conversation_sim",
+      "style": "usage",
+      "template_id": "sim-edy2-usage-anaphora",
+      "query": "何錠ずつ飲めばええの",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-usage-anaphora-c4",
+      "suite": "conversation_sim",
+      "style": "usage",
+      "template_id": "sim-edy2-usage-anaphora",
+      "query": "how often飲んでいい？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-cmp-two-meds-c0",
+      "suite": "conversation_sim",
+      "style": "comparison",
+      "template_id": "sim-edy2-cmp-two-meds",
+      "query": "結局どっちがええ？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-cmp-two-meds-c1",
+      "suite": "conversation_sim",
+      "style": "comparison",
+      "template_id": "sim-edy2-cmp-two-meds",
+      "query": "胃に優しいのはどれ",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-cmp-two-meds-c2",
+      "suite": "conversation_sim",
+      "style": "comparison",
+      "template_id": "sim-edy2-cmp-two-meds",
+      "query": "効き目強い方教えて",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-cmp-two-meds-c3",
+      "suite": "conversation_sim",
+      "style": "comparison",
+      "template_id": "sim-edy2-cmp-two-meds",
+      "query": "ロキソvsイブざっくり違い",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-cmp-two-meds-c4",
+      "suite": "conversation_sim",
+      "style": "comparison",
+      "template_id": "sim-edy2-cmp-two-meds",
+      "query": "which is milder？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-age-child-c0",
+      "suite": "conversation_sim",
+      "style": "age",
+      "template_id": "sim-edy2-age-child",
+      "query": "市販の解熱剤ってまだ早い？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-age-child-c1",
+      "suite": "conversation_sim",
+      "style": "age",
+      "template_id": "sim-edy2-age-child",
+      "query": "カロナール子供でもOK？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-age-child-c2",
+      "suite": "conversation_sim",
+      "style": "age",
+      "template_id": "sim-edy2-age-child",
+      "query": "小3でもイブ飲める？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-age-child-c3",
+      "suite": "conversation_sim",
+      "style": "age",
+      "template_id": "sim-edy2-age-child",
+      "query": "OTCで平気？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-age-child-c4",
+      "suite": "conversation_sim",
+      "style": "age",
+      "template_id": "sim-edy2-age-child",
+      "query": "幼稚園児向けある？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-doping-meet-c0",
+      "suite": "conversation_sim",
+      "style": "doping",
+      "template_id": "sim-edy2-doping-meet",
+      "query": "それ大会前に使って大丈夫？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-doping-meet-c1",
+      "suite": "conversation_sim",
+      "style": "doping",
+      "template_id": "sim-edy2-doping-meet",
+      "query": "ドーピング引っかからん？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-doping-meet-c2",
+      "suite": "conversation_sim",
+      "style": "doping",
+      "template_id": "sim-edy2-doping-meet",
+      "query": "試合当日でも平気？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-doping-meet-c3",
+      "suite": "conversation_sim",
+      "style": "doping",
+      "template_id": "sim-edy2-doping-meet",
+      "query": "アンチドーピング的にOK？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-doping-meet-c4",
+      "suite": "conversation_sim",
+      "style": "doping",
+      "template_id": "sim-edy2-doping-meet",
+      "query": "track meet前に飲んでええ？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-ix-alcohol-c0",
+      "suite": "conversation_sim",
+      "style": "interaction",
+      "template_id": "sim-edy2-ix-alcohol",
+      "query": "今夜ビール平気？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-ix-alcohol-c1",
+      "suite": "conversation_sim",
+      "style": "interaction",
+      "template_id": "sim-edy2-ix-alcohol",
+      "query": "他の風邪薬と一緒にヤバい？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-ix-alcohol-c2",
+      "suite": "conversation_sim",
+      "style": "interaction",
+      "template_id": "sim-edy2-ix-alcohol",
+      "query": "ワルファリン飲んでるけど大丈夫？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-ix-alcohol-c3",
+      "suite": "conversation_sim",
+      "style": "interaction",
+      "template_id": "sim-edy2-ix-alcohol",
+      "query": "アスピンと同時はアカン？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-ix-alcohol-c4",
+      "suite": "conversation_sim",
+      "style": "interaction",
+      "template_id": "sim-edy2-ix-alcohol",
+      "query": "飲み合わせ気になる",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-ing-shorthand-c0",
+      "suite": "conversation_sim",
+      "style": "ingredient",
+      "template_id": "sim-edy2-ing-shorthand",
+      "query": "これ何入ってる？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-ing-shorthand-c1",
+      "suite": "conversation_sim",
+      "style": "ingredient",
+      "template_id": "sim-edy2-ing-shorthand",
+      "query": "バファの中身なに",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-ing-shorthand-c2",
+      "suite": "conversation_sim",
+      "style": "ingredient",
+      "template_id": "sim-edy2-ing-shorthand",
+      "query": "主成分教えて",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-ing-shorthand-c3",
+      "suite": "conversation_sim",
+      "style": "ingredient",
+      "template_id": "sim-edy2-ing-shorthand",
+      "query": "アスピン入ってる？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-ing-shorthand-c4",
+      "suite": "conversation_sim",
+      "style": "ingredient",
+      "template_id": "sim-edy2-ing-shorthand",
+      "query": "active ingredientは？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-photo-pkg-c0",
+      "suite": "conversation_sim",
+      "style": "product_image",
+      "template_id": "sim-edy2-photo-pkg",
+      "query": "箱見たい",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-photo-pkg-c1",
+      "suite": "conversation_sim",
+      "style": "product_image",
+      "template_id": "sim-edy2-photo-pkg",
+      "query": "パッケージ写真ちょうだい",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-photo-pkg-c2",
+      "suite": "conversation_sim",
+      "style": "product_image",
+      "template_id": "sim-edy2-photo-pkg",
+      "query": "外観見せて",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-photo-pkg-c3",
+      "suite": "conversation_sim",
+      "style": "product_image",
+      "template_id": "sim-edy2-photo-pkg",
+      "query": "package photoお願い",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-photo-pkg-c4",
+      "suite": "conversation_sim",
+      "style": "product_image",
+      "template_id": "sim-edy2-photo-pkg",
+      "query": "見た目どんな感じ",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-mixed-side-photo-c0",
+      "suite": "conversation_sim",
+      "style": "side_effect",
+      "template_id": "sim-edy2-mixed-side-photo",
+      "query": "副作用と箱どっちも見せて",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-mixed-side-photo-c1",
+      "suite": "conversation_sim",
+      "style": "side_effect",
+      "template_id": "sim-edy2-mixed-side-photo",
+      "query": "眠くなる？パッケージも見たい",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-mixed-side-photo-c2",
+      "suite": "conversation_sim",
+      "style": "side_effect",
+      "template_id": "sim-edy2-mixed-side-photo",
+      "query": "副作用ある？見た目も教えて",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-mixed-side-photo-c3",
+      "suite": "conversation_sim",
+      "style": "side_effect",
+      "template_id": "sim-edy2-mixed-side-photo",
+      "query": "side effectとphotoお願い",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-mixed-side-photo-c4",
+      "suite": "conversation_sim",
+      "style": "side_effect",
+      "template_id": "sim-edy2-mixed-side-photo",
+      "query": "気になる副作用と外観",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-clarify-vague-c0",
+      "suite": "conversation_sim",
+      "style": "clarify",
+      "template_id": "sim-edy2-clarify-vague",
+      "query": "それどうなん？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-clarify-vague-c1",
+      "suite": "conversation_sim",
+      "style": "clarify",
+      "template_id": "sim-edy2-clarify-vague",
+      "query": "さっきのやつ大丈夫？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-clarify-vague-c2",
+      "suite": "conversation_sim",
+      "style": "clarify",
+      "template_id": "sim-edy2-clarify-vague",
+      "query": "これって平気？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-clarify-vague-c3",
+      "suite": "conversation_sim",
+      "style": "clarify",
+      "template_id": "sim-edy2-clarify-vague",
+      "query": "あれ副作用ある？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "sim-edy2-clarify-vague-c4",
+      "suite": "conversation_sim",
+      "style": "clarify",
+      "template_id": "sim-edy2-clarify-vague",
+      "query": "その薬どう？",
+      "checks": {
+        "focuses_ok": true,
+        "clarify_ok": true,
+        "unified_ok": true,
+        "info_q_ok": true,
+        "side_route_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-chg-deepen-more",
+      "suite": "meta_everyday",
+      "style": "doc_changelog",
+      "query": "もっと詳しく",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-chg-deepen-recent",
+      "suite": "meta_everyday",
+      "style": "doc_changelog",
+      "query": "最近の変更って他にもある？",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-chg-deepen-when",
+      "suite": "meta_everyday",
+      "style": "doc_changelog",
+      "query": "いつ頃反映されたの？",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-chg-deepen-sorede",
+      "suite": "meta_everyday",
+      "style": "doc_changelog",
+      "query": "それで？",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-chg-break-aws",
+      "suite": "meta_everyday",
+      "style": "doc_changelog",
+      "query": "AWSとGCPの違いは？",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-chg-break-about",
+      "suite": "meta_everyday",
+      "style": "doc_changelog",
+      "query": "このチャットって何ができるの？",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-chg-break-who",
+      "suite": "meta_everyday",
+      "style": "doc_changelog",
+      "query": "あんた誰？自己紹介して",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-arch-deepen-sse",
+      "suite": "meta_everyday",
+      "style": "architecture",
+      "query": "SSEについてもうちょっと",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-arch-deepen-cloud-run",
+      "suite": "meta_everyday",
+      "style": "architecture",
+      "query": "Cloud Runのところ詳しく",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-arch-deepen-casual",
+      "suite": "meta_everyday",
+      "style": "architecture",
+      "query": "インフラざっくりどうなってるん",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-arch-deepen-a-bit",
+      "suite": "meta_everyday",
+      "style": "architecture",
+      "query": "もう少しだけ",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-arch-break-changelog",
+      "suite": "meta_everyday",
+      "style": "architecture",
+      "query": "最近のアップデート教えて",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-arch-break-who",
+      "suite": "meta_everyday",
+      "style": "architecture",
+      "query": "今回答してるのってだれ？",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-arch-break-caps",
+      "suite": "meta_everyday",
+      "style": "architecture",
+      "query": "で、このアプリで何ができるの？",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-about-deepen",
+      "suite": "meta_everyday",
+      "style": "app_about",
+      "query": "もう少しあなたの役割教えて",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-about-break-arch",
+      "suite": "meta_everyday",
+      "style": "app_about",
+      "query": "アーキテクチャーは？",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-about-break-chg",
+      "suite": "meta_everyday",
+      "style": "app_about",
+      "query": "更新履歴ある？",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-caps-deepen-lang",
+      "suite": "meta_everyday",
+      "style": "capabilities",
+      "query": "英語でも使えますか",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-caps-deepen-line",
+      "suite": "meta_everyday",
+      "style": "capabilities",
+      "query": "LINEからも同じことできる？",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-caps-break-arch",
+      "suite": "meta_everyday",
+      "style": "capabilities",
+      "query": "裏側の構成どうなってるの",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-caps-break-about",
+      "suite": "meta_everyday",
+      "style": "capabilities",
+      "query": "あなたって何者？",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-null-arch-casual",
+      "suite": "meta_everyday",
+      "style": "null_prior",
+      "query": "このサービスってどういう仕組み？",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-null-caps-sns",
+      "suite": "meta_everyday",
+      "style": "null_prior",
+      "query": "何できるのこれ",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-null-about-kansai",
+      "suite": "meta_everyday",
+      "style": "null_prior",
+      "query": "あんた何者やねん",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "meta-edy-null-chg-polite",
+      "suite": "meta_everyday",
+      "style": "null_prior",
+      "query": "最近の更新内容を教えてください",
+      "checks": {
+        "family_ok": true,
+        "topic_break_ok": true,
+        "sticky_ok": true,
+        "unified_sub_ok": true
+      },
+      "pass": true
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-side-slang",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-side-slang",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-usage-anaphora",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-usage-anaphora",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-age-child",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-age-child",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-photo",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-photo",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-mixed",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-ix",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-ix",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-cmp",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-cmp",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-doping",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-doping",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-ingredient",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-ingredient",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-alcohol",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
+    },
+    {
+      "id": "gpt-qa-gpt-ctx-alcohol",
+      "pass": true,
+      "skip": "no_openai",
+      "suite": "gpt",
+      "query": "",
+      "checks": {
+        "skipped_no_openai": true
+      }
     }
   ]
 }

@@ -24,6 +24,10 @@ _WHO_IS_ANSWERING_RE = re.compile(
     r"(今|いま).{0,12}(答え|回答|返信|応答).{0,12}(誰|だれ|なに|何)"
     r"|(誰|だれ).{0,12}(答え|回答|返信|応答)"
     r"|(答え|回答|返信|応答).{0,12}(誰|だれ|なに|何)"
+    # 口語の自己紹介・正体確認（エージェント構成の質問ではない）
+    r"|(あんた|あなた|お前|おまえ).{0,10}(誰|だれ|何者)"
+    r"|(誰|だれ|何者).{0,6}(やねん|なの|ですか|？|\?)"
+    r"|自己紹介"
 )
 
 _MULTI_AGENT_CONCEPT_RE = re.compile(
@@ -31,11 +35,17 @@ _MULTI_AGENT_CONCEPT_RE = re.compile(
     re.IGNORECASE,
 )
 
+_ASSISTANT_PERSONA_RE = re.compile(
+    r"(あんた|あなた|お前|おまえ|君|きみ).{0,12}(役割|何者|誰|だれ|自己紹介)",
+    re.IGNORECASE,
+)
+
 _ARCHITECTURE_EXPLAIN_RE = re.compile(
     r"マルチ[\s　\-]*エージェント|multi[\s\-]*agent"
     r"|内部構成|エージェント.{0,8}(一覧|種類|どんな|何がある)"
     r"|(構成|役割|分担|振り分け|仕組み).{0,12}(教えて|説明|知りたい|聞きたい)"
-    r"|(教えて|説明して).{0,12}(構成|役割|分担|仕組み)",
+    r"|(教えて|説明して).{0,12}(構成|役割|分担|仕組み)"
+    r"|(裏側|仕組み|インフラ|構成).{0,12}(どう|なに|何|教えて)",
     re.IGNORECASE,
 )
 
@@ -49,7 +59,7 @@ _AGENT_ROSTER_RE = re.compile(
 
 
 _META_FOLLOW_UP_RE = re.compile(
-    r"(詳しく|もっと|続き|深く|さらに|具体的に|もう少し)"
+    r"(詳しく|もっと|続き|深く|さらに|具体的に|もう少し|それで)"
 )
 
 # Phase 3 (p3-concierge MR-4): 拡張フォローアップ表現（ROUTING_CONCIERGE_FOLLOWUP ON 時）
@@ -343,6 +353,16 @@ def is_who_is_answering_question(text: str) -> bool:
     return bool(_WHO_IS_ANSWERING_RE.search((text or "").strip()))
 
 
+def is_assistant_persona_question(text: str) -> bool:
+    """ボット自身の正体・役割を問うか（エージェント構成の質問ではない）。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    if is_who_is_answering_question(t):
+        return True
+    return bool(_ASSISTANT_PERSONA_RE.search(t))
+
+
 def is_multi_agent_concept_question(text: str) -> bool:
     """マルチエージェントの意味・構成を問う質問（担当者確認ではない）。"""
     t = (text or "").strip()
@@ -354,7 +374,7 @@ def is_multi_agent_concept_question(text: str) -> bool:
 def is_architecture_explanation_question(text: str) -> bool:
     """仕組み・構成・役割分担の説明を求める質問（担当者確認ではない）。"""
     t = (text or "").strip()
-    if not t or is_who_is_answering_question(t):
+    if not t or is_assistant_persona_question(t):
         return False
     return bool(_ARCHITECTURE_EXPLAIN_RE.search(t))
 

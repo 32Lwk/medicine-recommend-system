@@ -1,0 +1,184 @@
+# GPT 会話シミュレーション相当 — API なしで多様な follow-up を固定検証
+# （OpenAI がある場合は medicine_qa_gpt_conversation.yaml + --with-gpt-conversation）
+
+templates:
+  - id: sim-edy2-side-after-reco
+    description: "推奨後の副作用確認（固定候補 follow-up）"
+    setup_history:
+      - role: user
+        content: "頭痛がひどい"
+      - role: assistant
+        content: "ロキソニンをご検討ください"
+    recommended_medicines: ["ロキソニン"]
+    intent_hint: side_effect
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+    expect_side_effect_route: true
+    candidate_follow_ups:
+      - "ガチ眠いんだけど普通？"
+      - "それ飲むと胃ムカムカする？"
+      - "副作用ってなにがあるん"
+      - "Loxoninでdizzyになるのnormal？"
+      - "めっちゃだるくなることある？"
+
+  - id: sim-edy2-usage-anaphora
+    description: "推奨後の用法・指示語"
+    setup_history:
+      - role: user
+        content: "熱が38度あります"
+      - role: assistant
+        content: "カロナールAが適しています"
+    recommended_medicines: ["カロナールA"]
+    intent_hint: usage
+    expect_focuses: ["usage"]
+    expect_information_question: true
+    expect_clarify: false
+    candidate_follow_ups:
+      - "それ何時間空ければいい？"
+      - "食後の方がいい？"
+      - "1日なん回まで？"
+      - "何錠ずつ飲めばええの"
+      - "how often飲んでいい？"
+
+  - id: sim-edy2-cmp-two-meds
+    description: "2剤迷い後の比較"
+    setup_history:
+      - role: user
+        content: "ロキソニンとイブで迷ってます"
+      - role: assistant
+        content: "それぞれ特徴があります"
+    recommended_medicines: ["ロキソニン", "イブ"]
+    intent_hint: comparison
+    expect_focuses: ["comparison"]
+    expect_information_question: true
+    candidate_follow_ups:
+      - "結局どっちがええ？"
+      - "胃に優しいのはどれ"
+      - "効き目強い方教えて"
+      - "ロキソvsイブざっくり違い"
+      - "which is milder？"
+
+  - id: sim-edy2-age-child
+    description: "子供の年齢文脈での市販可否"
+    setup_history:
+      - role: user
+        content: "息子が小学3年です"
+      - role: assistant
+        content: "症状はいかがですか"
+    intent_hint: age
+    expect_focuses: ["age"]
+    expect_information_question: true
+    candidate_follow_ups:
+      - "市販の解熱剤ってまだ早い？"
+      - "カロナール子供でもOK？"
+      - "小3でもイブ飲める？"
+      - "OTCで平気？"
+      - "幼稚園児向けある？"
+
+  - id: sim-edy2-doping-meet
+    description: "大会前のドーピング確認"
+    setup_history:
+      - role: user
+        content: "来週マラソンがあります"
+      - role: assistant
+        content: "カロナールAをご検討ください"
+    recommended_medicines: ["カロナールA"]
+    intent_hint: doping
+    expect_focuses: ["doping"]
+    expect_information_question: true
+    candidate_follow_ups:
+      - "それ大会前に使って大丈夫？"
+      - "ドーピング引っかからん？"
+      - "試合当日でも平気？"
+      - "アンチドーピング的にOK？"
+      - "track meet前に飲んでええ？"
+
+  - id: sim-edy2-ix-alcohol
+    description: "推奨後の併用・酒"
+    setup_history:
+      - role: user
+        content: "肩こりがつらい"
+      - role: assistant
+        content: "ロキソニンを推奨します"
+    recommended_medicines: ["ロキソニン"]
+    intent_hint: interaction
+    expect_focuses: ["interaction"]
+    expect_information_question: true
+    candidate_follow_ups:
+      - "今夜ビール平気？"
+      - "他の風邪薬と一緒にヤバい？"
+      - "ワルファリン飲んでるけど大丈夫？"
+      - "アスピンと同時はアカン？"
+      - "飲み合わせ気になる"
+
+  - id: sim-edy2-ing-shorthand
+    description: "推奨後の成分確認"
+    setup_history:
+      - role: user
+        content: "頭痛が続きます"
+      - role: assistant
+        content: "バファリンAをご検討ください"
+    recommended_medicines: ["バファリンA"]
+    intent_hint: ingredient
+    expect_focuses: ["ingredient"]
+    expect_information_question: true
+    expect_clarify: false
+    candidate_follow_ups:
+      - "これ何入ってる？"
+      - "バファの中身なに"
+      - "主成分教えて"
+      - "アスピン入ってる？"
+      - "active ingredientは？"
+
+  - id: sim-edy2-photo-pkg
+    description: "推奨後のパッケージ要求"
+    setup_history:
+      - role: user
+        content: "イブについて知りたい"
+      - role: assistant
+        content: "解熱鎮痛の市販薬です"
+    recommended_medicines: ["イブ"]
+    intent_hint: product_image
+    expect_focuses: ["product_image"]
+    expect_information_question: true
+    candidate_follow_ups:
+      - "箱見たい"
+      - "パッケージ写真ちょうだい"
+      - "外観見せて"
+      - "package photoお願い"
+      - "見た目どんな感じ"
+
+  - id: sim-edy2-mixed-side-photo
+    description: "副作用+写真の複合意図"
+    setup_history:
+      - role: user
+        content: "ロキソニン使ってます"
+      - role: assistant
+        content: "承知しました"
+    recommended_medicines: ["ロキソニン"]
+    intent_hint: side_effect
+    expect_focuses: ["product_image", "side_effect"]
+    expect_unified_route: true
+    expect_information_question: true
+    candidate_follow_ups:
+      - "副作用と箱どっちも見せて"
+      - "眠くなる？パッケージも見たい"
+      - "副作用ある？見た目も教えて"
+      - "side effectとphotoお願い"
+      - "気になる副作用と外観"
+
+  - id: sim-edy2-clarify-vague
+    description: "曖昧指示語のみ（clarify期待・履歴に製品エンティティなし）"
+    setup_history:
+      - role: user
+        content: "ちょっと聞きたいんだけど"
+      - role: assistant
+        content: "はい、どうぞ"
+    intent_hint: clarify
+    expect_clarify: true
+    candidate_follow_ups:
+      - "それどうなん？"
+      - "さっきのやつ大丈夫？"
+      - "これって平気？"
+      - "あれ副作用ある？"
+      - "その薬どう？"

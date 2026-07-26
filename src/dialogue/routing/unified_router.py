@@ -78,22 +78,9 @@ def _layer1_deterministic(
             context_features=features.to_dict(),
         )
 
-    from src.services.medicine_qa_routing import is_medicine_information_question
-
-    if is_medicine_information_question(text):
-        return RoutingDecision(
-            primary_route="Physical",
-            sub_route="medicine_qa",
-            confidence=0.94,
-            resolved_by="gate",
-            source="layer1_medicine_qa",
-            execution_lock=True,
-            layer_used="layer1",
-            context_features=features.to_dict(),
-        )
-
     prior = features.prior_route or features.prior_concierge_intent
-    # changelog / about 等の直後でも、独立したメタ／技術質問は sticky を切る
+    # メタ／技術の話題転換は medicine_qa（「違い」比較誤爆）より先に解決する。
+    # ただしメタ family シグナルが無い薬比較などは medicine_qa へフォールスルー。
     if prior in (
         "doc_changelog",
         "app_about",
@@ -105,32 +92,40 @@ def _layer1_deterministic(
         "doc_consultation",
         "doc_app_overview",
     ) and is_explicit_new_meta_topic(text, prior_intent=prior):
+        from src.dialogue.routing.context_signals import suggest_meta_intent_family
         from src.services.concierge_agent_history import (
             is_architecture_explanation_question,
             is_who_is_answering_question,
         )
 
-        if is_who_is_answering_question(text):
-            sub = "app_about"
-        elif _INFRA_TOPIC_RE.search(text) or is_architecture_explanation_question(text):
-            sub = "architecture"
-        elif _looks_app_about(text):
-            sub = "app_about"
-        else:
-            # 独立したメタ質問だが分類が曖昧 → architecture より app_about を既定に
-            # （インフラ語が無い「あなたについて」等は上で app_about）
-            sub = "architecture" if prior == "architecture" else "app_about"
-        return RoutingDecision(
-            primary_route="Concierge",
-            sub_route=sub,
-            confidence=0.94,
-            resolved_by="gate",
-            source="layer1_topic_break",
-            execution_lock=True,
-            layer_used="layer1",
-            context_features=features.to_dict(),
-            follow_up={"topic_break": True, "prior": prior},
+        fam = suggest_meta_intent_family(text)
+        who = is_who_is_answering_question(text)
+        infra = bool(
+            _INFRA_TOPIC_RE.search(text) or is_architecture_explanation_question(text)
         )
+        about = _looks_app_about(text)
+        if fam or who or infra or about:
+            if who:
+                sub = "app_about"
+            elif fam == "architecture" or (infra and fam != "app_about"):
+                sub = "architecture"
+            elif fam in ("doc_changelog", "capabilities", "app_about"):
+                sub = fam
+            elif about:
+                sub = "app_about"
+            else:
+                sub = fam or "app_about"
+            return RoutingDecision(
+                primary_route="Concierge",
+                sub_route=sub,
+                confidence=0.94,
+                resolved_by="gate",
+                source="layer1_topic_break",
+                execution_lock=True,
+                layer_used="layer1",
+                context_features=features.to_dict(),
+                follow_up={"topic_break": True, "prior": prior},
+            )
 
     if features.is_doc_changelog_continuation and prior == "doc_changelog":
         return RoutingDecision(
@@ -139,6 +134,20 @@ def _layer1_deterministic(
             confidence=0.93,
             resolved_by="gate",
             source="layer1_changelog_continue",
+            execution_lock=True,
+            layer_used="layer1",
+            context_features=features.to_dict(),
+        )
+
+    from src.services.medicine_qa_routing import is_medicine_information_question
+
+    if is_medicine_information_question(text):
+        return RoutingDecision(
+            primary_route="Physical",
+            sub_route="medicine_qa",
+            confidence=0.94,
+            resolved_by="gate",
+            source="layer1_medicine_qa",
             execution_lock=True,
             layer_used="layer1",
             context_features=features.to_dict(),

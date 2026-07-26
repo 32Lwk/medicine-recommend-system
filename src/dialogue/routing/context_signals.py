@@ -13,8 +13,8 @@ from src.services.concierge_agent_history import (
 from src.services.medicine_brand_resolve import MEDICINE_BRAND_HINTS as _MEDICINE_BRAND_HINTS
 
 _AMBIGUOUS_FOLLOW_UP_RE = re.compile(
-    r"^(?:詳しく|もっと|続き|他には|それについて|教えて)[。！？!?]*$|"
-    r"^(?:詳しく|もっと).{0,8}(?:教えて|説明)[。！？!?]*$"
+    r"^(?:詳しく|もっと|続き|他には|それについて|教えて|それで|もう少し)[。！？!?.っ]*$|"
+    r"^(?:詳しく|もっと|もう少し).{0,8}(?:教えて|説明|だけ)[。！？!?]*$"
 )
 
 _DOC_CHANGELOG_CONTINUATION_RE = re.compile(
@@ -23,16 +23,17 @@ _DOC_CHANGELOG_CONTINUATION_RE = re.compile(
 
 # changelog 固有の継続（汎用の「もっと詳しく」等は含めない）
 _DOC_CHANGELOG_TOPIC_RE = re.compile(
-    r"(?:他の更新|更新内容|変更点|最近の(?:更新|変更)|チェンジログ|changelog|"
-    r"リリースノート|更新履歴)",
+    r"(?:他の更新|更新内容|変更点|最近の(?:更新|変更|アップデート)|"
+    r"アップデート|チェンジログ|changelog|リリースノート|更新履歴|"
+    r"(?:いつ|いつ頃).{0,8}(?:反映|リリース|更新)|"
+    r"(?:反映|リリース).{0,8}(?:いつ|時期))",
     re.IGNORECASE,
 )
 
 _APP_ABOUT_TOPIC_RE = re.compile(
-    r"あなた(?:について|は|が)|"
-    r"(?:この|本)?(?:サービス|アプリ|システム)(?:について|は|の)|"
+    r"あなた(?:について|は|が|の役割|って)|"
+    r"(?:この|本)?(?:サービス|アプリ|システム|チャット)(?:について|は|の|って|で)|"
     r"Sage\s*Terrace|"
-    r"何が(?:できる|出来る)|"
     r"使い方|"
     r"誰が(?:作|開発|運営)",
     re.IGNORECASE,
@@ -40,7 +41,8 @@ _APP_ABOUT_TOPIC_RE = re.compile(
 
 _TOPIC_INFRA_COMPARE_RE = re.compile(
     r"aws|gcp|cloud\s*run|インフラ|アーキテクチャ|architecture|"
-    r"マルチ[\s　\-]*エージェント|デプロイ|バックエンド",
+    r"マルチ[\s　\-]*エージェント|デプロイ|バックエンド|裏側|"
+    r"仕組み|内部構成",
     re.IGNORECASE,
 )
 
@@ -156,29 +158,38 @@ def suggest_meta_intent_family(text: str) -> str | None:
     try:
         from src.services.concierge_agent_history import (
             is_architecture_explanation_question,
-            is_who_is_answering_question,
+            is_assistant_persona_question,
         )
     except ImportError:
         is_architecture_explanation_question = lambda _t: False  # type: ignore
-        is_who_is_answering_question = lambda _t: False  # type: ignore
+        is_assistant_persona_question = lambda _t: False  # type: ignore
 
-    # 汎用の深掘り（もっと詳しく / 続き 等）はファミリー未定。
-    # sticky follow-up が prior intent を継承できるようにする。
-    if is_ambiguous_short_follow_up(t):
-        return None
-
-    if is_who_is_answering_question(t):
+    # 明確な話題シグナルを先に確定し、その後で汎用深掘りを未定扱いにする
+    if is_assistant_persona_question(t):
         return "app_about"
     if _APP_ABOUT_TOPIC_RE.search(t):
+        # 「このサービスってどういう仕組み？」は architecture 優先
+        if _TOPIC_INFRA_COMPARE_RE.search(t) or is_architecture_explanation_question(t):
+            return "architecture"
         return "app_about"
     if is_architecture_explanation_question(t) or _TOPIC_INFRA_COMPARE_RE.search(t):
         return "architecture"
     # changelog 固有語のみファミリー確定（汎用継続フレーズはここに落とさない）
     if _DOC_CHANGELOG_TOPIC_RE.search(t) and len(t) <= 48:
         return "doc_changelog"
-    # 能力・対応範囲の短い確認（言語など）
-    if re.search(r"(英語|多言語|対応言語|何語|使える|できますか)", t, re.I):
+    # 能力・対応範囲（言語・チャネル・できること）
+    if re.search(
+        r"(英語|多言語|対応言語|何語|使える|できますか|何が?できる|出来る|"
+        r"LINE|ライン)",
+        t,
+        re.I,
+    ):
         return "capabilities"
+
+    # 汎用の深掘り（もっと詳しく / 続き 等）はファミリー未定。
+    # sticky follow-up が prior intent を継承できるようにする。
+    if is_ambiguous_short_follow_up(t):
+        return None
     return None
 
 
@@ -245,7 +256,9 @@ def is_doc_changelog_continuation(text: str) -> bool:
         return False
     if _DOC_CHANGELOG_TOPIC_RE.search(t):
         return True
-    # 汎用深掘り（もっと詳しく等）も changelog 文脈では継続扱い
+    # 汎用深掘り（もっと詳しく / それで？ 等）も changelog 文脈では継続扱い
+    if is_ambiguous_short_follow_up(t):
+        return True
     return bool(_DOC_CHANGELOG_CONTINUATION_RE.search(t))
 
 
