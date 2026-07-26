@@ -119,6 +119,25 @@ def test_extract_done_messages_when_trailing_user():
     assert user["content"] == "a"
 
 
+def test_run_chat_post_uses_sync_handler_not_nested_asyncio():
+    """GUNICORN_WORKERS=1 でも SSE ワーカーが同一 ThreadPool でデッドロックしないこと。"""
+    from src.handlers.chat_stream import _run_chat_post
+    from src.utils.chat_http_context import ChatClientInfo
+    from src.utils.request_safe_session import RequestSafeSession
+
+    session = RequestSafeSession()
+    client_info = ChatClientInfo(user_agent="", client_ip="127.0.0.1")
+    monitor = object()
+
+    with patch("src.handlers.chat_stream.bind_worker_stream_sink") as bind_mock:
+        with patch("src.handlers.chat_stream.handle_chat_post", return_value=({"status": "ok"}, 200)) as post_mock:
+            body, status = _run_chat_post(session, client_info, "こんにちは", "sid-test", monitor)
+
+    assert status == 200
+    bind_mock.assert_called_once_with("sid-test")
+    post_mock.assert_called_once_with(session, client_info, "こんにちは", "sid-test", monitor)
+
+
 def test_messages_for_sse_done_falls_back_to_db_when_session_empty():
     from src.handlers.chat_stream import _build_sse_done_event, _messages_for_sse_done
 

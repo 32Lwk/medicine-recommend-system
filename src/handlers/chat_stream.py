@@ -16,7 +16,7 @@ from typing import Any, AsyncIterator, Dict, Optional
 
 from starlette.requests import Request
 
-from src.handlers.chat_handler import handle_chat_post_async
+from src.handlers.chat_handler import handle_chat_post
 from src.services.session_manager import (
     get_next_user_number,
     get_session_from_db,
@@ -111,10 +111,9 @@ def _run_chat_post(
     sid: str,
     monitor: Any,
 ) -> tuple:
+    """SSE ワーカー内では sync pipeline を直接実行（同一 ThreadPool への二重 submit を避ける）。"""
     bind_worker_stream_sink(sid)
-    return asyncio.run(
-        handle_chat_post_async(safe_session, client_info, message, sid, monitor)
-    )
+    return handle_chat_post(safe_session, client_info, message, sid, monitor)
 
 
 def _yield_sink_events(sink: StreamSink) -> list[str]:
