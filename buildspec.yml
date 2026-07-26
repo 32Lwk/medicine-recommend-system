@@ -29,6 +29,8 @@ phases:
       - export GIT_COMMIT="${CODEBUILD_RESOLVED_SOURCE_VERSION:-unknown}"
       - export GIT_COMMIT_DATE="$(date -u +%Y-%m-%d)"
       - echo "GIT_COMMIT=${GIT_COMMIT}"
+      - python3 scripts/write_build_meta.py
+      - echo "build-meta:" && cat static/build-meta.json
       - echo "==> pull cache image (ignore if missing)"
       - docker pull "${IMAGE_URI}:latest" || true
   build:
