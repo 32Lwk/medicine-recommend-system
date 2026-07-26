@@ -6,16 +6,17 @@
 #   _DEPLOY_REGION … リージョン
 #   _AR_REPOSITORY … Artifact Registry リポジトリ名
 #
-# bash ローカル変数（COMMIT_DATE, IMAGE）は $$ でエスケープ（Cloud Build 置換と衝突防止）
+# bash ローカル変数（COMMIT_DATE, IMAGE 等）は $$ でエスケープ（Cloud Build 置換と衝突防止）
 
 substitutions:
   _SERVICE_NAME: medicine-recommend
   _DEPLOY_REGION: asia-northeast1
   _AR_REPOSITORY: cloud-run-source-deploy
   _AR_HOSTNAME: asia-northeast1-docker.pkg.dev
+  _CACHE_TAG: cache
 
 steps:
-  - name: python:3.11-slim
+  - name: gcr.io/cloud-builders/docker
     entrypoint: bash
     args:
       - -ceu
@@ -24,25 +25,24 @@ steps:
         if [ -z "$${COMMIT_DATE}" ]; then
           COMMIT_DATE="$(date -u +%Y-%m-%d)"
         fi
-        export GIT_COMMIT="${COMMIT_SHA}"
-        export GIT_COMMIT_DATE="$${COMMIT_DATE}"
-        python3 scripts/write_build_meta.py
-        echo "build-meta:" && cat static/build-meta.json
-        echo "$${COMMIT_DATE}" > /workspace/_commit_date.txt
-
-  - name: gcr.io/cloud-builders/docker
-    entrypoint: bash
-    args:
-      - -ceu
-      - |
-        COMMIT_DATE="$(cat /workspace/_commit_date.txt)"
-        IMAGE="${_AR_HOSTNAME}/${PROJECT_ID}/${_AR_REPOSITORY}/${REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}"
+        IMAGE_BASE="${_AR_HOSTNAME}/${PROJECT_ID}/${_AR_REPOSITORY}/${REPO_NAME}/${_SERVICE_NAME}"
+        IMAGE="$${IMAGE_BASE}:${COMMIT_SHA}"
+        CACHE_IMAGE="$${IMAGE_BASE}:${_CACHE_TAG}"
+        echo "==> pull cache image (ignore if missing)"
+        docker pull "$${CACHE_IMAGE}" || true
+        echo "==> docker build (BuildKit + cache-from)"
+        export DOCKER_BUILDKIT=1
         docker build \
+          --cache-from "$${CACHE_IMAGE}" \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
           --build-arg "GIT_COMMIT=${COMMIT_SHA}" \
           --build-arg "GIT_COMMIT_DATE=$${COMMIT_DATE}" \
           -t "$${IMAGE}" \
+          -t "$${CACHE_IMAGE}" \
           .
         docker push "$${IMAGE}"
+        docker push "$${CACHE_IMAGE}"
+        echo "$${COMMIT_DATE}" > /workspace/_commit_date.txt
         echo "$${IMAGE}" > /workspace/_image_ref.txt
 
   - name: gcr.io/cloud-builders/gcloud

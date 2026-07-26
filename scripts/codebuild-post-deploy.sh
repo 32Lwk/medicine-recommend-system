@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # CodeBuild post_build orchestration — fast path without skipping verification.
 #
-# - ECS deploy + /health commit wait (replaces services-stable)
+# - ECS deploy + parallel /health commit wait + static/KB sync + SSOT verify
 # - Conditional static/KB sync only when changed paths are known
 # - Full sync fallback when change detection is unreliable
 # - SSOT verify + full smoke always run (accuracy preserved)
@@ -43,9 +43,6 @@ aws ecs update-service \
   --query 'service.serviceName' \
   --output text
 
-echo "==> wait for live /health commit (skip services-stable)"
-bash "$ROOT/scripts/wait-staging-health-commit.sh"
-
 pids=()
 failures=0
 
@@ -59,6 +56,9 @@ run_bg() {
   ) &
   pids+=("$!")
 }
+
+echo "==> parallel post-deploy (health wait + sync + SSOT — smoke runs after all complete)"
+run_bg "wait live /health commit" bash "$ROOT/scripts/wait-staging-health-commit.sh"
 
 if [[ "${SYNC_STATIC_TO_S3:-false}" == "true" && "${DEPLOY_NEEDS_STATIC_SYNC:-true}" == "true" ]]; then
   run_bg "static → S3" bash "$ROOT/scripts/sync-static-to-s3.sh" --invalidate

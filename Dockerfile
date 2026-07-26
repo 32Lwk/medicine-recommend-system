@@ -25,6 +25,11 @@ WORKDIR /app
 COPY requirements-prod.txt .
 RUN pip install --no-cache-dir -r requirements-prod.txt
 
+# Local RAG コーパス — data/ 変更時のみ再実行（src/ 変更ではレイヤキャッシュを維持）
+COPY scripts/build_medicine_kb_documents.py scripts/
+COPY data/ data/
+RUN python3 scripts/build_medicine_kb_documents.py
+
 # 本番に必要なファイルのみコピー（docs の発表資料等は除外してイメージを軽量化）
 COPY start.sh main.py ./
 COPY config/ config/
@@ -35,15 +40,10 @@ COPY static/ static/
 COPY --from=build-meta /src/static/build-meta.json static/build-meta.json
 COPY scripts/write_build_meta.py scripts/
 COPY scripts/write_changelog_digest.py scripts/
-COPY scripts/build_medicine_kb_documents.py scripts/
-COPY data/ data/
 COPY docs/public/ docs/public/
 COPY docs/concierge/ docs/concierge/
 COPY docs/ops/ docs/ops/
 COPY CHANGELOG.md ./
-
-# Local RAG コーパス（build/ は .gitignore — イメージ内で生成）
-RUN python3 scripts/build_medicine_kb_documents.py
 
 # build-arg が渡された場合は build-meta ステージの結果を上書きする
 ARG GIT_COMMIT=

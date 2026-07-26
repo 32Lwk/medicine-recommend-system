@@ -41,6 +41,7 @@ echo "==> docker build --platform linux/amd64 (BuildKit + cache-from)"
 export DOCKER_BUILDKIT=1
 docker build --platform linux/amd64 \
   --cache-from "$IMAGE" \
+  --build-arg BUILDKIT_INLINE_CACHE=1 \
   --build-arg "GIT_COMMIT=${COMMIT}" \
   --build-arg "GIT_COMMIT_DATE=${COMMIT_DATE}" \
   -t "$IMAGE" \
