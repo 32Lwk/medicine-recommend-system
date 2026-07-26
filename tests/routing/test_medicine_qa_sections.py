@@ -135,6 +135,54 @@ def test_streaming_qa_attaches_product_images_and_unifies_answer():
     assert not parsed.get("interactions")
 
 
+def test_fast_product_image_qa_skips_llm_and_kb(monkeypatch):
+    from src.core.medicine.medicine_response_builder import chat_with_medicine_context
+
+    monkeypatch.setattr(
+        "src.dialogue.routing.context_signals.extract_drug_entities",
+        lambda _t: ["ロキソニン", "イブ"],
+    )
+    monkeypatch.setattr(
+        "src.core.medicine.medicine_response_builder.detect_medicine_name_in_query",
+        lambda *_a, **_k: [
+            {"product_name": "ロキソニンS", "ingredients": "ロキソプロフェン"},
+            {"product_name": "イブ", "ingredients": "イブプロフェン"},
+        ],
+    )
+    monkeypatch.setattr(
+        "src.core.medicine.medicine_response_builder.pd.read_csv",
+        lambda *_a, **_k: object(),
+    )
+
+    def _fail_llm(*_a, **_k):
+        raise AssertionError("LLM should not be called for product_image QA")
+
+    def _fail_kb(*_a, **_k):
+        raise AssertionError("KB augment should not run for product_image QA")
+
+    monkeypatch.setattr(
+        "src.core.llm_client.chat_completion_create",
+        _fail_llm,
+    )
+    monkeypatch.setattr(
+        "src.core.llm_client.chat_completion_stream",
+        _fail_llm,
+    )
+    monkeypatch.setattr(
+        "src.services.bedrock_kb_retrieve.augment_medicine_prompt_with_kb",
+        _fail_kb,
+    )
+
+    parsed = chat_with_medicine_context(
+        "ロキソニンとイブの画像見せて",
+        [],
+        [],
+        session_id="sid-fast-product-image",
+    )
+    assert "product_images_html" in parsed
+    assert "パッケージ画像" in parsed["answer"]
+
+
 def test_finalize_structured_qa_preserves_prebuilt_html_sections():
     msg = "ロキソニンとイブどっちがいい？"
     meds = [

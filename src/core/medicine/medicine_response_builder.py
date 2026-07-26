@@ -359,6 +359,39 @@ def _finalize_structured_qa_response(
     return _sanitize_qa_result(out)
 
 
+def _try_fast_product_image_qa_response(
+    user_message: str,
+    recommended_medicines: list,
+    *,
+    qa_focuses: list[str] | None = None,
+    conversation_history: list | None = None,
+    user_attributes: dict[str, Any] | None = None,
+    session_id: str | None = None,
+) -> dict | None:
+    """製品画像 QA は LLM / KB 拡張を省略して即応答（SSE 暫定表示なし）。"""
+    focuses = list(qa_focuses or [])
+    if "product_image" not in focuses or not recommended_medicines:
+        return None
+    if session_id:
+        try:
+            from src.services.processing_status import mark_processing_step, set_processing_flow
+
+            set_processing_flow(session_id, "ask_qa")
+            mark_processing_step(session_id, "medicine_qa", detail_code="answer_compose")
+            mark_processing_step(session_id, "medicine_qa", detail_code="format_response")
+        except Exception:
+            pass
+    parsed = _build_structured_qa_from_stream(
+        user_message,
+        recommended_medicines,
+        "",
+        qa_focuses=focuses,
+        conversation_history=conversation_history,
+        user_attributes=user_attributes,
+    )
+    return parsed
+
+
 def _build_structured_qa_from_stream(
     user_message: str,
     recommended_medicines: list,
@@ -616,6 +649,7 @@ def chat_with_medicine_context(
     from src.services.medicine_qa_routing import (
         infer_medicine_qa_focuses,
         is_comparison_pick_question,
+        _has_product_image_intent,
     )
 
     user_attributes: dict[str, Any] = {}
@@ -633,7 +667,19 @@ def chat_with_medicine_context(
         conversation_history=conversation_history,
         recommended_medicines=recommended_medicines,
         user_attributes=user_attributes,
+        use_llm_enrichment=not _has_product_image_intent(user_message),
     )
+    fast_product_image = _try_fast_product_image_qa_response(
+        user_message,
+        recommended_medicines,
+        qa_focuses=qa_focuses,
+        conversation_history=conversation_history,
+        user_attributes=user_attributes,
+        session_id=session_id,
+    )
+    if fast_product_image is not None:
+        return fast_product_image
+
     drug_entities = extract_drug_entities(user_message)
     comparison_hint = ""
     if len(drug_entities) >= 2:
@@ -739,26 +785,6 @@ def chat_with_medicine_context(
         _mark_qa("side_effect_check")
         stream_active = is_streaming_active(session_id)
         streamed_answer = ""
-        if stream_active and session_id and "product_image" in qa_focuses:
-            try:
-                from src.services.processing_status import set_processing_flow
-
-                set_processing_flow(session_id, "ask_qa")
-            except Exception:
-                pass
-            _mark_qa("answer_compose")
-            _mark_qa("format_response")
-            parsed = _build_structured_qa_from_stream(
-                user_message,
-                recommended_medicines,
-                "",
-                qa_focuses=qa_focuses,
-                conversation_history=conversation_history,
-                user_attributes=user_attributes,
-            )
-            _append_physical_handoff_hint(parsed, user_message)
-            return parsed
-
         if stream_active and session_id:
             try:
                 from src.services.processing_status import set_processing_flow
