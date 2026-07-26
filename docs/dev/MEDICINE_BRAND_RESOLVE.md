@@ -82,6 +82,23 @@ _rule(
 
 ---
 
+## セッション内ブランドピン（2026-07-26）
+
+**正本**: `src/services/medicine_qa_session_pins.py`
+
+| 項目 | 内容 |
+|------|------|
+| 保存先 | `session["qa_brand_pins"]` と `user_attributes["qa_brand_pins"]` |
+| 優先 | 同一セッションで一度解決した代表製品を再質問でも維持 |
+| 上書き | ユーザーが具体製品名（例: バファリンプレミアム）を明示したときのみ |
+| API | `resolve_brand_hints_in_query(..., session=)` / `resolve_products_with_session_pins` |
+
+**目的**: 「バファリン」比較で A ↔ プレミアムがターンごとに入れ替わる揺れを防ぐ。フレーズ固定ではなく **文脈スロット** として扱う。
+
+全角／半角英数は `_fold_alnum` で照合（`ロキソニンＳ` ↔ `ロキソニンS`）。
+
+---
+
 ## 医薬品 Q&A との連携
 
 | ルート | 条件 | ハンドラ |

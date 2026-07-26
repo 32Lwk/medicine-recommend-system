@@ -4,6 +4,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Sequence
 
+# session 型は実行時のみ使用（循環 import 回避のため Any）
+
 # ---------------------------------------------------------------------------
 # ブランド解決ルール — 新規通称は BRAND_RESOLVE_RULES に 1 行追加する
 # ---------------------------------------------------------------------------
@@ -54,13 +56,21 @@ BRAND_RESOLVE_RULES: tuple[BrandResolveRule, ...] = (
         "ロキソニン",
         ingredients=("ロキソプロフェン",),
         prefix="ロキソニン",
-        preferred=("ロキソニンＳ", "ロキソニンＳプレミアム", "ロキソニンＳクイック"),
+        # 全角Ｓ / 半角S 両対応（_find_by_exact_name が fold 照合）
+        preferred=(
+            "ロキソニンＳ",
+            "ロキソニンS",
+            "ロキソニンＳプレミアム",
+            "ロキソニンSプレミアム",
+            "ロキソニンＳクイック",
+            "ロキソニンSクイック",
+        ),
     ),
     _rule(
         "バファリン",
         ingredients=("アスピリン", "アセトアミノフェン"),
         prefix="バファリン",
-        preferred=("バファリンＡ", "バファリンルナｉ", "バファリンプレミアム"),
+        preferred=("バファリンＡ", "バファリンA", "バファリンルナｉ", "バファリンプレミアム"),
     ),
     _rule("カロナール", ingredients=("アセトアミノフェン",), prefix="カロナール", preferred=("カロナールＡ",)),
     _rule("タイレノール", ingredients=("アセトアミノフェン",), prefix="タイレノール"),
@@ -78,8 +88,15 @@ BRAND_RESOLVE_RULES: tuple[BrandResolveRule, ...] = (
     _rule("ベンザ", prefix="ベンザ", preferred=("ベンザブロックＳ錠", "ベンザブロックＳ", "ベンザブロックＬ")),
     _rule(
         "PL",
-        contains=("パイロンＰＬ",),
-        preferred=("パイロンＰＬ錠", "パイロンＰＬ顆粒", "パイロンＰＬ錠Ｐｒｏ"),
+        contains=("パイロンＰＬ", "パイロンPL"),
+        preferred=(
+            "パイロンＰＬ錠",
+            "パイロンPL錠",
+            "パイロンＰＬ顆粒",
+            "パイロンPL顆粒",
+            "パイロンＰＬ錠Ｐｒｏ",
+            "パイロンPL錠Pro",
+        ),
     ),
     _rule("ペタミン", ingredients=("アセトアミノフェン",), preferred=("カロナールＡ", "タイレノールＡ")),
 )
@@ -115,13 +132,37 @@ def _product_name(row) -> str:
     return str(row.get("製品名") or "").strip()
 
 
+def _fold_alnum(s: str) -> str:
+    """全角英数・スペースを半角に寄せて照合する（Ｓ/S, ＰＬ/PL 等）。"""
+    if not s:
+        return ""
+    out: list[str] = []
+    for ch in s:
+        code = ord(ch)
+        if code == 0x3000:  # ideographic space
+            out.append(" ")
+            continue
+        if 0xFF01 <= code <= 0xFF5E:  # fullwidth ASCII
+            out.append(chr(code - 0xFEE0))
+            continue
+        out.append(ch)
+    return "".join(out).replace(" ", "")
+
+
 def _brand_prefix_match(hint: str, product_name: str) -> bool:
     """「イブ」が「ケイブク」に部分一致しないよう、先頭一致のみ。"""
     pn = product_name.strip()
     if not hint or not pn:
         return False
-    if pn == hint:
+    if pn == hint or _fold_alnum(pn) == _fold_alnum(hint):
         return True
+    folded_pn = _fold_alnum(pn)
+    folded_hint = _fold_alnum(hint)
+    if folded_pn.startswith(folded_hint):
+        if len(folded_pn) == len(folded_hint):
+            return True
+        nxt = folded_pn[len(folded_hint)]
+        return not nxt.isascii() or not nxt.isalnum() or nxt in "<>()AE"
     if not pn.startswith(hint):
         return False
     if len(pn) == len(hint):
@@ -144,8 +185,10 @@ def _find_by_exact_name(medicine_df, name: str) -> dict[str, Any] | None:
     target = (name or "").strip()
     if not target:
         return None
+    folded_target = _fold_alnum(target)
     for _, row in medicine_df.iterrows():
-        if _product_name(row) == target:
+        pn = _product_name(row)
+        if pn == target or _fold_alnum(pn) == folded_target:
             return _row_to_med(row)
     return None
 
@@ -164,11 +207,15 @@ def _find_by_prefix(medicine_df, prefix: str) -> dict[str, Any] | None:
 
 def _find_by_contains(medicine_df, fragments: Iterable[str]) -> dict[str, Any] | None:
     candidates: list[tuple[int, dict[str, Any]]] = []
+    folded_frags = [_fold_alnum(f) for f in fragments if f]
     for _, row in medicine_df.iterrows():
         pn = _product_name(row)
         if not pn:
             continue
-        if any(frag in pn for frag in fragments):
+        folded_pn = _fold_alnum(pn)
+        if any(frag in pn or _fold_alnum(frag) in folded_pn for frag in fragments):
+            candidates.append((len(pn), _row_to_med(row)))
+        elif any(ff and ff in folded_pn for ff in folded_frags):
             candidates.append((len(pn), _row_to_med(row)))
     if not candidates:
         return None
@@ -248,8 +295,29 @@ def resolve_brand_hint_product(hint: str, medicine_df) -> dict[str, Any] | None:
     return _find_by_prefix(medicine_df, hint)
 
 
-def resolve_brand_hints_in_query(user_message: str, medicine_df) -> list[dict[str, Any]]:
-    """質問中のブランド通称ごとに代表製品を順序付きで返す。"""
+def resolve_brand_hints_in_query(
+    user_message: str,
+    medicine_df,
+    *,
+    session: Any = None,
+    use_session_pins: bool = True,
+) -> list[dict[str, Any]]:
+    """質問中のブランド通称ごとに代表製品を順序付きで返す。
+
+    session がある場合はセッション内ピンを優先し、解決結果をピンへ反映する。
+    """
+    if use_session_pins and session is not None:
+        try:
+            from src.services.medicine_qa_session_pins import (
+                resolve_products_with_session_pins,
+            )
+
+            return resolve_products_with_session_pins(
+                user_message, medicine_df, session=session
+            )
+        except Exception:
+            pass
+
     try:
         from src.dialogue.routing.context_signals import extract_drug_entities
     except ImportError:

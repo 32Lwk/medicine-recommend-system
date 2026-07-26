@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-07-26T03:49:46.258955+00:00",
+  "timestamp": "2026-07-26T06:53:06.073443+00:00",
   "provider": "local",
   "summary": {
     "total": 19,
-    "pass": 19,
-    "pass_pct": 100.0
+    "pass": 2,
+    "pass_pct": 10.5
   },
   "results": [
     {
       "id": "qa-ix-loxo-warfarin",
       "query": "ロキソニンとワーファリン、併用して大丈夫？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -20,18 +20,16 @@
         "interaction"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/interactions/ロキソプロフェン-ワーファリン.md"
-      ],
-      "augmented_len": 671,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 38,
+      "pass": false
     },
     {
       "id": "qa-ix-alcohol-acet",
       "query": "カロナール飲んだ後お酒は避けた方がいい？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -39,18 +37,16 @@
         "interaction"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/interactions/アセトアミノフェン-アルコール.md"
-      ],
-      "augmented_len": 233,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 37,
+      "pass": false
     },
     {
       "id": "qa-se-drowsy",
       "query": "この薬で眠くなるのは普通？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -58,18 +54,16 @@
         "side_effect"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/side_effects/ロキソプロフェン.md"
-      ],
-      "augmented_len": 965,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 30,
+      "pass": false
     },
     {
       "id": "qa-us-meal",
       "query": "食後に飲む方がいい？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -77,18 +71,16 @@
         "usage"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/products/カロナールa-第一三共.md"
-      ],
-      "augmented_len": 236,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 27,
+      "pass": false
     },
     {
       "id": "qa-age-child",
       "query": "小学2年生でも市販の風邪薬使える？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -96,18 +88,16 @@
         "general"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/topics/age-restriction-guide.md"
-      ],
-      "augmented_len": 864,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 34,
+      "pass": false
     },
     {
       "id": "qa-dop-sports",
       "query": "マラソン前に鼻薬使っていい？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -115,18 +105,16 @@
         "doping"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/doping/pseudoephedrine.md"
-      ],
-      "augmented_len": 426,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 31,
+      "pass": false
     },
     {
       "id": "qa-ctx-anaphora",
       "query": "それ一緒に飲んでも大丈夫？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -135,18 +123,16 @@
         "usage"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/interactions/ロキソプロフェン-ワーファリン.md"
-      ],
-      "augmented_len": 663,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 30,
+      "pass": false
     },
     {
       "id": "qa-polite-ix",
       "query": "バファリンとイブプロフェン、同日服用は問題ございませんか",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -154,18 +140,16 @@
         "comparison"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/interactions/アスピリン-イブプロフェン.md"
-      ],
-      "augmented_len": 241,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 45,
+      "pass": false
     },
     {
       "id": "qa-enmix-ix",
       "query": "aspirin and ibuprofen same day — OK?",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -173,18 +157,16 @@
         "general"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/interactions/アスピリン-イブプロフェン.md"
-      ],
-      "augmented_len": 249,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 53,
+      "pass": false
     },
     {
       "id": "qa-side-stomach",
       "query": "イブプロフェンで胃がむかむかする副作用ある？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -192,18 +174,16 @@
         "side_effect"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/side_effects/イブプロフェン.md"
-      ],
-      "augmented_len": 304,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 39,
+      "pass": false
     },
     {
       "id": "qa-cmp-diff",
       "query": "ロキソニンとイブの違いって何？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -211,12 +191,9 @@
         "comparison"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/products/ロキソニンs-第一三共ヘルスケア.md",
-        "local/medicine/products/イブ-エスエス製薬.md"
-      ],
-      "augmented_len": 352,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 32,
+      "pass": false
     },
     {
       "id": "qa-photo-loxo",
@@ -231,18 +208,16 @@
         "product_image"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/products/ロキソニンs-第一三共ヘルスケア.md"
-      ],
-      "augmented_len": 215,
+      "source_uris": [],
+      "augmented_len": 28,
       "pass": true
     },
     {
       "id": "qa-ingredient",
       "query": "カロナールの成分は？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -250,18 +225,16 @@
         "ingredient"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/products/カロナールa-第一三共.md"
-      ],
-      "augmented_len": 203,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 27,
+      "pass": false
     },
     {
       "id": "qa-age-loxo",
       "query": "ロキソニンは何歳から？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -269,18 +242,16 @@
         "age"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/products/ロキソニンs-第一三共ヘルスケア.md"
-      ],
-      "augmented_len": 147,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 28,
+      "pass": false
     },
     {
       "id": "qa-cmp-pick",
       "query": "ロキソニンとイブどっちがいい？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -288,19 +259,16 @@
         "comparison"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/products/ロキソニンs-第一三共ヘルスケア.md",
-        "local/medicine/products/イブ-エスエス製薬.md"
-      ],
-      "augmented_len": 352,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 32,
+      "pass": false
     },
     {
       "id": "qa-mixed-se-photo",
       "query": "ロキソニンの副作用と写真見せて",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -309,18 +277,16 @@
         "side_effect"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/side_effects/ロキソプロフェン.md"
-      ],
-      "augmented_len": 967,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 32,
+      "pass": false
     },
     {
       "id": "qa-ing-only",
       "query": "イブプロフェンの副作用は？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -328,11 +294,9 @@
         "side_effect"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/side_effects/イブプロフェン.md"
-      ],
-      "augmented_len": 295,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 30,
+      "pass": false
     },
     {
       "id": "qa-clarify-this",
@@ -353,9 +317,9 @@
     {
       "id": "qa-side-pure",
       "query": "ロキソニンって眠い？",
-      "kb_block_ok": true,
-      "prefix_ok": true,
-      "chunks_ok": true,
+      "kb_block_ok": false,
+      "prefix_ok": false,
+      "chunks_ok": false,
       "focuses_ok": true,
       "unified_ok": true,
       "side_route_ok": true,
@@ -363,11 +327,9 @@
         "side_effect"
       ],
       "provider": "local_rag",
-      "source_uris": [
-        "local/medicine/side_effects/ロキソプロフェン.md"
-      ],
-      "augmented_len": 962,
-      "pass": true
+      "source_uris": [],
+      "augmented_len": 27,
+      "pass": false
     }
   ]
 }

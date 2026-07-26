@@ -134,6 +134,33 @@ def is_symptom_drowsiness_declaration(text: str) -> bool:
     return False
 
 
+def looks_like_substantive_meta_question(text: str) -> bool:
+    """短い継続（もっと詳しく）ではなく、独立したメタ／技術質問っぽいか。"""
+    t = (text or "").strip()
+    if not t or len(t) < 4:
+        return False
+    # changelog 継続フレーズだけのときは独立質問とみなさない
+    if _DOC_CHANGELOG_CONTINUATION_RE.search(t) and len(t) <= 24:
+        if not (_APP_ABOUT_TOPIC_RE.search(t) or _TOPIC_INFRA_COMPARE_RE.search(t)):
+            return False
+    if is_ambiguous_short_follow_up(t) and not _TOPIC_INFRA_COMPARE_RE.search(t):
+        return False
+    if _APP_ABOUT_TOPIC_RE.search(t) or _TOPIC_INFRA_COMPARE_RE.search(t):
+        return True
+    if is_architecture_explanation_question(t):
+        return True
+    # 「〜は？」「違いは？」など独立質問。特定フレーズ列挙ではなく構造で判定。
+    if re.search(r"[?？]$", t) and len(t) <= 40:
+        if re.search(
+            r"(違い|なに|何|どう|誰|だれ|仕組み|構成|役割|担当|エージェント|"
+            r"デプロイ|システム|インフラ)",
+            t,
+            re.IGNORECASE,
+        ):
+            return True
+    return False
+
+
 def is_explicit_new_meta_topic(text: str, *, prior_intent: str | None = None) -> bool:
     t = (text or "").strip()
     if not t:
@@ -142,7 +169,10 @@ def is_explicit_new_meta_topic(text: str, *, prior_intent: str | None = None) ->
         return True
     if is_architecture_explanation_question(t):
         return True
-    if prior_intent == "doc_changelog" and _TOPIC_INFRA_COMPARE_RE.search(t):
+    # 直前がどのメタ intent でも、インフラ／クラウド比較は新トピック
+    if _TOPIC_INFRA_COMPARE_RE.search(t):
+        return True
+    if prior_intent and looks_like_substantive_meta_question(t):
         return True
     return False
 
@@ -151,7 +181,10 @@ def is_doc_changelog_continuation(text: str) -> bool:
     t = (text or "").strip()
     if not t or len(t) > 40:
         return False
-    if is_explicit_new_meta_topic(t, prior_intent="doc_changelog"):
+    # 循環回避: is_explicit_new_meta_topic を呼ばず、強い新トピック信号のみ除外
+    if _APP_ABOUT_TOPIC_RE.search(t) or _TOPIC_INFRA_COMPARE_RE.search(t):
+        return False
+    if is_architecture_explanation_question(t):
         return False
     return bool(_DOC_CHANGELOG_CONTINUATION_RE.search(t))
 

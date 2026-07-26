@@ -493,6 +493,8 @@ def run_recommendation_followups(
                     sanitized_message,
                     messages_other[-10:],
                     latest_recommended_medicines_followup,
+                    session_id=sid,
+                    session=session,
                 )
                 try:
                     from src.utils.structured_logger import log_medicine_question_detail

@@ -1,6 +1,47 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月26日**（Medicine QA 製品画像 UI・比較セクション改善）
+**最終更新日: 2026年7月26日**（セッション内ブランドピン・技術 Q&A 根拠強化）
+
+---
+
+## 2026-07-26 — セッション内ブランドピン・技術 Q&A 文脈／根拠強化
+
+### 概要
+
+AWS ログ解析で顕在化した **(1) 比較 Q&A の製品ライン揺れ** と **(2) 技術質問が更新履歴・誤構成に引きずられる問題** を、フレーズ列挙ではなく **セッション文脈 + IntentRouter 優先 + SSOT/RAG 根拠** で改善。
+
+### Medicine QA — セッション内ブランドピン
+
+| 項目 | 内容 |
+|------|------|
+| 新規 | `src/services/medicine_qa_session_pins.py` — `qa_brand_pins` を session / user_attributes に保持 |
+| 解決 | `resolve_brand_hints_in_query(..., session=)` がピン優先。明示製品名のみ上書き |
+| 配線 | `chat_with_medicine_context` / `chat_medicine_qa_html` / followup が session を渡す |
+| 照合 | 全角／半角英数 fold（`ロキソニンＳ`↔`ロキソニンS`, `パイロンＰＬ`↔`パイロンPL`） |
+
+**効果**: 「バファリン」比較の再質問で A ↔ プレミアムが入れ替わる揺れを抑制。
+
+### Concierge 技術 Q&A — sticky 回避と根拠
+
+| 問題 | 対応 |
+|------|------|
+| IntentRouter は `architecture` なのに sticky follow-up が `doc_changelog` / `app_about` を優先 | `resolve_concierge_intent` で **router_dispatch を sticky より先に採用** |
+| changelog 後の独立質問が継続扱い | `is_explicit_new_meta_topic` / `looks_like_substantive_meta_question` で構造判定。layer1 topic break を全メタ prior に拡大 |
+| 非 deep で ops ドキュメント未注入 → 運用事実の推測回答 | architecture は **常に technical + ops SSOT**。AWS/GCP 等の運用質問を deep 相当に |
+| Local RAG の技術コーパス不足 | ops（LOCAL_RAG / GCP ADR / Cloud Run LLM env 等）+ `docs/dev` を index。architecture pool に `local/dev/` 追加 |
+
+### テスト
+
+- `tests/services/test_medicine_qa_session_pins.py`
+- `tests/routing/test_meta_topic_break_flexible.py`
+- 既存 parity / brand resolve / medicine_qa_routing
+
+### 検証メモ（ローカル）
+
+```
+比較「違い」→ medicine_qa / 眠気 → medicine_side_effect_qa（layer1）
+同一セッションでバファリン代表製品がピン固定
+```
 
 ---
 

@@ -49,7 +49,14 @@ _CONCIERGE_INTENT_POOLS: Dict[str, Tuple[str, ...]] = {
     "capabilities": ("local/concierge/", "local/content/concierge_knowledge"),
     "app_about": ("local/concierge/", "local/public/", "local/content/concierge_knowledge"),
     "doc_changelog": ("local/content/",),
-    "architecture": ("local/ops/", "local/concierge/", "local/public/"),
+    # architecture: technical SSOT + ops + pipeline/dev 説明を広く拾う
+    "architecture": (
+        "local/ops/",
+        "local/concierge/",
+        "local/public/",
+        "local/dev/",
+        "local/content/concierge_knowledge",
+    ),
 }
 
 
@@ -317,10 +324,22 @@ def _concierge_docs_raw() -> List[Tuple[Path, str, str]]:
         "docs/ops/AWS_CODEPIPELINE.md",
         "docs/ops/CLOUDFLARE_R2_IMAGES.md",
         "docs/ops/AWS_BEDROCK_KB.md",
+        "docs/ops/AWS_STAGING_CHECKLIST.md",
+        "docs/ops/LOCAL_RAG.md",
+        "docs/ops/GCP_RAG_MIGRATION_ADR.md",
+        "docs/ops/CLOUD_RUN_LLM_ENV.md",
+        "docs/ops/CAPACITY_PLANNING.md",
+        "docs/dev/CHAT_PIPELINE_V2.md",
+        "docs/dev/MEDICINE_QA_ROUTING.md",
+        "docs/dev/MEDICINE_BRAND_RESOLVE.md",
     ):
         path = ROOT / rel
         if path.is_file():
-            docs.append((path, f"local/ops/{path.name}", "ops"))
+            # docs/dev は virtual URI を local/dev/ に分離（architecture pool から参照）
+            if rel.startswith("docs/dev/"):
+                docs.append((path, f"local/dev/{path.name}", "dev"))
+            else:
+                docs.append((path, f"local/ops/{path.name}", "ops"))
     for rel, uri in (
         ("CHANGELOG.md", "local/content/CHANGELOG.md"),
         ("static/changelog-digest.json", "local/content/changelog-digest.json"),

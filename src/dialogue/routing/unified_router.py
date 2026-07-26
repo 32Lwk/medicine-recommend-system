@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any
 
 from config.llm_flags import is_unified_router_enabled
@@ -10,6 +11,12 @@ from src.dialogue.routing.context_signals import (
     extract_context_features,
     is_explicit_new_meta_topic,
     is_medicine_side_effect_question,
+)
+
+_INFRA_TOPIC_RE = re.compile(
+    r"aws|gcp|cloud\s*run|ecs|codepipeline|bedrock|インフラ|アーキテクチャ|"
+    r"architecture|マルチ[\s　\-]*エージェント|デプロイ|バックエンド|仕組み|構成",
+    re.IGNORECASE,
 )
 from src.dialogue.routing.follow_up_llm import resolve_follow_up_route
 from src.dialogue.routing.guards import apply_post_route_guards
@@ -86,8 +93,33 @@ def _layer1_deterministic(
         )
 
     prior = features.prior_route or features.prior_concierge_intent
-    if prior == "doc_changelog" and is_explicit_new_meta_topic(text, prior_intent=prior):
-        sub = "app_about" if _looks_app_about(text) else "architecture"
+    # changelog / about 等の直後でも、独立したメタ／技術質問は sticky を切る
+    if prior in (
+        "doc_changelog",
+        "app_about",
+        "capabilities",
+        "architecture",
+        "doc_privacy",
+        "doc_terms",
+        "doc_operator",
+        "doc_consultation",
+        "doc_app_overview",
+    ) and is_explicit_new_meta_topic(text, prior_intent=prior):
+        from src.services.concierge_agent_history import (
+            is_architecture_explanation_question,
+            is_who_is_answering_question,
+        )
+
+        if is_who_is_answering_question(text):
+            sub = "app_about"
+        elif _INFRA_TOPIC_RE.search(text) or is_architecture_explanation_question(text):
+            sub = "architecture"
+        elif _looks_app_about(text):
+            sub = "app_about"
+        else:
+            # 独立したメタ質問だが分類が曖昧 → architecture より app_about を既定に
+            # （インフラ語が無い「あなたについて」等は上で app_about）
+            sub = "architecture" if prior == "architecture" else "app_about"
         return RoutingDecision(
             primary_route="Concierge",
             sub_route=sub,
