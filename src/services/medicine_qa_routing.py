@@ -1,6 +1,7 @@
 """医薬品 Q&A と副作用 Q&A の意図ベース切り分け。"""
 from __future__ import annotations
 
+import html
 import re
 from typing import Any, Literal, Optional
 
@@ -591,9 +592,10 @@ def infer_medicine_qa_focuses(
     t = (user_message or "").strip()
     focuses: list[MedicineQaFocus] = []
 
-    if _has_product_image_intent(t):
+    has_product_image = _has_product_image_intent(t)
+    if has_product_image:
         focuses.append("product_image")
-    if _has_comparison_intent(
+    if not has_product_image and _has_comparison_intent(
         t,
         conversation_history=conversation_history,
         recommended_medicines=recommended_medicines,
@@ -747,6 +749,37 @@ def is_generic_qa_boilerplate(text: str) -> bool:
     return any(marker in s for marker in _GENERIC_BOILERPLATE_MARKERS)
 
 
+def _qa_product_line_html(name: str, description: str) -> str:
+    """製品名と説明を改行崩れしにくい HTML ブロックで返す。"""
+    name_esc = html.escape(name.strip())
+    desc_esc = html.escape(description.strip())
+    if not name_esc:
+        return f'<p class="ui-qa-product-line">{desc_esc}</p>' if desc_esc else ""
+    return (
+        f'<p class="ui-qa-product-line">'
+        f'<span class="ui-qa-product-line__lead">'
+        f"<strong>{name_esc}</strong>："
+        f"</span>"
+        f'<span class="ui-qa-product-line__body">{desc_esc}</span>'
+        f"</p>"
+    )
+
+
+def _pick_hint_for_medicine(med: dict[str, Any]) -> str:
+    """選好質問向けの製品別選び方ヒント。"""
+    ing = str(med.get("ingredients") or "").lower()
+    if "ロキソプロフェン" in ing:
+        return "効き目を重視する場面向き（胃に弱い方は食後・短期使用に注意）。"
+    if "イブプロフェン" in ing:
+        return "比較的マイルドさを重視する場面向き（製品により胃粘膜保護成分が含まれることもあります）。"
+    cls = _ingredient_class_hint(ing)
+    if "NSAIDs" in cls:
+        return "効き目重視向き（胃に弱い方は食後・短期使用に注意）。"
+    if "アセトアミノフェン" in cls:
+        return "胃に比較的優しい選択肢になりやすい。"
+    return ""
+
+
 def _ingredient_class_hint(ingredients: str) -> str:
     ing = (ingredients or "").lower()
     if "ロキソプロフェン" in ing or "イブプロフェン" in ing or "アスピリン" in ing:
@@ -767,11 +800,10 @@ def _comparison_lines(medicines: list[dict[str, Any]], user_message: str) -> str
         if not name:
             continue
         ingredients = _normalize_ws(str(med.get("ingredients") or ""), limit=120)
-        cls = _ingredient_class_hint(ingredients)
-        cls_note = f"（{cls}）" if cls else ""
         use_hint = _short_medicine_use_hint(med, user_message)
-        parts.append(f"**{name}**{cls_note}：主成分は{ingredients or '要確認'}。{use_hint}")
-    return "\n".join(parts)
+        body = f"主成分は{ingredients or '要確認'}。{use_hint}"
+        parts.append(_qa_product_line_html(name, body))
+    return "".join(parts)
 
 
 def _comparison_interaction_note(medicines: list[dict[str, Any]]) -> str:
@@ -810,20 +842,16 @@ def _comparison_side_effect_note(medicines: list[dict[str, Any]]) -> str:
 def _pick_advice_lines(medicines: list[dict[str, Any]], user_message: str) -> str:
     if len(medicines) != 2 or not is_comparison_pick_question(user_message):
         return ""
-    hints: list[str] = []
+    blocks: list[str] = []
     for med in medicines:
-        ing = _ingredient_class_hint(str(med.get("ingredients") or ""))
-        name = str(med.get("product_name") or "")
-        if "NSAIDs" in ing:
-            hints.append(f"**{name}**：効き目重視向き（胃に弱い方は食後・短期使用に注意）。")
-        elif "アセトアミノフェン" in ing:
-            hints.append(f"**{name}**：胃に比較的優しい選択肢になりやすい。")
-    if not hints:
+        name = str(med.get("product_name") or "").strip()
+        hint = _pick_hint_for_medicine(med)
+        if name and hint:
+            blocks.append(_qa_product_line_html(name, hint))
+    if not blocks:
         return ""
-    return (
-        " ".join(hints)
-        + " 個人差があります。持病・他のお薬・年齢を伝えて登録販売者に相談してください。"
-    )
+    footer = "個人差があります。持病・他のお薬・年齢を伝えて登録販売者に相談してください。"
+    return "".join(blocks) + f'<p class="ui-qa-product-line ui-qa-product-line--footnote">{html.escape(footer)}</p>'
 
 
 def _age_restriction_lines(medicines: list[dict[str, Any]]) -> str:
@@ -841,17 +869,15 @@ def _ingredient_lines(medicines: list[dict[str, Any]], user_message: str) -> str
     for med in medicines[:2]:
         name = str(med.get("product_name") or "")
         ingredients = _normalize_ws(str(med.get("ingredients") or ""), limit=160)
-        cls = _ingredient_class_hint(ingredients)
-        cls_note = f"（{cls}）" if cls else ""
         if name:
-            parts.append(f"**{name}**{cls_note}：{ingredients or '要確認'}")
+            parts.append(_qa_product_line_html(name, ingredients or "要確認"))
     if not parts and _ingredients_in_text(user_message):
         ings = _ingredients_in_text(user_message)[:3]
         parts.append(
             f"**{ings[0]}** に関する一般的な情報です。"
             + (f" 同系統の代表例として市販品に含まれることがあります。" if ings else "")
         )
-    return "\n".join(parts)
+    return "".join(parts)
 
 
 def _sections_for_focus(
@@ -950,11 +976,6 @@ def _sections_for_focus(
         return out
 
     if focus == "product_image" and meds:
-        out["medicine_details"] = "\n".join(
-            f"**{m.get('product_name')}**"
-            for m in meds[:4]
-            if m.get("product_name")
-        )
         return out
 
     if meds:

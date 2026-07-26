@@ -2448,6 +2448,62 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
   color: var(--onb-text-primary, inherit);
 }
 
+.ui-qa-product-line {
+  margin: 0 0 0.65em;
+}
+
+.ui-qa-product-line:last-child,
+.ui-qa-product-line--footnote {
+  margin-bottom: 0;
+}
+
+.ui-qa-product-line__lead {
+  white-space: nowrap;
+}
+
+.ui-qa-product-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 8px 0 4px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.ui-qa-product-images__item {
+  flex: 0 0 auto;
+  max-width: 140px;
+  margin: 0;
+}
+
+.ui-qa-product-images__img {
+  width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: var(--ui-med-image-bg, #f4f6f8);
+}
+
+.ui-qa-product-images__ph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  border-radius: 8px;
+  background: var(--ui-med-image-bg, #f4f6f8);
+  color: var(--ui-med-image-placeholder-text, #6b7280);
+  font-size: 0.75em;
+  text-align: center;
+  padding: 8px;
+}
+
+.ui-qa-product-images__caption {
+  margin-top: 4px;
+  font-size: 0.72em;
+  text-align: center;
+  color: var(--ui-text-secondary, #555);
+}
+
 /* 副作用 Q&A — 成分カード（PMDA 原文の代わりに要点をチップ表示） */
 .ui-side-effect-list {
   display: flex;

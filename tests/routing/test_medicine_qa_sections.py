@@ -3,11 +3,14 @@ from __future__ import annotations
 
 from src.core.medicine.medicine_response_builder import (
     _build_structured_qa_from_stream,
+    _finalize_structured_qa_response,
     detect_medicine_name_in_query,
 )
 from src.services.medicine_qa_routing import (
+    _pick_advice_lines,
     build_focused_qa_sections,
     infer_medicine_qa_focus,
+    infer_medicine_qa_focuses,
     is_generic_qa_boilerplate,
     prune_qa_response,
 )
@@ -69,7 +72,8 @@ def test_build_qa_status_uses_comparison_section_title():
     assert comparison.html
     assert "<strong>ロキソニンＳ</strong>" in comparison.html
     assert "<strong>イブ</strong>" in comparison.html
-    assert "<br>" in comparison.html
+    assert "ui-qa-product-line" in comparison.html
+    assert "NSAIDs" not in comparison.html
     assert "**" not in comparison.html
 
 
@@ -87,3 +91,65 @@ def test_brand_hint_detects_loxonin_and_ib():
     names = {h["product_name"] for h in hits}
     assert any("ロキソニン" in n for n in names)
     assert any("イブ" in n for n in names)
+
+
+def test_pick_advice_differentiates_loxonin_and_ib():
+    msg = "ロキソニンとイブどっちがいい？"
+    meds = [
+        {"product_name": "ロキソニンＳ", "ingredients": "ロキソプロフェンナトリウム"},
+        {"product_name": "イブ", "ingredients": "イブプロフェン"},
+    ]
+    advice = _pick_advice_lines(meds, msg)
+    assert "ui-qa-product-line" in advice
+    assert "効き目を重視" in advice
+    assert "マイルド" in advice
+    assert advice.count("効き目重視向き") <= 1
+
+
+def test_product_image_focus_excludes_comparison():
+    msg = "ロキソニンとイブの画像見せて"
+    focuses = infer_medicine_qa_focuses(msg)
+    assert focuses == ["product_image"]
+
+
+def test_streaming_qa_attaches_product_images_and_fixes_denial_answer():
+    msg = "ロキソニンとイブの画像見せて"
+    meds = [
+        {"product_name": "ロキソニンＳ", "ingredients": "ロキソプロフェン"},
+        {"product_name": "イブ", "ingredients": "イブプロフェン"},
+    ]
+    parsed = _build_structured_qa_from_stream(
+        msg,
+        meds,
+        "この画面では画像を直接お見せできません。",
+        qa_focuses=["product_image"],
+    )
+    assert "product_images_html" in parsed
+    assert "ui-qa-product-images" in parsed["product_images_html"]
+    assert "お見せできません" not in parsed["answer"]
+    assert "パッケージ画像" in parsed["answer"]
+    assert not parsed.get("interactions")
+
+
+def test_finalize_structured_qa_preserves_prebuilt_html_sections():
+    msg = "ロキソニンとイブどっちがいい？"
+    meds = [
+        {"product_name": "ロキソニンＳ", "ingredients": "ロキソプロフェン", "efficacy": "痛"},
+        {"product_name": "イブ", "ingredients": "イブプロフェン", "efficacy": "痛"},
+    ]
+    focused = build_focused_qa_sections(msg, meds)
+    focused["answer"] = "比較回答"
+    finalized = _finalize_structured_qa_response(
+        focused,
+        msg,
+        meds,
+        qa_focuses=["comparison"],
+        answer="比較回答",
+    )
+    diag = build_qa_from_chat_response(
+        finalized,
+        feedback_context={"user_message": msg, "ai_response": "比較回答"},
+    )
+    pick = next(s for s in diag.sections if s.title == "選び方のポイント")
+    assert "ui-qa-product-line__lead" in pick.html
+    assert "マイルド" in pick.html

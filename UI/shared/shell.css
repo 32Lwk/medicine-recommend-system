@@ -2017,6 +2017,19 @@ body:has(#app > .ui-app) #app {
   color: var(--ui-text-secondary, #555);
 }
 
+.ui-qa-product-line {
+  margin: 0 0 0.65em;
+}
+
+.ui-qa-product-line:last-child,
+.ui-qa-product-line--footnote {
+  margin-bottom: 0;
+}
+
+.ui-qa-product-line__lead {
+  white-space: nowrap;
+}
+
 .ui-med-image__label {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 0.68rem;

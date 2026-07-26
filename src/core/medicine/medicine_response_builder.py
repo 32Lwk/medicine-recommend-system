@@ -253,11 +253,11 @@ def _short_medicine_use_hint(med: dict, user_message: str) -> str:
             return "のどの炎症・痛み向けの外用薬です。"
         return "感冒症状の緩和向けの総合感冒薬です。"
     if "ロキソプロフェン" in ingredients:
-        return "解熱鎮痛薬（NSAIDs）で、頭痛・歯痛・生理痛などに用いられます。"
+        return "解熱鎮痛薬で、頭痛・歯痛・生理痛などに用いられます。"
     if "イブプロフェン" in ingredients:
-        return "解熱鎮痛薬（NSAIDs）で、頭痛・歯痛・生理痛などに用いられます。"
+        return "解熱鎮痛薬で、頭痛・歯痛・生理痛などに用いられます。"
     if "アセトアミノフェン" in ingredients and "イブプロフェン" not in ingredients:
-        return "解熱鎮痛薬（アセトアミノフェン系）で、熱・痛みの緩和に用いられます。"
+        return "解熱鎮痛薬で、熱・痛みの緩和に用いられます。"
     efficacy = (med.get("efficacy") or "").replace("\n", " ").strip()
     if not efficacy:
         return "一般用医薬品です。"
@@ -301,16 +301,90 @@ def _sanitize_qa_result(result: dict) -> dict:
     return out
 
 
+_IMAGE_DENIAL_MARKERS = (
+    "お見せできません",
+    "表示ができません",
+    "見せられません",
+    "表示できません",
+    "直接お見せ",
+    "画像を直接",
+)
+
+
+def _product_image_answer_names(recommended_medicines: list) -> str:
+    return "、".join(
+        str(m.get("product_name") or "")
+        for m in recommended_medicines[:3]
+        if m.get("product_name")
+    )
+
+
+def _is_image_denial_answer(answer: str) -> bool:
+    text = (answer or "").strip()
+    return any(marker in text for marker in _IMAGE_DENIAL_MARKERS)
+
+
+def _apply_product_image_answer(
+    parsed: dict,
+    *,
+    qa_focuses: list[str],
+    recommended_medicines: list,
+) -> dict:
+    if "product_image" not in qa_focuses:
+        return parsed
+    out = dict(parsed)
+    answer = str(out.get("answer") or "").strip()
+    names = _product_image_answer_names(recommended_medicines)
+    if _is_image_denial_answer(answer) or not answer:
+        out["answer"] = (
+            f"{names}のパッケージ画像です。"
+            if names
+            else "パッケージ画像を表示しました。"
+        )
+    return out
+
+
+def _finalize_structured_qa_response(
+    parsed: dict,
+    user_message: str,
+    recommended_medicines: list,
+    *,
+    qa_focuses: list[str] | None = None,
+    conversation_history: list | None = None,
+    user_attributes: dict[str, Any] | None = None,
+    answer: str | None = None,
+) -> dict:
+    from src.services.medicine_qa_routing import infer_medicine_qa_focuses, prune_qa_response
+    from src.services.medicine_qa_images import attach_product_images_to_response
+
+    fs = qa_focuses or infer_medicine_qa_focuses(
+        user_message,
+        conversation_history=conversation_history,
+        recommended_medicines=recommended_medicines,
+        user_attributes=user_attributes,
+    )
+    out = prune_qa_response(parsed, user_message, focuses=fs, answer=answer)
+    if "product_image" in fs and recommended_medicines:
+        out = attach_product_images_to_response(out, recommended_medicines)
+        out = _apply_product_image_answer(
+            out,
+            qa_focuses=fs,
+            recommended_medicines=recommended_medicines,
+        )
+    return _sanitize_qa_result(out)
+
+
 def _build_structured_qa_from_stream(
     user_message: str,
     recommended_medicines: list,
     streamed_answer: str,
+    *,
+    qa_focuses: list[str] | None = None,
+    conversation_history: list | None = None,
+    user_attributes: dict[str, Any] | None = None,
 ) -> dict:
     """ストリーム済み回答と推奨医薬品メタから構造化 Q&A を組み立てる（重い JSON 生成 LLM を省略）。"""
-    from src.services.medicine_qa_routing import (
-        build_focused_qa_sections,
-        prune_qa_response,
-    )
+    from src.services.medicine_qa_routing import build_focused_qa_sections
 
     answer = (streamed_answer or "").strip()
     sports_ctx = any(k in (user_message or "") for k in ("競技", "ドーピング", "陸上", "マラソン"))
@@ -321,14 +395,24 @@ def _build_structured_qa_from_stream(
             "のどスプレー単剤など代替も検討し、登録販売者にご確認ください。"
         )
 
-    focused = build_focused_qa_sections(user_message, recommended_medicines or [])
+    focused = build_focused_qa_sections(
+        user_message,
+        recommended_medicines or [],
+        conversation_history=conversation_history,
+        user_attributes=user_attributes,
+    )
     merged = {
         "answer": answer or "お近くの登録販売者にご相談ください。",
         **focused,
     }
-    # LLM が既に JSON セクションを返した場合は focused で上書き（テンプレ優先排除）
-    return _sanitize_qa_result(
-        prune_qa_response(merged, user_message, answer=answer)
+    return _finalize_structured_qa_response(
+        merged,
+        user_message,
+        recommended_medicines or [],
+        qa_focuses=qa_focuses,
+        conversation_history=conversation_history,
+        user_attributes=user_attributes,
+        answer=answer,
     )
 
 
@@ -634,11 +718,18 @@ def chat_with_medicine_context(
 
 上記を踏まえ、ユーザーへの直接的な回答のみを200字以内で自然な日本語で書いてください。JSONや見出しは不要です。
 """
+            if "product_image" in qa_focuses:
+                answer_prompt += (
+                    "\n【重要】パッケージ画像は回答の下に別セクションで表示されます。"
+                    "「画像を見せられない」「この画面では表示できない」等とは書かず、"
+                    "製品の簡単な説明のみ書いてください。\n"
+                )
             answer_prompt = augment_medicine_prompt_with_kb(
                 user_message,
                 answer_prompt,
                 recommended_medicines=recommended_medicines,
                 conversation_history=conversation_history,
+                qa_focuses=qa_focuses,
             )
             streamed_answer = chat_completion_stream(
                 client,
@@ -657,7 +748,12 @@ def chat_with_medicine_context(
         if stream_active and session_id and streamed_answer:
             _mark_qa("format_response")
             parsed = _build_structured_qa_from_stream(
-                user_message, recommended_medicines, streamed_answer
+                user_message,
+                recommended_medicines,
+                streamed_answer,
+                qa_focuses=qa_focuses,
+                conversation_history=conversation_history,
+                user_attributes=user_attributes,
             )
             emit_qa_sections_from_response(parsed, session_id)
             _append_physical_handoff_hint(parsed, user_message)
@@ -703,10 +799,7 @@ def chat_with_medicine_context(
                     }
                 if stream_active and session_id and streamed_answer:
                     parsed_result["answer"] = streamed_answer
-                from src.services.medicine_qa_routing import (
-                    build_focused_qa_sections,
-                    prune_qa_response,
-                )
+                from src.services.medicine_qa_routing import build_focused_qa_sections
 
                 focused = build_focused_qa_sections(
                     user_message,
@@ -717,30 +810,19 @@ def chat_with_medicine_context(
                 for key, val in focused.items():
                     if val and not str(parsed_result.get(key) or "").strip():
                         parsed_result[key] = val
-                parsed_result = prune_qa_response(
-                    parsed_result, user_message, focuses=qa_focuses
+                parsed_result = _finalize_structured_qa_response(
+                    parsed_result,
+                    user_message,
+                    recommended_medicines or [],
+                    qa_focuses=qa_focuses,
+                    conversation_history=conversation_history,
+                    user_attributes=user_attributes,
+                    answer=str(parsed_result.get("answer") or streamed_answer or ""),
                 )
-                if "product_image" in qa_focuses and recommended_medicines:
-                    from src.services.medicine_qa_images import attach_product_images_to_response
-
-                    parsed_result = attach_product_images_to_response(
-                        parsed_result, recommended_medicines
-                    )
-                    if not str(parsed_result.get("answer") or "").strip():
-                        names = "、".join(
-                            str(m.get("product_name") or "")
-                            for m in recommended_medicines[:3]
-                            if m.get("product_name")
-                        )
-                        parsed_result["answer"] = (
-                            f"{names}のパッケージ画像です。"
-                            if names
-                            else "パッケージ画像を表示しました。"
-                        )
                 if stream_active and session_id:
                     emit_qa_sections_from_response(parsed_result, session_id)
                 _append_physical_handoff_hint(parsed_result, user_message)
-                return _sanitize_qa_result(parsed_result)
+                return parsed_result
             else:
                 fallback = {
                     "answer": result,
