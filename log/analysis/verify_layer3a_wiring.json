@@ -1,0 +1,53 @@
+{
+  "layer3a_pass": 5,
+  "layer3a_total": 5,
+  "timestamp": "2026-07-26T02:11:00Z",
+  "results": [
+    {
+      "id": "ix-1",
+      "pass": true,
+      "kb_block": true,
+      "prefix_ok": true,
+      "uris": ["local/medicine/interactions/ロキソプロフェン-ワーファリン.md"],
+      "retrieval_query": "ロキソニンとワーファリン併用大丈夫？",
+      "aug_len_delta": 633
+    },
+    {
+      "id": "se-1",
+      "pass": true,
+      "kb_block": true,
+      "prefix_ok": true,
+      "uris": ["local/medicine/side_effects/ロキソプロフェン.md"],
+      "retrieval_query": "ロキソニンで眠くなる 推奨医薬品: ロキソニン",
+      "aug_len_delta": 935
+    },
+    {
+      "id": "us-1",
+      "pass": true,
+      "kb_block": true,
+      "prefix_ok": true,
+      "uris": ["local/medicine/products/カロナールa-第一三共.md"],
+      "retrieval_query": "カロナール 食後がいい？ 推奨医薬品: カロナールA",
+      "aug_len_delta": 176
+    },
+    {
+      "id": "age-1",
+      "pass": true,
+      "kb_block": true,
+      "prefix_ok": true,
+      "uris": ["local/medicine/topics/age-restriction-guide.md"],
+      "retrieval_query": "小学2年 風邪薬",
+      "aug_len_delta": 830
+    },
+    {
+      "id": "ctx-1",
+      "pass": true,
+      "kb_block": true,
+      "prefix_ok": true,
+      "uris": ["local/medicine/interactions/ロキソプロフェン-ワーファリン.md"],
+      "retrieval_query": "それ一緒に大丈夫? 会話文脈: ワーファリン, ワーファリンも, ロキソプロフェン, 今ロキソニンを 直前: ワーファリンも処方されています",
+      "ctx_in_rq": true,
+      "aug_len_delta": 633
+    }
+  ]
+}

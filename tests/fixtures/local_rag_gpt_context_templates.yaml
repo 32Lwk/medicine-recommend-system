@@ -1,0 +1,91 @@
+# GPT 会話シミュレーション用テンプレート（生成文は実行時に LLM が作成）
+# setup_history: 固定の先行ターン / styles: 最終発話の言い回し指示
+
+templates:
+  - id: gpt-ctx-ix-anaphora
+    description: "抗凝固薬言及後、併用を指示語で質問"
+    setup_history:
+      - role: user
+        content: "ロキソプロフェンを処方されています"
+      - role: assistant
+        content: "承知しました"
+    styles:
+      - "超省略の若者言葉"
+      - "関西弁"
+      - "英語混じり"
+    intent_hint: "interaction"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+    context_substance_in_history: "ロキソ"
+
+  - id: gpt-ctx-ix-two-turn
+    description: "2剤を別ターンで言及"
+    setup_history:
+      - role: user
+        content: "朝バファリン飲んだ"
+      - role: assistant
+        content: "了解"
+    styles:
+      - "スラング混じり"
+      - "敬語"
+    intent_hint: "interaction"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: gpt-ctx-se-followup
+    description: "推奨後の副作用 follow-up"
+    setup_history:
+      - role: user
+        content: "頭痛がつらい"
+      - role: assistant
+        content: "ロキソニンをご検討ください"
+    styles:
+      - "方言"
+      - "SNS省略"
+    intent_hint: "side_effect"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+    recommended_medicines: ["ロキソニン"]
+
+  - id: gpt-ctx-us-meal
+    description: "用法の follow-up"
+    setup_history:
+      - role: user
+        content: "カロナールAについて教えて"
+      - role: assistant
+        content: "解熱鎮痛薬です"
+    styles:
+      - "超省略"
+      - "英語混じり"
+    intent_hint: "usage"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+    recommended_medicines: ["カロナールA"]
+
+  - id: gpt-ctx-age-child
+    description: "年齢情報後の市販薬確認"
+    setup_history:
+      - role: user
+        content: "うちの子小学3年生です"
+      - role: assistant
+        content: "症状はいかがですか"
+    styles:
+      - "カジュアル"
+      - "関西弁"
+    intent_hint: "age"
+    expect_category: age
+    expected_source_prefix: medicine/topics/
+
+  - id: gpt-ctx-dop-event
+    description: "大会前の鼻薬"
+    setup_history:
+      - role: user
+        content: "来週ハーフマラソン出ます"
+      - role: assistant
+        content: "頑張ってください"
+    styles:
+      - "若者言葉"
+      - "英語混じり"
+    intent_hint: "doping"
+    expect_category: doping
+    expected_source_prefix: medicine/doping/

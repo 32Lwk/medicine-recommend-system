@@ -1,0 +1,22 @@
+Redis unavailable, cache disabled: No module named 'redis'
+{
+  "total_queries": 30,
+  "p50_ms": 82.19,
+  "p95_ms": 286.22,
+  "max_ms": 308.29,
+  "p95_target_ms": 800.0,
+  "p95_within_target": true,
+  "by_namespace": {
+    "medicine": {
+      "count": 20,
+      "p95_ms": 123.57,
+      "max_ms": 266.61
+    },
+    "concierge": {
+      "count": 10,
+      "p95_ms": 308.29,
+      "max_ms": 308.29
+    }
+  }
+}
+Wrote log/analysis/verify_benchmark.json

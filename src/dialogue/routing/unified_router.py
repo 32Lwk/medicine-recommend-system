@@ -40,6 +40,26 @@ def _layer1_deterministic(
     text = (user_text or "").strip()
 
     if features.is_side_effect_question or is_medicine_side_effect_question(text):
+        from src.services.medicine_qa_routing import (
+            infer_medicine_qa_focuses,
+            is_medicine_information_question,
+            should_use_medicine_qa_unified,
+        )
+
+        focuses = infer_medicine_qa_focuses(text)
+        if should_use_medicine_qa_unified(focuses, user_message=text) or (
+            is_medicine_information_question(text)
+        ):
+            return RoutingDecision(
+                primary_route="Physical",
+                sub_route="medicine_qa",
+                confidence=0.95,
+                resolved_by="gate",
+                source="layer1_medicine_qa_unified",
+                execution_lock=True,
+                layer_used="layer1",
+                context_features=features.to_dict(),
+            )
         return RoutingDecision(
             primary_route="Physical",
             sub_route="medicine_side_effect_qa",

@@ -1,0 +1,373 @@
+# Medicine QA ロバストネス eval — 日常表現・口語・省略・文脈 follow-up
+# routing（focus / clarify / unified）+ 任意 retrieve を検証
+
+scenarios:
+  # --- カジュアル・口語（単発） ---
+  - id: edy-se-slang-sleepy
+    style: casual
+    query: "ロキソ飲んだらガチ眠いんだけど普通？"
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+    expect_side_effect_route: true
+
+  - id: edy-se-dialect-stomach
+    style: dialect
+    query: "イブ飲んで腹パンするわ、しゃーない？"
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+
+  - id: edy-cmp-casual
+    style: casual
+    query: "ロキソとイブ、何が違うの？"
+    recommended_medicines: ["ロキソニン", "イブ"]
+    expect_focuses: ["comparison"]
+    expect_information_question: true
+
+  - id: edy-photo-casual
+    style: casual
+    query: "カロナールの箱見たい"
+    recommended_medicines: ["カロナールA"]
+    expect_focuses: ["product_image"]
+    expect_information_question: true
+
+  - id: edy-ing-casual
+    style: casual
+    query: "バファリン何入ってる？"
+    expect_focuses: ["ingredient"]
+    expect_information_question: true
+
+  - id: edy-age-casual
+    style: casual
+    query: "小5でもイブ飲める？"
+    expect_focuses: ["age"]
+    expect_information_question: true
+
+  - id: edy-dop-casual
+    style: casual
+    query: "マラソン前にロキソ使っていい？"
+    expect_focuses: ["doping"]
+    expect_information_question: true
+
+  - id: edy-ix-casual
+    style: casual
+    query: "ロキソとワルファ一緒に飲んだらヤバ？"
+    expect_focuses: ["interaction"]
+    expect_information_question: true
+
+  - id: edy-us-casual
+    style: casual
+    query: "解熱剤何時間空ければいい？"
+    expect_focuses: ["usage"]
+    expect_information_question: true
+
+  - id: edy-clarify-anaphora
+    style: anaphora
+    query: "それ飲んで大丈夫？"
+    expect_clarify: true
+
+  - id: edy-mixed-photo-side
+    style: mixed
+    query: "ロキソの副作用とパッケージ見せて"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["product_image", "side_effect"]
+    expect_unified_route: true
+    expect_information_question: true
+
+  - id: edy-pick-casual
+    style: casual
+    query: "ロキソとイブどっちがええ？"
+    recommended_medicines: ["ロキソニン", "イブ"]
+    expect_focuses: ["comparison"]
+    expect_information_question: true
+
+  # --- 敬語・丁寧（単発） ---
+  - id: edy-se-polite
+    style: polite
+    query: "ロキソプロフェンで眠気が出るのは一般的でしょうか。"
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+
+  - id: edy-ing-polite
+    style: polite
+    query: "カロナールの主成分を教えていただけますか。"
+    recommended_medicines: ["カロナールA"]
+    expect_focuses: ["ingredient"]
+    expect_information_question: true
+
+  # --- 英語混じり ---
+  - id: edy-photo-enmix
+    style: english_mix
+    query: "Loxonin package photo見せて"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["product_image"]
+
+  - id: edy-se-enmix
+    style: english_mix
+    query: "ibuprofenでsleepyになるのnormal？"
+    expect_focuses: ["side_effect"]
+
+  - id: edy-us-frequency-casual
+    style: casual
+    query: "カロナール1日何回まで飲める？"
+    recommended_medicines: ["カロナールA"]
+    expect_focuses: ["usage"]
+    expect_information_question: true
+
+  - id: edy-se-kansai
+    style: dialect
+    query: "ロキソ飲んだらめっちゃ眠くなるけどええん？"
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+
+  - id: edy-ing-shorthand
+    style: casual
+    query: "イブの中身なに？"
+    expect_focuses: ["ingredient"]
+    expect_information_question: true
+
+  - id: edy-age-vague
+    style: casual
+    query: "未就学児でも市販の風邪薬使える？"
+    expect_focuses: ["age"]
+    expect_information_question: true
+
+  - id: edy-dop-casual2
+    style: casual
+    query: "大会2日前にロキソ平気？"
+    expect_focuses: ["doping"]
+    expect_information_question: true
+
+  - id: edy-ix-shorthand
+    style: casual
+    query: "ロキソとアスピン同時に飲んどったらアカン？"
+    expect_focuses: ["interaction"]
+    expect_information_question: true
+
+  - id: edy-cmp-vague
+    style: casual
+    query: "解熱剤2つ並べてどっちがマシ？"
+    recommended_medicines: ["ロキソニン", "カロナールA"]
+    expect_focuses: ["comparison"]
+    expect_information_question: true
+
+  - id: edy-photo-shorthand
+    style: casual
+    query: "さっきの薬の外観見たいんだけど"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["product_image"]
+    expect_information_question: true
+
+  - id: edy-se-normalcy
+    style: casual
+    query: "イブ飲んで胃キツくなるの普通？"
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+
+  - id: edy-us-meal
+    style: casual
+    query: "バファリン食前でもOK？"
+    expect_focuses: ["usage"]
+    expect_information_question: true
+
+  - id: edy-clarify-vague
+    style: anaphora
+    query: "あれ副作用ある？"
+    expect_clarify: true
+
+  - id: edy-ix-alcohol-casual
+    style: casual
+    query: "ロキソ飲んでからビール平気？"
+    expect_focuses: ["interaction"]
+    expect_information_question: true
+
+  - id: edy-se-efficacy-mixed
+    style: mixed
+    query: "効き目どう？副作用も気になる"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["side_effect"]
+    expect_information_question: true
+    expect_unified_route: true
+
+  - id: edy-age-child-vague
+    style: casual
+    query: "あのさ、子供用のやつ飲んでも大丈夫？"
+    expect_focuses: ["age"]
+    expect_information_question: true
+
+  - id: edy-us-tablets-anaphora
+    style: anaphora
+    query: "何錠飲めばいいのこれ"
+    recommended_medicines: ["カロナールA"]
+    expect_focuses: ["usage"]
+    expect_information_question: true
+    expect_clarify: false
+
+sessions:
+  - id: edy-ctx-anaphora-usage
+    style: context
+    description: "推奨後の用法 follow-up（指示語）"
+    history:
+      - role: user
+        content: "頭痛がします"
+      - role: assistant
+        content: "ロキソニンをご検討ください"
+      - role: user
+        content: "それ、食後の方がいい？"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["usage"]
+    expect_information_question: true
+    expect_clarify: false
+
+  - id: edy-ctx-anaphora-side
+    style: context
+    description: "推奨後の副作用 follow-up"
+    history:
+      - role: user
+        content: "肩こりがつらい"
+      - role: assistant
+        content: "ロキソニンが候補です"
+      - role: user
+        content: "これ飲むとだるくなる？"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+
+  - id: edy-ctx-age-followup
+    style: context
+    description: "年齢共有後の市販可否"
+    history:
+      - role: user
+        content: "息子が小学2年です"
+      - role: assistant
+        content: "症状を教えてください"
+      - role: user
+        content: "風邪薬OTCで平気？"
+    expect_focuses: ["age"]
+    expect_information_question: true
+
+  - id: edy-ctx-cmp-anaphora
+    style: context
+    description: "2剤言及後の比較"
+    history:
+      - role: user
+        content: "ロキソニンとイブ、どっちがいいか迷ってます"
+      - role: assistant
+        content: "それぞれ特徴があります"
+      - role: user
+        content: "結局どっち？"
+    expect_focuses: ["comparison"]
+    expect_information_question: true
+
+  - id: edy-ctx-clarify-only
+    style: context
+    description: "履歴なし指示語のみ"
+    history:
+      - role: user
+        content: "この薬の成分教えて"
+    expect_clarify: true
+
+  - id: edy-ctx-photo-reco
+    style: context
+    description: "推奨後の写真"
+    history:
+      - role: user
+        content: "頭痛です"
+      - role: assistant
+        content: "カロナールAを推奨します"
+      - role: user
+        content: "パッケージ見たい"
+    recommended_medicines: ["カロナールA"]
+    expect_focuses: ["product_image"]
+    expect_information_question: true
+
+  - id: edy-ctx-usage-frequency
+    style: context
+    description: "推奨後の服用頻度 follow-up"
+    history:
+      - role: user
+        content: "熱が38度です"
+      - role: assistant
+        content: "カロナールAをお試しください"
+      - role: user
+        content: "それ、どのくらいの頻度で飲めばいい？"
+    recommended_medicines: ["カロナールA"]
+    expect_focuses: ["usage"]
+    expect_information_question: true
+    expect_clarify: false
+
+  - id: edy-ctx-dop-followup
+    style: context
+    description: "推奨後のドーピング確認"
+    history:
+      - role: user
+        content: "来週マラソンがあります"
+      - role: assistant
+        content: "ロキソニンを推奨します"
+      - role: user
+        content: "それ使っていい？"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["doping"]
+    expect_information_question: true
+
+  - id: edy-ctx-ing-anaphora
+    style: context
+    description: "推奨後の成分 follow-up"
+    history:
+      - role: user
+        content: "頭痛が続きます"
+      - role: assistant
+        content: "バファリンAをご検討ください"
+      - role: user
+        content: "これ何入ってる？"
+    recommended_medicines: ["バファリンA"]
+    expect_focuses: ["ingredient"]
+    expect_information_question: true
+    expect_clarify: false
+
+  - id: edy-ctx-ix-alcohol
+    style: context
+    description: "推奨後のアルコール併用"
+    history:
+      - role: user
+        content: "肩こりがひどい"
+      - role: assistant
+        content: "ロキソニンを推奨します"
+      - role: user
+        content: "ワイン飲んでるけど平気？"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["interaction"]
+    expect_information_question: true
+
+  - id: edy-ctx-anaphora-side-no-cmp
+    style: context
+    description: "比較履歴後の指示語副作用（比較誤検出なし）"
+    history:
+      - role: user
+        content: "イブとロキソどっちがいい？"
+      - role: assistant
+        content: "ロキソニンを推奨します"
+      - role: user
+        content: "じゃあロキソで"
+      - role: assistant
+        content: "承知しました"
+      - role: user
+        content: "2つ前に言ったやつ、副作用ヤバい？"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+    expect_not_focuses: ["comparison"]
+
+  - id: edy-ctx-efficacy-reco
+    style: context
+    description: "推奨後の効き目+副作用"
+    history:
+      - role: user
+        content: "頭痛です"
+      - role: assistant
+        content: "ロキソニンをお試しください"
+      - role: user
+        content: "効き目どう？副作用気になる"
+    recommended_medicines: ["ロキソニン"]
+    expect_focuses: ["side_effect"]
+    expect_information_question: true
+    expect_unified_route: true

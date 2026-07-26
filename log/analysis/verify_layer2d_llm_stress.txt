@@ -1,0 +1,197 @@
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Redis unavailable, cache disabled: No module named 'redis'
+{
+  "total": 68,
+  "pass": 64,
+  "pass_pct": 94.1,
+  "by_style": {
+    "local_rag_paraphrase_eval": {
+      "pass": 19,
+      "total": 19
+    },
+    "polite": {
+      "pass": 5,
+      "total": 5
+    },
+    "dialect": {
+      "pass": 4,
+      "total": 4
+    },
+    "english_mix": {
+      "pass": 5,
+      "total": 5
+    },
+    "terse": {
+      "pass": 3,
+      "total": 3
+    },
+    "verbose": {
+      "pass": 3,
+      "total": 3
+    },
+    "question_form": {
+      "pass": 3,
+      "total": 3
+    },
+    "context": {
+      "pass": 10,
+      "total": 10
+    },
+    "敬語": {
+      "pass": 6,
+      "total": 8
+    },
+    "関西弁": {
+      "pass": 6,
+      "total": 8
+    }
+  },
+  "by_suite": {
+    "local_rag_paraphrase_eval": {
+      "pass": 19,
+      "total": 19
+    },
+    "local_rag_diverse_eval": {
+      "pass": 23,
+      "total": 23
+    },
+    "context": {
+      "pass": 10,
+      "total": 10
+    },
+    "llm_stress": {
+      "pass": 12,
+      "total": 16
+    }
+  },
+  "llm_stress": true
+}
+  [OK] ix-colloquial-loxo-warfarin-1 (local_rag_paraphrase_eval): score=0.92 cat=interaction
+  [OK] ix-colloquial-loxo-warfarin-2 (local_rag_paraphrase_eval): score=0.92 cat=interaction
+  [OK] ix-colloquial-ibu-aspirin (local_rag_paraphrase_eval): score=0.92 cat=interaction
+  [OK] ix-colloquial-alcohol-acet (local_rag_paraphrase_eval): score=0.92 cat=interaction
+  [OK] ix-colloquial-ssri-dxm (local_rag_paraphrase_eval): score=0.92 cat=interaction
+  [OK] ix-colloquial-caffeine-ephed (local_rag_paraphrase_eval): score=0.92 cat=interaction
+  [OK] se-colloquial-sleepy (local_rag_paraphrase_eval): score=0.88 cat=side_effect
+  [OK] se-colloquial-stomach (local_rag_paraphrase_eval): score=0.88 cat=side_effect
+  [OK] se-colloquial-drowsy-antihist (local_rag_paraphrase_eval): score=0.88 cat=side_effect
+  [OK] us-colloquial-meal (local_rag_paraphrase_eval): score=0.85 cat=usage
+  [OK] us-colloquial-interval (local_rag_paraphrase_eval): score=0.85 cat=usage
+  [OK] us-colloquial-water (local_rag_paraphrase_eval): score=0.5667 cat=usage
+  [OK] us-colloquial-times (local_rag_paraphrase_eval): score=0.95 cat=usage
+  [OK] age-colloquial-child (local_rag_paraphrase_eval): score=0.85 cat=age
+  [OK] age-colloquial-elderly (local_rag_paraphrase_eval): score=0.85 cat=age
+  [OK] dop-colloquial-sports (local_rag_paraphrase_eval): score=0.86 cat=doping
+  [OK] dop-colloquial-product (local_rag_paraphrase_eval): score=0.87 cat=doping
+  [OK] ix-implicit-two-drugs (local_rag_paraphrase_eval): score=0.6152 cat=interaction
+  [OK] ix-polite-form (local_rag_paraphrase_eval): score=0.92 cat=interaction
+  [OK] polite-ix-warfarin (polite): score=0.92 cat=interaction
+  [OK] polite-se-drowsy (polite): score=0.88 cat=side_effect
+  [OK] polite-us-meal (polite): score=0.85 cat=usage
+  [OK] polite-age-child (polite): score=0.85 cat=age
+  [OK] polite-dop-event (polite): score=0.86 cat=doping
+  [OK] dialect-ix-aspirin-ibu (dialect): score=0.92 cat=interaction
+  [OK] dialect-se-stomach (dialect): score=0.88 cat=side_effect
+  [OK] dialect-us-water (dialect): score=0.5667 cat=usage
+  [OK] dialect-age-elder (dialect): score=0.85 cat=age
+  [OK] enmix-ix-alcohol (english_mix): score=0.92 cat=interaction
+  [OK] enmix-ix-nsaid (english_mix): score=0.92 cat=interaction
+  [OK] enmix-se-drowsy (english_mix): score=0.88 cat=side_effect
+  [OK] enmix-us-interval (english_mix): score=0.85 cat=usage
+  [OK] enmix-dop-marathon (english_mix): score=0.86 cat=doping
+  [OK] terse-ix-two (terse): score=0.92 cat=interaction
+  [OK] terse-se-sleep (terse): score=0.88 cat=side_effect
+  [OK] terse-us-dose (terse): score=0.675 cat=usage
+  [OK] verbose-ix-ssri (verbose): score=0.92 cat=interaction
+  [OK] verbose-age-grandma (verbose): score=0.85 cat=age
+  [OK] verbose-dop-student (verbose): score=0.86 cat=doping
+  [OK] qform-ix-caffeine (question_form): score=0.92 cat=interaction
+  [OK] qform-se-nausea (question_form): score=0.6574 cat=side_effect
+  [OK] qform-us-empty (question_form): score=0.85 cat=usage
+  [OK] ctx-ix-anaphora-loxo (context): score=0.92 cat=interaction
+  [OK] ctx-ix-anaphora-two-drugs (context): score=0.6152 cat=interaction
+  [OK] ctx-se-followup-sleepy (context): score=0.88 cat=side_effect
+  [OK] ctx-us-followup-meal (context): score=0.85 cat=usage
+  [OK] ctx-us-followup-interval (context): score=0.85 cat=usage
+  [OK] ctx-age-child-context (context): score=0.85 cat=age
+  [OK] ctx-dop-sports-context (context): score=0.86 cat=doping
+  [OK] ctx-ix-polite-context (context): score=0.6152 cat=interaction
+  [OK] ctx-enmix-short (context): score=0.9483 cat=interaction
+  [OK] ctx-dialect-anaphora (context): score=0.92 cat=interaction
+  [OK] llm-ix-colloquial-loxo-warfarin-1-0 (敬語): score=0.92 cat=interaction
+  [OK] llm-ix-colloquial-loxo-warfarin-1-1 (関西弁): score=0.92 cat=interaction
+  [NG] llm-ix-colloquial-loxo-warfarin-2-0 (敬語): score=0.5222 cat=usage
+       Q: 血液をサラサラにする薬とロキソプロフェンを一緒に服用してもよろしいでしょうか？
+       -> ['local/medicine/products/メンタム-雪の元本店.md', 'local/medicine/products/アンメルツヨコヨコ-小林製薬.md']
+  [OK] llm-ix-colloquial-loxo-warfarin-2-1 (関西弁): score=0.92 cat=interaction
+  [OK] llm-ix-colloquial-ibu-aspirin-0 (敬語): score=0.6152 cat=interaction
+  [OK] llm-ix-colloquial-ibu-aspirin-1 (関西弁): score=0.92 cat=interaction
+  [OK] llm-ix-colloquial-alcohol-acet-0 (敬語): score=0.92 cat=interaction
+  [OK] llm-ix-colloquial-alcohol-acet-1 (関西弁): score=0.92 cat=interaction
+  [OK] llm-ix-colloquial-ssri-dxm-0 (敬語): score=0.92 cat=interaction
+  [OK] llm-ix-colloquial-ssri-dxm-1 (関西弁): score=0.92 cat=interaction
+  [OK] llm-ix-colloquial-caffeine-ephed-0 (敬語): score=0.92 cat=interaction
+  [OK] llm-ix-colloquial-caffeine-ephed-1 (関西弁): score=0.92 cat=interaction
+  [OK] llm-se-colloquial-sleepy-0 (敬語): score=0.503 cat=side_effect
+  [NG] llm-se-colloquial-sleepy-1 (関西弁): score=0.35 cat=
+       Q: この痛み止め飲んだら、めっちゃ眠たくなるわ。
+       -> ['local/medicine/doping/pseudoephedrine.md', 'local/medicine/interactions/ace阻害薬-アスピリン.md']
+  [NG] llm-se-colloquial-stomach-0 (敬語): score=0.35 cat=
+       Q: イブプロフェンを服用した際に、お腹がきつくなった経験をお持ちの方はいらっしゃいますでしょうか。
+       -> ['local/medicine/doping/pseudoephedrine.md', 'local/medicine/interactions/ace阻害薬-アスピリン.md']
+  [NG] llm-se-colloquial-stomach-1 (関西弁): score=0.6152 cat=interaction
+       Q: イブプロフェン飲んで、お腹張ったことある人おる？
+       -> ['local/medicine/interactions/ace阻害薬-アスピリン.md', 'local/medicine/interactions/mao阻害薬-オキシメタゾリン.md']
+
+WARN: 4 failures but pass_pct 94.1% >= 85.0%

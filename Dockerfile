@@ -19,10 +19,15 @@ COPY templates/ templates/
 COPY static/ static/
 COPY scripts/write_build_meta.py scripts/
 COPY scripts/write_changelog_digest.py scripts/
+COPY scripts/build_medicine_kb_documents.py scripts/
 COPY data/ data/
 COPY docs/public/ docs/public/
 COPY docs/concierge/ docs/concierge/
+COPY docs/ops/ docs/ops/
 COPY CHANGELOG.md ./
+
+# Local RAG コーパス（build/ は .gitignore — イメージ内で生成）
+RUN python3 scripts/build_medicine_kb_documents.py
 
 # Cloud Run 等 .git なし環境向け: ビルド引数から Git メタを ENV と static/build-meta.json に焼き込む
 # リポジトリ同梱の static/build-meta.json がある場合は COPY 済み。未設定時のみビルド引数で上書き。

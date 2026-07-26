@@ -1,0 +1,30 @@
+{
+  "suspended_at": "2026-07-26T00:48:00Z",
+  "resume_target": "2026-08-01",
+  "reason": "Temporary cost reduction — OpenSearch OCU ~$298/mo from Managed KB",
+  "s3_bucket": "medicine-recommend-kb-source-290780119994",
+  "iam_role": "medicine-recommend-bedrock-kb-role",
+  "knowledge_bases": [
+    {
+      "id": "2CNAGQ2V4P",
+      "name": "medicine-recommend-concierge-managed-kb",
+      "description": "Concierge technical FAQ - Managed KB with service-managed embedding",
+      "data_source_id": "5NO6DO8WRT",
+      "data_source_name": "concierge-s3-managed",
+      "s3_prefixes": ["concierge/", "ops/", "content/", "public/"]
+    },
+    {
+      "id": "30BCEJCJHA",
+      "name": "medicine-recommend-otc-managed-kb",
+      "description": "OTC medicine Q&A - interactions, side effects, efficacy (Managed embedding)",
+      "data_source_id": "0ZCBZWSQ7N",
+      "data_source_name": "otc-s3-managed",
+      "s3_prefixes": ["medicine/"]
+    }
+  ],
+  "ecs_env_restore": {
+    "CONCIERGE_RAG_PROVIDER": "bedrock_kb",
+    "MEDICINE_RAG_PROVIDER": "bedrock_kb",
+    "BEDROCK_KB_SEARCH_MODE": "managed"
+  }
+}

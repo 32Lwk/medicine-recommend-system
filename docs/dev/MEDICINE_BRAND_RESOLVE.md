@@ -86,10 +86,34 @@ _rule(
 
 | ルート | 条件 | ハンドラ |
 |--------|------|----------|
-| `medicine_side_effect_qa` | 副作用・眠気が主題（厳密判定） | `handle_medicine_side_effect_qa` |
-| `medicine_qa` | 比較・説明・選び方（2 製品以上等） | `handle_medicine_information_qa` → LLM |
+| `medicine_side_effect_qa` | **単独**で副作用・眠気が主題（厳密判定） | `handle_medicine_side_effect_qa` |
+| `medicine_qa` | 比較・説明・成分・年齢・写真・複合 intent 等 | `handle_medicine_information_qa` → LLM |
 
-補足セクションは `infer_medicine_qa_focus` + `prune_qa_response` で **質問に関連する項目のみ**表示（汎用テンプレ除去）。
+**ハイブリッド arbitration**（`should_use_medicine_qa_unified`）:
+
+- 副作用のみ → `medicine_side_effect_qa`（CSV/PMDA 高速）
+- 副作用 + 写真/比較など複合 → `medicine_qa`（multi-focus KB + LLM）
+
+**multi-focus**（`infer_medicine_qa_focuses`）:
+
+| focus | 例 |
+|-------|-----|
+| `comparison` | ロキソニンとイブの違い |
+| `ingredient` | カロナールの成分 |
+| `age` | 何歳から飲める？ / 履歴 slot + OTC 平気？ |
+| `doping` | マラソン前に使っていい？ / 履歴 slot + それ使っていい？ |
+| `interaction` | ワイン飲んでるけど平気？ / 併用 |
+| `usage` | 何時間空ける？ / 頻度 follow-up |
+| `product_image` | 写真見せて |
+| `side_effect` | 副作用（単独→ CSV、効き目+副作用→ unified） |
+
+**文脈 routing**（2026-07-26）: 比較履歴があっても指示語副作用 follow-up は `comparison` にしない。アルコール併用・年齢 slot・ドーピング slot は履歴 + 現発話の suitability で判定。詳細は [`MEDICINE_QA_ROUTING.md`](MEDICINE_QA_ROUTING.md)。
+
+比較 retrieve 時は `route_medicine_docs` が CSV brand 解決で **2 製品分**の product doc URI を返す。
+
+**Clarify**: 「この薬」「さっきの薬」等、指示語のみで推奨履歴なし → `needs_medicine_clarification` → 確認質問（症状推奨に入れない）。
+
+補足セクションは `build_focused_qa_sections` + `prune_qa_response` で **質問に関連する項目のみ**表示（複合 intent は union）。製品写真は `medicine_qa_images.attach_product_images_to_response`（未配置時プレースホルダー「画像準備中」）。
 
 ---
 
@@ -98,12 +122,15 @@ _rule(
 ```bash
 .venv/bin/python -m pytest tests/services/test_medicine_brand_resolve.py \
   tests/routing/test_medicine_qa_sections.py \
-  tests/routing/test_medicine_qa_routing.py -q
+  tests/routing/test_medicine_qa_routing.py \
+  tests/routing/test_medicine_qa_multi_focus.py \
+  tests/routing/test_medicine_qa_context_routing.py -q
 ```
 
 ---
 
 ## 関連ドキュメント
 
+- [`MEDICINE_QA_ROUTING.md`](MEDICINE_QA_ROUTING.md) — focus 推定・文脈・eval
 - [`CHAT_PIPELINE_V2.md`](CHAT_PIPELINE_V2.md) — `medicine_qa` / `medicine_side_effect_qa` sub_route
 - [`CHAT_ROUTE_EXPECTATIONS.md`](CHAT_ROUTE_EXPECTATIONS.md)

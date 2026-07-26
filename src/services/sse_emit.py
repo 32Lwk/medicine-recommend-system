@@ -399,6 +399,10 @@ def emit_qa_sections_from_response(
     """完成した Q&A 応答から追加セクションを SSE 配信"""
     from src.services.medicine_qa_html import safe_format_html
 
+    product_images_html = str(chat_response.get("product_images_html") or "").strip()
+    if product_images_html:
+        emit_qa_section("product_images", product_images_html, session_id=session_id)
+
     mapping = [
         ("medicine_details", "💊 医薬品の詳細", "#e3f2fd", "qa-medicine-details"),
         ("interactions", "⚠️ 相互作用の注意", "#fff3e0", "qa-interactions"),

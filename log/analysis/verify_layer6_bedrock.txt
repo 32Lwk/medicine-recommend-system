@@ -1,0 +1,53 @@
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+Bedrock KB retrieve failed (kb=30BCEJCJHA mode=managed): Unable to locate credentials
+{
+  "mode": "raw",
+  "total": 20,
+  "pass_all": 0,
+  "pass_all_pct": 0.0,
+  "score_pass": 0,
+  "score_pass_pct": 0.0,
+  "interaction_pass": 0,
+  "interaction_total": 5,
+  "target_pass_pct": 80.0,
+  "baseline_pass_pct": 75.0
+}
+Wrote log/analysis/verify_medicine_kb_bedrock.json
+  [NG] interaction-loxoprofen-warfarin: top_score=0.0 chunks=0 prefix=False
+  [NG] interaction-ibuprofen-aspirin: top_score=0.0 chunks=0 prefix=False
+  [NG] interaction-acetaminophen-alcohol: top_score=0.0 chunks=0 prefix=False
+  [NG] interaction-dextromethorphan-ssri: top_score=0.0 chunks=0 prefix=False
+  [NG] interaction-caffeine-ephedrine: top_score=0.0 chunks=0 prefix=False
+  [NG] usage-after-meal: top_score=0.0 chunks=0 prefix=False
+  [NG] usage-dose-interval: top_score=0.0 chunks=0 prefix=False
+  [NG] usage-how-many-times: top_score=0.0 chunks=0 prefix=False
+  [NG] usage-empty-stomach: top_score=0.0 chunks=0 prefix=False
+  [NG] usage-water-amount: top_score=0.0 chunks=0 prefix=False
+  [NG] sideeffect-loxoprofen-sleepiness: top_score=0.0 chunks=0 prefix=False
+  [NG] sideeffect-chlorpheniramine-drowsy: top_score=0.0 chunks=0 prefix=False
+  [NG] sideeffect-ibuprofen-stomach: top_score=0.0 chunks=0 prefix=False
+  [NG] doping-pseudoephedrine: top_score=0.0 chunks=0 prefix=False
+  [NG] doping-competition-category: top_score=0.0 chunks=0 prefix=False
+  [NG] doping-prohibited-substance: top_score=0.0 chunks=0 prefix=False
+  [NG] age-under-15: top_score=0.0 chunks=0 prefix=False
+  [NG] age-restriction-product: top_score=0.0 chunks=0 prefix=False
+  [NG] age-child-cold: top_score=0.0 chunks=0 prefix=False
+  [NG] age-elderly-nsaid: top_score=0.0 chunks=0 prefix=False

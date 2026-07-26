@@ -457,25 +457,27 @@ def run_chat_post_pipeline(
 
     try:
         from config.llm_flags import is_medicine_side_effect_qa_enabled
-        from src.services.medicine_qa_routing import is_medicine_information_question
+        from src.services.medicine_qa_routing import (
+            get_medicine_qa_session_context,
+            infer_medicine_qa_focuses,
+            is_medicine_information_question,
+            should_use_medicine_qa_unified,
+        )
         from src.services.medicine_side_effect_routing import is_medicine_side_effect_route
 
         user_msg = ctx.sanitized_message or ctx.user_message
-        if is_medicine_side_effect_qa_enabled(sid) and is_medicine_side_effect_route(user_msg):
-            from src.handlers.chat.medicine_side_effect_handlers import (
-                handle_medicine_side_effect_qa,
-            )
-
-            logger.info("💊 medicine_side_effect_qa early route")
-            return _guard_return(
-                handle_medicine_side_effect_qa(
-                    session,
-                    client_info,
-                    sid,
-                    ctx.original_user_message or user_msg,
-                )
-            )
-        if is_medicine_information_question(user_msg):
+        qa_ctx = get_medicine_qa_session_context(session, sid)
+        focuses = infer_medicine_qa_focuses(
+            user_msg,
+            conversation_history=qa_ctx["conversation_history"],
+            recommended_medicines=qa_ctx["recommended_medicines"],
+            user_attributes=qa_ctx["user_attributes"],
+        )
+        if is_medicine_information_question(
+            user_msg,
+            conversation_history=qa_ctx["conversation_history"],
+            recommended_medicines=qa_ctx["recommended_medicines"],
+        ):
             from src.handlers.chat.medicine_context_handlers import (
                 handle_medicine_information_qa,
             )
@@ -483,6 +485,34 @@ def run_chat_post_pipeline(
             logger.info("💬 medicine_qa early route (information question)")
             return _guard_return(
                 handle_medicine_information_qa(
+                    session,
+                    client_info,
+                    sid,
+                    ctx.original_user_message or user_msg,
+                )
+            )
+        if is_medicine_side_effect_qa_enabled(sid) and is_medicine_side_effect_route(user_msg):
+            if should_use_medicine_qa_unified(focuses, user_message=user_msg):
+                from src.handlers.chat.medicine_context_handlers import (
+                    handle_medicine_information_qa,
+                )
+
+                logger.info("💬 medicine_qa early route (multi-focus side effect)")
+                return _guard_return(
+                    handle_medicine_information_qa(
+                        session,
+                        client_info,
+                        sid,
+                        ctx.original_user_message or user_msg,
+                    )
+                )
+            from src.handlers.chat.medicine_side_effect_handlers import (
+                handle_medicine_side_effect_qa,
+            )
+
+            logger.info("💊 medicine_side_effect_qa early route")
+            return _guard_return(
+                handle_medicine_side_effect_qa(
                     session,
                     client_info,
                     sid,

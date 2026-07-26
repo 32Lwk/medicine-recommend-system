@@ -1,0 +1,18 @@
+{
+  "period_days": 7,
+  "embed_api_calls": 44,
+  "embed_cache_hits": 0,
+  "embed_tokens_est": 465.0,
+  "embed_cost_usd_est": 0.0,
+  "retrieve_samples": 1408,
+  "retrieve_p50_ms": 1.68,
+  "by_model": {
+    "text-embedding-3-small": {
+      "calls": 44,
+      "cache_hits": 0,
+      "tokens_est": 465.0,
+      "cost_usd_est": 0.0
+    }
+  },
+  "log_path": "/Users/yuto/medicine recomended/log/local_rag_detail.jsonl"
+}

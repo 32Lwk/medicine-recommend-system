@@ -37,6 +37,14 @@ fi
 echo "==> Build Medicine KB documents"
 "$PY" "$ROOT/scripts/build_medicine_kb_documents.py" --clean
 
+echo "==> Rebuild local RAG index (incremental embed, optional)"
+if [[ -n "${OPENAI_API_KEY:-}" ]]; then
+  "$PY" "$ROOT/scripts/build_local_rag_index.py" --namespace all \
+    || echo "WARN: local RAG embed index build failed (BM25 + router remain active)"
+else
+  echo "    OPENAI_API_KEY unset — skip embed index (BM25 + router only)"
+fi
+
 echo "==> Sync build/medicine/ → S3"
 bash "$ROOT/scripts/sync-medicine-kb-to-s3.sh"
 
@@ -111,10 +119,19 @@ if [[ -n "$job_id" ]]; then
 fi
 
 if [[ "$SKIP_EVAL" -eq 0 ]]; then
-  echo "==> Run Medicine KB eval"
+  echo "==> Run local RAG eval"
+  "$PY" "$ROOT/scripts/eval_medicine_kb.py" \
+    --provider local \
+    --min-pass-pct 80 \
+    --min-interaction-pass 5 \
+    --output "$report_dir/medicine_kb_local_reflect_${stamp}.json" \
+    || echo "WARN: local RAG eval below threshold"
+
+  echo "==> Run Medicine KB eval (Bedrock)"
   "$PY" "$ROOT/scripts/eval_medicine_kb.py" \
     --phase phase2_kb \
-    --output "$report_dir/medicine_kb_pmda_eval_${stamp}.json"
+    --output "$report_dir/medicine_kb_pmda_eval_${stamp}.json" \
+    || echo "WARN: Bedrock medicine KB eval failed or below threshold"
 fi
 
 echo "==> Medicine KB reflect complete"

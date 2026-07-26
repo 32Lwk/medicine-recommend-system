@@ -454,3 +454,49 @@ def emit_dialogue_route_execution(
         log_data,
     )
 
+
+def emit_local_rag_detail(
+    *,
+    event: str,
+    namespace: str = "",
+    retrieve_ms: Optional[float] = None,
+    chunk_count: int = 0,
+    route: str = "",
+    category: str = "",
+    intent: str = "",
+    model: str = "",
+    query_chars: int = 0,
+    cache_hit: bool = False,
+    embed_ms: Optional[float] = None,
+    provider: str = "local_rag",
+    extra: Optional[Dict[str, Any]] = None,
+) -> None:
+    """Local RAG retrieve / embed 観測ログ（コスト・レイテンシ監視）。"""
+    timestamp = datetime.now().isoformat()
+    log_data: Dict[str, Any] = {
+        "log_type": "local_rag_detail",
+        "timestamp": timestamp,
+        "event": event,
+        "provider": provider,
+        "namespace": namespace,
+        "local_rag_retrieve_ms": retrieve_ms,
+        "chunk_count": chunk_count,
+        "route": route or None,
+        "category": category or None,
+        "intent": intent or None,
+        "local_rag_embed_model": model or None,
+        "local_rag_embed_query_chars": query_chars or None,
+        "local_rag_embed_cache_hit": cache_hit,
+        "local_rag_embed_ms": embed_ms,
+    }
+    if extra:
+        log_data.update(extra)
+    log_data = {k: v for k, v in log_data.items() if v is not None}
+
+    _write_to_jsonl("local_rag_detail.jsonl", log_data)
+    _write_to_app_log(
+        "INFO",
+        f"LocalRAG [{event}] ns={namespace} ms={retrieve_ms} chunks={chunk_count}",
+        log_data,
+    )
+

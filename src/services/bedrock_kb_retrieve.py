@@ -178,13 +178,25 @@ def retrieve_concierge_context(
     *,
     top_k: int = 5,
     use_cache: bool = True,
+    intent: str = "",
 ) -> Dict[str, Any]:
-    """Concierge 技術 FAQ 用 KB retrieve。"""
+    """Concierge 技術 FAQ 用 retrieve（bedrock_kb / local）。"""
     from config.aws_features import get_bedrock_kb_id, use_bedrock_kb_rag
 
     cleaned = (query or "").strip()
-    if not use_bedrock_kb_rag() or not cleaned:
+    if not cleaned:
         return _empty_result()
+
+    if not use_bedrock_kb_rag():
+        from src.services.local_rag_retrieve import retrieve_local_context
+
+        return retrieve_local_context(
+            cleaned,
+            namespace="concierge",
+            top_k=top_k,
+            min_score=_min_kb_score(),
+            intent=intent,
+        )
 
     kb_id = get_bedrock_kb_id()
     if not kb_id:
@@ -244,13 +256,25 @@ def build_medicine_retrieval_query(
     *,
     nlu_result: Optional[Dict[str, Any]] = None,
     concomitant_medications: Optional[List[str]] = None,
+    conversation_history: Optional[List[Dict[str, Any]]] = None,
     use_comprehend: bool = True,
 ) -> str:
     """Ask / Explanation 向け retrieve クエリ（製品名・症状・併用薬・Comprehend 薬剤名を合成）。"""
     parts: List[str] = []
     cleaned = (user_text or "").strip()
-    if cleaned:
-        parts.append(cleaned)
+    base = cleaned
+    if conversation_history:
+        from src.services.local_rag_context import build_contextual_retrieval_query
+
+        contextual = build_contextual_retrieval_query(
+            cleaned,
+            conversation_history,
+            recommended_medicines=recommended_medicines,
+        )
+        if contextual:
+            base = contextual
+    if base:
+        parts.append(base)
 
     names: List[str] = []
     for med in recommended_medicines or []:
@@ -291,6 +315,25 @@ def build_medicine_retrieval_query(
                 for s in cm_symptoms:
                     if s not in symptom_names:
                         parts.append(s)
+        else:
+            from src.services.local_rag_query import (
+                expand_concepts,
+                extract_brand_tokens,
+            )
+
+            expanded = expand_concepts(cleaned)
+            rule_meds: List[str] = []
+            for brand in extract_brand_tokens(expanded):
+                if brand not in rule_meds:
+                    rule_meds.append(brand)
+            if conversation_history:
+                from src.services.local_rag_context import extract_context_substances
+
+                for sub in extract_context_substances(conversation_history):
+                    if sub not in rule_meds:
+                        rule_meds.append(sub)
+            if rule_meds:
+                parts.append("検出薬剤: " + ", ".join(rule_meds[:5]))
 
     return " ".join(parts).strip()
 
@@ -404,22 +447,83 @@ def retrieve_medicine_context(
     recommended_medicines: Optional[List[Dict[str, Any]]] = None,
     nlu_result: Optional[Dict[str, Any]] = None,
     concomitant_medications: Optional[List[str]] = None,
+    conversation_history: Optional[List[Dict[str, Any]]] = None,
     top_k: int = 5,
     use_cache: bool = True,
     use_comprehend: bool = True,
+    qa_focuses: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """医薬品 Q&A / 説明補強用 KB retrieve。"""
     from config.aws_features import get_bedrock_medicine_kb_id, use_medicine_bedrock_kb_rag
+    from src.services.local_rag_context import normalize_conversation_history
 
+    hist = normalize_conversation_history(conversation_history)
     retrieval_query = build_medicine_retrieval_query(
         query,
         recommended_medicines,
         nlu_result=nlu_result,
         concomitant_medications=concomitant_medications,
+        conversation_history=hist or None,
         use_comprehend=use_comprehend,
     )
-    if not use_medicine_bedrock_kb_rag() or not retrieval_query:
+    if not retrieval_query:
         return _empty_result()
+
+    if not use_medicine_bedrock_kb_rag():
+        from src.services.local_rag_retrieve import (
+            retrieve_local_context,
+            retrieve_medicine_docs_multi,
+        )
+        from src.services.local_rag_router import infer_medicine_category
+
+        fs = [f for f in (qa_focuses or []) if f and f != "general"]
+        if not fs:
+            from src.services.medicine_qa_routing import infer_medicine_qa_focuses
+
+            fs = [
+                f
+                for f in infer_medicine_qa_focuses(
+                    query or "",
+                    conversation_history=hist or None,
+                    recommended_medicines=recommended_medicines,
+                )
+                if f != "general"
+            ]
+        if len(fs) >= 2 or "comparison" in fs:
+            multi_result = retrieve_medicine_docs_multi(
+                retrieval_query,
+                recommended_medicines=recommended_medicines,
+                focuses=fs,
+                conversation_history=hist or None,
+                max_docs=min(top_k, 4),
+                min_score=_min_kb_score(),
+            )
+            if multi_result.get("chunks"):
+                return multi_result
+
+        category = infer_medicine_category(
+            query or "", conversation_history=hist or None
+        )
+        if "ingredient" in fs or "product_image" in fs:
+            category = "usage"
+        elif "age" in fs:
+            category = "age"
+        elif "doping" in fs:
+            category = "doping"
+        elif "side_effect" in fs:
+            category = "side_effect"
+        elif "interaction" in fs:
+            category = "interaction"
+
+        return retrieve_local_context(
+            retrieval_query,
+            namespace="medicine",
+            top_k=top_k,
+            min_score=_min_kb_score(),
+            recommended_medicines=recommended_medicines,
+            category=category,
+            use_cache=use_cache,
+        )
 
     kb_id = get_bedrock_medicine_kb_id()
     if not kb_id:
@@ -497,20 +601,32 @@ def augment_medicine_prompt_with_kb(
     recommended_medicines: Optional[List[Dict[str, Any]]] = None,
     nlu_result: Optional[Dict[str, Any]] = None,
     concomitant_medications: Optional[List[str]] = None,
+    conversation_history: Optional[List[Dict[str, Any]]] = None,
     use_comprehend: bool = True,
+    qa_focuses: Optional[List[str]] = None,
+    use_cache: bool = True,
 ) -> str:
-    """Ask / Explanation プロンプトに Medicine KB チャンクを追記（障害時は base のみ）。"""
-    from config.aws_features import use_medicine_bedrock_kb_rag
+    """Ask / Explanation プロンプトに Medicine KB チャンクを追記（Local / Bedrock 共通）。"""
+    from config.aws_features import (
+        MEDICINE_RAG_BEDROCK,
+        MEDICINE_RAG_LOCAL,
+        get_medicine_rag_provider,
+    )
 
-    if not use_medicine_bedrock_kb_rag():
+    provider = get_medicine_rag_provider()
+    if provider not in (MEDICINE_RAG_LOCAL, MEDICINE_RAG_BEDROCK):
         return base_prompt
+
     result = retrieve_medicine_context(
         query,
         recommended_medicines=recommended_medicines,
         nlu_result=nlu_result,
         concomitant_medications=concomitant_medications,
+        conversation_history=conversation_history,
         top_k=5,
         use_comprehend=use_comprehend,
+        qa_focuses=qa_focuses,
+        use_cache=use_cache,
     )
     block = format_medicine_kb_context_block(
         result,
@@ -520,7 +636,8 @@ def augment_medicine_prompt_with_kb(
     )
     if not block:
         logger.info(
-            "Bedrock Medicine KB retrieve empty — using CSV context only (ingestion pending?)"
+            "Medicine KB retrieve empty (provider=%s) — using base prompt only",
+            provider,
         )
         return base_prompt
     return f"{base_prompt.rstrip()}\n\n{block}\n"

@@ -18,14 +18,31 @@ _SIDE_EFFECT_TOPIC_RE = re.compile(
 )
 
 
-def is_medicine_side_effect_route(text: str) -> bool:
+def is_medicine_side_effect_route(
+    text: str,
+    *,
+    conversation_history: list | None = None,
+    recommended_medicines: list | None = None,
+) -> bool:
     """Physical / medicine_side_effect_qa へ振り分けるべき入力か。"""
     t = (text or "").strip()
     if not t:
         return False
     if is_symptom_drowsiness_declaration(t):
         return False
-    return is_medicine_side_effect_question(t)
+    if not is_medicine_side_effect_question(t):
+        return False
+    from src.services.medicine_qa_routing import (
+        infer_medicine_qa_focuses,
+        should_use_medicine_qa_unified,
+    )
+
+    focuses = infer_medicine_qa_focuses(
+        t,
+        conversation_history=conversation_history,
+        recommended_medicines=recommended_medicines,
+    )
+    return not should_use_medicine_qa_unified(focuses)
 
 
 def resolve_side_effect_query_subject(text: str) -> Optional[str]:

@@ -1,0 +1,19 @@
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+Comprehend Medical detect_entities_v2 failed: Unable to locate credentials
+{
+  "total": 10,
+  "pass": 10,
+  "pass_pct": 100.0
+}
+  [OK] qa-ix-loxo-warfarin: kb=True prefix=True
+  [OK] qa-ix-alcohol-acet: kb=True prefix=True
+  [OK] qa-se-drowsy: kb=True prefix=True
+  [OK] qa-us-meal: kb=True prefix=True
+  [OK] qa-age-child: kb=True prefix=True
+  [OK] qa-dop-sports: kb=True prefix=True
+  [OK] qa-ctx-anaphora: kb=True prefix=True
+  [OK] qa-polite-ix: kb=True prefix=True
+  [OK] qa-enmix-ix: kb=True prefix=True
+  [OK] qa-side-stomach: kb=True prefix=True

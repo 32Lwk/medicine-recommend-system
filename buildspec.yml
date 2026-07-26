@@ -14,6 +14,9 @@ env:
     # SYNC_KB_TO_S3 / KB_INGESTION_ON_PUSH — CodeBuild プロジェクト env で設定（buildspec 内だと console を上書きするためここでは定義しない）
     RUN_KB_EVAL: "false"
     KB_EVAL_STRICT: "false"
+    RUN_LOCAL_RAG_EVAL: "false"
+    LOCAL_RAG_EVAL_STRICT: "false"
+    RUN_LOCAL_RAG_E2E_HTTP: "false"
     SMOKE_STRICT: "false"
 
 phases:

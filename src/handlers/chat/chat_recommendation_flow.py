@@ -159,6 +159,9 @@ def _emit_explanation_followup_sse(
         mark_processing_step(sid, "medicine_select", detail_code="explanation")
         nlu = recommendation_result.get("nlu_result") or {}
         user_info = dict(session.get("user_attributes") or {})
+        messages = session.get("messages") or []
+        if messages and "conversation_history" not in user_info:
+            user_info["conversation_history"] = messages[-10:]
         safety = recommendation_result.get("safety_result") or {}
         out = generate_explanations_for_recommendation(
             recommended_medicines,

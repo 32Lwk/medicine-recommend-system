@@ -1,0 +1,35 @@
+{
+  "mode": "raw",
+  "total": 20,
+  "pass_all": 20,
+  "pass_all_pct": 100.0,
+  "score_pass": 20,
+  "score_pass_pct": 100.0,
+  "interaction_pass": 5,
+  "interaction_total": 5,
+  "target_pass_pct": 80.0,
+  "baseline_pass_pct": 75.0,
+  "runtime_pass_all": 20,
+  "runtime_pass_all_pct": 100.0
+}
+Wrote log/analysis/verify_medicine_kb_local.json
+  [OK] interaction-loxoprofen-warfarin: top_score=0.92 chunks=1 prefix=True
+  [OK] interaction-ibuprofen-aspirin: top_score=0.92 chunks=1 prefix=True
+  [OK] interaction-acetaminophen-alcohol: top_score=0.92 chunks=1 prefix=True
+  [OK] interaction-dextromethorphan-ssri: top_score=0.92 chunks=1 prefix=True
+  [OK] interaction-caffeine-ephedrine: top_score=0.92 chunks=1 prefix=True
+  [OK] usage-after-meal: top_score=0.85 chunks=1 prefix=True
+  [OK] usage-dose-interval: top_score=0.85 chunks=1 prefix=True
+  [OK] usage-how-many-times: top_score=0.7833 chunks=5 prefix=True
+  [OK] usage-empty-stomach: top_score=0.5667 chunks=5 prefix=True
+  [OK] usage-water-amount: top_score=0.572 chunks=5 prefix=True
+  [OK] sideeffect-loxoprofen-sleepiness: top_score=0.88 chunks=1 prefix=True
+  [OK] sideeffect-chlorpheniramine-drowsy: top_score=0.88 chunks=1 prefix=True
+  [OK] sideeffect-ibuprofen-stomach: top_score=0.88 chunks=1 prefix=True
+  [OK] doping-pseudoephedrine: top_score=0.86 chunks=1 prefix=True
+  [OK] doping-competition-category: top_score=0.87 chunks=1 prefix=True
+  [OK] doping-prohibited-substance: top_score=0.6281 chunks=5 prefix=True
+  [OK] age-under-15: top_score=0.85 chunks=1 prefix=True
+  [OK] age-restriction-product: top_score=0.87 chunks=1 prefix=True
+  [OK] age-child-cold: top_score=0.85 chunks=1 prefix=True
+  [OK] age-elderly-nsaid: top_score=0.85 chunks=1 prefix=True

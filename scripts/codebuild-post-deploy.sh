@@ -110,6 +110,28 @@ elif [[ "${RUN_KB_EVAL:-false}" == "true" ]]; then
   echo "==> skip KB eval (no KB source changes detected)"
 fi
 
+if [[ "${RUN_LOCAL_RAG_EVAL:-false}" == "true" ]]; then
+  echo "==> Local RAG retrieve eval"
+  if [[ ! -d "$ROOT/build/medicine" ]]; then
+    python3 "$ROOT/scripts/build_medicine_kb_documents.py"
+  fi
+  RUN_LOCAL_RAG_BENCHMARK=1 bash "$ROOT/scripts/run_local_rag_eval.sh" || {
+    echo "WARN: local RAG eval below threshold"
+    [[ "${LOCAL_RAG_EVAL_STRICT:-false}" == "true" ]] && exit 1 || true
+  }
+fi
+
+if [[ "${RUN_LOCAL_RAG_E2E_HTTP:-false}" == "true" ]]; then
+  echo "==> Local RAG HTTP E2E (requires staging URL)"
+  E2E_BASE_URL="${E2E_BASE_URL:-${AWS_STAGING_URL:-https://aws.medicine.yutok.dev/}}" \
+    RUN_LOCAL_RAG_E2E_HTTP=1 \
+    python3 "$ROOT/scripts/eval_local_rag_e2e.py" --with-http \
+    || {
+      echo "WARN: local RAG HTTP E2E failed"
+      [[ "${LOCAL_RAG_EVAL_STRICT:-false}" == "true" ]] && exit 1 || true
+    }
+fi
+
 echo "==> AWS staging smoke (Translate / Polly / CDN / Concierge)"
 export SKIP_HEALTH_WAIT=1
 smoke_ok=0

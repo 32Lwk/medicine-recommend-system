@@ -1974,6 +1974,49 @@ body:has(#app > .ui-app) #app {
   background: var(--ui-med-image-bg);
 }
 
+.ui-qa-product-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 8px 0 4px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.ui-qa-product-images__item {
+  flex: 0 0 auto;
+  max-width: 140px;
+  margin: 0;
+}
+
+.ui-qa-product-images__img {
+  width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: var(--ui-med-image-bg);
+}
+
+.ui-qa-product-images__ph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  border-radius: 8px;
+  background: var(--ui-med-image-bg);
+  color: var(--ui-med-image-placeholder-text);
+  font-size: calc(var(--fs) * 0.75);
+  text-align: center;
+  padding: 8px;
+}
+
+.ui-qa-product-images__caption {
+  margin-top: 4px;
+  font-size: calc(var(--fs) * 0.72);
+  text-align: center;
+  color: var(--ui-text-secondary, #555);
+}
+
 .ui-med-image__label {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 0.68rem;

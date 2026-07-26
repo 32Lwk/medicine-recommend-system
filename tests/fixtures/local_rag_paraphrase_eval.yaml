@@ -1,0 +1,107 @@
+# Local RAG 言い換え・口語・曖昧表現 eval（medicine_kb_eval.yaml とは別セット）
+# 目的: fixture 過学習でなく一般化された retrieve を検証
+
+scenarios:
+  # --- interaction: 口語・省略・商品名 ---
+  - id: ix-colloquial-loxo-warfarin-1
+    query: "ロキソニン飲んでるけどワーファリンも処方されてて大丈夫？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: ix-colloquial-loxo-warfarin-2
+    query: "血をサラサラにする薬とロキソプロフェン、一緒でいい？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: ix-colloquial-ibu-aspirin
+    query: "バファリンとイブ、同日に飲んじゃダメ？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: ix-colloquial-alcohol-acet
+    query: "カロナール飲んだあとビール1杯くらいなら？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: ix-colloquial-ssri-dxm
+    query: "風邪薬（咳止め）と抗うつ薬SSRI、併用注意ある？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: ix-colloquial-caffeine-ephed
+    query: "エナジードリンクと麻黄系、心臓やばくない？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  # --- side_effect: 日常表現 ---
+  - id: se-colloquial-sleepy
+    query: "この痛み止め飲むとガッツリ眠くなるんだけど"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+    recommended_medicines: ["ロキソニン"]
+
+  - id: se-colloquial-stomach
+    query: "イブプロフェンでお腹キツくなったことある人いる？"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+
+  - id: se-colloquial-drowsy-antihist
+    query: "花粉症の薬でぼーっとするの普通？"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+    recommended_medicines: ["アレグラ"]
+
+  # --- usage: 曖昧・口語 ---
+  - id: us-colloquial-meal
+    query: "頭痛薬、ご飯食べてからの方がいい？"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+    recommended_medicines: ["カロナールA"]
+
+  - id: us-colloquial-interval
+    query: "熱下げ、4時間以内にまた飲んでも平気？"
+    expect_category: usage
+    expected_source_prefix: medicine/topics/
+
+  - id: us-colloquial-water
+    query: "お水なしで飲んでも問題ない？"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+
+  - id: us-colloquial-times
+    query: "風邪薬って1日に何錠まで？"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+
+  # --- age / doping ---
+  - id: age-colloquial-child
+    query: "うちの小3、市販の風邪薬使える？"
+    expect_category: age
+    expected_source_prefix: medicine/topics/
+
+  - id: age-colloquial-elderly
+    query: "80代の母、イブuprofen系は避けた方がいい？"
+    expect_category: age
+    expected_source_prefix: medicine/topics/
+
+  - id: dop-colloquial-sports
+    query: "マラソン前に鼻薬使うの、アウト？"
+    expect_category: doping
+    expected_source_prefix: medicine/doping/
+
+  - id: dop-colloquial-product
+    query: "バファリンに禁止成分入ってる？大会前に心配"
+    expect_category: doping
+    expected_source_prefix: medicine/products/
+    recommended_medicines: ["バファリン"]
+
+  # --- カテゴリ曖昧（interaction 優先: 2成分） ---
+  - id: ix-implicit-two-drugs
+    query: "アスピリンとロキソニン、同日避けた方がいい？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: ix-polite-form
+    query: "デキストロメトルファンを服用中ですが、SSRIとの併用はいかがでしょうか"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/

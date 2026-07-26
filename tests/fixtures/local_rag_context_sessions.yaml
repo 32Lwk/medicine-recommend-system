@@ -1,0 +1,124 @@
+# Local RAG マルチターン文脈 eval — 最終発話は省略・指示語を含む
+
+sessions:
+  - id: ctx-ix-anaphora-loxo
+    description: "ロキソニン言及後、ワーファリン併用を「それ」で質問"
+    history:
+      - role: user
+        content: "今ロキソニンを飲んでいます"
+      - role: assistant
+        content: "承知しました。他にお薬はありますか？"
+      - role: user
+        content: "ワーファリンも処方されているんですが、それ一緒に飲んでも大丈夫？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: ctx-ix-anaphora-two-drugs
+    description: "2剤を別ターンで言及後、併用確認"
+    history:
+      - role: user
+        content: "バファリンを朝に飲みました"
+      - role: assistant
+        content: "了解です"
+      - role: user
+        content: "夕方イブも使いたいんですが、同日は避けた方がいいですか？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: ctx-se-followup-sleepy
+    description: "推奨後の副作用 follow-up"
+    history:
+      - role: user
+        content: "頭痛がひどいです"
+      - role: assistant
+        content: "ロキソニンをご検討ください"
+      - role: user
+        content: "この薬、飲むとすごく眠くなるんですが普通ですか？"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+    recommended_medicines: ["ロキソニン"]
+
+  - id: ctx-us-followup-meal
+    description: "推奨薬の用法 follow-up"
+    history:
+      - role: user
+        content: "カロナールAはどう使えばいいですか"
+      - role: assistant
+        content: "用法用量を確認します"
+      - role: user
+        content: "ご飯食べてからの方がいい？"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+    recommended_medicines: ["カロナールA"]
+
+  - id: ctx-us-followup-interval
+    description: "解熱剤の再服用間隔"
+    history:
+      - role: user
+        content: "熱が38度あります"
+      - role: assistant
+        content: "解熱剤の使用間隔に注意してください"
+      - role: user
+        content: "4時間以内にまた飲んでも平気？"
+    expect_category: usage
+    expected_source_prefix: medicine/topics/
+
+  - id: ctx-age-child-context
+    description: "年齢情報を前ターンで共有"
+    history:
+      - role: user
+        content: "うちの子は小学1年生です"
+      - role: assistant
+        content: "お子さんの症状を教えてください"
+      - role: user
+        content: "市販の風邪薬使ってもいい？"
+    expect_category: age
+    expected_source_prefix: medicine/topics/
+
+  - id: ctx-dop-sports-context
+    description: "大会前の鼻薬確認"
+    history:
+      - role: user
+        content: "来週マラソン大会があります"
+      - role: assistant
+        content: "体調管理に気をつけてください"
+      - role: user
+        content: "鼻薬使うのアウト？"
+    expect_category: doping
+    expected_source_prefix: medicine/doping/
+
+  - id: ctx-ix-polite-context
+    description: "敬語 + 文脈併用"
+    history:
+      - role: user
+        content: "カロナールを本日服用しました"
+      - role: assistant
+        content: "承知いたしました"
+      - role: user
+        content: "今夜ビールを1杯いただく予定なのですが、併用はいかがでしょうか"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: ctx-enmix-short
+    description: "英語混じり文脈"
+    history:
+      - role: user
+        content: "I'm on SSRI for depression"
+      - role: assistant
+        content: "Noted"
+      - role: user
+        content: "咳止めのDXM、mixしてもsafe？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: ctx-dialect-anaphora
+    description: "方言 + 指示語"
+    history:
+      - role: user
+        content: "バファリン飲んでへん"
+      - role: assistant
+        content: "どうしました？"
+      - role: user
+        content: "イブと一緒に飲んだらあかん？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/

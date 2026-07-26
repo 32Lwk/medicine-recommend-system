@@ -14,6 +14,35 @@ def test_build_medicine_qa_html_renders_bold_not_raw_markdown():
     assert "**太字**" not in html
 
 
+def test_build_medicine_qa_html_includes_product_images():
+    html = build_medicine_qa_html(
+        {
+            "answer": "ok",
+            "product_images_html": '<div class="ui-qa-product-images">img</div>',
+        }
+    )
+    assert "ui-qa-product-images" in html
+
+
+@patch("src.handlers.chat.chat_medicine_qa_html.finalize_medicine_qa_response", return_value=3)
+@patch("src.core.medicine_logic.chat_with_medicine_context")
+def test_run_medicine_question_qa_clarify_without_history(mock_chat, mock_finalize):
+    session = MagicMock()
+    session.get.return_value = {}
+    client_info = MagicMock(client_ip="127.0.0.1", user_agent="test")
+    with patch(
+        "src.services.session_manager.get_session_from_db",
+        return_value={"messages": []},
+    ):
+        count, resp = run_medicine_question_qa(
+            session, client_info, "sid1", "この薬の用法は？"
+        )
+    assert count == 3
+    assert "製品名" in resp["answer"]
+    mock_chat.assert_not_called()
+    mock_finalize.assert_called_once()
+
+
 @patch("src.handlers.chat.chat_medicine_qa_html.finalize_medicine_qa_response", return_value=3)
 @patch("src.core.medicine_logic.chat_with_medicine_context")
 def test_run_medicine_question_qa_delegates_finalize(mock_chat, mock_finalize):

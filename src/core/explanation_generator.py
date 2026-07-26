@@ -359,10 +359,19 @@ def _kb_citation_for_explanation(
     if not query:
         return ""
 
+    conversation_history = None
+    if user_info:
+        for key in ("conversation_history", "messages"):
+            hist = user_info.get(key)
+            if hist:
+                conversation_history = list(hist)
+                break
+
     result = retrieve_medicine_context(
         query,
         recommended_medicines=[candidate],
         nlu_result=nlu_result,
+        conversation_history=conversation_history,
         use_cache=True,
     )
     chunks = result.get("chunks") or []

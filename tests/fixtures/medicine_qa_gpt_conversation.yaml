@@ -1,0 +1,98 @@
+# GPT 会話シミュレーション — Medicine QA routing + retrieve
+# setup_history 固定、最終 follow-up は GPT が日常表現で生成
+
+templates:
+  - id: qa-gpt-ctx-side-slang
+    description: "推奨後、スラングで副作用確認"
+    setup_history:
+      - role: user
+        content: "頭痛ひどい"
+      - role: assistant
+        content: "ロキソニンをご検討ください"
+    styles:
+      - "若者言葉・超省略"
+      - "関西弁"
+    intent_hint: "side_effect"
+    expect_focuses: ["side_effect"]
+    expect_unified_route: false
+    recommended_medicines: ["ロキソニン"]
+
+  - id: qa-gpt-ctx-usage-anaphora
+    description: "推奨後、指示語で用法"
+    setup_history:
+      - role: user
+        content: "熱があります"
+      - role: assistant
+        content: "カロナールAが適しています"
+    styles:
+      - "カジュアル省略"
+      - "敬語"
+    intent_hint: "usage"
+    expect_focuses: ["usage"]
+    recommended_medicines: ["カロナールA"]
+
+  - id: qa-gpt-ctx-age-child
+    description: "年齢共有後の市販確認"
+    setup_history:
+      - role: user
+        content: "娘が小学4年生です"
+      - role: assistant
+        content: "症状はいかがですか"
+    styles:
+      - "日常会話"
+      - "関西弁"
+    intent_hint: "age"
+    expect_focuses: ["age"]
+
+  - id: qa-gpt-ctx-photo
+    description: "推奨後の製品写真"
+    setup_history:
+      - role: user
+        content: "ロキソニンについて知りたい"
+      - role: assistant
+        content: "解熱鎮痛薬です"
+    styles:
+      - "SNS省略"
+      - "英語混じり"
+    intent_hint: "product_image"
+    expect_focuses: ["product_image"]
+    recommended_medicines: ["ロキソニン"]
+
+  - id: qa-gpt-ctx-mixed
+    description: "副作用+写真の複合"
+    setup_history:
+      - role: user
+        content: "ロキソニン使ってます"
+      - role: assistant
+        content: "承知しました"
+    styles:
+      - "日常口語"
+    intent_hint: "side_effect_and_photo"
+    expect_focuses: ["product_image", "side_effect"]
+    expect_unified_route: true
+    recommended_medicines: ["ロキソニン"]
+
+  - id: qa-gpt-ctx-ix
+    description: "2剤併用確認"
+    setup_history:
+      - role: user
+        content: "ロキソニン飲んでます"
+      - role: assistant
+        content: "了解"
+    styles:
+      - "超省略"
+      - "敬語"
+    intent_hint: "interaction"
+    expect_focuses: ["interaction"]
+
+  - id: qa-gpt-ctx-cmp
+    description: "2製品比較"
+    setup_history:
+      - role: user
+        content: "ロキソニンとイブで迷ってます"
+      - role: assistant
+        content: "それぞれ特徴があります"
+    styles:
+      - "カジュアル"
+    intent_hint: "comparison"
+    expect_focuses: ["comparison"]

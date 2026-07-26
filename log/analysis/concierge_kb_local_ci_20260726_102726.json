@@ -1,0 +1,219 @@
+{
+  "timestamp": "2026-07-26T01:27:36.521189+00:00",
+  "phase": "phase4_concierge",
+  "provider": "local",
+  "kb_id": "2CNAGQ2V4P",
+  "search_mode": "managed",
+  "region": "ap-northeast-1",
+  "fixture": "tests/fixtures/concierge_kb_eval.yaml",
+  "summary": {
+    "total": 10,
+    "pass_all": 10,
+    "pass_all_pct": 100.0,
+    "score_pass": 10,
+    "score_pass_pct": 100.0
+  },
+  "results": [
+    {
+      "id": "changelog-recent-aws",
+      "intent": "doc_changelog",
+      "query": "最近の更新履歴 AWS",
+      "retrieval_query": "最近の更新履歴 AWS 更新履歴 CHANGELOG AWS ステージング",
+      "min_score": 0.5,
+      "expected_source_prefix": "content/changelog-digest.json",
+      "chunk_count": 5,
+      "top_score": 0.87,
+      "source_uris": [
+        "local/content/CHANGELOG.md",
+        "local/content/changelog-digest.json"
+      ],
+      "kb_retrieve_ms": 1185.74,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "changelog-phase-q4",
+      "intent": "doc_changelog",
+      "query": "Phase Q4 変更",
+      "retrieval_query": "Phase Q4 変更 更新履歴 CHANGELOG AWS ステージング",
+      "min_score": 0.5,
+      "expected_source_prefix": "content/",
+      "chunk_count": 5,
+      "top_score": 0.9187,
+      "source_uris": [
+        "local/content/CHANGELOG.md",
+        "local/content/changelog-digest.json"
+      ],
+      "kb_retrieve_ms": 400.21,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "architecture-codepipeline",
+      "intent": "architecture",
+      "query": "CodePipeline デプロイの流れ",
+      "retrieval_query": "CodePipeline デプロイの流れ インフラ デプロイ ECS CodePipeline Cloud Run",
+      "min_score": 0.5,
+      "expected_source_prefix": "ops/",
+      "chunk_count": 5,
+      "top_score": 0.95,
+      "source_uris": [
+        "local/ops/AWS_CODEPIPELINE.md",
+        "local/concierge/technical/07-observability-ops.md",
+        "local/concierge/technical/03-deployment-operations.md",
+        "local/concierge/technical/02-chat-pipeline-agents.md"
+      ],
+      "kb_retrieve_ms": 259.16,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "architecture-ecs",
+      "intent": "architecture",
+      "query": "ECS Express Gateway とは",
+      "retrieval_query": "ECS Express Gateway とは インフラ デプロイ ECS CodePipeline Cloud Run",
+      "min_score": 0.5,
+      "expected_source_prefix": "ops/",
+      "chunk_count": 5,
+      "top_score": 0.95,
+      "source_uris": [
+        "local/concierge/technical/01-cross-cloud-architecture.md",
+        "local/concierge/technical/06-line-gcp-path.md",
+        "local/ops/AWS_FEATURES_ROLLOUT.md",
+        "local/ops/AWS_CODEPIPELINE.md",
+        "local/ops/AWS_BEDROCK_KB.md"
+      ],
+      "kb_retrieve_ms": 212.82,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "architecture-bedrock-kb",
+      "intent": "architecture",
+      "query": "Bedrock Knowledge Base 設定",
+      "retrieval_query": "Bedrock Knowledge Base 設定 インフラ デプロイ ECS CodePipeline Cloud Run",
+      "min_score": 0.5,
+      "expected_source_prefix": "ops/",
+      "chunk_count": 5,
+      "top_score": 0.95,
+      "source_uris": [
+        "local/concierge/technical/01-cross-cloud-architecture.md",
+        "local/concierge/technical/02-chat-pipeline-agents.md",
+        "local/concierge/technical/03-deployment-operations.md",
+        "local/ops/AWS_CODEPIPELINE.md",
+        "local/ops/AWS_BEDROCK_KB.md"
+      ],
+      "kb_retrieve_ms": 228.76,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "capabilities-overview",
+      "intent": "capabilities",
+      "query": "このツールでできること",
+      "retrieval_query": "このツールでできること 機能 できること 制限",
+      "min_score": 0.4,
+      "expected_source_prefix": "concierge/",
+      "chunk_count": 2,
+      "top_score": 0.475,
+      "source_uris": [
+        "local/content/concierge_knowledge.ja.json",
+        "local/concierge/technical/00-disclosure-policy.md"
+      ],
+      "kb_retrieve_ms": 250.57,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "cloud-run-gcp",
+      "intent": "architecture",
+      "query": "GCP Cloud Run 本番",
+      "retrieval_query": "GCP Cloud Run 本番 インフラ デプロイ ECS CodePipeline Cloud Run",
+      "min_score": 0.4,
+      "expected_source_prefix": "concierge/",
+      "chunk_count": 5,
+      "top_score": 0.95,
+      "source_uris": [
+        "local/concierge/technical/01-cross-cloud-architecture.md",
+        "local/concierge/technical/03-deployment-operations.md",
+        "local/concierge/technical/04-data-security.md",
+        "local/concierge/technical/06-line-gcp-path.md",
+        "local/concierge/technical/07-observability-ops.md"
+      ],
+      "kb_retrieve_ms": 394.6,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "changelog-md",
+      "intent": "doc_changelog",
+      "query": "CHANGELOG 更新",
+      "retrieval_query": "CHANGELOG 更新 更新履歴 CHANGELOG AWS ステージング",
+      "min_score": 0.5,
+      "expected_source_prefix": "content/CHANGELOG",
+      "chunk_count": 5,
+      "top_score": 0.95,
+      "source_uris": [
+        "local/content/CHANGELOG.md"
+      ],
+      "kb_retrieve_ms": 281.09,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "infra-aws",
+      "intent": "architecture",
+      "query": "AWS インフラ構成",
+      "retrieval_query": "AWS インフラ構成 インフラ デプロイ ECS CodePipeline Cloud Run",
+      "min_score": 0.5,
+      "expected_source_prefix": "ops/AWS",
+      "chunk_count": 5,
+      "top_score": 0.95,
+      "source_uris": [
+        "local/concierge/technical/07-observability-ops.md",
+        "local/ops/AWS_CODEPIPELINE.md",
+        "local/concierge/technical/03-deployment-operations.md",
+        "local/concierge/technical/02-chat-pipeline-agents.md"
+      ],
+      "kb_retrieve_ms": 357.82,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "public-overview",
+      "intent": "architecture",
+      "query": "企業向け概要",
+      "retrieval_query": "企業向け概要 インフラ デプロイ ECS CodePipeline Cloud Run",
+      "min_score": 0.4,
+      "expected_source_prefix": "public/",
+      "chunk_count": 5,
+      "top_score": 0.7562,
+      "source_uris": [
+        "local/public/アプリ概要.md"
+      ],
+      "kb_retrieve_ms": 225.19,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    }
+  ]
+}

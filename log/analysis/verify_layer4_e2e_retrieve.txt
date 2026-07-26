@@ -1,0 +1,17 @@
+SKIP HTTP E2E (use --with-http or RUN_LOCAL_RAG_E2E_HTTP=1)
+{
+  "total": 5,
+  "retrieve_total": 5,
+  "retrieve_pass": 5,
+  "retrieve_pass_pct": 100.0,
+  "http_total": 0,
+  "http_pass": 0,
+  "http_pass_pct": null,
+  "pass_all": 5
+}
+Wrote log/analysis/verify_e2e_retrieve.json
+  [OK] e2e-med-interaction-loxo mode=retrieve
+  [OK] e2e-med-sideeffect-loxo mode=retrieve
+  [OK] e2e-med-usage-interval mode=retrieve
+  [OK] e2e-med-doping-pseudo mode=retrieve
+  [OK] e2e-med-age-child mode=retrieve

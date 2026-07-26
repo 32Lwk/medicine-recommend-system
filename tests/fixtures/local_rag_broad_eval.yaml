@@ -1,0 +1,189 @@
+# Local RAG 広域 eval — 既存 paraphrase/diverse とは別 ID・別表現
+# スラング・略語・若者言葉・間接表現・軽い表記ゆれ（fixture 文字列のルール直書き禁止方針）
+
+scenarios:
+  # --- スラング・若者言葉 ---
+  - id: broad-slang-ix-mix
+    style: slang
+    query: "ロキソとワルファリン混ぜたらマジ危なくない？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: broad-slang-ix-double
+    style: slang
+    query: "バファリンとイブ、ダブルで飲んじゃダメ系？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: broad-slang-se-gastro
+    style: slang
+    query: "イブ飲んだら胃ムカつくんだけど普通？"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+
+  - id: broad-slang-se-knockout
+    style: slang
+    query: "解熱剤ガチで眠くなるやつある？"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+    recommended_medicines: ["ロキソニン"]
+
+  - id: broad-slang-us-chill
+    style: slang
+    query: "頭痛薬、空腹でもイケる？"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+    recommended_medicines: ["カロナールA"]
+
+  - id: broad-slang-dop-race
+    style: slang
+    query: "陸上の大会前に鼻スプレー使うのアウト？"
+    expect_category: doping
+    expected_source_prefix: medicine/doping/
+
+  - id: broad-slang-age-kid
+    style: slang
+    query: "小5の息子、市販の風邪薬ギリ使える？"
+    expect_category: age
+    expected_source_prefix: medicine/topics/
+
+  # --- 略語・医療/SNS 略 ---
+  - id: broad-abbrev-apap-alcohol
+    style: abbreviation
+    query: "APAP飲んだあとETOH 1杯くらい平気？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: broad-abbrev-nsaid-gi
+    style: abbreviation
+    query: "NSAIDsでGIトラブル起きやすい？"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+
+  - id: broad-abbrev-dxm-ssri
+    style: abbreviation
+    query: "DXMとSSRI、combo注意？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: broad-abbrev-ibu-timing
+    style: abbreviation
+    query: "IBU、食後の方がマシ？"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+    recommended_medicines: ["イブ"]
+
+  # --- 間接・比喩表現 ---
+  - id: broad-indirect-anticoag
+    style: indirect
+    query: "血が固まりにくくなる薬と痛み止め、同時にいける？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: broad-indirect-thin-blood
+    style: indirect
+    query: "サラサラ系のお薬とロキソプロフェン、一緒で大丈夫？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: broad-indirect-sleepy-pill
+    style: indirect
+    query: "推奨してもらったやつ、飲むと意識飛びそうになるんだけど"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+    recommended_medicines: ["ロキソニン"]
+
+  - id: broad-indirect-meal-timing
+    style: indirect
+    query: "お腹空いてる状態で飲むより、ごはん後の方がマシ？"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+    recommended_medicines: ["カロナールA"]
+
+  # --- 表記ゆれ・軽い typo ---
+  - id: broad-typo-warfarin
+    style: typo
+    query: "ロキソニンとワーファリん、併用OK？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: broad-typo-acetaminophen
+    style: typo
+    query: "アセトアミノフェンとお酒、一緒に飲んでも平気？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  # --- 英語混じり（口語） ---
+  - id: broad-enmix-painkiller-beer
+    style: english_mix
+    query: "painkiller飲んでからbeer OK？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: broad-enmix-antihist-drowsy
+    style: english_mix
+    query: "antihistamineでknock out levelの眠気、normal？"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+    recommended_medicines: ["アレグラ"]
+
+  - id: broad-enmix-cold-dose
+    style: english_mix
+    query: "cold med、1日max dose超えたらヤバ？"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+
+  # --- 関西・方言（追加） ---
+  - id: broad-dialect-ix-mix
+    style: dialect
+    query: "アスピリンとロキソ、同時に飲んだらあかんやろ？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: broad-dialect-se-belly
+    style: dialect
+    query: "イブプロフェンで腹パンってなることある？"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+
+  - id: broad-dialect-us-water
+    style: dialect
+    query: "お水なしで飲んでもええか？"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+
+  # --- 敬語（追加・間接） ---
+  - id: broad-polite-ix-alcohol
+    style: polite
+    query: "本日解熱剤を服用いたしましたが、今夜は少量のお酒をいただく予定でございます。併用は如何いたしましょうか。"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: broad-polite-se-rash
+    style: polite
+    query: "ご推奨の医薬品を服用したところ、強い眠気を感じるのですが、一般的な症状でしょうか。"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+    recommended_medicines: ["ロキソニン"]
+
+  # --- 製品比較（Medicine QA 柔軟化） ---
+  - id: broad-cmp-diff
+    style: comparison
+    query: "ロキソニンとイブの違いって何？"
+    expect_category: comparison
+    expected_source_prefix: medicine/products/
+    recommended_medicines: ["ロキソニン", "イブ"]
+
+  - id: broad-cmp-pick
+    style: comparison
+    query: "ロキソとイブ、どっちがええ？"
+    expect_category: comparison
+    expected_source_prefix: medicine/products/
+    recommended_medicines: ["ロキソニン", "イブ"]
+
+  - id: broad-cmp-three
+    style: comparison
+    query: "ロキソニンとバファリンとイブ、比較して"
+    expect_category: comparison
+    expected_source_prefix: medicine/products/
+    recommended_medicines: ["ロキソニン", "バファリン", "イブ"]

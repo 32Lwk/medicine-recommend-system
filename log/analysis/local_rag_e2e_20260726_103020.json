@@ -1,0 +1,88 @@
+{
+  "timestamp": "2026-07-26T01:30:40.591863+00:00",
+  "provider": "local_rag",
+  "http_enabled": false,
+  "base_url": null,
+  "summary": {
+    "total": 5,
+    "retrieve_total": 5,
+    "retrieve_pass": 5,
+    "retrieve_pass_pct": 100.0,
+    "http_total": 0,
+    "http_pass": 0,
+    "http_pass_pct": null,
+    "pass_all": 5
+  },
+  "results": [
+    {
+      "id": "e2e-med-interaction-loxo",
+      "mode": "retrieve",
+      "namespace": "medicine",
+      "query": "ロキソプロフェンとワーファリンを一緒に飲んでも大丈夫？",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/ロキソプロフェン-ワーファリン.md"
+      ],
+      "kb_retrieve_ms": 507.94,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true
+    },
+    {
+      "id": "e2e-med-sideeffect-loxo",
+      "mode": "retrieve",
+      "namespace": "medicine",
+      "query": "ロキソプロフェンで眠くなる？",
+      "top_score": 0.88,
+      "source_uris": [
+        "local/medicine/side_effects/ロキソプロフェン.md"
+      ],
+      "kb_retrieve_ms": 0.18,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true
+    },
+    {
+      "id": "e2e-med-usage-interval",
+      "mode": "retrieve",
+      "namespace": "medicine",
+      "query": "解熱鎮痛薬は何時間おきに飲める？",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/topics/usage-dose-interval.md"
+      ],
+      "kb_retrieve_ms": 0.17,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true
+    },
+    {
+      "id": "e2e-med-doping-pseudo",
+      "mode": "retrieve",
+      "namespace": "medicine",
+      "query": "プソイドエフェドリンはドーピング禁止？",
+      "top_score": 0.86,
+      "source_uris": [
+        "local/medicine/doping/pseudoephedrine.md"
+      ],
+      "kb_retrieve_ms": 0.45,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true
+    },
+    {
+      "id": "e2e-med-age-child",
+      "mode": "retrieve",
+      "namespace": "medicine",
+      "query": "小児用の風邪薬の年齢制限",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/topics/age-restriction-guide.md"
+      ],
+      "kb_retrieve_ms": 0.13,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true
+    }
+  ]
+}

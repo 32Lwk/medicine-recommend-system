@@ -1,0 +1,111 @@
+# Local RAG E2E 評価セット（retrieve + 任意 HTTP）
+# retrieve: サーバー不要 / http: :5000 または staging URL が必要
+
+concierge_http:
+  - id: e2e-concierge-cross-cloud
+    message: "GCP 本番と AWS ステージングの違いは？"
+    must_contain_any: ["GCP", "AWS", "Cloud Run", "ECS", "ステージング"]
+    expect_concierge: true
+
+  - id: e2e-concierge-codepipeline
+    message: "CodePipeline のデプロイフローを教えて"
+    must_contain_any: ["CodePipeline", "CodeBuild", "ECR", "デプロイ"]
+    expect_concierge: true
+
+  - id: e2e-concierge-capabilities
+    message: "このツールでできること"
+    must_contain_any: ["市販薬", "相談", "OTC", "機能", "できる"]
+    expect_concierge: true
+
+  - id: e2e-concierge-changelog
+    message: "最近の AWS 関連更新は？"
+    must_contain_any: ["更新", "AWS", "CHANGELOG", "2026"]
+    expect_concierge: true
+    expect_intent: doc_changelog
+
+  - id: e2e-concierge-public
+    message: "企業向け概要"
+    must_contain_any: ["企業", "概要", "試験", "相談"]
+    expect_concierge: true
+
+medicine_retrieve:
+  - id: e2e-med-interaction-loxo
+    query: "ロキソプロフェンとワーファリンを一緒に飲んでも大丈夫？"
+    category: interaction
+    expected_source_prefix: medicine/interactions/
+    min_score: 0.5
+    recommended_medicines: ["ロキソニン"]
+
+  - id: e2e-med-sideeffect-loxo
+    query: "ロキソプロフェンで眠くなる？"
+    category: side_effect
+    expected_source_prefix: medicine/side_effects/
+    min_score: 0.5
+
+  - id: e2e-med-usage-interval
+    query: "解熱鎮痛薬は何時間おきに飲める？"
+    category: usage
+    expected_source_prefix: medicine/topics/
+    min_score: 0.5
+
+  - id: e2e-med-doping-pseudo
+    query: "プソイドエフェドリンはドーピング禁止？"
+    category: doping
+    expected_source_prefix: medicine/doping/
+    min_score: 0.5
+
+  - id: e2e-med-age-child
+    query: "小児用の風邪薬の年齢制限"
+    category: age
+    expected_source_prefix: medicine/topics/
+    min_score: 0.5
+
+medicine_http:
+  - id: e2e-med-qa-side-effect
+    description: "推奨後の副作用 Q&A"
+    turns:
+      - user: "頭が痛いです"
+        expect_render: sage_reco
+        timeout_s: 180
+      - user: "副作用はありますか？"
+        expect_render: sage_qa
+        must_contain_any: ["副作用", "注意", "眠", "胃"]
+        must_not_contain:
+          - "医薬品種類が判定できませんでした"
+
+  - id: e2e-med-qa-doping
+    description: "推奨後のドーピング Q&A"
+    turns:
+      - user: "頭痛がします"
+        expect_render: sage_reco
+        timeout_s: 180
+      - user: "ドーピング検査で問題ないのはどれですか？"
+        expect_render: sage_qa
+        must_contain_any: ["ドーピング", "競技", "禁止", "注意"]
+
+  - id: e2e-med-qa-interaction-single
+    description: "ロキソニン副作用（単発 QA）"
+    turns:
+      - user: "ロキソニンって眠くなる？"
+        expect_render: sage_qa
+        timeout_s: 120
+        must_contain_any: ["ロキソ", "眠", "副作用", "注意"]
+        must_not_contain:
+          - "睡眠改善"
+          - "年齢を教えて"
+
+  - id: e2e-med-qa-comparison
+    description: "2製品比較 QA"
+    turns:
+      - user: "ロキソニンとイブの違いって何？"
+        expect_render: sage_qa
+        timeout_s: 120
+        must_contain_any: ["ロキソ", "イブ", "違い", "成分", "用途"]
+
+  - id: e2e-med-qa-photo
+    description: "製品写真 QA"
+    turns:
+      - user: "ロキソニンの写真見せて"
+        expect_render: sage_qa
+        timeout_s: 120
+        must_contain_any: ["ロキソ", "画像", "準備中", "製品"]

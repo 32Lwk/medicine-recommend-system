@@ -1,0 +1,84 @@
+{
+  "total": 19,
+  "pass": 19,
+  "pass_pct": 100.0,
+  "by_group": {
+    "age": {
+      "pass": 2,
+      "total": 2
+    },
+    "dop": {
+      "pass": 2,
+      "total": 2
+    },
+    "ix": {
+      "pass": 8,
+      "total": 8
+    },
+    "se": {
+      "pass": 3,
+      "total": 3
+    },
+    "us": {
+      "pass": 4,
+      "total": 4
+    }
+  }
+}
+  [OK] ix-colloquial-loxo-warfarin-1: score=0.92 prefix=True cat=interaction
+       Q: ロキソニン飲んでるけどワーファリンも処方されてて大丈夫？
+       -> ['local/medicine/interactions/ロキソプロフェン-ワーファリン.md']
+  [OK] ix-colloquial-loxo-warfarin-2: score=0.92 prefix=True cat=interaction
+       Q: 血をサラサラにする薬とロキソプロフェン、一緒でいい？
+       -> ['local/medicine/interactions/クマリン系抗凝血薬-ロキソプロフェン.md']
+  [OK] ix-colloquial-ibu-aspirin: score=0.92 prefix=True cat=interaction
+       Q: バファリンとイブ、同日に飲んじゃダメ？
+       -> ['local/medicine/interactions/アスピリン-イブプロフェン.md']
+  [OK] ix-colloquial-alcohol-acet: score=0.92 prefix=True cat=interaction
+       Q: カロナール飲んだあとビール1杯くらいなら？
+       -> ['local/medicine/interactions/アセトアミノフェン-アルコール.md']
+  [OK] ix-colloquial-ssri-dxm: score=0.92 prefix=True cat=interaction
+       Q: 風邪薬（咳止め）と抗うつ薬SSRI、併用注意ある？
+       -> ['local/medicine/interactions/ssri-デキストロメトルファン.md']
+  [OK] ix-colloquial-caffeine-ephed: score=0.92 prefix=True cat=interaction
+       Q: エナジードリンクと麻黄系、心臓やばくない？
+       -> ['local/medicine/interactions/エフェドリン-カフェイン.md']
+  [OK] se-colloquial-sleepy: score=0.88 prefix=True cat=side_effect
+       Q: この痛み止め飲むとガッツリ眠くなるんだけど
+       -> ['local/medicine/side_effects/ロキソプロフェン.md']
+  [OK] se-colloquial-stomach: score=0.88 prefix=True cat=side_effect
+       Q: イブプロフェンでお腹キツくなったことある人いる？
+       -> ['local/medicine/side_effects/イブプロフェン.md']
+  [OK] se-colloquial-drowsy-antihist: score=0.88 prefix=True cat=side_effect
+       Q: 花粉症の薬でぼーっとするの普通？
+       -> ['local/medicine/side_effects/ジフェンヒドラミン.md']
+  [OK] us-colloquial-meal: score=0.85 prefix=True cat=usage
+       Q: 頭痛薬、ご飯食べてからの方がいい？
+       -> ['local/medicine/products/カロナールa-第一三共.md']
+  [OK] us-colloquial-interval: score=0.85 prefix=True cat=usage
+       Q: 熱下げ、4時間以内にまた飲んでも平気？
+       -> ['local/medicine/topics/usage-dose-interval.md']
+  [OK] us-colloquial-water: score=0.5667 prefix=True cat=usage
+       Q: お水なしで飲んでも問題ない？
+       -> ['local/medicine/products/azのどスプレータイヨー-大洋製薬.md', 'local/medicine/products/azプラスcpcのどスプレー-ダイヤ製薬.md', 'local/medicine/products/bbジェットde-アース製薬.md']
+  [OK] us-colloquial-times: score=0.95 prefix=True cat=usage
+       Q: 風邪薬って1日に何錠まで？
+       -> ['local/medicine/products/新フジパップ温感-テイカ製薬.md', 'local/medicine/products/別府血ノ池軟膏-福泉製薬所.md', 'local/medicine/products/角野の通導散-角野製薬所.md']
+  [OK] age-colloquial-child: score=0.85 prefix=True cat=age
+       Q: うちの小3、市販の風邪薬使える？
+       -> ['local/medicine/topics/age-restriction-guide.md']
+  [OK] age-colloquial-elderly: score=0.85 prefix=True cat=age
+       Q: 80代の母、イブuprofen系は避けた方がいい？
+       -> ['local/medicine/topics/nsaid-elderly.md']
+  [OK] dop-colloquial-sports: score=0.86 prefix=True cat=doping
+       Q: マラソン前に鼻薬使うの、アウト？
+       -> ['local/medicine/doping/pseudoephedrine.md']
+  [OK] dop-colloquial-product: score=0.87 prefix=True cat=doping
+       Q: バファリンに禁止成分入ってる？大会前に心配
+       -> ['local/medicine/products/バファリンa-ライオン.md']
+  [OK] ix-implicit-two-drugs: score=0.6152 prefix=True cat=interaction
+       Q: アスピリンとロキソニン、同日避けた方がいい？
+       -> ['local/medicine/interactions/ace阻害薬-アスピリン.md', 'local/medicine/interactions/mao阻害薬-オキシメタゾリン.md', 'local/medicine/interactions/mao阻害薬-テトラヒドロゾリン.md']
+  [OK] ix-polite-form: score=0.92 prefix=True cat=interaction
+       Q: デキストロメトルファンを服用中ですが、SSRIとの併用はいかがでしょうか
+       -> ['local/medicine/interactions/ssri-デキストロメトルファン.md']

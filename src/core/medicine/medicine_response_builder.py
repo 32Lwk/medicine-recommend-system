@@ -6,6 +6,7 @@ get_medicine_details, detect_medicine_name_in_query, chat_with_medicine_context 
 
 import json
 import logging
+from typing import Any
 
 import pandas as pd
 
@@ -499,16 +500,50 @@ def chat_with_medicine_context(
     from src.services.bedrock_kb_retrieve import augment_medicine_prompt_with_kb
 
     from src.dialogue.routing.context_signals import extract_drug_entities
+    from src.services.medicine_qa_routing import (
+        infer_medicine_qa_focuses,
+        is_comparison_pick_question,
+    )
 
+    user_attributes: dict[str, Any] = {}
+    if session_id:
+        try:
+            from src.services.session_manager import get_session_from_db
+
+            sd = get_session_from_db(session_id) or {}
+            user_attributes = sd.get("user_attributes") or {}
+        except Exception:
+            pass
+
+    qa_focuses = infer_medicine_qa_focuses(
+        user_message,
+        conversation_history=conversation_history,
+        recommended_medicines=recommended_medicines,
+        user_attributes=user_attributes,
+    )
     drug_entities = extract_drug_entities(user_message)
     comparison_hint = ""
     if len(drug_entities) >= 2:
-        comparison_hint = (
-            "\n- ユーザーは複数の医薬品について質問しています。"
-            "比較・違い・選び方などの意図を読み取り、各製品の主成分・作用・用途の違いを"
-            "質問に直接答える形で整理してください（羅列だけにしない）。\n"
-        )
+        if is_comparison_pick_question(user_message) and len(drug_entities) == 2:
+            comparison_hint = (
+                "\n- 2製品の比較で「どちらが良い」系の質問です。"
+                "条件別（胃に優しい/効き目/就寝前等）の選び方を示しつつ、"
+                "個人差があるため断定せず登録販売者相談を促してください。\n"
+            )
+        else:
+            comparison_hint = (
+                "\n- ユーザーは複数の医薬品について質問しています。"
+                "比較・違い・選び方などの意図を読み取り、各製品の主成分・作用・用途の違いを"
+                "質問に直接答える形で整理してください（羅列だけにしない）。\n"
+            )
 
+    age_note = ""
+    age_val = user_attributes.get("age")
+    if age_val and "age" in qa_focuses:
+        age_note = f"\n- ユーザー年齢（セッション）: {age_val}歳 — 年齢制限と照合して回答してください。\n"
+
+    focus_note = f"\n- 検出された質問焦点: {', '.join(qa_focuses)}\n"
+    focus_note += "- 質問に直接関係ない JSON フィールドは空文字 \"\" にしてください。\n"
     prompt_body = f"""
 あなたは医薬品推奨システムです。ユーザーの医薬品に関する質問に、推奨医薬品の情報を基に回答してください。
 {memory_section}
@@ -527,7 +562,7 @@ def chat_with_medicine_context(
 3. スポーツ競技でのドーピング規制対象かどうか
 4. 副作用や注意点
 5. 医師に相談すべき場合
-{comparison_hint}
+{comparison_hint}{age_note}{focus_note}
 回答は以下の形式で構造化してください：
 {{
     "answer": "ユーザーへの直接的な回答",
@@ -552,6 +587,8 @@ def chat_with_medicine_context(
         user_message,
         prompt_body,
         recommended_medicines=recommended_medicines,
+        conversation_history=conversation_history,
+        qa_focuses=qa_focuses,
     )
     try:
         from src.core.llm_client import chat_completion_create, chat_completion_stream
@@ -601,6 +638,7 @@ def chat_with_medicine_context(
                 user_message,
                 answer_prompt,
                 recommended_medicines=recommended_medicines,
+                conversation_history=conversation_history,
             )
             streamed_answer = chat_completion_stream(
                 client,
@@ -671,12 +709,34 @@ def chat_with_medicine_context(
                 )
 
                 focused = build_focused_qa_sections(
-                    user_message, recommended_medicines or []
+                    user_message,
+                    recommended_medicines or [],
+                    conversation_history=conversation_history,
+                    user_attributes=user_attributes,
                 )
                 for key, val in focused.items():
                     if val and not str(parsed_result.get(key) or "").strip():
                         parsed_result[key] = val
-                parsed_result = prune_qa_response(parsed_result, user_message)
+                parsed_result = prune_qa_response(
+                    parsed_result, user_message, focuses=qa_focuses
+                )
+                if "product_image" in qa_focuses and recommended_medicines:
+                    from src.services.medicine_qa_images import attach_product_images_to_response
+
+                    parsed_result = attach_product_images_to_response(
+                        parsed_result, recommended_medicines
+                    )
+                    if not str(parsed_result.get("answer") or "").strip():
+                        names = "、".join(
+                            str(m.get("product_name") or "")
+                            for m in recommended_medicines[:3]
+                            if m.get("product_name")
+                        )
+                        parsed_result["answer"] = (
+                            f"{names}のパッケージ画像です。"
+                            if names
+                            else "パッケージ画像を表示しました。"
+                        )
                 if stream_active and session_id:
                     emit_qa_sections_from_response(parsed_result, session_id)
                 _append_physical_handoff_hint(parsed_result, user_message)

@@ -26,10 +26,12 @@ def build_medicine_qa_html(chat_response: Dict[str, Any]) -> str:
     side_eff = safe_format_html(chat_response.get("side_effects", ""))
     side_effect_html = chat_response.get("side_effect_html", "")
     consult = safe_format_html(chat_response.get("consultation_advice", ""))
+    product_images = str(chat_response.get("product_images_html") or "").strip()
     return f"""
 <div class="chat-response">
 <h4>💬 医薬品相談回答</h4>
 <p><strong>回答:</strong><br>{ans}</p>
+{f'<div style="margin-top: 15px;">{product_images}</div>' if product_images else ''}
 {f'<div style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px;"><strong>💊 医薬品の詳細:</strong><br>{med_det}</div>' if med_det else ''}
 {f'<div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 5px;"><strong>⚠️ 相互作用の注意:</strong><br>{inter}</div>' if inter else ''}
 {f'<div style="margin-top: 15px; padding: 10px; background: #ffebee; border-radius: 5px;"><strong>🏃 ドーピングチェック:</strong><br>{doping}</div>' if doping else ''}
@@ -134,6 +136,35 @@ def run_medicine_question_qa(
                 latest_recommended_medicines = diagnosis.get("recommended_medicines", [])
                 break
     conversation_history = session_data.get("messages", [])[-10:]
+    user_attributes = session_data.get("user_attributes") or {}
+
+    from src.services.medicine_qa_routing import needs_medicine_clarification
+
+    if needs_medicine_clarification(
+        user_message,
+        recommended_medicines=latest_recommended_medicines,
+        conversation_history=conversation_history,
+    ):
+        from src.services.status_diagnosis_builder import (
+            build_ambiguous_medicine_clarification_status,
+        )
+
+        clarify = build_ambiguous_medicine_clarification_status(
+            feedback_context={"user_message": user_message},
+        )
+        chat_response = {
+            "answer": clarify.message,
+            "medicine_details": "",
+            "interactions": "",
+            "doping_check": "",
+            "side_effects": "",
+            "consultation_advice": "",
+        }
+        count = finalize_medicine_qa_response(
+            session, client_info, sid, user_message, chat_response
+        )
+        return count, chat_response
+
     if sid:
         try:
             from src.services.processing_status import mark_processing_step, set_processing_flow

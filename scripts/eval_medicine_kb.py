@@ -59,6 +59,7 @@ def _evaluate_scenario(
     search_mode: str,
     top_k: int,
     mode: str,
+    provider: str = "bedrock",
 ) -> Dict[str, Any]:
     from src.services.bedrock_kb_retrieve import (
         build_medicine_retrieval_query,
@@ -79,14 +80,27 @@ def _evaluate_scenario(
     else:
         retrieval_query = query
 
-    result = retrieve_kb_context(
-        retrieval_query,
-        kb_id=kb_id,
-        cache_namespace=f"medicine_eval_{mode}",
-        top_k=top_k,
-        use_cache=False,
-        search_mode=search_mode,
-    )
+    if provider == "local":
+        from src.services.local_rag_retrieve import retrieve_local_context
+        from src.services.local_rag_router import infer_medicine_category
+
+        result = retrieve_local_context(
+            retrieval_query,
+            namespace="medicine",
+            top_k=top_k,
+            min_score=0.4,
+            recommended_medicines=recommended,
+            category=str(scenario.get("category") or infer_medicine_category(query)),
+        )
+    else:
+        result = retrieve_kb_context(
+            retrieval_query,
+            kb_id=kb_id,
+            cache_namespace=f"medicine_eval_{mode}",
+            top_k=top_k,
+            use_cache=False,
+            search_mode=search_mode,
+        )
 
     scores: List[float] = []
     for src in result.get("sources") or []:
@@ -163,6 +177,12 @@ def main() -> int:
         default=0,
         help="Fail if interaction pass count below this (CI uses 5)",
     )
+    parser.add_argument(
+        "--provider",
+        choices=("bedrock", "local"),
+        default="bedrock",
+        help="Retrieve backend (bedrock=Managed KB API, local=local hybrid index)",
+    )
     args = parser.parse_args()
 
     fixture = _load_fixture(args.fixture)
@@ -187,6 +207,7 @@ def main() -> int:
                 search_mode=search_mode,
                 top_k=args.top_k,
                 mode=mode,
+                provider=args.provider,
             )
             all_rows.append(row)
 
@@ -200,6 +221,7 @@ def main() -> int:
     report: Dict[str, Any] = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "phase": args.phase,
+        "provider": args.provider,
         "kb_id": kb_id,
         "search_mode": search_mode,
         "fixture": str(args.fixture.relative_to(ROOT)),
@@ -233,7 +255,8 @@ def main() -> int:
     out_path = args.output
     if out_path is None:
         date_str = datetime.now().strftime("%Y%m%d")
-        out_path = ROOT / f"log/analysis/medicine_kb_baseline_{date_str}.json"
+        suffix = "local" if args.provider == "local" else "baseline"
+        out_path = ROOT / f"log/analysis/medicine_kb_{suffix}_{date_str}.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 

@@ -545,6 +545,7 @@ def build_status_bubble(
     hints: list[str] | None = None,
     footer_note: str = "",
     ui: dict[str, str] | None = None,
+    hero_url: str | None = None,
 ) -> dict[str, Any]:
     """
     Web の chat-status-card 風ステータス bubble（Flex Message 1件）。
@@ -571,37 +572,42 @@ def build_status_bubble(
     if not body_contents:
         body_contents.append(_flex_text("—", size="sm"))
 
-    return {
-        "type": "flex",
-        "altText": alt_text,
-        "contents": {
-            "type": "bubble",
-            "size": "kilo",
-            "header": {
-                "type": "box",
-                "layout": "vertical",
-                "backgroundColor": header_color,
-                "paddingAll": "16px",
-                "contents": [
-                    {
-                        "type": "text",
-                        "text": title,
-                        "weight": "bold",
-                        "size": "lg",
-                        "color": "#ffffff",
-                        "align": "center",
-                        "wrap": True,
-                    }
-                ],
-            },
-            "body": {
-                "type": "box",
-                "layout": "vertical",
-                "paddingAll": "16px",
-                "contents": body_contents,
-            },
+    bubble: dict[str, Any] = {
+        "type": "bubble",
+        "size": "kilo",
+        "header": {
+            "type": "box",
+            "layout": "vertical",
+            "backgroundColor": header_color,
+            "paddingAll": "16px",
+            "contents": [
+                {
+                    "type": "text",
+                    "text": title,
+                    "weight": "bold",
+                    "size": "lg",
+                    "color": "#ffffff",
+                    "align": "center",
+                    "wrap": True,
+                }
+            ],
+        },
+        "body": {
+            "type": "box",
+            "layout": "vertical",
+            "paddingAll": "16px",
+            "contents": body_contents,
         },
     }
+    if hero_url:
+        bubble["hero"] = {
+            "type": "image",
+            "url": hero_url,
+            "size": "full",
+            "aspectRatio": "20:13",
+            "aspectMode": "cover",
+        }
+    return {"type": "flex", "altText": alt_text, "contents": bubble}
 
 
 def build_advice_bubble(
@@ -885,6 +891,21 @@ _PLAIN_TEXT_CONCIERGE_INTENTS = frozenset(
 )
 
 
+def _extract_qa_hero_url(diagnosis: dict[str, Any]) -> str | None:
+    import re
+
+    for sec in diagnosis.get("sections") or []:
+        if not isinstance(sec, dict):
+            continue
+        if str(sec.get("title") or "").strip() != "製品画像":
+            continue
+        html = str(sec.get("html") or "")
+        match = re.search(r'src="([^"]+)"', html)
+        if match:
+            return match.group(1)
+    return None
+
+
 def _diagnosis_hints_with_sections(diagnosis: dict[str, Any]) -> list[str]:
     hints = [str(h).strip() for h in (diagnosis.get("hints") or []) if str(h).strip()]
     for sec in diagnosis.get("sections") or []:
@@ -917,6 +938,7 @@ def _try_sage_diagnosis_status_flex(
         return None
     message = _diagnosis_plain_message(diagnosis)
     hints = _diagnosis_hints_with_sections(diagnosis)
+    hero_url = _extract_qa_hero_url(diagnosis) if diagnosis.get("render") == "sage_qa" else None
     messages = _status_flex_message(
         _normalize_variant(str(diagnosis.get("variant") or "info")),
         title=title,
@@ -926,6 +948,7 @@ def _try_sage_diagnosis_status_flex(
         hints=hints or None,
         footer_note=footer,
         ui=ui,
+        hero_url=hero_url,
     )
     if diagnosis.get("kind") == "cold_symptom_chip_prompt" and messages:
         actions = diagnosis.get("actions") or []
@@ -991,6 +1014,7 @@ def _status_flex_message(
     hints: list[str] | None = None,
     footer_note: str,
     ui: dict[str, str],
+    hero_url: str | None = None,
 ) -> list[dict[str, Any]]:
     return [
         build_status_bubble(
@@ -1002,6 +1026,7 @@ def _status_flex_message(
             hints=hints,
             footer_note=footer_note,
             ui=ui,
+            hero_url=hero_url,
         )
     ]
 

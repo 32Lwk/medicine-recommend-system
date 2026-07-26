@@ -1,0 +1,262 @@
+{
+  "total": 52,
+  "pass": 52,
+  "pass_pct": 100.0,
+  "by_style": {
+    "local_rag_paraphrase_eval": {
+      "pass": 19,
+      "total": 19
+    },
+    "polite": {
+      "pass": 5,
+      "total": 5
+    },
+    "dialect": {
+      "pass": 4,
+      "total": 4
+    },
+    "english_mix": {
+      "pass": 5,
+      "total": 5
+    },
+    "terse": {
+      "pass": 3,
+      "total": 3
+    },
+    "verbose": {
+      "pass": 3,
+      "total": 3
+    },
+    "question_form": {
+      "pass": 3,
+      "total": 3
+    },
+    "context": {
+      "pass": 10,
+      "total": 10
+    }
+  },
+  "by_suite": {
+    "local_rag_paraphrase_eval": {
+      "pass": 19,
+      "total": 19
+    },
+    "local_rag_diverse_eval": {
+      "pass": 23,
+      "total": 23
+    },
+    "context": {
+      "pass": 10,
+      "total": 10
+    }
+  },
+  "llm_stress": false
+}
+  [OK] ix-colloquial-loxo-warfarin-1 (local_rag_paraphrase_eval): score=0.92 cat=interaction
+       Q: ロキソニン飲んでるけどワーファリンも処方されてて大丈夫？
+       -> ['local/medicine/interactions/ロキソプロフェン-ワーファリン.md']
+       RQ: ロキソニン飲んでるけどワーファリンも処方されてて大丈夫？
+  [OK] ix-colloquial-loxo-warfarin-2 (local_rag_paraphrase_eval): score=0.92 cat=interaction
+       Q: 血をサラサラにする薬とロキソプロフェン、一緒でいい？
+       -> ['local/medicine/interactions/クマリン系抗凝血薬-ロキソプロフェン.md']
+       RQ: 血をサラサラにする薬とロキソプロフェン、一緒でいい？
+  [OK] ix-colloquial-ibu-aspirin (local_rag_paraphrase_eval): score=0.92 cat=interaction
+       Q: バファリンとイブ、同日に飲んじゃダメ？
+       -> ['local/medicine/interactions/アスピリン-イブプロフェン.md']
+       RQ: バファリンとイブ、同日に飲んじゃダメ？
+  [OK] ix-colloquial-alcohol-acet (local_rag_paraphrase_eval): score=0.92 cat=interaction
+       Q: カロナール飲んだあとビール1杯くらいなら？
+       -> ['local/medicine/interactions/アセトアミノフェン-アルコール.md']
+       RQ: カロナール飲んだあとビール1杯くらいなら？
+  [OK] ix-colloquial-ssri-dxm (local_rag_paraphrase_eval): score=0.92 cat=interaction
+       Q: 風邪薬（咳止め）と抗うつ薬SSRI、併用注意ある？
+       -> ['local/medicine/interactions/ssri-デキストロメトルファン.md']
+       RQ: 風邪薬（咳止め）と抗うつ薬SSRI、併用注意ある？
+  [OK] ix-colloquial-caffeine-ephed (local_rag_paraphrase_eval): score=0.92 cat=interaction
+       Q: エナジードリンクと麻黄系、心臓やばくない？
+       -> ['local/medicine/interactions/エフェドリン-カフェイン.md']
+       RQ: エナジードリンクと麻黄系、心臓やばくない？
+  [OK] se-colloquial-sleepy (local_rag_paraphrase_eval): score=0.88 cat=side_effect
+       Q: この痛み止め飲むとガッツリ眠くなるんだけど
+       -> ['local/medicine/side_effects/ロキソプロフェン.md']
+       RQ: この痛み止め飲むとガッツリ眠くなるんだけど 推奨医薬品: ロキソニン
+  [OK] se-colloquial-stomach (local_rag_paraphrase_eval): score=0.88 cat=side_effect
+       Q: イブプロフェンでお腹キツくなったことある人いる？
+       -> ['local/medicine/side_effects/イブプロフェン.md']
+       RQ: イブプロフェンでお腹キツくなったことある人いる？
+  [OK] se-colloquial-drowsy-antihist (local_rag_paraphrase_eval): score=0.88 cat=side_effect
+       Q: 花粉症の薬でぼーっとするの普通？
+       -> ['local/medicine/side_effects/フェキソフェナジン塩酸塩.md']
+       RQ: 花粉症の薬でぼーっとするの普通？ 推奨医薬品: アレグラ
+  [OK] us-colloquial-meal (local_rag_paraphrase_eval): score=0.85 cat=usage
+       Q: 頭痛薬、ご飯食べてからの方がいい？
+       -> ['local/medicine/products/カロナールa-第一三共.md']
+       RQ: 頭痛薬、ご飯食べてからの方がいい？ 推奨医薬品: カロナールA
+  [OK] us-colloquial-interval (local_rag_paraphrase_eval): score=0.85 cat=usage
+       Q: 熱下げ、4時間以内にまた飲んでも平気？
+       -> ['local/medicine/topics/usage-dose-interval.md']
+       RQ: 熱下げ、4時間以内にまた飲んでも平気？
+  [OK] us-colloquial-water (local_rag_paraphrase_eval): score=0.5667 cat=usage
+       Q: お水なしで飲んでも問題ない？
+       -> ['local/medicine/products/azのどスプレータイヨー-大洋製薬.md', 'local/medicine/products/azプラスcpcのどスプレー-ダイヤ製薬.md', 'local/medicine/products/bbジェットde-アース製薬.md']
+       RQ: お水なしで飲んでも問題ない？
+  [OK] us-colloquial-times (local_rag_paraphrase_eval): score=0.95 cat=usage
+       Q: 風邪薬って1日に何錠まで？
+       -> ['local/medicine/products/新フジパップ温感-テイカ製薬.md', 'local/medicine/products/別府血ノ池軟膏-福泉製薬所.md', 'local/medicine/products/角野の通導散-角野製薬所.md']
+       RQ: 風邪薬って1日に何錠まで？
+  [OK] age-colloquial-child (local_rag_paraphrase_eval): score=0.85 cat=age
+       Q: うちの小3、市販の風邪薬使える？
+       -> ['local/medicine/topics/age-restriction-guide.md']
+       RQ: うちの小3、市販の風邪薬使える？
+  [OK] age-colloquial-elderly (local_rag_paraphrase_eval): score=0.85 cat=age
+       Q: 80代の母、イブuprofen系は避けた方がいい？
+       -> ['local/medicine/topics/nsaid-elderly.md']
+       RQ: 80代の母、イブuprofen系は避けた方がいい？
+  [OK] dop-colloquial-sports (local_rag_paraphrase_eval): score=0.86 cat=doping
+       Q: マラソン前に鼻薬使うの、アウト？
+       -> ['local/medicine/doping/pseudoephedrine.md']
+       RQ: マラソン前に鼻薬使うの、アウト？
+  [OK] dop-colloquial-product (local_rag_paraphrase_eval): score=0.87 cat=doping
+       Q: バファリンに禁止成分入ってる？大会前に心配
+       -> ['local/medicine/products/バファリンa-ライオン.md']
+       RQ: バファリンに禁止成分入ってる？大会前に心配 推奨医薬品: バファリン
+  [OK] ix-implicit-two-drugs (local_rag_paraphrase_eval): score=0.6152 cat=interaction
+       Q: アスピリンとロキソニン、同日避けた方がいい？
+       -> ['local/medicine/interactions/ace阻害薬-アスピリン.md', 'local/medicine/interactions/mao阻害薬-オキシメタゾリン.md', 'local/medicine/interactions/mao阻害薬-テトラヒドロゾリン.md']
+       RQ: アスピリンとロキソニン、同日避けた方がいい？
+  [OK] ix-polite-form (local_rag_paraphrase_eval): score=0.92 cat=interaction
+       Q: デキストロメトルファンを服用中ですが、SSRIとの併用はいかがでしょうか
+       -> ['local/medicine/interactions/ssri-デキストロメトルファン.md']
+       RQ: デキストロメトルファンを服用中ですが、SSRIとの併用はいかがでしょうか
+  [OK] polite-ix-warfarin (polite): score=0.92 cat=interaction
+       Q: ロキソニンを服用中なのですが、ワーファリンとの併用は問題ございませんでしょうか。
+       -> ['local/medicine/interactions/ロキソプロフェン-ワーファリン.md']
+       RQ: ロキソニンを服用中なのですが、ワーファリンとの併用は問題ございませんでしょうか。
+  [OK] polite-se-drowsy (polite): score=0.88 cat=side_effect
+       Q: 推奨いただいた解熱鎮痛薬で、強い眠気が生じるのは一般的でしょうか。
+       -> ['local/medicine/side_effects/ロキソプロフェン.md']
+       RQ: 推奨いただいた解熱鎮痛薬で、強い眠気が生じるのは一般的でしょうか。 推奨医薬品: ロキソニン
+  [OK] polite-us-meal (polite): score=0.85 cat=usage
+       Q: カロナールは食後に服用した方がよろしいでしょうか。
+       -> ['local/medicine/products/カロナールa-第一三共.md']
+       RQ: カロナールは食後に服用した方がよろしいでしょうか。 推奨医薬品: カロナールA
+  [OK] polite-age-child (polite): score=0.85 cat=age
+       Q: 小学二年の子どもに市販の風邪薬を使用してもよろしいでしょうか。
+       -> ['local/medicine/topics/age-restriction-guide.md']
+       RQ: 小学二年の子どもに市販の風邪薬を使用してもよろしいでしょうか。
+  [OK] polite-dop-event (polite): score=0.86 cat=doping
+       Q: 来週の競技会前に点鼻薬を使用することは禁止でしょうか。
+       -> ['local/medicine/doping/pseudoephedrine.md']
+       RQ: 来週の競技会前に点鼻薬を使用することは禁止でしょうか。
+  [OK] dialect-ix-aspirin-ibu (dialect): score=0.92 cat=interaction
+       Q: バファリンとイブ、一緒に飲んだらあかんの？
+       -> ['local/medicine/interactions/アスピリン-イブプロフェン.md']
+       RQ: バファリンとイブ、一緒に飲んだらあかんの？
+  [OK] dialect-se-stomach (dialect): score=0.88 cat=side_effect
+       Q: イブプロフェン飲んだらお腹がキツうなったわ、しゃーないの？
+       -> ['local/medicine/side_effects/イブプロフェン.md']
+       RQ: イブプロフェン飲んだらお腹がキツうなったわ、しゃーないの？
+  [OK] dialect-us-water (dialect): score=0.5667 cat=usage
+       Q: 水なしで飲んでもええん？
+       -> ['local/medicine/products/azのどスプレータイヨー-大洋製薬.md', 'local/medicine/products/azプラスcpcのどスプレー-ダイヤ製薬.md', 'local/medicine/products/bbジェットde-アース製薬.md']
+       RQ: 水なしで飲んでもええん？
+  [OK] dialect-age-elder (dialect): score=0.85 cat=age
+       Q: うちのバアさん80超えやけど、イブ系使うのどうなん？
+       -> ['local/medicine/topics/nsaid-elderly.md']
+       RQ: うちのバアさん80超えやけど、イブ系使うのどうなん？
+  [OK] enmix-ix-alcohol (english_mix): score=0.92 cat=interaction
+       Q: Tylenol飲んだ後にbeer 1杯、mixしてもOK？
+       -> ['local/medicine/interactions/アセトアミノフェン-アルコール.md']
+       RQ: Tylenol飲んだ後にbeer 1杯、mixしてもOK？
+  [OK] enmix-ix-nsaid (english_mix): score=0.92 cat=interaction
+       Q: aspirinとLoxonin、same dayにtakeしたらダメ？
+       -> ['local/medicine/interactions/アスピリン-イブプロフェン.md']
+       RQ: aspirinとLoxonin、same dayにtakeしたらダメ？
+  [OK] enmix-se-drowsy (english_mix): score=0.88 cat=side_effect
+       Q: このantihistamineでdrowsyになるのnormal？
+       -> ['local/medicine/side_effects/フェキソフェナジン塩酸塩.md']
+       RQ: このantihistamineでdrowsyになるのnormal？ 推奨医薬品: アレグラ
+  [OK] enmix-us-interval (english_mix): score=0.85 cat=usage
+       Q: 解熱剤、4 hours以内にagain飲んでもfine？
+       -> ['local/medicine/topics/usage-dose-interval.md']
+       RQ: 解熱剤、4 hours以内にagain飲んでもfine？
+  [OK] enmix-dop-marathon (english_mix): score=0.86 cat=doping
+       Q: marathon前にnasal spray、doping out？
+       -> ['local/medicine/doping/pseudoephedrine.md']
+       RQ: marathon前にnasal spray、doping out？
+  [OK] terse-ix-two (terse): score=0.92 cat=interaction
+       Q: ロキソ＋ワーファリン 併用ヤバ？
+       -> ['local/medicine/interactions/ロキソプロフェン-ワーファリン.md']
+       RQ: ロキソ＋ワーファリン 併用ヤバ？ 検出薬剤: ロキソ
+  [OK] terse-se-sleep (terse): score=0.88 cat=side_effect
+       Q: 痛み止めで眠くなる 普通？
+       -> ['local/medicine/side_effects/ロキソプロフェン.md']
+       RQ: 痛み止めで眠くなる 普通？ 推奨医薬品: ロキソニン
+  [OK] terse-us-dose (terse): score=0.675 cat=usage
+       Q: 風邪薬 1日max何錠
+       -> ['local/medicine/products/azのどスプレータイヨー-大洋製薬.md', 'local/medicine/products/azプラスcpcのどスプレー-ダイヤ製薬.md', 'local/medicine/products/bbジェットde-アース製薬.md']
+       RQ: 風邪薬 1日max何錠
+  [OK] verbose-ix-ssri (verbose): score=0.92 cat=interaction
+       Q: うちの父がSSRIをずっと飲んでいるんですが、風邪で咳が出て咳止めを買おうか迷っています。デキストロメトルファン系と一緒に使うのは避けた方がいいのでしょうか。
+       -> ['local/medicine/interactions/ssri-デキストロメトルファン.md']
+       RQ: うちの父がSSRIをずっと飲んでいるんですが、風邪で咳が出て咳止めを買おうか迷っています。デキストロメトルファン系と一緒に使うのは避けた方がいいのでしょうか。
+  [OK] verbose-age-grandma (verbose): score=0.85 cat=age
+       Q: 85歳で腎機能も少し落ちている母なのですが、市販のイブプロフェン系解熱剤は避けた方がよいか教えてください。
+       -> ['local/medicine/topics/nsaid-elderly.md']
+       RQ: 85歳で腎機能も少し落ちている母なのですが、市販のイブプロフェン系解熱剤は避けた方がよいか教えてください。
+  [OK] verbose-dop-student (verbose): score=0.86 cat=doping
+       Q: 高校の陸上部で県大会があるのですが、鼻づまりがひどくて市販の鼻薬を使いたいです。禁止成分に当たりませんか。
+       -> ['local/medicine/doping/pseudoephedrine.md']
+       RQ: 高校の陸上部で県大会があるのですが、鼻づまりがひどくて市販の鼻薬を使いたいです。禁止成分に当たりませんか。
+  [OK] qform-ix-caffeine (question_form): score=0.92 cat=interaction
+       Q: エナドリと麻黄って心臓に悪くない？
+       -> ['local/medicine/interactions/エフェドリン-カフェイン.md']
+       RQ: エナドリと麻黄って心臓に悪くない？
+  [OK] qform-se-nausea (question_form): score=0.6574 cat=side_effect
+       Q: NSAIDでむかむかする人っている？
+       -> ['local/medicine/side_effects/エストラジオール.md', 'local/medicine/side_effects/l-リシン塩酸塩.md', 'local/medicine/side_effects/インドメタシン.md']
+       RQ: NSAIDでむかむかする人っている？
+  [OK] qform-us-empty (question_form): score=0.85 cat=usage
+       Q: 頭痛薬空腹時に飲むのと食後どっちがいい？
+       -> ['local/medicine/products/カロナールa-第一三共.md']
+       RQ: 頭痛薬空腹時に飲むのと食後どっちがいい？ 推奨医薬品: カロナールA
+  [OK] ctx-ix-anaphora-loxo (context): score=0.92 cat=interaction
+       Q: ワーファリンも処方されているんですが、それ一緒に飲んでも大丈夫？
+       -> ['local/medicine/interactions/ロキソプロフェン-ワーファリン.md']
+       RQ: ワーファリンも処方されているんですが、それ一緒に飲んでも大丈夫? 会話文脈: ワーファリン, ワーファリンも, それ一緒に, ロキソプロフェン, 今ロキソニンを 検出薬剤: ワーファリン, ワーファリンも, それ一緒に, ロキソプロフェン, 今ロキソニンを
+  [OK] ctx-ix-anaphora-two-drugs (context): score=0.92 cat=interaction
+       Q: 夕方イブも使いたいんですが、同日は避けた方がいいですか？
+       -> ['local/medicine/interactions/アスピリン-イブプロフェン.md']
+       RQ: 夕方イブも使いたいんですが、同日は避けた方がいいですか? 検出薬剤: イブプロフェン, 夕方イブも使いたいんですが, 同日は避けた方がいいですか, アスピリン, バファリンを朝に飲みました
+  [OK] ctx-se-followup-sleepy (context): score=0.88 cat=side_effect
+       Q: この薬、飲むとすごく眠くなるんですが普通ですか？
+       -> ['local/medicine/side_effects/ロキソプロフェン.md']
+       RQ: この薬、飲むとすごく眠くなるんですが普通ですか? 会話文脈: 頭痛がひどいです ロキソニン 推奨医薬品: ロキソニン 検出薬剤: 頭痛がひどいです
+  [OK] ctx-us-followup-meal (context): score=0.85 cat=usage
+       Q: ご飯食べてからの方がいい？
+       -> ['local/medicine/products/カロナールa-第一三共.md']
+       RQ: ご飯食べてからの方がいい? カロナールA 推奨医薬品: カロナールA 検出薬剤: ご飯食べてからの方がいい, アセトアミノフェン
+  [OK] ctx-us-followup-interval (context): score=0.85 cat=usage
+       Q: 4時間以内にまた飲んでも平気？
+       -> ['local/medicine/topics/usage-dose-interval.md']
+       RQ: 4時間以内にまた飲んでも平気? 検出薬剤: 4時間以内にまた, 熱が38度あります
+  [OK] ctx-age-child-context (context): score=0.85 cat=age
+       Q: 市販の風邪薬使ってもいい？
+       -> ['local/medicine/topics/age-restriction-guide.md']
+       RQ: 市販の風邪薬使ってもいい? 会話文脈: 風邪薬, 市販の風邪薬, 小児, 子は小学1年生です 検出薬剤: 風邪薬, 市販の風邪薬, 小児, 子は小学1年生です
+  [OK] ctx-dop-sports-context (context): score=0.86 cat=doping
+       Q: 鼻薬使うのアウト？
+       -> ['local/medicine/doping/pseudoephedrine.md']
+       RQ: 鼻薬使うのアウト? プソイドエフェドリン オキシメトアゾリン 検出薬剤: プソイドエフェドリン, 鼻薬使うのアウト, 来週マラソン大会があります
+  [OK] ctx-ix-polite-context (context): score=0.92 cat=interaction
+       Q: 今夜ビールを1杯いただく予定なのですが、併用はいかがでしょうか
+       -> ['local/medicine/interactions/アセトアミノフェン-アルコール.md']
+       RQ: 今夜ビールを1杯いただく予定なのですが、併用はいかがでしょうか 検出薬剤: アルコール, 併用はいかがでしょうか, アセトアミノフェン, カロナールを本日
+  [OK] ctx-enmix-short (context): score=0.92 cat=interaction
+       Q: 咳止めのDXM、mixしてもsafe？
+       -> ['local/medicine/interactions/ssri-デキストロメトルファン.md']
+       RQ: 咳止めのDXM、mixしてもsafe? デキストロメトルファン 検出薬剤: デキストロメトルファン, 咳止めのDXM, mixしてもsafe, SSRI, depression
+  [OK] ctx-dialect-anaphora (context): score=0.92 cat=interaction
+       Q: イブと一緒に飲んだらあかん？
+       -> ['local/medicine/interactions/アスピリン-イブプロフェン.md']
+       RQ: イブと一緒に飲んだらあかん? 検出薬剤: イブプロフェン, イブ, 一緒に飲んだらあかん, アスピリン, バファリン

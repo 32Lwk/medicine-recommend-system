@@ -43,10 +43,12 @@ def _evaluate_scenario(
     *,
     kb_id: str,
     search_mode: str,
+    provider: str = "bedrock",
 ) -> Dict[str, Any]:
     from src.services.bedrock_kb_retrieve import (
         _concierge_kb_top_k,
         build_concierge_retrieval_query,
+        retrieve_concierge_context,
         retrieve_kb_context,
     )
 
@@ -57,14 +59,32 @@ def _evaluate_scenario(
 
     retrieval_query = build_concierge_retrieval_query(user_query, intent)
     top_k = _concierge_kb_top_k(intent)
-    result = retrieve_kb_context(
-        retrieval_query,
-        kb_id=kb_id,
-        cache_namespace="concierge_eval",
-        top_k=top_k,
-        use_cache=False,
-        search_mode=search_mode,
-    )
+    if provider == "local":
+        import os
+
+        prev = os.environ.get("CONCIERGE_RAG_PROVIDER")
+        os.environ["CONCIERGE_RAG_PROVIDER"] = "local"
+        try:
+            result = retrieve_concierge_context(
+                retrieval_query,
+                top_k=top_k,
+                use_cache=False,
+                intent=intent,
+            )
+        finally:
+            if prev is None:
+                os.environ.pop("CONCIERGE_RAG_PROVIDER", None)
+            else:
+                os.environ["CONCIERGE_RAG_PROVIDER"] = prev
+    else:
+        result = retrieve_kb_context(
+            retrieval_query,
+            kb_id=kb_id,
+            cache_namespace="concierge_eval",
+            top_k=top_k,
+            use_cache=False,
+            search_mode=search_mode,
+        )
 
     scores: List[float] = []
     for src in result.get("sources") or []:
@@ -113,6 +133,12 @@ def main() -> int:
         default=0.0,
         help="Fail if pass_all_pct below this (CI uses 80)",
     )
+    parser.add_argument(
+        "--provider",
+        choices=("bedrock", "local"),
+        default="bedrock",
+        help="Retrieve backend (bedrock=Managed KB API, local=local hybrid index)",
+    )
     args = parser.parse_args()
 
     fixture = _load_fixture(args.fixture)
@@ -121,7 +147,10 @@ def main() -> int:
     scenarios = fixture.get("scenarios") or []
 
     rows = [
-        _evaluate_scenario(sc, kb_id=kb_id, search_mode=search_mode) for sc in scenarios
+        _evaluate_scenario(
+            sc, kb_id=kb_id, search_mode=search_mode, provider=args.provider
+        )
+        for sc in scenarios
     ]
     passed = sum(1 for r in rows if r.get("pass"))
     total = len(rows)
@@ -130,6 +159,7 @@ def main() -> int:
     report = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "phase": args.phase,
+        "provider": args.provider,
         "kb_id": kb_id,
         "search_mode": search_mode,
         "region": str(fixture.get("region") or "ap-northeast-1"),
@@ -147,7 +177,8 @@ def main() -> int:
     out_path = args.output
     if out_path is None:
         date_str = datetime.now().strftime("%Y%m%d")
-        out_path = ROOT / f"log/analysis/concierge_kb_baseline_{date_str}.json"
+        suffix = "local" if args.provider == "local" else "baseline"
+        out_path = ROOT / f"log/analysis/concierge_kb_{suffix}_{date_str}.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 

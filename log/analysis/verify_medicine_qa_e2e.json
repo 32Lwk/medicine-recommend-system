@@ -1,0 +1,141 @@
+{
+  "timestamp": "2026-07-26T02:13:49.821457+00:00",
+  "provider": "local",
+  "summary": {
+    "total": 10,
+    "pass": 10,
+    "pass_pct": 100.0
+  },
+  "results": [
+    {
+      "id": "qa-ix-loxo-warfarin",
+      "query": "ロキソニンとワーファリン、併用して大丈夫？",
+      "kb_block_ok": true,
+      "prefix_ok": true,
+      "chunks_ok": true,
+      "provider": "local_rag",
+      "source_uris": [
+        "local/medicine/interactions/ロキソプロフェン-ワーファリン.md"
+      ],
+      "augmented_len": 671,
+      "pass": true
+    },
+    {
+      "id": "qa-ix-alcohol-acet",
+      "query": "カロナール飲んだ後お酒は避けた方がいい？",
+      "kb_block_ok": true,
+      "prefix_ok": true,
+      "chunks_ok": true,
+      "provider": "local_rag",
+      "source_uris": [
+        "local/medicine/interactions/アセトアミノフェン-アルコール.md"
+      ],
+      "augmented_len": 233,
+      "pass": true
+    },
+    {
+      "id": "qa-se-drowsy",
+      "query": "この薬で眠くなるのは普通？",
+      "kb_block_ok": true,
+      "prefix_ok": true,
+      "chunks_ok": true,
+      "provider": "local_rag",
+      "source_uris": [
+        "local/medicine/side_effects/ロキソプロフェン.md"
+      ],
+      "augmented_len": 965,
+      "pass": true
+    },
+    {
+      "id": "qa-us-meal",
+      "query": "食後に飲む方がいい？",
+      "kb_block_ok": true,
+      "prefix_ok": true,
+      "chunks_ok": true,
+      "provider": "local_rag",
+      "source_uris": [
+        "local/medicine/products/カロナールa-第一三共.md"
+      ],
+      "augmented_len": 203,
+      "pass": true
+    },
+    {
+      "id": "qa-age-child",
+      "query": "小学2年生でも市販の風邪薬使える？",
+      "kb_block_ok": true,
+      "prefix_ok": true,
+      "chunks_ok": true,
+      "provider": "local_rag",
+      "source_uris": [
+        "local/medicine/topics/age-restriction-guide.md"
+      ],
+      "augmented_len": 864,
+      "pass": true
+    },
+    {
+      "id": "qa-dop-sports",
+      "query": "マラソン前に鼻薬使っていい？",
+      "kb_block_ok": true,
+      "prefix_ok": true,
+      "chunks_ok": true,
+      "provider": "local_rag",
+      "source_uris": [
+        "local/medicine/doping/pseudoephedrine.md"
+      ],
+      "augmented_len": 426,
+      "pass": true
+    },
+    {
+      "id": "qa-ctx-anaphora",
+      "query": "それ一緒に飲んでも大丈夫？",
+      "kb_block_ok": true,
+      "prefix_ok": true,
+      "chunks_ok": true,
+      "provider": "local_rag",
+      "source_uris": [
+        "local/medicine/interactions/ロキソプロフェン-ワーファリン.md"
+      ],
+      "augmented_len": 663,
+      "pass": true
+    },
+    {
+      "id": "qa-polite-ix",
+      "query": "バファリンとイブプロフェン、同日服用は問題ございませんか",
+      "kb_block_ok": true,
+      "prefix_ok": true,
+      "chunks_ok": true,
+      "provider": "local_rag",
+      "source_uris": [
+        "local/medicine/interactions/アスピリン-イブプロフェン.md"
+      ],
+      "augmented_len": 241,
+      "pass": true
+    },
+    {
+      "id": "qa-enmix-ix",
+      "query": "aspirin and ibuprofen same day — OK?",
+      "kb_block_ok": true,
+      "prefix_ok": true,
+      "chunks_ok": true,
+      "provider": "local_rag",
+      "source_uris": [
+        "local/medicine/interactions/アスピリン-イブプロフェン.md"
+      ],
+      "augmented_len": 249,
+      "pass": true
+    },
+    {
+      "id": "qa-side-stomach",
+      "query": "イブプロフェンで胃がむかむかする副作用ある？",
+      "kb_block_ok": true,
+      "prefix_ok": true,
+      "chunks_ok": true,
+      "provider": "local_rag",
+      "source_uris": [
+        "local/medicine/side_effects/イブプロフェン.md"
+      ],
+      "augmented_len": 304,
+      "pass": true
+    }
+  ]
+}

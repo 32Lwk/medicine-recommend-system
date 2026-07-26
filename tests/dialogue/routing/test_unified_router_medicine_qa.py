@@ -36,3 +36,15 @@ def test_layer1_side_effect_still_locked():
     )
     assert decision.sub_route == "medicine_side_effect_qa"
     assert decision.execution_lock is True
+
+
+def test_layer1_mixed_side_effect_photo_routes_to_medicine_qa():
+    session = {"messages": []}
+    decision = resolve_unified_route(
+        "ロキソニンの副作用と写真見せて",
+        session,
+        "sid",
+        triage_result={"category": "Ask"},
+    )
+    assert decision.sub_route == "medicine_qa"
+    assert decision.execution_lock is True

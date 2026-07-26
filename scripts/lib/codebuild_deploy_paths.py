@@ -36,10 +36,29 @@ KB_FILES = (
 )
 KB_SCRIPTS = (
     "scripts/build_medicine_kb_documents.py",
+    "scripts/build_local_rag_index.py",
+    "scripts/run_local_rag_eval.sh",
     "scripts/write_changelog_digest.py",
     "scripts/sync-concierge-kb-to-s3.sh",
     "scripts/sync-medicine-kb-to-s3.sh",
     "scripts/sync-all-kb-to-s3.sh",
+)
+
+LOCAL_RAG_PREFIXES = (
+    "src/services/local_rag",
+    "config/local_rag_config.py",
+)
+LOCAL_RAG_FILES = (
+    "scripts/build_local_rag_index.py",
+    "scripts/run_local_rag_eval.sh",
+    "scripts/eval_local_rag_e2e.py",
+    "scripts/local_rag_retrieve_benchmark.py",
+    "scripts/compare_rag_eval.py",
+    "scripts/report_local_rag_cost.py",
+    "tests/fixtures/medicine_kb_eval.yaml",
+    "tests/fixtures/concierge_kb_eval.yaml",
+    "tests/fixtures/local_rag_e2e.yaml",
+    "tests/services/test_local_rag_router.py",
 )
 
 
@@ -78,7 +97,9 @@ def classify_changed_files(changed_files: Iterable[str]) -> DeployPlan:
         _matches_any(p, STATIC_PREFIXES, STATIC_SCRIPTS) for p in files
     )
     needs_kb = any(
-        _matches_any(p, KB_PREFIXES, KB_FILES + KB_SCRIPTS) for p in files
+        _matches_any(p, KB_PREFIXES, KB_FILES + KB_SCRIPTS)
+        or _matches_any(p, LOCAL_RAG_PREFIXES, LOCAL_RAG_FILES)
+        for p in files
     )
     return DeployPlan(
         changed_files=files,

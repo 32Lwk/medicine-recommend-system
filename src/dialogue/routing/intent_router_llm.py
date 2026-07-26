@@ -56,7 +56,10 @@ _INTENT_ROUTER_PROMPT = """あなたは医薬品相談チャットの IntentRout
 - 推奨履歴なしで競技・大会のみ・症状不明は Physical/symptom_prompt_sports
 - 推奨履歴なしで症状＋競技条件付きの薬探索は Physical/rule_based_recommend
 - **推奨履歴なしで「ロキソニンって眠い？」「バファリン眠くなる？」等、医薬品名＋副作用・眠気の質問 → Physical/medicine_side_effect_qa（症状推奨・睡眠障害 escalation に入れない）**
-- **推奨履歴なしで医薬品名を含む比較・説明・選び方・違いなどの情報質問（副作用・眠気が主題でない）→ Physical/medicine_qa（LLM による意図に沿った回答。症状推奨に入れない）**
+- **推奨履歴なしで医薬品名を含む比較・説明・選び方・違い・成分・用法用量・年齢制限・写真・画像などの情報質問（副作用・眠気が主題でない）→ Physical/medicine_qa（LLM による意図に沿った回答。症状推奨に入れない）**
+- **「ロキソニンとイブどっちがいい？」等 2 製品比較の選好質問も medicine_qa（症状推奨ではない）**
+- **「この薬」「さっきの薬」等、指示語のみで推奨履歴がない → medicine_qa ではなく Clarify 相当（情報不足。症状推奨に入れない）**
+- **副作用＋写真・比較など複合 intent（例: 「ロキソニンの副作用と写真見せて」）→ Physical/medicine_qa（単独副作用のみ medicine_side_effect_qa）**
 - **「眠い」単独の症状申告（薬名なし）→ Physical/rule_based_recommend（副作用 QA ではない）**
 
 【Concierge / app_about（本サービスの自己紹介・説明）】

@@ -1,0 +1,343 @@
+{
+  "timestamp": "2026-07-26T03:36:06.419343+00:00",
+  "fixture": "tests/fixtures/local_rag_paraphrase_eval.yaml",
+  "summary": {
+    "total": 19,
+    "pass": 19,
+    "pass_pct": 100.0,
+    "by_group": {
+      "age": {
+        "pass": 2,
+        "total": 2
+      },
+      "dop": {
+        "pass": 2,
+        "total": 2
+      },
+      "ix": {
+        "pass": 8,
+        "total": 8
+      },
+      "se": {
+        "pass": 3,
+        "total": 3
+      },
+      "us": {
+        "pass": 4,
+        "total": 4
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "ix-colloquial-loxo-warfarin-1",
+      "query": "ロキソニン飲んでるけどワーファリンも処方されてて大丈夫？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/ロキソプロフェン-ワーファリン.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "ix-colloquial-loxo-warfarin-2",
+      "query": "血をサラサラにする薬とロキソプロフェン、一緒でいい？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/クマリン系抗凝血薬-ロキソプロフェン.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "ix-colloquial-ibu-aspirin",
+      "query": "バファリンとイブ、同日に飲んじゃダメ？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/アスピリン-イブプロフェン.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "ix-colloquial-alcohol-acet",
+      "query": "カロナール飲んだあとビール1杯くらいなら？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/アセトアミノフェン-アルコール.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "ix-colloquial-ssri-dxm",
+      "query": "風邪薬（咳止め）と抗うつ薬SSRI、併用注意ある？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/ssri-デキストロメトルファン.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "ix-colloquial-caffeine-ephed",
+      "query": "エナジードリンクと麻黄系、心臓やばくない？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/エフェドリン-カフェイン.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "se-colloquial-sleepy",
+      "query": "この痛み止め飲むとガッツリ眠くなるんだけど",
+      "category": "side_effect",
+      "inferred_category": "side_effect",
+      "expect_category": "side_effect",
+      "top_score": 0.88,
+      "source_uris": [
+        "local/medicine/side_effects/ロキソプロフェン.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "se-colloquial-stomach",
+      "query": "イブプロフェンでお腹キツくなったことある人いる？",
+      "category": "side_effect",
+      "inferred_category": "side_effect",
+      "expect_category": "side_effect",
+      "top_score": 0.88,
+      "source_uris": [
+        "local/medicine/side_effects/イブプロフェン.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "se-colloquial-drowsy-antihist",
+      "query": "花粉症の薬でぼーっとするの普通？",
+      "category": "side_effect",
+      "inferred_category": "side_effect",
+      "expect_category": "side_effect",
+      "top_score": 0.88,
+      "source_uris": [
+        "local/medicine/side_effects/ジフェンヒドラミン.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "us-colloquial-meal",
+      "query": "頭痛薬、ご飯食べてからの方がいい？",
+      "category": "usage",
+      "inferred_category": "usage",
+      "expect_category": "usage",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/products/カロナールa-第一三共.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "us-colloquial-interval",
+      "query": "熱下げ、4時間以内にまた飲んでも平気？",
+      "category": "usage",
+      "inferred_category": "usage",
+      "expect_category": "usage",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/topics/usage-dose-interval.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "us-colloquial-water",
+      "query": "お水なしで飲んでも問題ない？",
+      "category": "usage",
+      "inferred_category": "usage",
+      "expect_category": "usage",
+      "top_score": 0.5667,
+      "source_uris": [
+        "local/medicine/products/azのどスプレータイヨー-大洋製薬.md",
+        "local/medicine/products/azプラスcpcのどスプレー-ダイヤ製薬.md",
+        "local/medicine/products/bbジェットde-アース製薬.md"
+      ],
+      "route": null,
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "us-colloquial-times",
+      "query": "風邪薬って1日に何錠まで？",
+      "category": "usage",
+      "inferred_category": "usage",
+      "expect_category": "usage",
+      "top_score": 0.95,
+      "source_uris": [
+        "local/medicine/products/新フジパップ温感-テイカ製薬.md",
+        "local/medicine/products/別府血ノ池軟膏-福泉製薬所.md",
+        "local/medicine/products/角野の通導散-角野製薬所.md"
+      ],
+      "route": null,
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "age-colloquial-child",
+      "query": "うちの小3、市販の風邪薬使える？",
+      "category": "age",
+      "inferred_category": "age",
+      "expect_category": "age",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/topics/age-restriction-guide.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "age-colloquial-elderly",
+      "query": "80代の母、イブuprofen系は避けた方がいい？",
+      "category": "age",
+      "inferred_category": "age",
+      "expect_category": "age",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/topics/nsaid-elderly.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "dop-colloquial-sports",
+      "query": "マラソン前に鼻薬使うの、アウト？",
+      "category": "doping",
+      "inferred_category": "doping",
+      "expect_category": "doping",
+      "top_score": 0.86,
+      "source_uris": [
+        "local/medicine/doping/pseudoephedrine.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "dop-colloquial-product",
+      "query": "バファリンに禁止成分入ってる？大会前に心配",
+      "category": "doping",
+      "inferred_category": "doping",
+      "expect_category": "doping",
+      "top_score": 0.87,
+      "source_uris": [
+        "local/medicine/products/バファリンa-ライオン.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "ix-implicit-two-drugs",
+      "query": "アスピリンとロキソニン、同日避けた方がいい？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.6194,
+      "source_uris": [
+        "local/medicine/interactions/ace阻害薬-アスピリン.md",
+        "local/medicine/interactions/mao阻害薬-オキシメタゾリン.md",
+        "local/medicine/interactions/mao阻害薬-テトラヒドロゾリン.md"
+      ],
+      "route": null,
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "ix-polite-form",
+      "query": "デキストロメトルファンを服用中ですが、SSRIとの併用はいかがでしょうか",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/ssri-デキストロメトルファン.md"
+      ],
+      "route": "deterministic",
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    }
+  ]
+}

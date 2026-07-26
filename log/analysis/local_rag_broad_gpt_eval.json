@@ -1,0 +1,833 @@
+{
+  "timestamp": "2026-07-26T02:28:21.188882+00:00",
+  "summary": {
+    "total": 38,
+    "pass": 35,
+    "pass_pct": 92.1,
+    "by_style": {
+      "slang": {
+        "pass": 7,
+        "total": 7
+      },
+      "abbreviation": {
+        "pass": 4,
+        "total": 4
+      },
+      "indirect": {
+        "pass": 4,
+        "total": 4
+      },
+      "typo": {
+        "pass": 2,
+        "total": 2
+      },
+      "english_mix": {
+        "pass": 3,
+        "total": 3
+      },
+      "dialect": {
+        "pass": 3,
+        "total": 3
+      },
+      "polite": {
+        "pass": 2,
+        "total": 2
+      },
+      "超省略の若者言葉": {
+        "pass": 1,
+        "total": 1
+      },
+      "関西弁": {
+        "pass": 2,
+        "total": 2
+      },
+      "英語混じり": {
+        "pass": 2,
+        "total": 3
+      },
+      "スラング混じり": {
+        "pass": 0,
+        "total": 1
+      },
+      "敬語": {
+        "pass": 1,
+        "total": 1
+      },
+      "方言": {
+        "pass": 1,
+        "total": 1
+      },
+      "SNS省略": {
+        "pass": 1,
+        "total": 1
+      },
+      "超省略": {
+        "pass": 1,
+        "total": 1
+      },
+      "カジュアル": {
+        "pass": 1,
+        "total": 1
+      },
+      "若者言葉": {
+        "pass": 0,
+        "total": 1
+      }
+    },
+    "by_suite": {
+      "broad": {
+        "pass": 25,
+        "total": 25
+      },
+      "gpt_conversation": {
+        "pass": 10,
+        "total": 13
+      }
+    },
+    "gpt_conversation": {
+      "total": 13,
+      "pass": 10,
+      "context_enriched": 13
+    }
+  },
+  "results": [
+    {
+      "id": "broad-slang-ix-mix",
+      "suite": "broad",
+      "style": "slang",
+      "query": "ロキソとワルファリン混ぜたらマジ危なくない？",
+      "retrieval_query": "ロキソとワルファリン混ぜたらマジ危なくない？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/ロキソプロフェン-ワーファリン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-slang-ix-double",
+      "suite": "broad",
+      "style": "slang",
+      "query": "バファリンとイブ、ダブルで飲んじゃダメ系？",
+      "retrieval_query": "バファリンとイブ、ダブルで飲んじゃダメ系？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/アスピリン-イブプロフェン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-slang-se-gastro",
+      "suite": "broad",
+      "style": "slang",
+      "query": "イブ飲んだら胃ムカつくんだけど普通？",
+      "retrieval_query": "イブ飲んだら胃ムカつくんだけど普通？",
+      "category": "side_effect",
+      "inferred_category": "side_effect",
+      "expect_category": "side_effect",
+      "top_score": 0.675,
+      "source_uris": [
+        "local/medicine/side_effects/d-クロルフェニラミンマレイン酸塩.md",
+        "local/medicine/side_effects/dl-メチオニン.md",
+        "local/medicine/side_effects/dl-メチルエフェドリン塩酸塩.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-slang-se-knockout",
+      "suite": "broad",
+      "style": "slang",
+      "query": "解熱剤ガチで眠くなるやつある？",
+      "retrieval_query": "解熱剤ガチで眠くなるやつある？ 推奨医薬品: ロキソニン",
+      "category": "side_effect",
+      "inferred_category": "side_effect",
+      "expect_category": "side_effect",
+      "top_score": 0.88,
+      "source_uris": [
+        "local/medicine/side_effects/ロキソプロフェン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-slang-us-chill",
+      "suite": "broad",
+      "style": "slang",
+      "query": "頭痛薬、空腹でもイケる？",
+      "retrieval_query": "頭痛薬、空腹でもイケる？ 推奨医薬品: カロナールA",
+      "category": "usage",
+      "inferred_category": "usage",
+      "expect_category": "usage",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/products/カロナールa-第一三共.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-slang-dop-race",
+      "suite": "broad",
+      "style": "slang",
+      "query": "陸上の大会前に鼻スプレー使うのアウト？",
+      "retrieval_query": "陸上の大会前に鼻スプレー使うのアウト？",
+      "category": "doping",
+      "inferred_category": "doping",
+      "expect_category": "doping",
+      "top_score": 0.86,
+      "source_uris": [
+        "local/medicine/doping/pseudoephedrine.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-slang-age-kid",
+      "suite": "broad",
+      "style": "slang",
+      "query": "小5の息子、市販の風邪薬ギリ使える？",
+      "retrieval_query": "小5の息子、市販の風邪薬ギリ使える？",
+      "category": "age",
+      "inferred_category": "age",
+      "expect_category": "age",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/topics/age-restriction-guide.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-abbrev-apap-alcohol",
+      "suite": "broad",
+      "style": "abbreviation",
+      "query": "APAP飲んだあとETOH 1杯くらい平気？",
+      "retrieval_query": "APAP飲んだあとETOH 1杯くらい平気？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.675,
+      "source_uris": [
+        "local/medicine/interactions/アセトアミノフェン-リチウム.md",
+        "local/medicine/interactions/インスリン-プロピレングリコール.md",
+        "local/medicine/interactions/ジゴキシン-塩化カルシウム水和物.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-abbrev-nsaid-gi",
+      "suite": "broad",
+      "style": "abbreviation",
+      "query": "NSAIDsでGIトラブル起きやすい？",
+      "retrieval_query": "NSAIDsでGIトラブル起きやすい？",
+      "category": "side_effect",
+      "inferred_category": "side_effect",
+      "expect_category": "side_effect",
+      "top_score": 0.675,
+      "source_uris": [
+        "local/medicine/side_effects/エテンザミド.md",
+        "local/medicine/side_effects/d-クロルフェニラミンマレイン酸塩.md",
+        "local/medicine/side_effects/dl-メチオニン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-abbrev-dxm-ssri",
+      "suite": "broad",
+      "style": "abbreviation",
+      "query": "DXMとSSRI、combo注意？",
+      "retrieval_query": "DXMとSSRI、combo注意？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/ssri-デキストロメトルファン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-abbrev-ibu-timing",
+      "suite": "broad",
+      "style": "abbreviation",
+      "query": "IBU、食後の方がマシ？",
+      "retrieval_query": "IBU、食後の方がマシ？ 推奨医薬品: イブ",
+      "category": "usage",
+      "inferred_category": "usage",
+      "expect_category": "usage",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/products/イブ-エスエス製薬.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-indirect-anticoag",
+      "suite": "broad",
+      "style": "indirect",
+      "query": "血が固まりにくくなる薬と痛み止め、同時にいける？",
+      "retrieval_query": "血が固まりにくくなる薬と痛み止め、同時にいける？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.95,
+      "source_uris": [
+        "local/medicine/interactions/アセチルシステイン-ワーファリン.md",
+        "local/medicine/interactions/アンブロキソール-ワーファリン.md",
+        "local/medicine/interactions/イブプロフェン-ワーファリン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-indirect-thin-blood",
+      "suite": "broad",
+      "style": "indirect",
+      "query": "サラサラ系のお薬とロキソプロフェン、一緒で大丈夫？",
+      "retrieval_query": "サラサラ系のお薬とロキソプロフェン、一緒で大丈夫？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/クマリン系抗凝血薬-ロキソプロフェン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-indirect-sleepy-pill",
+      "suite": "broad",
+      "style": "indirect",
+      "query": "推奨してもらったやつ、飲むと意識飛びそうになるんだけど",
+      "retrieval_query": "推奨してもらったやつ、飲むと意識飛びそうになるんだけど 推奨医薬品: ロキソニン",
+      "category": "side_effect",
+      "inferred_category": "side_effect",
+      "expect_category": "side_effect",
+      "top_score": 0.88,
+      "source_uris": [
+        "local/medicine/side_effects/ロキソプロフェン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-indirect-meal-timing",
+      "suite": "broad",
+      "style": "indirect",
+      "query": "お腹空いてる状態で飲むより、ごはん後の方がマシ？",
+      "retrieval_query": "お腹空いてる状態で飲むより、ごはん後の方がマシ？ 推奨医薬品: カロナールA",
+      "category": "usage",
+      "inferred_category": "usage",
+      "expect_category": "usage",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/products/カロナールa-第一三共.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-typo-warfarin",
+      "suite": "broad",
+      "style": "typo",
+      "query": "ロキソニンとワーファリん、併用OK？",
+      "retrieval_query": "ロキソニンとワーファリん、併用OK？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/ロキソプロフェン-ワーファリン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-typo-acetaminophen",
+      "suite": "broad",
+      "style": "typo",
+      "query": "アセトアミノフェンとお酒、一緒に飲んでも平気？",
+      "retrieval_query": "アセトアミノフェンとお酒、一緒に飲んでも平気？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/アセトアミノフェン-アルコール.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-enmix-painkiller-beer",
+      "suite": "broad",
+      "style": "english_mix",
+      "query": "painkiller飲んでからbeer OK？",
+      "retrieval_query": "painkiller飲んでからbeer OK？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/アセトアミノフェン-アルコール.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-enmix-antihist-drowsy",
+      "suite": "broad",
+      "style": "english_mix",
+      "query": "antihistamineでknock out levelの眠気、normal？",
+      "retrieval_query": "antihistamineでknock out levelの眠気、normal？ 推奨医薬品: アレグラ",
+      "category": "side_effect",
+      "inferred_category": "side_effect",
+      "expect_category": "side_effect",
+      "top_score": 0.88,
+      "source_uris": [
+        "local/medicine/side_effects/フェキソフェナジン塩酸塩.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-enmix-cold-dose",
+      "suite": "broad",
+      "style": "english_mix",
+      "query": "cold med、1日max dose超えたらヤバ？",
+      "retrieval_query": "cold med、1日max dose超えたらヤバ？",
+      "category": "usage",
+      "inferred_category": "usage",
+      "expect_category": "usage",
+      "top_score": 0.675,
+      "source_uris": [
+        "local/medicine/products/azのどスプレータイヨー-大洋製薬.md",
+        "local/medicine/products/azプラスcpcのどスプレー-ダイヤ製薬.md",
+        "local/medicine/products/bbジェットde-アース製薬.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-dialect-ix-mix",
+      "suite": "broad",
+      "style": "dialect",
+      "query": "アスピリンとロキソ、同時に飲んだらあかんやろ？",
+      "retrieval_query": "アスピリンとロキソ、同時に飲んだらあかんやろ？",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.7952,
+      "source_uris": [
+        "local/medicine/interactions/スクラルファート水和物-テオフィリン.md",
+        "local/medicine/interactions/ジゴキシン-水酸化マグネシウム.md",
+        "local/medicine/interactions/スクラルファート水和物-フェニトイン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-dialect-se-belly",
+      "suite": "broad",
+      "style": "dialect",
+      "query": "イブプロフェンで腹パンってなることある？",
+      "retrieval_query": "イブプロフェンで腹パンってなることある？",
+      "category": "side_effect",
+      "inferred_category": "side_effect",
+      "expect_category": "side_effect",
+      "top_score": 0.88,
+      "source_uris": [
+        "local/medicine/side_effects/イブプロフェン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-dialect-us-water",
+      "suite": "broad",
+      "style": "dialect",
+      "query": "お水なしで飲んでもええか？",
+      "retrieval_query": "お水なしで飲んでもええか？",
+      "category": "usage",
+      "inferred_category": "usage",
+      "expect_category": "usage",
+      "top_score": 0.5667,
+      "source_uris": [
+        "local/medicine/products/azのどスプレータイヨー-大洋製薬.md",
+        "local/medicine/products/azプラスcpcのどスプレー-ダイヤ製薬.md",
+        "local/medicine/products/bbジェットde-アース製薬.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-polite-ix-alcohol",
+      "suite": "broad",
+      "style": "polite",
+      "query": "本日解熱剤を服用いたしましたが、今夜は少量のお酒をいただく予定でございます。併用は如何いたしましょうか。",
+      "retrieval_query": "本日解熱剤を服用いたしましたが、今夜は少量のお酒をいただく予定でございます。併用は如何いたしましょうか。",
+      "category": "interaction",
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/アセトアミノフェン-アルコール.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "broad-polite-se-rash",
+      "suite": "broad",
+      "style": "polite",
+      "query": "ご推奨の医薬品を服用したところ、強い眠気を感じるのですが、一般的な症状でしょうか。",
+      "retrieval_query": "ご推奨の医薬品を服用したところ、強い眠気を感じるのですが、一般的な症状でしょうか。 推奨医薬品: ロキソニン",
+      "category": "side_effect",
+      "inferred_category": "side_effect",
+      "expect_category": "side_effect",
+      "top_score": 0.88,
+      "source_uris": [
+        "local/medicine/side_effects/ロキソプロフェン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "gpt-gpt-ctx-ix-anaphora-超省略の若者言葉",
+      "suite": "gpt_conversation",
+      "style": "超省略の若者言葉",
+      "template_id": "gpt-ctx-ix-anaphora",
+      "query": "それ、抗凝固薬と併用して大丈夫？",
+      "retrieval_query": "それ、抗凝固薬と併用して大丈夫? 会話文脈: ロキソプロフェン 直前: ロキソプロフェンを処方されています",
+      "history_turns": 2,
+      "context_enriched": true,
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.7475,
+      "source_uris": [
+        "local/medicine/interactions/メトトレキサート-ロキソプロフェン.md",
+        "local/medicine/interactions/リチウム-ロキソプロフェン.md",
+        "local/medicine/interactions/ロキソプロフェン-ワーファリン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "gpt-gpt-ctx-ix-anaphora-関西弁",
+      "suite": "gpt_conversation",
+      "style": "関西弁",
+      "template_id": "gpt-ctx-ix-anaphora",
+      "query": "それと一緒に飲んだらあかん薬、あったりするん？",
+      "retrieval_query": "それと一緒に飲んだらあかん薬、あったりするん? 会話文脈: ロキソプロフェン 直前: ロキソプロフェンを処方されています",
+      "history_turns": 2,
+      "context_enriched": true,
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.7475,
+      "source_uris": [
+        "local/medicine/interactions/メトトレキサート-ロキソプロフェン.md",
+        "local/medicine/interactions/リチウム-ロキソプロフェン.md",
+        "local/medicine/interactions/ロキソプロフェン-ワーファリン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "gpt-gpt-ctx-ix-anaphora-英語混じり",
+      "suite": "gpt_conversation",
+      "style": "英語混じり",
+      "template_id": "gpt-ctx-ix-anaphora",
+      "query": "それと併用しても大丈夫ですか？",
+      "retrieval_query": "それと併用しても大丈夫ですか? 会話文脈: ロキソプロフェン 直前: ロキソプロフェンを処方されています",
+      "history_turns": 2,
+      "context_enriched": true,
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.7475,
+      "source_uris": [
+        "local/medicine/interactions/メトトレキサート-ロキソプロフェン.md",
+        "local/medicine/interactions/リチウム-ロキソプロフェン.md",
+        "local/medicine/interactions/ロキソプロフェン-ワーファリン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "gpt-gpt-ctx-ix-two-turn-スラング混じり",
+      "suite": "gpt_conversation",
+      "style": "スラング混じり",
+      "template_id": "gpt-ctx-ix-two-turn",
+      "query": "それ、昼も飲んだほうがいいの？",
+      "retrieval_query": "それ、昼も飲んだほうがいいの? 会話文脈: アスピリン, 朝バファリン飲んだ 直前: 朝バファリン飲んだ",
+      "history_turns": 2,
+      "context_enriched": true,
+      "inferred_category": "usage",
+      "expect_category": "interaction",
+      "top_score": 0.7828,
+      "source_uris": [
+        "local/medicine/products/バイエルアスピリン-バイエル薬品.md",
+        "local/medicine/products/バッサニンエース-武田テバファーマ.md",
+        "local/medicine/products/バッサミンaミニ-武田テバファーマ.md"
+      ],
+      "prefix_pass": false,
+      "score_pass": true,
+      "category_pass": false,
+      "pass": false
+    },
+    {
+      "id": "gpt-gpt-ctx-ix-two-turn-敬語",
+      "suite": "gpt_conversation",
+      "style": "敬語",
+      "template_id": "gpt-ctx-ix-two-turn",
+      "query": "それと一緒に飲んで大丈夫な薬はありますか？",
+      "retrieval_query": "それと一緒に飲んで大丈夫な薬はありますか? 会話文脈: アスピリン, 朝バファリン飲んだ 直前: 朝バファリン飲んだ",
+      "history_turns": 2,
+      "context_enriched": true,
+      "inferred_category": "interaction",
+      "expect_category": "interaction",
+      "top_score": 0.95,
+      "source_uris": [
+        "local/medicine/interactions/ace阻害薬-アスピリン.md",
+        "local/medicine/interactions/アスピリン-イブプロフェン.md",
+        "local/medicine/interactions/アスピリン-メトトレキサート.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "gpt-gpt-ctx-se-followup-方言",
+      "suite": "gpt_conversation",
+      "style": "方言",
+      "template_id": "gpt-ctx-se-followup",
+      "query": "その薬を飲んだら、どんな副作用が出るか心配なんやけど、どうなん？",
+      "retrieval_query": "その薬を飲んだら、どんな副作用が出るか心配なんやけど、どうなん? 直前: 頭痛がつらい ロキソニン 推奨医薬品: ロキソニン",
+      "history_turns": 2,
+      "context_enriched": true,
+      "inferred_category": "side_effect",
+      "expect_category": "side_effect",
+      "top_score": 0.88,
+      "source_uris": [
+        "local/medicine/side_effects/ロキソプロフェン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "gpt-gpt-ctx-se-followup-SNS省略",
+      "suite": "gpt_conversation",
+      "style": "SNS省略",
+      "template_id": "gpt-ctx-se-followup",
+      "query": "その薬を飲んだ後に副作用はありましたか？",
+      "retrieval_query": "その薬を飲んだ後に副作用はありましたか? 直前: 頭痛がつらい ロキソニン 推奨医薬品: ロキソニン",
+      "history_turns": 2,
+      "context_enriched": true,
+      "inferred_category": "side_effect",
+      "expect_category": "side_effect",
+      "top_score": 0.88,
+      "source_uris": [
+        "local/medicine/side_effects/ロキソプロフェン.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "gpt-gpt-ctx-us-meal-超省略",
+      "suite": "gpt_conversation",
+      "style": "超省略",
+      "template_id": "gpt-ctx-us-meal",
+      "query": "それの用法はどうなっていますか？",
+      "retrieval_query": "それの用法はどうなっていますか? 会話文脈: アセトアミノフェン 直前: カロナールAについて教えて カロナールA 推奨医薬品: カロナールA",
+      "history_turns": 2,
+      "context_enriched": true,
+      "inferred_category": "usage",
+      "expect_category": "usage",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/products/カロナールa-第一三共.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "gpt-gpt-ctx-us-meal-英語混じり",
+      "suite": "gpt_conversation",
+      "style": "英語混じり",
+      "template_id": "gpt-ctx-us-meal",
+      "query": "それはどのように使うんですか？",
+      "retrieval_query": "それはどのように使うんですか? 会話文脈: アセトアミノフェン 直前: カロナールAについて教えて カロナールA 推奨医薬品: カロナールA",
+      "history_turns": 2,
+      "context_enriched": true,
+      "inferred_category": "",
+      "expect_category": "usage",
+      "top_score": 0.8194,
+      "source_uris": [
+        "local/medicine/interactions/アセトアミノフェン-アルコール.md",
+        "local/medicine/interactions/テオフィリン-トリメトキノール塩酸塩水和物.md",
+        "local/medicine/interactions/アセトアミノフェン-フェニトイン.md"
+      ],
+      "prefix_pass": false,
+      "score_pass": true,
+      "category_pass": false,
+      "pass": false
+    },
+    {
+      "id": "gpt-gpt-ctx-age-child-カジュアル",
+      "suite": "gpt_conversation",
+      "style": "カジュアル",
+      "template_id": "gpt-ctx-age-child",
+      "query": "その薬は何歳から使えるの？",
+      "retrieval_query": "その薬は何歳から使えるの? 会話文脈: 小児 直前: うちの子小学3年生です",
+      "history_turns": 2,
+      "context_enriched": true,
+      "inferred_category": "age",
+      "expect_category": "age",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/topics/age-restriction-guide.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "gpt-gpt-ctx-age-child-関西弁",
+      "suite": "gpt_conversation",
+      "style": "関西弁",
+      "template_id": "gpt-ctx-age-child",
+      "query": "その薬、何歳から使えるん？",
+      "retrieval_query": "その薬、何歳から使えるん? 会話文脈: 小児 直前: うちの子小学3年生です",
+      "history_turns": 2,
+      "context_enriched": true,
+      "inferred_category": "age",
+      "expect_category": "age",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/topics/age-restriction-guide.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    },
+    {
+      "id": "gpt-gpt-ctx-dop-event-若者言葉",
+      "suite": "gpt_conversation",
+      "style": "若者言葉",
+      "template_id": "gpt-ctx-dop-event",
+      "query": "その薬、ほんとに効くの？ dopинг的なこと、考えなくて大丈夫？",
+      "retrieval_query": "その薬、ほんとに効くの? dopинг的なこと、考えなくて大丈夫? 会話文脈: 競技会, 来週ハーフマラソン出ます 直前: 来週ハーフマラソン出ます",
+      "history_turns": 2,
+      "context_enriched": true,
+      "inferred_category": "interaction",
+      "expect_category": "doping",
+      "top_score": 0.35,
+      "source_uris": [
+        "local/medicine/interactions/ace阻害薬-アスピリン.md",
+        "local/medicine/interactions/l-アスパラギン酸カリウム-シクロスポリン.md",
+        "local/medicine/interactions/l-アスパラギン酸カリウム-ジゴキシン.md"
+      ],
+      "prefix_pass": false,
+      "score_pass": false,
+      "category_pass": false,
+      "pass": false
+    },
+    {
+      "id": "gpt-gpt-ctx-dop-event-英語混じり",
+      "suite": "gpt_conversation",
+      "style": "英語混じり",
+      "template_id": "gpt-ctx-dop-event",
+      "query": "その大会前に使っていいあれ、どう思う？",
+      "retrieval_query": "その大会前に使っていいあれ、どう思う? 会話文脈: 競技会, 来週ハーフマラソン出ます 直前: 来週ハーフマラソン出ます 鼻薬 プソイドエフェドリン ドーピング プソイドエフェドリン オキシメトアゾリン",
+      "history_turns": 2,
+      "context_enriched": true,
+      "inferred_category": "doping",
+      "expect_category": "doping",
+      "top_score": 0.86,
+      "source_uris": [
+        "local/medicine/doping/pseudoephedrine.md"
+      ],
+      "prefix_pass": true,
+      "score_pass": true,
+      "category_pass": true,
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,1112 @@
+[
+  {
+    "product_name": "ストッパ下痢止めEX",
+    "manufacturer": "ライオン",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "ストッパ下痢止めEX",
+    "source": "famous_csv_fill",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ハイロスラック",
+    "manufacturer": "米田薬品",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "ハイロスラック",
+    "source": "famous_csv_fill",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "新セルベール整胃プレミアム<錠>",
+    "manufacturer": "エーザイ",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "新セルベール整胃プレミアム錠",
+    "source": "famous_csv_fill",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "新セルベール整胃プレミアム<細粒>",
+    "manufacturer": "エーザイ",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 0,
+    "slug": "新セルベール整胃プレミアム細粒",
+    "source": "famous_csv_fill",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "バファリンEX",
+    "manufacturer": "ライオン",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "バファリンEX",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナロンエースR",
+    "manufacturer": "大正製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "ナロンエースR",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "リングルN300",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "リングルN300",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "リングルN",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "リングルN",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "トキワイブプロエースA",
+    "manufacturer": "常盤薬品工業",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "トキワイブプロエースA",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "エキセドリンA錠",
+    "manufacturer": "ライオン",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "エキセドリンA錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "バファリンルナJ",
+    "manufacturer": "ライオン",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "バファリンルナJ",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "イブクイック頭痛薬DX",
+    "manufacturer": "エスエス製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "イブクイック頭痛薬DX",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "イブA錠EX",
+    "manufacturer": "エスエス製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "イブA錠EX",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "バファリンA",
+    "manufacturer": "ライオン",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "バファリンA",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "小児用バファリンCII",
+    "manufacturer": "ライオン",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "小児用バファリンCII",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "イブA錠",
+    "manufacturer": "エスエス製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "イブA錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "エキセドリンプラスS",
+    "manufacturer": "ライオン",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "エキセドリンプラスS",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "バファリンプレミアムDX",
+    "manufacturer": "ライオン",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "バファリンプレミアムDX",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ロキソニンSクイック",
+    "manufacturer": "第一三共ヘルスケア",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "ロキソニンSクイック",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ロキソニンSプレミアム",
+    "manufacturer": "第一三共ヘルスケア",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "ロキソニンSプレミアム",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ロキソニンS",
+    "manufacturer": "第一三共ヘルスケア",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "ロキソニンS",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナロンエースT",
+    "manufacturer": "大正製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "ナロンエースT",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "大正トンプク",
+    "manufacturer": "大正製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "大正トンプク",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナロン顆粒",
+    "manufacturer": "大正製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "ナロン顆粒",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナロンエースプラス",
+    "manufacturer": "大正製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "ナロンエースプラス",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "アナロンゴールド内服液",
+    "manufacturer": "小林薬品工業",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "アナロンゴールド内服液",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナロンメディカル",
+    "manufacturer": "大正製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "ナロンメディカル",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナロンエースプレミアム",
+    "manufacturer": "大正製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "ナロンエースプレミアム",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナロンエース",
+    "manufacturer": "大正製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "ナロンエース",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "バファリンルナi",
+    "manufacturer": "ライオン",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "バファリンルナi",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "バファリンプレミアム",
+    "manufacturer": "ライオン",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "バファリンプレミアム",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "バファリンライト",
+    "manufacturer": "ライオン",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "バファリンライト",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "エキセドリンカプセル",
+    "manufacturer": "ライオン",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "エキセドリンカプセル",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナロン錠",
+    "manufacturer": "大正製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 0,
+    "slug": "ナロン錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "エスタックEXネオ",
+    "manufacturer": "エスエス製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "エスタックEXネオ",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックIPプレミアム錠",
+    "manufacturer": "アリナミン製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックIPプレミアム錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロンセレクトT",
+    "manufacturer": "大正製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "パブロンセレクトT",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロンメディカルC",
+    "manufacturer": "大正製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "パブロンメディカルC",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロンメディカルN",
+    "manufacturer": "大正製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "パブロンメディカルN",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロンメディカルT",
+    "manufacturer": "大正製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "パブロンメディカルT",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザエースA",
+    "manufacturer": "アリナミン製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザエースA",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザエースAゴールドW錠",
+    "manufacturer": "アリナミン製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザエースAゴールドW錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザエースA錠",
+    "manufacturer": "アリナミン製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザエースA錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックIPプラス",
+    "manufacturer": "武田コンシューマーヘルスケア",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックIPプラス",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックIPプラス錠",
+    "manufacturer": "武田コンシューマーヘルスケア",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックIPプラス錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックIPプレミアム",
+    "manufacturer": "アリナミン製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックIPプレミアム",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックL",
+    "manufacturer": "アリナミン製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックL",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ストナジェルNS",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ストナジェルNS",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックLプラス",
+    "manufacturer": "武田コンシューマーヘルスケア",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックLプラス",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックLプラス錠",
+    "manufacturer": "武田コンシューマーヘルスケア",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックLプラス錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックLプレミアム",
+    "manufacturer": "アリナミン製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックLプレミアム",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックLプレミアム錠",
+    "manufacturer": "アリナミン製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックLプレミアム錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックL錠",
+    "manufacturer": "アリナミン製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックL錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックS",
+    "manufacturer": "アリナミン製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックS",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックSプラス",
+    "manufacturer": "武田コンシューマーヘルスケア",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックSプラス",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックSプラス錠",
+    "manufacturer": "武田コンシューマーヘルスケア",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックSプラス錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックSプレミアム",
+    "manufacturer": "アリナミン製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックSプレミアム",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ベンザブロックSプレミアム錠",
+    "manufacturer": "アリナミン製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ベンザブロックSプレミアム錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロンセレクトN",
+    "manufacturer": "大正製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "パブロンセレクトN",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロンセレクトCV",
+    "manufacturer": "大正製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "パブロンセレクトCV",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロンセレクトC",
+    "manufacturer": "大正製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "パブロンセレクトC",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ストナジェルサイナスEX",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ストナジェルサイナスEX",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ストナプラスジェルS",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "ストナプラスジェルS",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロンSα<錠>",
+    "manufacturer": "大正製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 0,
+    "slug": "パブロンSα錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロン鼻炎カプセルSα",
+    "manufacturer": "大正製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "パブロン鼻炎カプセルSα",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ストナリニS",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ストナリニS",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロン点鼻クイックJL",
+    "manufacturer": "大正製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "パブロン点鼻クイックJL",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロン点鼻JL",
+    "manufacturer": "大正製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "パブロン点鼻JL",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナザールGスプレークール",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ナザールGスプレークール",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナザールGスプレー",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ナザールGスプレー",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロン鼻炎カプセルZ",
+    "manufacturer": "大正製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "パブロン鼻炎カプセルZ",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロン鼻炎カプセルSα小児用",
+    "manufacturer": "大正製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "パブロン鼻炎カプセルSα小児用",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ストナリニZ",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ストナリニZ",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ストナリニZジェル",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ストナリニZジェル",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロン点鼻EX",
+    "manufacturer": "大正製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "パブロン点鼻EX",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロン鼻炎速溶錠EX",
+    "manufacturer": "大正製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "パブロン鼻炎速溶錠EX",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナザールAR<季節性アレルギー専用>",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ナザールAR季節性アレルギー専用",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナザールαAR<季節性アレルギー専用>",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ナザールαAR季節性アレルギー専用",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ストナリニ・サット",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ストナリニサット",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロン鼻炎速溶錠",
+    "manufacturer": "大正製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "パブロン鼻炎速溶錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロン点鼻クイック",
+    "manufacturer": "大正製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "パブロン点鼻クイック",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロン点鼻",
+    "manufacturer": "大正製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "パブロン点鼻",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナザールスプレー",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ナザールスプレー",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "アレジオン20",
+    "manufacturer": "エスエス製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "アレジオン20",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ストナリニ・ガード",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ストナリニガード",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ストナリニ・サット小児用",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ストナリニサット小児用",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナザールαAR0.1%<季節性アレルギー専用>",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ナザールαAR01季節性アレルギー専用",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナザール「スプレー」《ポンプ》",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ナザールスプレーポンプ",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ナザールαAR0.1%C<季節性アレルギー専用>",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "ナザールαAR01C季節性アレルギー専用",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロン鼻炎アタックJL<季節性アレルギー専用>",
+    "manufacturer": "大正製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "パブロン鼻炎アタックJL季節性アレルギー専用",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "パブロン鼻炎アタック<季節性アレルギー専用>",
+    "manufacturer": "大正製薬",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "パブロン鼻炎アタック季節性アレルギー専用",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "アレグラFX",
+    "manufacturer": "サノフィ",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "アレグラFX",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "クラリチンEXOD錠",
+    "manufacturer": "バイエル薬品",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "クラリチンEXOD錠",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "クラリチンEX",
+    "manufacturer": "バイエル薬品",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 0,
+    "slug": "クラリチンEX",
+    "source": "famous_brand",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "イブプロフェン錠２００Ｓ",
+    "manufacturer": "奥田製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 118,
+    "slug": "イブプロフェン錠200S",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "セイヨン総合かぜ薬",
+    "manufacturer": "中外医薬生産",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 28,
+    "slug": "セイヨン総合かぜ薬",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "新スカイブブロンゴールド錠",
+    "manufacturer": "米田薬品工業",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 20,
+    "slug": "新スカイブブロンゴールド錠",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "カイゲンＡＺのどスプレー",
+    "manufacturer": "池田薬品工業",
+    "medicine_type": "外用薬（のど）",
+    "recommendation_count": 18,
+    "slug": "カイゲンAZのどスプレー",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "スカイブブロンストレート",
+    "manufacturer": "阪本漢法製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 18,
+    "slug": "スカイブブロンストレート",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "新ストナエースＧ",
+    "manufacturer": "佐藤製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 17,
+    "slug": "新ストナエースG",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "救風",
+    "manufacturer": "常盤薬品工業",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 17,
+    "slug": "救風",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "カゼンエース",
+    "manufacturer": "富山めぐみ製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 16,
+    "slug": "カゼンエース",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "新スカイブブロンゴールド微粒",
+    "manufacturer": "米田薬品工業",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 15,
+    "slug": "新スカイブブロンゴールド微粒",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "健栄のどフレッシュ",
+    "manufacturer": "健栄製薬",
+    "medicine_type": "外用薬（のど）",
+    "recommendation_count": 9,
+    "slug": "健栄のどフレッシュ",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "コーフパウダー",
+    "manufacturer": "平坂製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 9,
+    "slug": "コーフパウダー",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "第一三共胃腸薬コアブロック散剤",
+    "manufacturer": "東亜薬品",
+    "medicine_type": "胃腸薬",
+    "recommendation_count": 9,
+    "slug": "第一三共胃腸薬コアブロック散剤",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "新エスタックイブエースカプセル",
+    "manufacturer": "エスエス製薬",
+    "medicine_type": "風邪薬",
+    "recommendation_count": 9,
+    "slug": "新エスタックイブエースカプセル",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "スカイブブロンＮＡスプレー",
+    "manufacturer": "雪の元本店",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 9,
+    "slug": "スカイブブロンNAスプレー",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "グットエイドＥＸ",
+    "manufacturer": "大昭製薬",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 7,
+    "slug": "グットエイドEX",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "ジキニン鼻炎ＡＧ顆粒",
+    "manufacturer": "全薬工業",
+    "medicine_type": "鼻炎用薬",
+    "recommendation_count": 7,
+    "slug": "ジキニン鼻炎AG顆粒",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  },
+  {
+    "product_name": "クミアイ新頭痛錠",
+    "manufacturer": "佐藤薬品工業",
+    "medicine_type": "解熱鎮痛薬",
+    "recommendation_count": 6,
+    "slug": "クミアイ新頭痛錠",
+    "source": "missing_top200",
+    "official_url": "",
+    "r2_status": "pending"
+  }
+]

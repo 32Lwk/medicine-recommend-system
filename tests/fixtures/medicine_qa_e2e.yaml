@@ -1,0 +1,119 @@
+# Medicine QA E2E — Local RAG が Ask プロンプトに載ること + retrieve 品質
+scenarios:
+  - id: qa-ix-loxo-warfarin
+    query: "ロキソニンとワーファリン、併用して大丈夫？"
+    recommended_medicines: ["ロキソニン"]
+    expect_kb_block: true
+    expect_uri_prefix: medicine/interactions/
+
+  - id: qa-ix-alcohol-acet
+    query: "カロナール飲んだ後お酒は避けた方がいい？"
+    recommended_medicines: ["カロナールA"]
+    expect_kb_block: true
+    expect_uri_prefix: medicine/interactions/
+
+  - id: qa-se-drowsy
+    query: "この薬で眠くなるのは普通？"
+    recommended_medicines: ["ロキソニン"]
+    expect_kb_block: true
+    expect_uri_prefix: medicine/side_effects/
+
+  - id: qa-us-meal
+    query: "食後に飲む方がいい？"
+    recommended_medicines: ["カロナールA"]
+    expect_kb_block: true
+    expect_uri_prefix: medicine/products/
+
+  - id: qa-age-child
+    query: "小学2年生でも市販の風邪薬使える？"
+    expect_kb_block: true
+    expect_uri_prefix: medicine/topics/
+
+  - id: qa-dop-sports
+    query: "マラソン前に鼻薬使っていい？"
+    expect_kb_block: true
+    expect_uri_prefix: medicine/doping/
+
+  - id: qa-ctx-anaphora
+    query: "それ一緒に飲んでも大丈夫？"
+    conversation_history:
+      - role: user
+        content: "ロキソニンを飲んでいます"
+      - role: assistant
+        content: "承知しました"
+      - role: user
+        content: "ワーファリンも処方されています"
+    recommended_medicines: ["ロキソニン"]
+    expect_kb_block: true
+    expect_uri_prefix: medicine/interactions/
+
+  - id: qa-polite-ix
+    query: "バファリンとイブプロフェン、同日服用は問題ございませんか"
+    expect_kb_block: true
+    expect_uri_prefix: medicine/interactions/
+
+  - id: qa-enmix-ix
+    query: "aspirin and ibuprofen same day — OK?"
+    expect_kb_block: true
+    expect_uri_prefix: medicine/interactions/
+
+  - id: qa-side-stomach
+    query: "イブプロフェンで胃がむかむかする副作用ある？"
+    expect_kb_block: true
+    expect_uri_prefix: medicine/side_effects/
+
+  - id: qa-cmp-diff
+    query: "ロキソニンとイブの違いって何？"
+    recommended_medicines: ["ロキソニン", "イブ"]
+    expect_kb_block: true
+    expect_uri_prefix: medicine/products/
+
+  - id: qa-photo-loxo
+    query: "ロキソニンの写真見せて"
+    recommended_medicines: ["ロキソニン"]
+    expect_kb_block: false
+
+  - id: qa-ingredient
+    query: "カロナールの成分は？"
+    recommended_medicines: ["カロナールA"]
+    expect_kb_block: true
+    expect_uri_prefix: medicine/products/
+
+  - id: qa-age-loxo
+    query: "ロキソニンは何歳から？"
+    recommended_medicines: ["ロキソニン"]
+    expect_kb_block: true
+    expect_uri_prefix: medicine/products/
+
+  - id: qa-cmp-pick
+    query: "ロキソニンとイブどっちがいい？"
+    recommended_medicines: ["ロキソニン", "イブ"]
+    expect_kb_block: true
+    expect_uri_prefix: medicine/products/
+    expect_focuses: ["comparison"]
+
+  - id: qa-mixed-se-photo
+    query: "ロキソニンの副作用と写真見せて"
+    recommended_medicines: ["ロキソニン"]
+    expect_kb_block: true
+    expect_uri_prefix: medicine/
+    expect_focuses: ["product_image", "side_effect"]
+    expect_unified_route: true
+
+  - id: qa-ing-only
+    query: "イブプロフェンの副作用は？"
+    expect_kb_block: true
+    expect_uri_prefix: medicine/side_effects/
+    expect_focuses: ["side_effect"]
+
+  - id: qa-clarify-this
+    query: "この薬の用法は？"
+    expect_clarify: true
+    expect_kb_block: false
+
+  - id: qa-side-pure
+    query: "ロキソニンって眠い？"
+    expect_side_effect_route: true
+    expect_unified_route: false
+    expect_kb_block: true
+    expect_uri_prefix: medicine/side_effects/

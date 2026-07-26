@@ -183,13 +183,52 @@ def _dispatch_physical(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
 
     try:
         from config.llm_flags import is_medicine_side_effect_qa_enabled
-        from src.services.medicine_qa_routing import is_medicine_information_question
+        from src.services.medicine_qa_routing import (
+            get_medicine_qa_session_context,
+            infer_medicine_qa_focuses,
+            is_medicine_information_question,
+            should_use_medicine_qa_unified,
+        )
         from src.services.medicine_side_effect_routing import is_medicine_side_effect_route
+
+        qa_ctx = get_medicine_qa_session_context(ctx.session, ctx.sid)
+        focuses = infer_medicine_qa_focuses(
+            user_msg,
+            conversation_history=qa_ctx["conversation_history"],
+            recommended_medicines=qa_ctx["recommended_medicines"],
+            user_attributes=qa_ctx["user_attributes"],
+        )
+        if sub == "medicine_qa" or is_medicine_information_question(
+            user_msg,
+            conversation_history=qa_ctx["conversation_history"],
+            recommended_medicines=qa_ctx["recommended_medicines"],
+        ):
+            from src.handlers.chat.medicine_context_handlers import (
+                handle_medicine_information_qa,
+            )
+
+            return handle_medicine_information_qa(
+                ctx.session,
+                ctx.client_info,
+                ctx.sid,
+                ctx.original_user_message or user_msg,
+            )
 
         side_effect_ok = is_medicine_side_effect_qa_enabled(ctx.sid) and (
             sub == "medicine_side_effect_qa" or is_medicine_side_effect_route(user_msg)
         )
         if side_effect_ok:
+            if should_use_medicine_qa_unified(focuses, user_message=user_msg):
+                from src.handlers.chat.medicine_context_handlers import (
+                    handle_medicine_information_qa,
+                )
+
+                return handle_medicine_information_qa(
+                    ctx.session,
+                    ctx.client_info,
+                    ctx.sid,
+                    ctx.original_user_message or user_msg,
+                )
             from src.handlers.chat.medicine_side_effect_handlers import (
                 handle_medicine_side_effect_qa,
             )
@@ -202,22 +241,6 @@ def _dispatch_physical(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
             )
     except ImportError:
         pass
-
-    medicine_qa_ok = sub == "medicine_qa" or (
-        sub in (None, "", "rule_based_recommend")
-        and is_medicine_information_question(user_msg)
-    )
-    if medicine_qa_ok:
-        from src.handlers.chat.medicine_context_handlers import (
-            handle_medicine_information_qa,
-        )
-
-        return handle_medicine_information_qa(
-            ctx.session,
-            ctx.client_info,
-            ctx.sid,
-            ctx.original_user_message or user_msg,
-        )
 
     ctx_route = resolve_medicine_context_route(
         ctx.session,

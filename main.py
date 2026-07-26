@@ -191,6 +191,12 @@ async def _app_lifespan(app: FastAPI):
             ensure_product_index()
         except Exception as idx_err:
             logger.warning("Startup product index warmup skipped: %s", idx_err)
+        try:
+            from src.services.local_rag_retrieve import warmup_local_rag_index
+
+            warmup_local_rag_index()
+        except Exception as rag_err:
+            logger.warning("Startup local RAG warmup skipped: %s", rag_err)
     except Exception as e:
         logger.warning(
             "⚠️ Database startup unexpected error: %s. Feedback features will be disabled.",

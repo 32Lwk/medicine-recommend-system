@@ -12641,3 +12641,11 @@
 {"timestamp": "2026-07-25T12:16:36.976367", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブの違いって何？"}}
 {"timestamp": "2026-07-25T12:21:20.193215", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-25T12:21:20.193456", "event_type": "input_validation", "user_id": "ユーザー15", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブの違いって何？"}}
+{"timestamp": "2026-07-26T12:26:23.260985", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-26T12:26:23.261392", "event_type": "input_validation", "user_id": "ユーザー10", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブの違いって何？"}}
+{"timestamp": "2026-07-26T12:27:28.690390", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-26T12:27:28.690950", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブどっちがいい？"}}
+{"timestamp": "2026-07-26T12:28:09.610587", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-26T12:28:09.610863", "event_type": "input_validation", "user_id": "ユーザー10", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブの画像見せて"}}
+{"timestamp": "2026-07-26T12:36:10.744627", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-26T12:36:10.744849", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "カロナールの画像を見せて"}}

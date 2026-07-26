@@ -10,6 +10,7 @@ from src.handlers.line.flex_messages import (
     PRIMARY,
     SCORE_LOW,
     SCORE_MEDIUM,
+    _extract_qa_hero_url,
     build_consolidated_medicines_lines,
     build_line_messages_from_bot_message,
     html_to_plain_text,
@@ -62,6 +63,35 @@ def _success_bot_message() -> dict:
             "doctor_consultation": "",
         },
     }
+
+
+def test_qa_flex_uses_product_image_hero():
+    diagnosis = {
+        "render": "sage_qa",
+        "variant": "info",
+        "title": "医薬品相談",
+        "message": "ロキソニンのパッケージです。",
+        "sections": [
+            {
+                "title": "製品画像",
+                "html": (
+                    '<div class="ui-qa-product-images">'
+                    '<img src="https://cdn.example/loxo.png" alt="ロキソニン">'
+                    "</div>"
+                ),
+            }
+        ],
+    }
+    assert _extract_qa_hero_url(diagnosis) == "https://cdn.example/loxo.png"
+    bot = {"type": "bot", "content": "sage_qa", "diagnosis": diagnosis}
+    messages = build_line_messages_from_bot_message(bot)
+    assert messages
+    flex = messages[0]
+    assert flex["type"] == "flex"
+    hero = flex["contents"].get("hero")
+    assert hero is not None
+    assert hero["type"] == "image"
+    assert hero["url"] == "https://cdn.example/loxo.png"
 
 
 def test_truncate_text():

@@ -1,0 +1,152 @@
+# Local RAG 多様表現 eval（敬語・方言・英語混じり・省略・長文）
+# 公式/言い換え fixture とは別 ID。style タグはレポート集計用。
+
+scenarios:
+  # --- 敬語・丁寧語 ---
+  - id: polite-ix-warfarin
+    style: polite
+    query: "ロキソニンを服用中なのですが、ワーファリンとの併用は問題ございませんでしょうか。"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: polite-se-drowsy
+    style: polite
+    query: "推奨いただいた解熱鎮痛薬で、強い眠気が生じるのは一般的でしょうか。"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+    recommended_medicines: ["ロキソニン"]
+
+  - id: polite-us-meal
+    style: polite
+    query: "カロナールは食後に服用した方がよろしいでしょうか。"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+    recommended_medicines: ["カロナールA"]
+
+  - id: polite-age-child
+    style: polite
+    query: "小学二年の子どもに市販の風邪薬を使用してもよろしいでしょうか。"
+    expect_category: age
+    expected_source_prefix: medicine/topics/
+
+  - id: polite-dop-event
+    style: polite
+    query: "来週の競技会前に点鼻薬を使用することは禁止でしょうか。"
+    expect_category: doping
+    expected_source_prefix: medicine/doping/
+
+  # --- 関西・方言風 ---
+  - id: dialect-ix-aspirin-ibu
+    style: dialect
+    query: "バファリンとイブ、一緒に飲んだらあかんの？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: dialect-se-stomach
+    style: dialect
+    query: "イブプロフェン飲んだらお腹がキツうなったわ、しゃーないの？"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+
+  - id: dialect-us-water
+    style: dialect
+    query: "水なしで飲んでもええん？"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+
+  - id: dialect-age-elder
+    style: dialect
+    query: "うちのバアさん80超えやけど、イブ系使うのどうなん？"
+    expect_category: age
+    expected_source_prefix: medicine/topics/
+
+  # --- 英語混じり ---
+  - id: enmix-ix-alcohol
+    style: english_mix
+    query: "Tylenol飲んだ後にbeer 1杯、mixしてもOK？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: enmix-ix-nsaid
+    style: english_mix
+    query: "aspirinとLoxonin、same dayにtakeしたらダメ？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: enmix-se-drowsy
+    style: english_mix
+    query: "このantihistamineでdrowsyになるのnormal？"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+    recommended_medicines: ["アレグラ"]
+
+  - id: enmix-us-interval
+    style: english_mix
+    query: "解熱剤、4 hours以内にagain飲んでもfine？"
+    expect_category: usage
+    expected_source_prefix: medicine/topics/
+
+  - id: enmix-dop-marathon
+    style: english_mix
+    query: "marathon前にnasal spray、doping out？"
+    expect_category: doping
+    expected_source_prefix: medicine/doping/
+
+  # --- 超省略・SNS 文体 ---
+  - id: terse-ix-two
+    style: terse
+    query: "ロキソ＋ワーファリン 併用ヤバ？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: terse-se-sleep
+    style: terse
+    query: "痛み止めで眠くなる 普通？"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+    recommended_medicines: ["ロキソニン"]
+
+  - id: terse-us-dose
+    style: terse
+    query: "風邪薬 1日max何錠"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+
+  # --- 長文・背景説明 ---
+  - id: verbose-ix-ssri
+    style: verbose
+    query: "うちの父がSSRIをずっと飲んでいるんですが、風邪で咳が出て咳止めを買おうか迷っています。デキストロメトルファン系と一緒に使うのは避けた方がいいのでしょうか。"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: verbose-age-grandma
+    style: verbose
+    query: "85歳で腎機能も少し落ちている母なのですが、市販のイブプロフェン系解熱剤は避けた方がよいか教えてください。"
+    expect_category: age
+    expected_source_prefix: medicine/topics/
+
+  - id: verbose-dop-student
+    style: verbose
+    query: "高校の陸上部で県大会があるのですが、鼻づまりがひどくて市販の鼻薬を使いたいです。禁止成分に当たりませんか。"
+    expect_category: doping
+    expected_source_prefix: medicine/doping/
+
+  # --- 質問形バリエーション ---
+  - id: qform-ix-caffeine
+    style: question_form
+    query: "エナドリと麻黄って心臓に悪くない？"
+    expect_category: interaction
+    expected_source_prefix: medicine/interactions/
+
+  - id: qform-se-nausea
+    style: question_form
+    query: "NSAIDでむかむかする人っている？"
+    expect_category: side_effect
+    expected_source_prefix: medicine/side_effects/
+
+  - id: qform-us-empty
+    style: question_form
+    query: "頭痛薬空腹時に飲むのと食後どっちがいい？"
+    expect_category: usage
+    expected_source_prefix: medicine/products/
+    recommended_medicines: ["カロナールA"]

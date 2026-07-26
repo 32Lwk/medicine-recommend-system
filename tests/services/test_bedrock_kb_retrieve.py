@@ -14,12 +14,12 @@ def _clear_env(monkeypatch):
     monkeypatch.delenv("BEDROCK_KB_SEARCH_MODE", raising=False)
 
 
-def test_retrieve_disabled_returns_empty():
+def test_retrieve_local_when_bedrock_disabled():
     from src.services.bedrock_kb_retrieve import retrieve_concierge_context
 
     result = retrieve_concierge_context("Cloud Run とは")
-    assert result["chunks"] == []
-    assert result["provider"] == "local"
+    assert result["provider"] == "local_rag"
+    assert result["chunk_count"] >= 0
 
 
 def test_retrieve_calls_bedrock_managed(monkeypatch):

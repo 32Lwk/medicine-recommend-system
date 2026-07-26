@@ -26,6 +26,9 @@ def build_chat_response_inner_html(chat_response: Dict[str, Any]) -> str:
         "<h4>💬 医薬品相談回答</h4>",
         f'<p class="qa-answer"><strong>回答:</strong><br><span class="streaming-qa-answer">{answer_text}</span></p>',
     ]
+    product_images = str(chat_response.get("product_images_html") or "").strip()
+    if product_images:
+        parts.append(f'<div class="qa-section qa-product-images">{product_images}</div>')
     if medicine_details:
         parts.append(
             '<div class="qa-section qa-medicine-details" style="margin-top: 15px; padding: 10px; background: #e3f2fd; border-radius: 5px;">'

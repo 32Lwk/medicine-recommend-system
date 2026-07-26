@@ -1,6 +1,74 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月26日**（PMDA OTC Cloud 完走・KB re-ingest・orphans クローズ）
+**最終更新日: 2026年7月26日**（Medicine QA ロバストネス・Local RAG・日常表現 routing）
+
+---
+
+## 2026年7月26日 — Medicine QA ロバストネス・Local RAG・文脈 routing
+
+### 概要
+
+医薬品 Q&A の **日常口語・方言・指示語 follow-up・複合 intent** に耐える routing を一般化。Local RAG（BM25 + 文脈 query）と multi-focus retrieve を統合し、**固定 eval 43/43・GPT 会話 + LLM stress 含む 75 問中 74+ PASS** を達成。
+
+### Medicine QA routing（`medicine_qa_routing.py`）
+
+| 領域 | 内容 |
+|------|------|
+| エンティティ解決 | 通称・略称・成分・履歴・推奨を `_resolve_medicine_entities` で統合 |
+| 比較 intent | 現発話ベースの `_distinct_brand_count`（履歴 2 剤による指示語 follow-up 誤比較を防止） |
+| 併用 intent | アルコール（ワイン/ビール等）+ 文脈 suitability（`_has_interaction_intent`） |
+| 用法 intent | 頻度・「どのくらい」+ 指示語 follow-up（副作用因果「飲むと眠い」と分離） |
+| 年齢 / ドーピング | 履歴 slot（小学 N 年 / マラソン）+ 可否確認 |
+| 効き目+副作用 | 推奨文脈の複合質問 → unified `medicine_qa` |
+| 情報質問 gate | focus 特定 + 文脈 slot で entity なしも通過（指示語のみ・履歴なしは clarify 維持） |
+| LLM 補完 | `medicine_qa_focus_llm.py` — `MEDICINE_QA_FOCUS_LLM=1` 時、rule が `general` のみなら LLM で focus 推定 |
+
+**ハイブリッド arbitration**（変更なしの原則）: 単独副作用 → `medicine_side_effect_qa` / 複合・比較・写真等 → `medicine_qa`
+
+詳細: [`docs/dev/MEDICINE_QA_ROUTING.md`](docs/dev/MEDICINE_QA_ROUTING.md)
+
+### Local RAG（Phase A–C）
+
+| コンポーネント | 役割 |
+|----------------|------|
+| `local_rag_retrieve.py` | BM25 + 任意 hybrid embed retrieve |
+| `local_rag_context.py` | 会話履歴から substance / query rewrite |
+| `local_rag_query.py` | 口語正規化・カテゴリ推論（文脈 weight） |
+| `local_rag_router.py` | QA focus → RAG category 橋渡し、multi-doc |
+| `bedrock_kb_retrieve.py` | provider 切替 + `qa_focuses` KB 注入 |
+
+**GO 条件（2026-07-26 検証）**
+
+| 評価 | 結果 |
+|------|------|
+| Medicine KB local | 20/20 |
+| paraphrase | 19/19 |
+| diverse + context | 52/52 |
+| broad | 28/28 |
+| Medicine QA E2E | 19/19 |
+| **Robustness 固定** | **43/43** |
+| **Robustness + GPT + LLM stress** | **74/75 (98.7%)** |
+| routing pytest | 180 passed |
+| retrieve P95 | 286ms |
+
+詳細: [`docs/ops/LOCAL_RAG.md`](docs/ops/LOCAL_RAG.md) / `log/analysis/verify_medicine_qa_rag_20260726.md`
+
+### 新規 eval / fixture
+
+| スクリプト | 内容 |
+|------------|------|
+| `scripts/eval_medicine_qa_robustness.py` | 日常表現 31 + 文脈 12 + 任意 GPT 会話 + `--with-llm-stress` |
+| `scripts/eval_medicine_qa_e2e.py` | Medicine QA 配線 E2E 19 問 |
+| `scripts/eval_local_rag_*.py` | paraphrase / diverse / broad / e2e |
+| `scripts/run_local_rag_eval.sh` | 一括 eval（CodeBuild 連携） |
+
+Fixtures: `tests/fixtures/medicine_qa_everyday_eval.yaml`, `medicine_qa_gpt_conversation.yaml`, `local_rag_*`
+
+### UI / 配線
+
+- `medicine_qa_html.py` / `chat_medicine_qa_html.py` — 製品写真・multi-focus セクション
+- `flex_messages.py` — LINE Flex QA hero
+- `dispatcher.py` / `chat_post_pipeline.py` — session 文脈付き focus 推定
 
 ---
 

@@ -29,17 +29,20 @@ log
 tests
 test_snapshots
 test_report.html
-# scripts は開発用が大半のため除外。Docker ビルドメタ生成のみ許可
+# scripts は開発用が大半のため除外。Docker ビルドメタ / local RAG 生成のみ許可
 scripts/*
 !scripts/write_build_meta.py
 !scripts/write_changelog_digest.py
+!scripts/build_medicine_kb_documents.py
 
-# ドキュメント（Concierge 用の public/ と concierge/ のみ Dockerfile で COPY）
+# ドキュメント（Concierge / public / ops のみ Dockerfile で COPY）
 docs/**
 !docs/public/
 !docs/public/**
 !docs/concierge/
 !docs/concierge/**
+!docs/ops/
+!docs/ops/**
 
 # デプロイ設定（コンテナ内不要）
 render.yaml

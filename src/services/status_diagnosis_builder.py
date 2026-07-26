@@ -353,6 +353,23 @@ def build_qa_status(
     )
 
 
+def build_ambiguous_medicine_clarification_status(
+    *,
+    feedback_context: dict[str, Any] | None = None,
+) -> StatusDiagnosisV1:
+    """製品特定不能時の Clarify。"""
+    return build_qa_status(
+        answer="どのお薬についてのご質問か、製品名を教えていただけますか。",
+        sections=[
+            StatusSection(
+                title="確認",
+                items=["例：ロキソニン、カロナール、先ほどの推奨の1番目 など"],
+            )
+        ],
+        feedback_context=feedback_context,
+    )
+
+
 def build_qa_from_chat_response(
     chat_response: dict[str, Any],
     *,
@@ -365,13 +382,15 @@ def build_qa_from_chat_response(
         )
     from src.services.medicine_qa_routing import (
         prune_qa_response,
-        section_title_for_focus,
+        section_title_for_focuses,
     )
     from src.services.text_formatter import safe_format_qa_html
 
     user_message = str((feedback_context or {}).get("user_message") or "")
     pruned = prune_qa_response(chat_response, user_message)
-    focus = str(pruned.get("qa_focus") or "general")
+    focuses = pruned.get("qa_focuses") or [str(pruned.get("qa_focus") or "general")]
+    if isinstance(focuses, str):
+        focuses = [focuses]
     section_map = [
         ("medicine_details", "医薬品の詳細"),
         ("interactions", "相互作用の注意"),
@@ -380,11 +399,18 @@ def build_qa_from_chat_response(
         ("consultation_advice", "相談アドバイス"),
     ]
     sections: list[StatusSection] = []
+    product_images_html = str(chat_response.get("product_images_html") or "").strip()
+    if product_images_html:
+        sections.append(StatusSection(title="製品画像", html=product_images_html))
     for key, default_title in section_map:
         val = pruned.get(key)
         if val and str(val).strip():
-            title = section_title_for_focus(focus, key, default_title)
-            body_html = safe_format_qa_html(str(val).strip())
+            title = section_title_for_focuses(focuses, key, default_title)
+            raw = str(val).strip()
+            if raw.startswith("<") and ">" in raw:
+                body_html = raw
+            else:
+                body_html = safe_format_qa_html(raw)
             if body_html:
                 sections.append(StatusSection(title=title, html=body_html))
     return build_qa_status(
