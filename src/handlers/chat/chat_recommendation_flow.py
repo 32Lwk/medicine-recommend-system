@@ -3176,5 +3176,12 @@ def run_recommendation_flow(
     from src.services.line_memory_jobs import maybe_schedule_line_episode_summary
 
     maybe_schedule_line_episode_summary(session, sid, locals().get("bot_response"))
-    message_count = len(session.get('messages', []))
+    if sid:
+        updated = get_session_from_db(sid) or {}
+        message_count = len(updated.get("messages", []))
+        # DB 未保存のフォールバック経路（LINE は messages を保持したまま）
+        if not message_count:
+            message_count = len(session.get("messages", []))
+    else:
+        message_count = len(session.get("messages", []))
     return build_success_response(session, message_count)

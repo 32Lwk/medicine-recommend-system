@@ -79,6 +79,7 @@ class LogEntry:
     severity: str
     text: str
     http: Optional[Dict[str, Any]] = None
+    json_payload: Optional[Dict[str, Any]] = None
     labels: Dict[str, str] = field(default_factory=dict)
     resource: Dict[str, Any] = field(default_factory=dict)
     log_name: str = ""
@@ -87,11 +88,24 @@ class LogEntry:
 
     @classmethod
     def from_gcp(cls, raw: Dict[str, Any]) -> "LogEntry":
+        text = raw.get("textPayload", "") or ""
+        json_payload = raw.get("jsonPayload")
+        if not isinstance(json_payload, dict):
+            json_payload = None
+        # Cloud Run は structured_logger の JSON を jsonPayload のみに載せることがある。
+        if not text.strip() and json_payload:
+            if json_payload.get("log_type"):
+                text = json.dumps(
+                    json_payload, ensure_ascii=False, separators=(",", ":")
+                )
+            elif isinstance(json_payload.get("message"), str):
+                text = json_payload["message"]
         return cls(
             timestamp=raw.get("timestamp", ""),
             severity=raw.get("severity", "DEFAULT"),
-            text=raw.get("textPayload", "") or "",
+            text=text,
             http=raw.get("httpRequest"),
+            json_payload=json_payload,
             labels=dict(raw.get("labels") or {}),
             resource=dict(raw.get("resource") or {}),
             log_name=raw.get("logName", ""),
@@ -260,6 +274,11 @@ def _extract_multiline_json_objects(entries: Sequence[LogEntry]) -> List[Dict[st
     depth = 0
 
     for entry in entries:
+        jp = entry.json_payload
+        if isinstance(jp, dict) and jp.get("log_type"):
+            objects.append(dict(jp))
+            continue
+
         stripped = entry.text.rstrip("\n").strip()
         if not stripped:
             continue

@@ -230,3 +230,41 @@ def test_extract_intent_router_logs(tmp_path: Path) -> None:
 
     sessions = extract_user_sessions(entries, max_counseling=5)
     assert sessions["intent_router"]["shadow_total"] == 1
+
+
+def test_counseling_detail_json_payload_only(tmp_path: Path) -> None:
+    """Cloud Run が textPayload 空・jsonPayload のみで structured log を出すケース。"""
+    payload = [
+        {
+            "timestamp": "2026-07-26T04:47:31.028596Z",
+            "severity": "INFO",
+            "textPayload": "",
+            "jsonPayload": {
+                "log_type": "counseling_detail",
+                "timestamp": "2026-07-26T04:47:31.028596",
+                "session_id": "1785041219977707431124",
+                "user_input": "やあこんにちは",
+                "response": "やあ、こんにちは！市販薬の相談窓口です。",
+                "conversation_history": [],
+            },
+            "resource": {
+                "type": "cloud_run_revision",
+                "labels": {"service_name": "medicine-recommend-dev"},
+            },
+        },
+    ]
+    path = tmp_path / "json_payload_only.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    entries = load_gcp_log_entries(path)
+    assert entries[0].text.startswith('{"log_type":"counseling_detail"')
+
+    objs = _extract_multiline_json_objects(entries)
+    counseling = [o for o in objs if o.get("log_type") == "counseling_detail"]
+    assert len(counseling) == 1
+    assert counseling[0]["response"].startswith("やあ、こんにちは")
+
+    sessions = extract_user_sessions(entries, max_counseling=10)
+    assert sessions["counseling_detail_count"] == 1
+    turn = sessions["session_conversations"]["sessions"][0]["turns"][0]
+    assert turn["response_missing"] is False
+    assert "やあ、こんにちは" in (turn.get("response_preview") or "")
