@@ -473,10 +473,19 @@ def run_chat_post_pipeline(
             recommended_medicines=qa_ctx["recommended_medicines"],
             user_attributes=qa_ctx["user_attributes"],
         )
+        from src.services.medicine_qa_eligibility import should_route_medicine_information_qa
+
         if is_medicine_information_question(
             user_msg,
             conversation_history=qa_ctx["conversation_history"],
             recommended_medicines=qa_ctx["recommended_medicines"],
+        ) and should_route_medicine_information_qa(
+            user_msg,
+            session=session,
+            triage_result=ctx.triage_result,
+            conversation_history=qa_ctx["conversation_history"],
+            recommended_medicines=qa_ctx["recommended_medicines"],
+            client=ctx.recommendation_client,
         ):
             from src.handlers.chat.medicine_context_handlers import (
                 handle_medicine_information_qa,
@@ -566,8 +575,30 @@ def run_chat_post_pipeline(
                     ctx.original_user_message or ctx.user_message,
                 )
             )
+        if med_ctx_route == "cold_start_recommend":
+            logger.info("💊 medicine_context early: cold_start_recommend → Physical")
+            ctx.triage_result = dict(ctx.triage_result or {})
+            ctx.triage_result["category"] = "Physical"
+            ctx.triage_result["subcategory"] = "medicine_discovery"
+            session["last_triage_result"] = ctx.triage_result
+            sync_routing_context(ctx)
     except Exception:
         logger.debug("medicine_context early route skipped", exc_info=True)
+
+    from src.handlers.chat.chat_question_route import try_qa_gate_concierge_response
+
+    concierge_pre = try_qa_gate_concierge_response(
+        session,
+        client_info,
+        sid,
+        ctx.user_message,
+        ctx.sanitized_message,
+        ctx.recommendation_client,
+        triage_result=ctx.triage_result,
+        routing=ctx.routing,
+    )
+    if concierge_pre is not None:
+        return _guard_return(concierge_pre)
 
     if is_agent_enabled():
         mark_pipeline_step("before_orchestrator")
@@ -814,6 +845,21 @@ def run_chat_post_pipeline(
             )
             if unrecognized_resp is not None:
                 return _guard_return(unrecognized_resp)
+
+        from src.handlers.chat.chat_question_route import try_qa_gate_concierge_response
+
+        concierge_gate = try_qa_gate_concierge_response(
+            session,
+            client_info,
+            sid,
+            ctx.user_message,
+            ctx.sanitized_message,
+            ctx.recommendation_client,
+            triage_result=ctx.triage_result,
+            routing=ctx.routing,
+        )
+        if concierge_gate is not None:
+            return _guard_return(concierge_gate)
 
         return _guard_return(
             run_symptom_recommendation(

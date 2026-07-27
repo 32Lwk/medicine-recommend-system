@@ -7,9 +7,10 @@
     <title>{{ html_title | e }}</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico.png') }}" type="image/png" sizes="64x64">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v={{ version | e }}" media="all">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sage_terrace.css') }}?v={{ version | e }}" media="all">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}?v={{ version | e }}" media="all">
 </head>
-<body class="about-page">
+<body class="about-page" data-ui-variant="sage">
 <a class="about-skip" href="#about-main">{{ skip_to_content | e }}</a>
 <header class="about-header chat-header about-header--about about-header--site-top" role="banner">
         <div class="about-header-top">
@@ -37,7 +38,15 @@
                 {% for item in nav_entries %}
                 <li>
                     <a href="{{ item.href }}?lang={{ lang }}"
-                       {% if item.current %}aria-current="page"{% endif %}>{{ item.label | e }}</a>
+                       class="about-nav-link"
+                       aria-label="{{ item.label | e }}"
+                       title="{{ item.label | e }}"
+                       {% if item.current %}aria-current="page"{% endif %}>
+                        <span class="about-nav-link__icon" aria-hidden="true">
+                            {% with nav_id=item.id %}{% include 'about/_about_nav_icon.html' %}{% endwith %}
+                        </span>
+                        <span class="about-nav-link__label">{{ item.label | e }}</span>
+                    </a>
                 </li>
                 {% endfor %}
             </ul>

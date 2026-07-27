@@ -1,11 +1,12 @@
-# GitLab 一時移行運用（GitHub 停止中）
+# GitLab 運用（移行履歴 + デュアルリモート）
 
-**期間**: 2026-06-22 〜 GitHub アカウント [@32Lwk](https://github.com/32Lwk) 復旧まで  
-**背景**: [GITHUB_ACCOUNT_SUSPENSION_2026-06.md](./GITHUB_ACCOUNT_SUSPENSION_2026-06.md)  
 **GitLab リポジトリ**: [blank2703726/medicine-recommend](https://gitlab.com/blank2703726/medicine-recommend)  
+**GitHub リポジトリ（正本）**: [32Lwk/medicine-recommend-system](https://github.com/32Lwk/medicine-recommend-system)  
 **GCP プロジェクト番号**: `340042923793`
 
-本書は、GitHub アカウント停止に伴う **Git リモート切替** と **Cloud Build（dev のみ）の GitLab 連携** について、実施した変更・日常運用・GitHub 復旧手順をまとめたものです。
+本書は、(1) 2026-06-22〜07-07 の GitHub 停止期間中の **一時移行** の記録、(2) **現行のデュアルリモート運用**（GitHub 正本 + GitLab ミラー）をまとめたものです。
+
+> **現行運用のクイックリファレンスは §10。** §1〜9 は移行・復旧の履歴として参照用に残します。
 
 ---
 
@@ -344,6 +345,8 @@ git pull
 |------|------|
 | 2026-06-23 | 初版 — Git リモート移行、Cloud Build dev の GitLab 連携、`cloudbuild.yaml` の `$$` エスケープ、復旧手順 |
 | **2026-07-07** | **GitHub 復旧** — `git fetch origin` / `gh` が回復。停止中の 56 コミットを GitHub へ同期し、upstream を `origin/main` に復帰。`.cursor/rules/git-remote.mdc` を `alwaysApply: false` に無効化。詳細は下記「§9 復旧記録」 |
+| **2026-07-27** | **デュアルリモート整理** — GitHub / GitLab とも `main` のみに整理。旧ブランチは `backup/*` / `archive/*` タグへ退避。upstream を `origin/main` に再設定。§10 に現行運用を追記 |
+| **2026-07-27** | **GitLab CI / dev Cloud Build 停止を明記** — GitHub 復旧に伴い GitLab 側 CI・`medicine-recommend-dev-gitlab-main` は無効。GitLab はバックアップミラーのみ |
 
 ---
 
@@ -395,11 +398,90 @@ log/analysis/2026-07-02_p4a-dispatch-final_server.err.log
 
 `log/app.log` は数 GB に肥大化するため追跡対象から恒久除外。他の `log/` 成果物（jsonl・分析 md 等）は従来どおり追跡する。
 
-### 9.5 残タスク（未実施）
+### 9.5 残タスク
 
-- Cloud Build トリガーの整理（dev の GitLab / GitHub トリガー一方化、本番 GitHub トリガー確認）は §6.4 のとおり **GCP コンソールで手動対応が必要**。
-- `git-filter-repo` 未導入・ローカル Python 環境が壊れていたため `filter-branch` を使用。将来的な大規模書き換えでは `git-filter-repo` の導入を推奨。
+| 項目 | 状態 |
+|------|------|
+| Cloud Build dev の GitLab / GitHub トリガー一方化 | ✅ **完了** — GitHub 復旧に伴い GitLab トリガー・GitLab CI は停止。dev / 本番とも GitHub トリガー |
+| `git-filter-repo` 導入 | 未実施 — 大規模履歴書き換え時に検討 |
 
 ---
 
-_一時移行の正本ドキュメント。GitHub 復旧後も手順の参照用として残す。_
+## 10. 現行運用（2026-07-27〜）
+
+GitHub 復旧後、GitLab は **履歴バックアップ用ミラー** のみ。CI と dev デプロイは GitHub 側で運用する。
+
+### 10.1 リモートの役割
+
+| リモート | URL | 役割 |
+|----------|-----|------|
+| `origin` | `https://github.com/32Lwk/medicine-recommend-system.git` | **正本** — PR / Issues / `gh` / upstream / **CI・デプロイ** |
+| `gitlab` | `https://gitlab.com/blank2703726/medicine-recommend` | **バックアップミラー** — GitHub 障害時のフェイルオーバー用 |
+
+**停止済み（GitHub 復旧に伴い無効化）**:
+
+| 機能 | 状態 |
+|------|------|
+| GitLab CI（`.gitlab-ci.yml`） | **停止** — push してもパイプラインは走らない |
+| Cloud Build dev トリガー `medicine-recommend-dev-gitlab-main` | **停止** — GitLab push では dev にデプロイされない |
+| dev / 本番デプロイ | **GitHub `main` push** の Cloud Build トリガーで実行 |
+
+`.gitlab-ci.yml` はリポジトリ内に残るが、**参照用**。再開する場合は GitLab プロジェクト設定で CI を有効化する。
+
+### 10.2 日常 push
+
+```powershell
+git push origin main    # 必須 — 正本・CI・dev/本番デプロイ
+git push gitlab main    # 推奨 — バックアップミラー（CI/デプロイは走らない）
+```
+
+`git pull` は `origin/main` から取得する（upstream は `origin/main`）。
+
+```powershell
+git branch -vv   # main が [origin/main] を追跡していること
+```
+
+### 10.3 ブランチ方針
+
+| 場所 | 方針 |
+|------|------|
+| GitHub / GitLab | **`main` のみ** を常設。feature ブランチは PR マージ後に削除 |
+| 退避が必要な場合 | 削除前に `backup/*` または `archive/*` タグを作成 |
+
+**2026-07-27 時点のアーカイブタグ**（GitHub / GitLab 両方に存在）:
+
+| タグ | 元ブランチ |
+|------|-----------|
+| `backup/backup-main-before-630-split` | backup-main-before-630-split |
+| `archive/rebuild-630` | rebuild-630 |
+| `archive/feature-chat-pipeline-v2` | feature/chat-pipeline-v2 |
+| `archive/cursor-cloud-agent-1784881184486-7ikam` | cursor/cloud-agent-… |
+| `archive/store-lost-found` | store-lost-found |
+
+復元例: `git checkout -b restore archive/rebuild-630`
+
+### 10.4 CI / デプロイ（GitHub 正本）
+
+| 処理 | 実行場所 | トリガー |
+|------|---------|---------|
+| dev / 本番デプロイ | Cloud Build | GitHub `main` push |
+| PR / Actions | GitHub | GitHub イベント |
+
+ローカルで契約テストを回す場合は `pytest` を直接実行するか、`.gitlab-ci.yml` の `script:` 節を参照（GitLab CI は停止中）。
+
+### 10.5 GitLab ミラーの同期
+
+GitLab push を忘れても **CI も dev デプロイも影響しない**。ただし GitHub 障害時の復旧用に、余裕があれば `git push gitlab main` でミラーを更新しておく。
+
+### 10.6 GitHub 障害時のフェイルオーバー
+
+1. `git fetch gitlab`
+2. `git pull gitlab main`（または `git merge gitlab/main`）
+3. 作業後 `git push gitlab main`
+4. GitHub 復旧後に `git push origin main` で正本へ反映
+
+Cursor エージェント向け: [`.cursor/rules/git-remote.mdc`](../../.cursor/rules/git-remote.mdc)
+
+---
+
+_移行履歴（§1〜9）と現行運用（§10）の正本ドキュメント。_

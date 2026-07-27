@@ -415,8 +415,22 @@ class ChatOrchestrator:
         return resp
 
     def _route_physical(self, ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
+        from src.handlers.chat.chat_question_route import try_qa_gate_concierge_response
         from src.handlers.chat.chat_symptom_route import run_symptom_recommendation
         from src.services.llm_metrics import merge_into_user_info
+
+        conc = try_qa_gate_concierge_response(
+            ctx.session,
+            ctx.client_info,
+            ctx.sid,
+            ctx.user_message,
+            ctx.sanitized_message,
+            self._client,
+            triage_result=ctx.triage_result,
+            routing=getattr(ctx, "routing", None),
+        )
+        if conc is not None:
+            return conc
 
         t0 = time.time()
         result = run_symptom_recommendation(
@@ -443,6 +457,37 @@ class ChatOrchestrator:
         return result
 
     def _route_ask(self, ctx: Any) -> Optional[ResponseTuple]:
+        from src.dialogue.history import resolve_concierge_history_with_fallback
+        from src.services.medicine_qa_eligibility import MedicineQaRoute, resolve_medicine_qa_route
+
+        text = ctx.sanitized_message or ctx.user_message or ""
+        history = resolve_concierge_history_with_fallback(ctx.session, ctx.sid)
+        decision = resolve_medicine_qa_route(
+            text,
+            session=ctx.session,
+            triage_result=ctx.triage_result,
+            conversation_history=history,
+            client=self._client,
+        )
+        if decision.route == MedicineQaRoute.CONCIERGE:
+            triage = dict(ctx.triage_result or {})
+            if decision.concierge_intent:
+                triage["concierge_intent"] = decision.concierge_intent
+                triage["concierge_intent_source"] = f"qa_gate:{decision.source}"
+                ctx.triage_result = triage
+            resp = self._route_concierge(ctx, None)
+            if resp is not None:
+                return resp
+            logger.info(
+                "⏭️ QA gate Concierge 未処理 — Ask から医薬品 Q&A へは進まない sid=%s",
+                ctx.sid,
+            )
+            return None
+        elif decision.route == MedicineQaRoute.PHYSICAL:
+            ctx.triage_result = dict(ctx.triage_result or {})
+            ctx.triage_result["category"] = "Physical"
+            return self._route_physical(ctx, None)
+
         from src.handlers.chat.chat_ask_route import route_ask_category
 
         t0 = time.time()

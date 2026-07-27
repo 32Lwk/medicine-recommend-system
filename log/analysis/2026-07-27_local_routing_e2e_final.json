@@ -1,0 +1,555 @@
+{
+  "timestamp": "2026-07-27",
+  "scenarios": [
+    {
+      "id": "tech_gitlab_github_diff",
+      "category": "tech_concierge",
+      "description": "GitLab/GitHub 比較は Concierge（医薬品Q&A禁止）",
+      "passed": true,
+      "turns": [
+        {
+          "user": "GitlabとGithubの違いは？",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_architecture",
+          "render": "sage_status",
+          "concierge_intent": "architecture",
+          "elapsed_ms": 8417,
+          "bot_text": "GitHubは、主に開発者がソースコードを共有・レビュー・共同編集するためのサービスです。\n\nGitLabも同じくコード管理に使えますが、そこに加えてプロジェクト管理やCI/CDまでまとめて使いやすいのが特徴です。\n\nざっくり言うと、GitHubは「コード共有と開発者コミュニティが強い」、GitLabは「開発から運用まで一体でまとめやすい」という違いがあります。\n\nどちらもGitを使ったリポジトリ管理のサービスです。\n仕組み・技術",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "tech_github_canonical_casual",
+      "category": "tech_concierge",
+      "description": "口語・GitHub正本",
+      "passed": true,
+      "turns": [
+        {
+          "user": "githubが正本なの？gitlabは？",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_architecture",
+          "render": "sage_status",
+          "concierge_intent": "architecture",
+          "elapsed_ms": 8162,
+          "bot_text": "公開されている正本は GitHub です。\n\nリポジトリは https://github.com/32Lwk/medicine-recommend-system です。\n\nGitLab については、公開ドキュメントには記載がありません。\n仕組み・技術",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "tech_stack_casual",
+      "category": "tech_concierge",
+      "description": "技術スタック口語",
+      "passed": true,
+      "turns": [
+        {
+          "user": "このアプリ何で動いてるの？",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_architecture",
+          "render": "sage_status",
+          "concierge_intent": "architecture",
+          "elapsed_ms": 5873,
+          "bot_text": "このアプリは、バックエンドが FastAPI、フロントエンドが HTML/CSS/バニラ JavaScript で動いています。\n\nチャットの応答は HTTP で受けて、必要に応じて SSE で段階的に配信します。\n\n市販薬の候補は、症状辞書や効能、年齢、副作用、相互作用などを見て、ルールベースのスコアリングで選んでいます。\n\n生成系のモデルが薬名を自由に作る仕組みではありません。\n\n公開されている範囲では、本番は Google Cloud Run 上で動き、チャットや履歴は PostgreSQL に保存されます。\n仕組み・技術",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "tech_cloud_diff",
+      "category": "tech_concierge",
+      "description": "クラウド比較",
+      "passed": true,
+      "turns": [
+        {
+          "user": "GCP と AWS の構成の違いを詳しく教えて",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_architecture",
+          "render": "sage_status",
+          "concierge_intent": "architecture",
+          "elapsed_ms": 8854,
+          "bot_text": "GCP 本番は medicine.yutok.dev を Google Cloud Run で動かし、翻訳は DeepL、読み上げはブラウザの Web Speech API を使う構成です。\n\nAWS ステージングは aws.medicine.yutok.dev を ECS Express + ALB + WAF で動かし、翻訳は Amazon Translate、読み上げは Amazon Polly に切り替えています。\n\nデータやログも分かれていて、本番側は Cloud Logging と Neon PostgreSQL、AWS 側は CloudWatch Logs と別の運用経路です。\n仕組み・技術\n市販薬の候補はどちらでもルールベースのスコアリングで選ばれ、LLM が自由に薬名を作ることはありません。\nこのサービスの概要\nTriageAgent：お話の内容を分類し、適切な担当へ振り分けます\nPhysicalOrchestrator：症状を解析し、ルールベースのスコアリングで市販薬候補を提示します\nAskAgent：推奨後の医薬品に関する質問に答えます\nStoreInquiryAgent：店舗・遺失物などの案内を行います\nConciergeAgent：挨拶・アプリの説明・軽い雑談への案内を行います\nCounselingManager：感情や心理的なお悩みへの傾聴・支援を行いま",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "tech_app_about",
+      "category": "tech_concierge",
+      "description": "アプリ説明",
+      "passed": true,
+      "turns": [
+        {
+          "user": "ここは何ができるの？",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_app_about",
+          "render": "sage_status",
+          "concierge_intent": "app_about",
+          "elapsed_ms": 6481,
+          "bot_text": "ここは、症状をもとに市販薬の候補をチャットで案内するツールです。\n\n診断や治療、処方は行わず、必要に応じて受診や薬剤師・登録販売者への相談の目安も案内します。\n\nもしよければ、今の症状や困っていることを教えてください。\nこのツールについて",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "tech_changelog",
+      "category": "tech_concierge",
+      "description": "更新履歴",
+      "passed": true,
+      "turns": [
+        {
+          "user": "最近何が変わった？",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_doc_changelog",
+          "render": "sage_status",
+          "concierge_intent": "doc_changelog",
+          "elapsed_ms": 5299,
+          "bot_text": "最近の更新では、医薬品のご相談で、日常的な言い回しや省略のある会話でも意図をくみ取りやすくなり、より自然にやり取りしやすくなりました。あわせて、比較や選び方の案内、画像の表示も見やすく整っており、より使いやすくなっています。\n最近の更新\n最終更新日 2026年7月26日\nユーザー視点の 日常表現・省略・多ターン文脈 でも意図を汲めるよう\nFixtures: medicine_qa_everyday_eval.yaml, medicine_qa_gpt_conversation.…\n更新\nAWS ログ解析で顕在化した (1) 比較 Q&A の製品ライン揺れ と (2) 技術質問が更新履歴・誤構成に引きずられる問題 を\n技術的な質問への案内が厚くなりました\n更新",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "symptom_casual_headache",
+      "category": "physical",
+      "description": "口語頭痛",
+      "passed": true,
+      "turns": [
+        {
+          "user": "頭バキバキ…",
+          "passed": true,
+          "route": "Physical",
+          "kind": "",
+          "render": "sage_reco",
+          "concierge_intent": "",
+          "elapsed_ms": 29268,
+          "bot_text": "頭バキバキ、つらいですね。まずは水分をとって、暗く静かな所で少し休んでください。痛みが強い時は、頭痛に使いやすいイブやバファリンEX、胃が弱い方や刺激を避けたい方にはカロナールAが候補です。発熱やだるさがあればインフルエンザも疑い、早めに受診してください。",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "symptom_polite_sore_throat",
+      "category": "physical",
+      "description": "丁寧語のど痛",
+      "passed": true,
+      "turns": [
+        {
+          "user": "のどが痛くてつらいです",
+          "passed": true,
+          "route": "Physical",
+          "kind": "",
+          "render": "sage_reco",
+          "concierge_intent": "",
+          "elapsed_ms": 24737,
+          "bot_text": "のどが痛くてつらいですね。まずはスカイブブロンのどスプレーやルルのどスプレーで、痛みのある部分を直接ケアすると楽になりやすいです。イブスリーショットプレミアムは、のどの痛みに加え発熱やだるさがある時に向いています。高熱や強いだるさがあればインフルエンザの可能性もあるので、無理せず受診も考えてください。",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "symptom_vague_unwell",
+      "category": "physical",
+      "description": "曖昧な体調不良",
+      "passed": true,
+      "turns": [
+        {
+          "user": "なんか調子悪いんだけど",
+          "passed": true,
+          "route": "Physical",
+          "kind": "",
+          "render": "sage_reco",
+          "concierge_intent": "",
+          "elapsed_ms": 22319,
+          "bot_text": "なんか調子悪いんですね、しんどいですよね。疲労感・倦怠感には、ハイチオールCプラス/ホワイティアで体のだるさ対策を、頭が重い・むくむ感じがあれば五苓散も候補です。まずは休養と水分をしっかり。発熱、のど痛、強いだるさがあればインフルエンザも疑い、受診してください。",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "symptom_fever_child",
+      "category": "physical",
+      "description": "子供の熱",
+      "passed": false,
+      "turns": [
+        {
+          "user": "5歳の子供が38度の熱があります",
+          "passed": false,
+          "route": "MedicineQA",
+          "kind": "medicine_qa",
+          "render": "sage_qa",
+          "concierge_intent": "",
+          "elapsed_ms": 24237,
+          "bot_text": "5歳のお子さまの38度の発熱に対して、提示された3製品はいずれもこの情報上では適していません。カロナールAは15歳未満は服用しないと明記されており、イブとバファリンEXもこの提示情報だけでは5歳に使える用法・用量確認ができません。5歳のお子さまには、子ども用として年齢・体重に合った解熱薬を選ぶ必要があるため、自己判断でこれらを使わず、早めに医師またはお近くの登録販売者にご相談ください。\n医薬品相談回答\n医薬品の詳細\n年齢制限",
+          "errors": [
+            "render expected 'sage_reco' got 'sage_qa'",
+            "forbidden kind 'medicine_qa'"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "medicine_side_effect_named",
+      "category": "medicine_qa",
+      "description": "薬名副作用",
+      "passed": true,
+      "turns": [
+        {
+          "user": "ロキソニンの副作用教えて",
+          "passed": true,
+          "route": "MedicineQA",
+          "kind": "medicine_side_effect_qa",
+          "render": "sage_qa",
+          "concierge_intent": "",
+          "elapsed_ms": 2592,
+          "bot_text": "「ロキソニンS」の主な副作用の要点です（添付文書ベース）。ショック、アナフィラキシー、溶血性貧血、急性汎発性発疹性膿疱症、便秘 などが報告されています。個人差があります。気になる症状が出た場合は使用を中止し、薬剤師・医師に相談してください。\n医薬品相談回答\n副作用の要点",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "medicine_discovery_cold",
+      "category": "medicine_qa",
+      "description": "風邪薬探索",
+      "passed": true,
+      "turns": [
+        {
+          "user": "風邪薬ある？",
+          "passed": true,
+          "route": "MedicineQA",
+          "kind": "medicine_qa",
+          "render": "sage_qa",
+          "concierge_intent": "",
+          "elapsed_ms": 14291,
+          "bot_text": "推奨医薬品の詳細情報が提示されていないため、具体的な風邪薬のご案内はできません。症状に合う製品選びのため、お近くの登録販売者にご相談ください。\n医薬品相談回答\n相談アドバイス",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "medicine_doping_general",
+      "category": "medicine_qa",
+      "description": "ドーピング一般",
+      "passed": true,
+      "turns": [
+        {
+          "user": "市販薬でドーピングに引っかかる成分ってある？",
+          "passed": true,
+          "route": "MedicineQA",
+          "kind": "medicine_qa",
+          "render": "sage_qa",
+          "concierge_intent": "",
+          "elapsed_ms": 22554,
+          "bot_text": "はい、市販薬でもドーピング規制に関わる成分が含まれることがあります。特に、かぜ薬・鼻炎薬・咳止めに使われる一部の交感神経刺激成分や気管支拡張成分などは注意が必要です。ただし、実際に禁止されるかは競技団体、競技時かどうか、使用経路、成分名で判断が分かれます。今回のご質問は推奨医薬品の個別情報がないため製品名ベースでの断定はできません。購入前・使用前に、お近くの登録販売者にご相談ください。\n医薬品相談回答\nドーピングチェック\n成分に関する注意\n相談アドバイス",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "boundary_symptom_plus_gpt",
+      "category": "boundary",
+      "description": "症状＋GPT技術",
+      "passed": true,
+      "turns": [
+        {
+          "user": "のど痛いんだけど、このチャットGPT使ってる？",
+          "passed": true,
+          "route": "Physical",
+          "kind": "",
+          "render": "sage_reco",
+          "concierge_intent": "",
+          "elapsed_ms": 25834,
+          "bot_text": "のど痛いんですね、つらいです。まずはスカイブブロンのどスプレーやルルのどスプレーで、痛い部分に直接アプローチすると楽になりやすいです。イブスリーショットプレミアムは痛みや発熱がある時に。水分をとって安静にし、発熱や強いだるさがあればインフルも疑って受診してください。",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "boundary_medicine_then_tech",
+      "category": "boundary",
+      "description": "薬→技術の話題転換",
+      "passed": true,
+      "turns": [
+        {
+          "user": "頭痛がする",
+          "passed": true,
+          "route": "Physical",
+          "kind": "",
+          "render": "sage_reco",
+          "concierge_intent": "",
+          "elapsed_ms": 26661,
+          "bot_text": "頭痛がするんですね、つらいですね。イブやバファリンEXは痛みをしっかり和らげやすく、カロナールAは胃への負担が比較的少なめです。まずは水分をとって安静にし、空腹時は避けてください。発熱やのどの痛みもあれば、インフルエンザの可能性もあるので無理せず受診を。",
+          "errors": []
+        },
+        {
+          "user": "GitHubとGitLabどっちが正本？",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_architecture",
+          "render": "sage_status",
+          "concierge_intent": "architecture",
+          "elapsed_ms": 8522,
+          "bot_text": "公開されている根拠では、このサービスの正本は GitHub です。\n\n公開リポジトリとして https://github.com/32Lwk/medicine-recommend-system が案内されています。\n仕組み・技術",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "boundary_tech_then_medicine",
+      "category": "boundary",
+      "description": "技術→症状転換",
+      "passed": true,
+      "turns": [
+        {
+          "user": "技術スタック教えて",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_architecture",
+          "render": "sage_status",
+          "concierge_intent": "architecture",
+          "elapsed_ms": 9016,
+          "bot_text": "バックエンドは FastAPI で、チャット入力は HTTP エンドポイントで受け付けます。\n\n会話の振り分けはマルチエージェント構成で、症状相談はルールベースのスコアリングで市販薬候補を選び、挨拶や案内は別の案内系の応答に分かれます。\n\nフロントエンドは HTML/CSS/バニラ JavaScript で、レスポンス対応の画面になっています。\n\n補助的に、ストリーミング表示には Server-Sent Events、ログには JSONL 形式の構造化ログが使われています。\n仕組み・技術",
+          "errors": []
+        },
+        {
+          "user": "話変わるけど、頭痛がする",
+          "passed": true,
+          "route": "Physical",
+          "kind": "",
+          "render": "sage_reco",
+          "concierge_intent": "",
+          "elapsed_ms": 32611,
+          "bot_text": "頭痛がするのですね、つらいですね。まずは静かな場所で休み、水分をとってください。推奨のイブ・バファリンEX・カロナールAは、つらい頭痛を和らげる目的で使いやすいです。空腹時は避け、用法用量を守りましょう。発熱やのどの痛みもあれば、インフルエンザの可能性もあるので早めに受診してください。",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "boundary_compound_priority_tech",
+      "category": "boundary",
+      "description": "複合・技術優先",
+      "passed": false,
+      "turns": [
+        {
+          "user": "頭痛だけど、まずGitHubとGitLabの違いを教えて",
+          "passed": false,
+          "route": "Physical",
+          "kind": "",
+          "render": "sage_reco",
+          "concierge_intent": "",
+          "elapsed_ms": 23921,
+          "bot_text": "頭痛つらいですね。GitHub/GitLabの違いはあとで大丈夫です。まずは痛みを和らげましょう。イブやバファリンEXは頭痛に使いやすく、カロナールAは胃への負担が気になる方にも選びやすいです。空腹時は避け、用法用量を守ってください。発熱や関節痛があればインフルエンザの可能性もあるので受診を。",
+          "errors": [
+            "route expected 'Concierge' got 'Physical' kind=''"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "flow_tech_followup",
+      "category": "multi_turn",
+      "description": "技術→深掘り",
+      "passed": true,
+      "turns": [
+        {
+          "user": "このサービスの技術構成は？",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_architecture",
+          "render": "sage_status",
+          "concierge_intent": "architecture",
+          "elapsed_ms": 6873,
+          "bot_text": "このサービスは、FastAPI を使ったチャット型の市販薬相談ツールで、ブラウザの画面から入力した内容をサーバーで受けて応答します。\n\n会話の振り分けはエージェント連携で行い、症状に関する市販薬の候補は症状・年齢・相互作用などを見たルールベースの仕組みで選ばれます。\n\n翻訳や読み上げ、医薬品画像の配信も含めて、公開されている範囲で複数の外部サービスを組み合わせた構成です。\n仕組み・技術\n本番は Google Cloud Run 上で動き、会話データは PostgreSQL に保存されます。\nGCP 本番\nTriageAgent：お話の内容を分類し、適切な担当へ振り分けます\nPhysicalOrchestrator：症状を解析し、ルールベースのスコアリングで市販薬候補を提示します\nAskAgent：推奨後の医薬品に関する質問に答えます\nStoreInquiryAgent：店舗・遺失物などの案内を行います\nConciergeAgent：挨拶・アプリの説明・軽い雑談への案内を行います\nCounselingManager：感情や心理的なお悩みへの傾聴・支援を行います\nEmergencyRouter：緊急時の受診・119などの案内を行います\nExplanationAgent：推奨医薬品の理由をわかりやすく説明します\n担当の役割",
+          "errors": []
+        },
+        {
+          "user": "もっと詳しく",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_architecture",
+          "render": "sage_status",
+          "concierge_intent": "architecture",
+          "elapsed_ms": 8017,
+          "bot_text": "技術面では、GCP 本番は Google Cloud Run で動き、AWS ステージングでは Amazon Translate と Amazon Polly などを使う構成です。\n\n公開されているデプロイ情報は GitHub の `medicine-recommend-system` リポジトリでも確認できます。\n\nまた、医薬品画像は `images.yutok.dev/otc/` の公開 CDN から配信され、会話履歴は PostgreSQL に保存されます。\n仕組み・技術\nもう少し具体的にいうと、Web の入力は FastAPI のチャット経由で受け取り、まず意図を振り分けてから担当の処理に渡します。\n症状に関する市販薬の候補は、症状・年齢・相互作用などを見たルールベースの仕組みで選ばれ、薬名を自由に作ることはありません。\n会話の役割分担は、挨拶や案内、店舗案内、心理的なお悩み、緊急時の案内、推奨理由の説明などに分かれています。\n症状やお薬の選び方については、具体的な症状を入力していただければ別途ご案内します。\nこのサービスの概要",
+          "errors": []
+        },
+        {
+          "user": "ありがとう",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_thanks",
+          "render": "sage_status",
+          "concierge_intent": "thanks",
+          "elapsed_ms": 7937,
+          "bot_text": "どういたしまして。技術面のことでも、市販薬のことでも、また気軽にどうぞ。\nお礼",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "flow_reco_then_qa",
+      "category": "multi_turn",
+      "description": "推奨→追質問",
+      "passed": true,
+      "turns": [
+        {
+          "user": "頭が痛いです",
+          "passed": true,
+          "route": "Physical",
+          "kind": "",
+          "render": "sage_reco",
+          "concierge_intent": "",
+          "elapsed_ms": 23518,
+          "bot_text": "頭が痛いのはつらいですね。まずは安静にして水分をとり、光や音を避けて休んでください。お薬は頭痛に使いやすいイブやバファリンEX、胃が弱い方や刺激が気になる場合はカロナールAが候補です。発熱や強いだるさ、インフルエンザが心配な時は受診をおすすめします。",
+          "errors": []
+        },
+        {
+          "user": "1番目の薬、眠くならない？",
+          "passed": true,
+          "route": "MedicineQA",
+          "kind": "medicine_qa",
+          "render": "sage_qa",
+          "concierge_intent": "",
+          "elapsed_ms": 10493,
+          "bot_text": "1番目のイブは、一般に眠気を主目的とする成分ではないため、通常は眠くなりにくい頭痛薬です。ただし、この詳細情報だけでは眠気の副作用頻度までは確認できないため、心配ならお近くの登録販売者にご相談ください。\n医薬品相談回答\n医薬品の詳細\n副作用情報\n相談アドバイス",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "flow_counseling_ack",
+      "category": "multi_turn",
+      "description": "相槌・雑談",
+      "passed": true,
+      "turns": [
+        {
+          "user": "のど痛くてつらい",
+          "passed": true,
+          "route": "Physical",
+          "kind": "",
+          "render": "sage_reco",
+          "concierge_intent": "",
+          "elapsed_ms": 23838,
+          "bot_text": "のど痛くてつらいですね。まずは水分をこまめにとり、刺激物は避けてください。のどの痛みに対しては、のどスプレーが使いやすく、つらい部位へ直接届きます。発熱や強いだるさ、関節痛があればインフルエンザも考えられるので受診を。1週間ほど続く、息苦しい、飲み込めない時も早めに相談してください。",
+          "errors": []
+        },
+        {
+          "user": "了解",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_chitchat",
+          "render": "sage_status",
+          "concierge_intent": "chitchat",
+          "elapsed_ms": 5947,
+          "bot_text": "了解です。のどの痛みがつらいときは、少しでも楽になる市販薬の選び方をご案内できます。気になる症状や、飲める/避けたい成分があれば、お気軽にお聞かせください。\nお話",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "off_topic_weather",
+      "category": "redirect",
+      "description": "天気はリダイレクト",
+      "passed": true,
+      "turns": [
+        {
+          "user": "今日の天気教えて",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_redirect",
+          "render": "sage_status",
+          "concierge_intent": "redirect",
+          "elapsed_ms": 6783,
+          "bot_text": "こちらは一般用医薬品（OTC）の相談窓口です。頭痛・のどの痛み・お薬の選び方など、お困りのことがあれば具体的にお書きください。\nご案内",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "greeting_only",
+      "category": "redirect",
+      "description": "挨拶",
+      "passed": true,
+      "turns": [
+        {
+          "user": "こんにちは",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_greeting",
+          "render": "sage_status",
+          "concierge_intent": "greeting",
+          "elapsed_ms": 4796,
+          "bot_text": "こんにちは！こちらは市販薬の相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話しください。あなたに合った市販薬の情報をお伝えしますね。\nご挨拶",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "thanks_after_help",
+      "category": "redirect",
+      "description": "感謝",
+      "passed": true,
+      "turns": [
+        {
+          "user": "GitlabとGithubの違いは？",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_architecture",
+          "render": "sage_status",
+          "concierge_intent": "architecture",
+          "elapsed_ms": 6666,
+          "bot_text": "GitHubは、コードの共有や共同開発に広く使われるサービスです。\n\nGitLabは、同じようにコード管理に使えますが、開発からCI/CDまでをまとめて扱いやすい点が特徴です。\n\nどちらもGitを使ったソース管理の場ですが、使い方としては「GitHubは公開・連携が強い」「GitLabは一体型で運用しやすい」と考えると分かりやすいです。\n\n必要なら次に、個人開発向け・チーム開発向けの違いで絞って説明できます。\n仕組み・技術",
+          "errors": []
+        },
+        {
+          "user": "ありがとう、助かった",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_chitchat",
+          "render": "sage_status",
+          "concierge_intent": "chitchat",
+          "elapsed_ms": 7562,
+          "bot_text": "こちらこそ、ありがとうございます。  \nまた必要になったら、GitHubやGitLabの使い分けでも、市販薬の相談でも、気軽にお声がけください。\nお話",
+          "errors": []
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 23,
+    "passed": 21,
+    "failed": 2,
+    "by_category": {
+      "tech_concierge": {
+        "passed": 6,
+        "failed": 0
+      },
+      "physical": {
+        "passed": 3,
+        "failed": 1
+      },
+      "medicine_qa": {
+        "passed": 3,
+        "failed": 0
+      },
+      "boundary": {
+        "passed": 3,
+        "failed": 1
+      },
+      "multi_turn": {
+        "passed": 3,
+        "failed": 0
+      },
+      "redirect": {
+        "passed": 3,
+        "failed": 0
+      }
+    }
+  }
+}

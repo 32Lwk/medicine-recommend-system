@@ -3,8 +3,18 @@
 <div class="about-index">
     <section class="about-hero about-hero--editorial" aria-labelledby="about-hero-title">
         <div class="about-hero__copy">
+            {% if beta_badge %}
+            <p class="about-hero__badge">{{ beta_badge | e }}</p>
+            {% endif %}
             <h1 id="about-hero-title" class="about-hero__title">{{ hero_title | e }}</h1>
             <p class="about-hero__subtitle">{{ hero_subtitle | e }}</p>
+            {% if hero_highlights %}
+            <ul class="about-hero__highlights">
+                {% for item in hero_highlights %}
+                <li>{{ item | e }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
             <div class="about-hero__actions">
                 <a href="{{ chat_href }}" class="about-cta-primary about-cta-primary--hero" aria-label="{{ cta_aria_label | e }}">{{ hero_cta | e }}</a>
             </div>
@@ -13,7 +23,7 @@
             <img class="about-hero__img"
                  src="{{ url_for('static', filename=hero_image or 'img/about/generated/about/hero/hero-pharmacy-chat.png') }}"
                  alt="{{ hero_alt | e }}"
-                 width="1200" height="675"
+                 width="1024" height="576"
                  loading="eager" decoding="async">
         </figure>
     </section>
@@ -62,11 +72,25 @@
             </li>
             {% endfor %}
         </ol>
-        {% if how_demo_image %}
+        {% if how_demo_shots %}
+        <figure class="about-how__demo about-how__demo--product" aria-label="{{ how_demo_alt | e }}">
+            <ul class="about-how__demo-strip app-scrollbar" role="list">
+                {% for shot in how_demo_shots %}
+                <li class="about-how__demo-shot">
+                    <img src="{{ url_for('static', filename=shot.src) }}"
+                         alt="{{ shot.alt | e }}"
+                         width="503" height="1024"
+                         loading="lazy" decoding="async">
+                </li>
+                {% endfor %}
+            </ul>
+            <figcaption>{{ how_demo_caption | e }}</figcaption>
+        </figure>
+        {% elif how_demo_image %}
         <figure class="about-how__demo about-how__demo--product">
             <img src="{{ url_for('static', filename=how_demo_image) }}"
                  alt="{{ how_demo_alt | e }}"
-                 width="880" height="495"
+                 width="503" height="1024"
                  loading="lazy" decoding="async">
             <figcaption>{{ how_demo_caption | e }}</figcaption>
         </figure>
@@ -107,10 +131,7 @@
                 {% endfor %}
             </ul>
             <div class="about-safety__pharmacist">
-                <img src="{{ url_for('static', filename=pharmacist_icon) }}"
-                     alt="{{ pharmacist_alt | e }}"
-                     width="64" height="64"
-                     loading="lazy" decoding="async">
+                <span class="about-safety__pharmacist-icon" aria-hidden="true">💊</span>
                 <p>{{ pharmacist_note | e }}</p>
             </div>
         </div>
@@ -138,7 +159,14 @@
         </details>
     </section>
 
-    <section class="about-section about-section--numbered about-trust about-trust--no-head" aria-label="{{ trust_heading | e }}">
+    <section class="about-section about-section--numbered about-section--alt about-trust" aria-labelledby="about-trust-heading">
+        <header class="about-section__head">
+            <p class="about-section__eyebrow">
+                <span class="about-section__num">{{ trust_section_num | e }}</span>
+                <span class="about-section__tag">{{ trust_section_tag | e }}</span>
+            </p>
+            <h2 id="about-trust-heading" class="about-section__heading">{{ trust_heading | e }}</h2>
+        </header>
         {% if trust_lead %}
         <p class="about-trust__lead">{{ trust_lead | e }}</p>
         {% endif %}

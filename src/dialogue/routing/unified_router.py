@@ -53,10 +53,13 @@ def _layer1_deterministic(
             should_use_medicine_qa_unified,
         )
 
+        from src.services.medicine_qa_eligibility import should_route_medicine_information_qa
+
         focuses = infer_medicine_qa_focuses(text)
-        if should_use_medicine_qa_unified(focuses, user_message=text) or (
+        info_qa = should_use_medicine_qa_unified(focuses, user_message=text) or (
             is_medicine_information_question(text)
-        ):
+        )
+        if info_qa and should_route_medicine_information_qa(text):
             return RoutingDecision(
                 primary_route="Physical",
                 sub_route="medicine_qa",
@@ -139,9 +142,10 @@ def _layer1_deterministic(
             context_features=features.to_dict(),
         )
 
+    from src.services.medicine_qa_eligibility import should_route_medicine_information_qa
     from src.services.medicine_qa_routing import is_medicine_information_question
 
-    if is_medicine_information_question(text):
+    if is_medicine_information_question(text) and should_route_medicine_information_qa(text):
         return RoutingDecision(
             primary_route="Physical",
             sub_route="medicine_qa",

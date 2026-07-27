@@ -442,6 +442,12 @@ def resolve_concierge_intent(
     if base in ("greeting", "thanks"):
         return base
 
+    from src.services.concierge_intent import probe_meta_concierge_intent
+
+    probed = probe_meta_concierge_intent(text)
+    if probed:
+        return probed
+
     category = (triage_result or {}).get("category", "")
     if category == "Other" and client is not None and not (triage_result or {}).get("concierge_intent"):
         enriched = enrich_other_concierge_intent(
@@ -2319,6 +2325,17 @@ def should_concierge_handle(
             return _concierge_meta_allowed()
 
     if triage_has_concierge_meta_intent(triage_result):
+        if evaluate_store_gate(
+            user_text,
+            *extra,
+            triage_result=triage_result,
+            routing_ctx=None,
+        ):
+            return False
+        return (triage_result or {}).get("category") != "Emergency"
+
+    intent_source = str((triage_result or {}).get("concierge_intent_source") or "")
+    if intent_source.startswith("qa_gate:") and (triage_result or {}).get("concierge_intent"):
         if evaluate_store_gate(
             user_text,
             *extra,

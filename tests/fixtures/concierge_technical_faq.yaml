@@ -31,7 +31,7 @@ scenarios:
   - id: translate-provider-aws
     message: "AWS ステージングでは翻訳は何を使ってる？"
     expected_intent: architecture
-    expect_deep_dive: false
+    expect_deep_dive: true
     reference_must_contain:
       - "Amazon Translate"
       - "DeepL"
@@ -132,7 +132,7 @@ scenarios:
   - id: elasticache-redis
     message: "ElastiCache は何に使ってる？"
     expected_intent: architecture
-    expect_deep_dive: false
+    expect_deep_dive: true
     reference_must_contain:
       - "Redis"
       - "ElastiCache"
@@ -226,7 +226,7 @@ scenarios:
   - id: health-aws-features
     message: "/health/aws で確認できることは？"
     expected_intent: architecture
-    expect_deep_dive: false
+    expect_deep_dive: true
     reference_must_contain:
       - "/health/aws"
     expect_runtime_block: true
@@ -297,6 +297,41 @@ scenarios:
     expect_deep_dive: false
     reference_must_contain:
       - "TriageAgent"
+
+  - id: gitlab-github-diff
+    message: "GitLabとGitHubの違いは？このプロジェクトでは？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "GitHub"
+
+  - id: casual-infra
+    message: "インフラざっくり教えて"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "GCP"
+
+  - id: casual-data-storage
+    message: "会話内容ってどこに残るの？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "PostgreSQL"
+
+  - id: casual-gpt-stack
+    message: "このチャットGPT使ってる？"
+    expected_intent: architecture
+    expect_deep_dive: false
+    reference_must_contain:
+      - "GPT"
+
+  - id: casual-deploy-flow
+    message: "デプロイってどう流れてる？"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "CodePipeline"
 
 # ランタイム参照ブロック（利用者向け）で禁止
 reference_forbidden_patterns:

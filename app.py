@@ -5,9 +5,61 @@
 本番は `./start.sh` → gunicorn `main:app`。
 環境変数 `ASGI_HOST`（既定 `0.0.0.0`）で待ち受けアドレスを変更可能。
 `OPEN_BROWSER=0` で起動時のブラウザ自動オープンを無効化（CI 等）。
+`OPEN_BROWSER_WAIT_SEC`（既定 120）で /health 応答待ちの上限秒数を変更可能。
+`APP_PYTHON_REEXEC=0` で .venv への自動切替を無効化。
 """
-import logging
 import os
+import sys
+from pathlib import Path
+
+_REPO_ROOT = Path(__file__).resolve().parent
+
+
+def _project_venv_python() -> Path | None:
+    if os.name == 'nt':
+        candidates = (_REPO_ROOT / '.venv' / 'Scripts' / 'python.exe',)
+    else:
+        candidates = (_REPO_ROOT / '.venv' / 'bin' / 'python',)
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _reexec_with_project_venv_if_needed() -> None:
+    """Cursor/VS Code の再生ボタンが壊れた system Python を選ぶ事故を防ぐ。"""
+    if os.environ.get('APP_PY_VENV_REEXEC') == '1':
+        return
+    if os.environ.get('APP_PYTHON_REEXEC', '1').strip().lower() in ('0', 'false', 'no', 'off'):
+        return
+    if os.environ.get('CI', '').strip().lower() in ('1', 'true', 'yes'):
+        return
+
+    venv_python = _project_venv_python()
+    if venv_python is None:
+        return
+
+    try:
+        current = Path(sys.executable).resolve()
+    except OSError:
+        return
+
+    if current == venv_python.resolve():
+        return
+
+    os.environ['APP_PY_VENV_REEXEC'] = '1'
+    print(
+        f'[app.py] プロジェクト venv で再起動します: {venv_python}',
+        file=sys.stderr,
+        flush=True,
+    )
+    os.execv(str(venv_python), [str(venv_python), *sys.argv])
+
+
+_reexec_with_project_venv_if_needed()
+
+import logging
+import subprocess
 import threading
 import time
 import webbrowser
@@ -19,14 +71,18 @@ load_env()
 logger = logging.getLogger(__name__)
 
 
-def _prepare_local_database() -> None:
-    """ローカル開発: Docker Postgres の起動と接続待ち。"""
-    try:
-        from src.utils.local_docker_db import ensure_local_docker_postgres
+def _prepare_local_database_async() -> None:
+    """ローカル開発: Docker Postgres の起動と接続待ち（uvicorn 起動をブロックしない）。"""
 
-        ensure_local_docker_postgres()
-    except Exception as exc:
-        logger.warning("ローカル DB 準備をスキップしました: %s", exc)
+    def _run() -> None:
+        try:
+            from src.utils.local_docker_db import ensure_local_docker_postgres
+
+            ensure_local_docker_postgres()
+        except Exception as exc:
+            logger.warning("ローカル DB 準備をスキップしました: %s", exc)
+
+    threading.Thread(target=_run, daemon=True, name='local-db-prep').start()
 
 
 def _resolve_port() -> int:
@@ -51,32 +107,80 @@ def _resolve_port() -> int:
     return requested_port
 
 
+def _open_browser_url(url: str) -> bool:
+    if webbrowser.open(url):
+        return True
+    if os.name == 'nt':
+        try:
+            os.startfile(url)  # type: ignore[attr-defined]
+            return True
+        except OSError:
+            pass
+        try:
+            subprocess.run(
+                ['cmd', '/c', 'start', '', url],
+                check=False,
+                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
+            )
+            return True
+        except OSError:
+            return False
+    return False
+
+
 def _schedule_open_browser(port: int) -> None:
-    """サーバー起動後に既定ブラウザでローカル URL を開く（uvicorn 起動直後はブロックするため別スレッド）。"""
+    """/health が応答してから既定ブラウザでローカル URL を開く（reload 子プロセスの起動待ち）。"""
     if os.getenv('OPEN_BROWSER', '1').strip().lower() in ('0', 'false', 'no'):
         return
     url = f'http://127.0.0.1:{port}/'
+    health_url = f'http://127.0.0.1:{port}/health'
+    timeout_sec = float(os.getenv('OPEN_BROWSER_WAIT_SEC', '120'))
 
-    def _open() -> None:
-        time.sleep(1.5)
-        if webbrowser.open(url):
+    def _open_when_ready() -> None:
+        import urllib.error
+        import urllib.request
+
+        deadline = time.monotonic() + timeout_sec
+        while time.monotonic() < deadline:
+            try:
+                with urllib.request.urlopen(health_url, timeout=2) as resp:
+                    if resp.status == 200:
+                        break
+            except (urllib.error.URLError, OSError, TimeoutError):
+                time.sleep(0.5)
+        else:
+            logger.warning(
+                'サーバーが %s 秒以内に応答しませんでした。手動で %s を開いてください。',
+                int(timeout_sec),
+                url,
+            )
+            return
+
+        if _open_browser_url(url):
             logger.info('ブラウザを開きました: %s', url)
         else:
             logger.info('ブラウザを自動で開けませんでした。手動で %s を開いてください。', url)
 
-    threading.Thread(target=_open, daemon=True).start()
+    threading.Thread(target=_open_when_ready, daemon=True, name='open-browser').start()
 
 
 if __name__ == '__main__':
     try:
         import uvicorn
     except ModuleNotFoundError:
-        logger.error(
-            "FastAPI 起動に uvicorn が必要です。仮想環境で次を実行してください: pip install -r requirements.txt"
-        )
+        venv_hint = _project_venv_python()
+        if venv_hint is not None:
+            logger.error(
+                "FastAPI 起動に uvicorn が必要です。次を実行してください: %s -m pip install -r requirements.txt",
+                venv_hint,
+            )
+        else:
+            logger.error(
+                "FastAPI 起動に uvicorn が必要です。仮想環境を作成し pip install -r requirements.txt を実行してください。"
+            )
         raise
 
-    _prepare_local_database()
+    _prepare_local_database_async()
     port = _resolve_port()
     from config.app_config import is_development_runtime
 

@@ -14,7 +14,9 @@ scripts/.aws-personalize-env
 *.log
 !log/
 !log/**
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
 .idea/
 *.sqlite
 *.db

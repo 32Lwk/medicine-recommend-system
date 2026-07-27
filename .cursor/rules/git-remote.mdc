@@ -1,47 +1,37 @@
 ---
-description: (無効・履歴用) GitHub 停止中の一時 Git リモート運用。2026-07-07 に GitHub 復旧しプライマリを origin(GitHub) へ戻したため非適用。
-alwaysApply: false
+description: Git デュアルリモート運用 — GitHub 正本 + GitLab バックアップミラー
+alwaysApply: true
 ---
 
-# Git リモート（GitHub 停止中の一時運用）— 【2026-07-07 復旧により無効】
+# Git リモート（GitHub 正本 + GitLab ミラー）
 
-> **このルールは 2026-07-07 に無効化されました。** GitHub アカウント [@32Lwk](https://github.com/32Lwk) が復旧し、
-> プライマリリモートを `origin`（GitHub）へ戻しました。以下は移行期間中（2026-06-22〜2026-07-07）の履歴として残します。
-> 現在は `git pull` / `git push` は **GitHub (`origin/main`)** 向けです。
+**詳細**: `docs/ops/GITLAB_TEMPORARY_MIGRATION.md` §10
 
-**期間**: GitHub アカウント [@32Lwk](https://github.com/32Lwk) 停止〜復旧（2026-06-22〜**2026-07-07**）（インシデント: `docs/ops/GITHUB_ACCOUNT_SUSPENSION_2026-06.md`）  
-**詳細手順（Cloud Build・復旧チェックリスト）**: `docs/ops/GITLAB_TEMPORARY_MIGRATION.md`
+## リモート
 
-## プライマリリモート
+| リモート | URL | 役割 |
+|----------|-----|------|
+| `origin` | https://github.com/32Lwk/medicine-recommend-system.git | **正本** — PR / Issues / CI / dev・本番デプロイ |
+| `gitlab` | https://gitlab.com/blank2703726/medicine-recommend | **バックアップミラー** — GitHub 障害時のフェイルオーバー用 |
 
-| 項目 | 値 |
-|------|-----|
-| リモート名 | `gitlab` |
-| URL | https://gitlab.com/blank2703726/medicine-recommend |
-| 追跡ブランチ | `main` → `gitlab/main` |
+GitLab CI と dev 向け Cloud Build トリガー（`medicine-recommend-dev-gitlab-main`）は **GitHub 復旧に伴い停止**。GitLab へ push しても CI / デプロイは走らない。
 
 ## エージェント向けルール
 
-1. **`git pull` / `git push` は GitLab 向け**（`gitlab` リモート、または upstream `gitlab/main`）
-2. **`origin`（GitHub）への fetch / push は行わない** — アカウント停止で 403
-3. **`gh` CLI（issue / PR / `gh repo` 等）は使わない** — 停止中
-4. PR 作成依頼時は GitLab の MR 手順を案内するか、push のみ実施してユーザーに MR 作成を任せる
-5. コミット・デプロイ前チェックリストは `.cursor/rules/onboarding-last-updated.mdc` を参照（プッシュ先は GitLab）
+1. **`git pull` は `origin/main` から**（upstream は `origin/main`）
+2. **`git push origin main` が必須** — 正本・CI・デプロイのトリガー
+3. **`git push gitlab main` は推奨** — バックアップ同期（CI/デプロイには不要）
+4. **`gh` CLI** は GitHub（`origin`）向けに利用可
+5. **ブランチは `main` のみ常設**。退避が必要なら削除前に `backup/*` または `archive/*` タグを作成
+6. **`log/` 配下は push に含める**（`.cursor/rules/log-git-track.mdc` 参照）
 
-## ローカル設定の確認
+## 確認
 
 ```powershell
 git remote -v
-git branch -vv   # main が [gitlab/main] を追跡していること
+git branch -vv   # main が [origin/main] を追跡していること
 ```
 
-## GitHub 復旧後
+## GitHub 障害時
 
-`docs/ops/GITLAB_TEMPORARY_MIGRATION.md` §6 のチェックリストに従う。要約:
-
-1. `git fetch origin` が成功することを確認
-2. `gitlab/main` と `origin/main` の差分を整理・同期
-3. upstream を `origin/main` に戻す: `git branch --set-upstream-to=origin/main main`
-4. Cloud Build: dev の GitLab / GitHub トリガーを一方に統一。本番 GitHub トリガーを確認
-5. 本 rule（`git-remote.mdc`）を削除または `alwaysApply: false` に変更
-6. `GITHUB_ACCOUNT_SUSPENSION_2026-06.md` と `GITLAB_TEMPORARY_MIGRATION.md` §8 に復旧日を追記
+`gitlab` から pull → 作業 → `git push gitlab main`。復旧後に `git push origin main` で正本へ反映。

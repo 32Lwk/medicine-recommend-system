@@ -113,12 +113,189 @@ def _execute_medicine_qa_flow(
         )
 
 
+def _resolve_medicine_qa_gate_decision(
+    session: Any,
+    sid: Optional[str],
+    user_message: str,
+    sanitized_message: str,
+    recommendation_client: OpenAI,
+    routing: Any = None,
+):
+    from src.services.medicine_qa_eligibility import resolve_medicine_qa_route
+    from src.dialogue.history import resolve_concierge_history_with_fallback
+
+    triage = None
+    if routing is not None and getattr(routing, "triage_result", None):
+        triage = routing.triage_result
+    if triage is None:
+        triage = session.get("last_triage_result")
+
+    history = resolve_concierge_history_with_fallback(session, sid)
+    return resolve_medicine_qa_route(
+        sanitized_message or user_message,
+        session=session,
+        triage_result=triage,
+        conversation_history=history,
+        client=recommendation_client,
+    )
+
+
+def _try_concierge_instead_of_medicine_qa(
+    session: Any,
+    client_info: Any,
+    sid: Optional[str],
+    user_message: str,
+    sanitized_message: str,
+    recommendation_client: OpenAI,
+    routing: Any = None,
+) -> Optional[QuestionFlowResult]:
+    """医薬品 Q&A 直行の前に Concierge（RAG / redirect）へ回す。"""
+    from src.handlers.chat.chat_concierge_route import try_concierge_response
+    from src.services.medicine_qa_eligibility import MedicineQaRoute
+
+    decision = _resolve_medicine_qa_gate_decision(
+        session,
+        sid,
+        user_message,
+        sanitized_message,
+        recommendation_client,
+        routing=routing,
+    )
+    if decision.route != MedicineQaRoute.CONCIERGE:
+        return None
+
+    triage = dict(
+        (getattr(routing, "triage_result", None) if routing else None)
+        or session.get("last_triage_result")
+        or {}
+    )
+    if decision.concierge_intent:
+        triage["concierge_intent"] = decision.concierge_intent
+        triage["concierge_intent_source"] = f"qa_gate:{decision.source}"
+
+    logger.info(
+        "🛎️ QA gate → Concierge: intent=%s source=%s text=%r",
+        decision.concierge_intent,
+        decision.source,
+        (sanitized_message or user_message)[:60],
+    )
+    resp = try_concierge_response(
+        session,
+        client_info,
+        sid,
+        user_message,
+        sanitized_message,
+        triage,
+        recommendation_client,
+        processed_message=sanitized_message,
+        routing_ctx=routing,
+    )
+    if resp is None:
+        return None
+    return QuestionFlowResult(
+        response=resp,
+        is_question=False,
+        user_message=user_message,
+        sanitized_message=sanitized_message,
+    )
+
+
+def try_qa_gate_concierge_response(
+    session: Any,
+    client_info: Any,
+    sid: Optional[str],
+    user_message: str,
+    sanitized_message: str,
+    recommendation_client: OpenAI,
+    *,
+    triage_result: Optional[dict] = None,
+    routing: Any = None,
+) -> Optional[tuple]:
+    """QA ゲートで Concierge と判定された入力を HTTP 応答に変換（Physical 直行前にも使用）。"""
+    from src.services.medicine_qa_eligibility import MedicineQaRoute
+
+    decision = _resolve_medicine_qa_gate_decision(
+        session,
+        sid,
+        user_message,
+        sanitized_message,
+        recommendation_client,
+        routing=routing,
+    )
+    if decision.route != MedicineQaRoute.CONCIERGE:
+        return None
+    result = _try_concierge_instead_of_medicine_qa(
+        session,
+        client_info,
+        sid,
+        user_message,
+        sanitized_message,
+        recommendation_client,
+        routing=routing,
+    )
+    if result is not None and result.response is not None:
+        return result.response
+    return None
+
+
+def _gate_medicine_qa_before_execute(
+    session: Any,
+    client_info: Any,
+    sid: Optional[str],
+    user_message: str,
+    sanitized_message: str,
+    recommendation_client: OpenAI,
+    routing: Any = None,
+) -> Optional[QuestionFlowResult]:
+    """
+    医薬品 Q&A 実行前ゲート。
+    Concierge / Physical へ回す場合は QuestionFlowResult を返す。MEDICINE_QA なら None。
+    """
+    from src.services.medicine_qa_eligibility import MedicineQaRoute
+
+    decision = _resolve_medicine_qa_gate_decision(
+        session,
+        sid,
+        user_message,
+        sanitized_message,
+        recommendation_client,
+        routing=routing,
+    )
+    if decision.route == MedicineQaRoute.CONCIERGE:
+        concierge_result = _try_concierge_instead_of_medicine_qa(
+            session,
+            client_info,
+            sid,
+            user_message,
+            sanitized_message,
+            recommendation_client,
+            routing=routing,
+        )
+        if concierge_result is not None:
+            return concierge_result
+        logger.info("⏭️ QA gate Concierge 未処理 — 医薬品 Q&A には進まない")
+        return QuestionFlowResult(
+            is_question=False,
+            user_message=user_message,
+            sanitized_message=sanitized_message,
+        )
+    if decision.route == MedicineQaRoute.PHYSICAL:
+        logger.info("💊 QA gate → Physical（症状入力）")
+        return QuestionFlowResult(
+            is_question=False,
+            user_message=user_message,
+            sanitized_message=sanitized_message,
+        )
+    return None
+
+
 def _try_triage_ask_qa(
     session: Any,
     client_info: Any,
     sid: Optional[str],
     user_message: str,
     sanitized_message: str,
+    recommendation_client: OpenAI,
     routing: Any = None,
 ) -> Optional[QuestionFlowResult]:
     """エージェント ON かつトリアージ Ask かつ医療コンテキストありのときのみ Q&A 直行。"""
@@ -143,6 +320,17 @@ def _try_triage_ask_qa(
     ):
         logger.info("💊 初回の薬探索 → 推奨フローへ（Ask Q&A を迂回）")
         return None
+    gated = _gate_medicine_qa_before_execute(
+        session,
+        client_info,
+        sid,
+        user_message,
+        sanitized_message,
+        recommendation_client,
+        routing=routing,
+    )
+    if gated is not None:
+        return gated
     logger.info("❓ トリアージ Ask → 医薬品 Q&A 直行（推奨履歴あり）")
     return _execute_medicine_qa_flow(
         session, client_info, sid, user_message, sanitized_message
@@ -226,6 +414,7 @@ def handle_question_flow(
                 sid,
                 user_message,
                 sanitized_message,
+                recommendation_client,
                 routing=routing,
             )
             if ask_qa is not None:
@@ -331,6 +520,7 @@ def handle_question_flow(
             sid,
             user_message,
             sanitized_message,
+            recommendation_client,
             routing=routing,
         )
         if ask_qa is not None:
@@ -460,6 +650,17 @@ def handle_question_flow(
                     user_message=user_message,
                     sanitized_message=sanitized_message,
                 )
+            gated = _gate_medicine_qa_before_execute(
+                session,
+                client_info,
+                sid,
+                user_message,
+                sanitized_message,
+                recommendation_client,
+                routing=routing,
+            )
+            if gated is not None:
+                return gated
             result = _execute_medicine_qa_flow(
                 session, client_info, sid, user_message, sanitized_message
             )
@@ -1062,6 +1263,17 @@ def handle_question_flow(
                 return QuestionFlowResult(response=({'status': 'ok', 'message_count': message_count}, 200))
         else:
             logger.info("❓ 通常の質問として処理します")
+            gated = _gate_medicine_qa_before_execute(
+                session,
+                client_info,
+                sid,
+                user_message,
+                sanitized_message,
+                recommendation_client,
+                routing=routing,
+            )
+            if gated is not None:
+                return gated
             return _execute_medicine_qa_flow(
                 session, client_info, sid, user_message, sanitized_message
             )

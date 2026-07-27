@@ -181,6 +181,39 @@ def _dispatch_physical(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
         sub = ctx.triage_result.get("subcategory")
     user_msg = ctx.sanitized_message or ctx.user_message
 
+    from src.services.medicine_qa_eligibility import MedicineQaRoute, resolve_medicine_qa_route
+
+    qa_ctx_early = None
+    try:
+        from src.services.medicine_qa_routing import get_medicine_qa_session_context
+
+        qa_ctx_early = get_medicine_qa_session_context(ctx.session, ctx.sid)
+    except Exception:
+        qa_ctx_early = {"conversation_history": [], "recommended_medicines": [], "user_attributes": {}}
+
+    gate_decision = resolve_medicine_qa_route(
+        user_msg,
+        session=ctx.session,
+        triage_result=ctx.triage_result,
+        conversation_history=qa_ctx_early["conversation_history"],
+        recommended_medicines=qa_ctx_early["recommended_medicines"],
+        client=getattr(ctx, "recommendation_client", None),
+    )
+    if gate_decision.route == MedicineQaRoute.CONCIERGE:
+        triage = dict(ctx.triage_result or {})
+        if gate_decision.concierge_intent:
+            triage["concierge_intent"] = gate_decision.concierge_intent
+            triage["concierge_intent_source"] = f"qa_gate:{gate_decision.source}"
+            ctx.triage_result = triage
+            session = ctx.session
+            if session is not None:
+                session["last_triage_result"] = triage
+        conc = _dispatch_concierge(ctx, monitor)
+        if conc is not None:
+            return conc
+    elif gate_decision.route != MedicineQaRoute.MEDICINE_QA:
+        gate_decision = None  # Physical / defer → medicine_qa ブロックをスキップ
+
     try:
         from config.llm_flags import is_medicine_side_effect_qa_enabled
         from src.services.medicine_qa_routing import (
@@ -198,10 +231,23 @@ def _dispatch_physical(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
             recommended_medicines=qa_ctx["recommended_medicines"],
             user_attributes=qa_ctx["user_attributes"],
         )
-        if sub == "medicine_qa" or is_medicine_information_question(
+        from src.services.medicine_qa_eligibility import should_route_medicine_information_qa
+
+        medicine_info_qa = gate_decision is not None and (
+            sub == "medicine_qa"
+            or is_medicine_information_question(
+                user_msg,
+                conversation_history=qa_ctx["conversation_history"],
+                recommended_medicines=qa_ctx["recommended_medicines"],
+            )
+        )
+        if medicine_info_qa and should_route_medicine_information_qa(
             user_msg,
+            session=ctx.session,
+            triage_result=ctx.triage_result,
             conversation_history=qa_ctx["conversation_history"],
             recommended_medicines=qa_ctx["recommended_medicines"],
+            client=getattr(ctx, "recommendation_client", None),
         ):
             from src.handlers.chat.medicine_context_handlers import (
                 handle_medicine_information_qa,

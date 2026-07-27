@@ -738,6 +738,8 @@ def is_medicine_information_question(
     if not t:
         return False
 
+    from src.utils.input_helpers import has_explicit_symptom_signal
+
     has_entity = bool(
         _resolve_medicine_entities(
             t,
@@ -746,6 +748,10 @@ def is_medicine_information_question(
         )
     ) or bool(_ingredients_in_text(t))
     has_context = bool(recommended_medicines) or bool(conversation_history)
+
+    # 初回の症状申告（薬名・推奨文脈なし）は推奨フロー優先。age 等 focus だけでは Q&A 直行しない。
+    if has_explicit_symptom_signal(t) and not has_entity and not has_context:
+        return False
 
     if not has_entity:
         focuses = infer_medicine_qa_focuses(
@@ -804,6 +810,11 @@ def is_medicine_information_question(
 
 def should_skip_recommendation_for_medicine_qa(text: str) -> bool:
     """明示的な医薬品名 Q&A では症状推奨を走らせない。"""
+    from src.services.medicine_qa_eligibility import MedicineQaRoute, resolve_medicine_qa_route
+
+    decision = resolve_medicine_qa_route(text, client=None)
+    if decision.route in (MedicineQaRoute.PHYSICAL, MedicineQaRoute.CONCIERGE):
+        return False
     return is_medicine_information_question(text) or is_strict_medicine_side_effect_question(
         text
     )

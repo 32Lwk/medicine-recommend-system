@@ -995,6 +995,10 @@ body[data-ui-variant="sage"] .chat-input button[type="submit"].ui-send:hover {
   background: rgba(44, 52, 64, 0.55);
 }
 
+.onboarding-overlay.onboarding-overlay--highlight-cutout {
+  transition: clip-path 0.2s ease;
+}
+
 [data-ui-variant="sage"] #onboarding-container,
 [data-ui-variant="sage"] .onboarding-container {
   background: #ffffff;
@@ -1093,6 +1097,34 @@ body[data-ui-variant="sage"] .chat-input button[type="submit"].ui-send:hover {
 [data-ui-variant="sage"] .onboarding-highlight {
   box-shadow: 0 0 0 4px rgba(91, 124, 153, 0.45),
               0 0 20px 8px rgba(91, 124, 153, 0.25) !important;
+}
+
+/* ステップ1: Sage 入力バー — ステップ2/3 と同じ緑パルス */
+body[data-ui-variant="sage"].onboarding-open[data-onboarding-interaction="1"] .chat-input.onboarding-highlight {
+  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.5),
+              0 0 20px 8px rgba(76, 175, 80, 0.3),
+              0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  animation: onboardingPulse 2s ease-in-out infinite;
+}
+
+/* ステップ2/3: Sage — 同じ緑パルス（ボタン面の色は変更しない） */
+body[data-ui-variant="sage"].onboarding-open[data-onboarding-interaction="2"] #safetyRailCta.onboarding-highlight,
+body[data-ui-variant="sage"].onboarding-open[data-onboarding-interaction="2"] .ui-safety-rail__cta.onboarding-highlight,
+body[data-ui-variant="sage"].onboarding-open[data-onboarding-interaction="3"] #sage-admin-request-btn.onboarding-highlight {
+  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.5),
+              0 0 20px 8px rgba(76, 175, 80, 0.3),
+              0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  animation: onboardingPulse 2s ease-in-out infinite;
+}
+
+/* ステップ3: 強調中も人型ボタンの通常色を維持（#eef4f8 等で上書きしない） */
+body[data-ui-variant="sage"].onboarding-open[data-onboarding-interaction="3"] #sage-admin-request-btn.onboarding-highlight {
+  background: var(--ui-primary-dark) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+body[data-ui-variant="sage"].onboarding-open[data-onboarding-interaction="3"] #sage-admin-request-btn.onboarding-highlight .ui-toolbar-icon--filled {
+  color: #fff !important;
 }
 
 /* Info modal — match userInfoModal sizing */

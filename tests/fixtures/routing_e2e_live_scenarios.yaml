@@ -1,0 +1,241 @@
+# localhost ルーティング E2E — 実 HTTP 経路検証
+# expect_route: Concierge | Physical | MedicineQA | Counseling | SessionOps | Store | any
+# expect_render: sage_reco | sage_qa | sage_status | any
+# expect_kind / must_not_kind: diagnosis.kind
+# text_should_contain: いずれか一致
+# text_must_not_contain: すべて不在
+
+live_scenarios:
+  # --- 技術・Concierge（早期 medicine_qa バイパス防止） ---
+  - id: tech_gitlab_github_diff
+    description: "GitLab/GitHub 比較は Concierge（医薬品Q&A禁止）"
+    category: tech_concierge
+    turns:
+      - user: "GitlabとGithubの違いは？"
+        expect_route: Concierge
+        must_not_kind: medicine_qa
+        text_must_not_contain:
+          - "医薬品相談回答"
+        text_should_contain:
+          - "GitHub"
+          - "GitLab"
+
+  - id: tech_github_canonical_casual
+    description: "口語・GitHub正本"
+    category: tech_concierge
+    turns:
+      - user: "githubが正本なの？gitlabは？"
+        expect_route: Concierge
+        must_not_kind: medicine_qa
+        text_must_not_contain:
+          - "医薬品相談回答"
+
+  - id: tech_stack_casual
+    description: "技術スタック口語"
+    category: tech_concierge
+    turns:
+      - user: "このアプリ何で動いてるの？"
+        expect_route: Concierge
+        must_not_kind: medicine_qa
+        text_should_contain:
+          - "FastAPI"
+          - "Cloud Run"
+
+  - id: tech_cloud_diff
+    description: "クラウド比較"
+    category: tech_concierge
+    turns:
+      - user: "GCP と AWS の構成の違いを詳しく教えて"
+        expect_route: Concierge
+        must_not_kind: medicine_qa
+        text_should_contain:
+          - "GCP"
+          - "AWS"
+
+  - id: tech_app_about
+    description: "アプリ説明"
+    category: tech_concierge
+    turns:
+      - user: "ここは何ができるの？"
+        expect_route: Concierge
+        must_not_kind: medicine_qa
+
+  - id: tech_changelog
+    description: "更新履歴"
+    category: tech_concierge
+    turns:
+      - user: "最近何が変わった？"
+        expect_route: Concierge
+        must_not_kind: medicine_qa
+
+  # --- 症状・Physical（日常表現） ---
+  - id: symptom_casual_headache
+    description: "口語頭痛"
+    category: physical
+    turns:
+      - user: "頭バキバキ…"
+        expect_render: sage_reco
+        timeout_s: 180
+
+  - id: symptom_polite_sore_throat
+    description: "丁寧語のど痛"
+    category: physical
+    turns:
+      - user: "のどが痛くてつらいです"
+        expect_render: sage_reco
+        timeout_s: 180
+
+  - id: symptom_vague_unwell
+    description: "曖昧な体調不良"
+    category: physical
+    turns:
+      - user: "なんか調子悪いんだけど"
+        expect_render: sage_reco
+        timeout_s: 180
+
+  - id: symptom_fever_child
+    description: "子供の熱（年齢配慮の案内）"
+    category: physical
+    turns:
+      - user: "5歳の子供が38度の熱があります"
+        timeout_s: 180
+        text_should_contain:
+          - "5歳"
+        text_must_not_contain:
+          - "どのお薬についてのご質問か"
+
+  # --- 医薬品 Q&A ---
+  - id: medicine_side_effect_named
+    description: "薬名副作用"
+    category: medicine_qa
+    turns:
+      - user: "ロキソニンの副作用教えて"
+        expect_route: MedicineQA
+        expect_render: sage_qa
+        text_should_contain:
+          - "副作用"
+
+  - id: medicine_discovery_cold
+    description: "風邪薬探索"
+    category: medicine_qa
+    turns:
+      - user: "風邪薬ある？"
+        expect_route: MedicineQA
+        timeout_s: 120
+
+  - id: medicine_doping_general
+    description: "ドーピング一般"
+    category: medicine_qa
+    turns:
+      - user: "市販薬でドーピングに引っかかる成分ってある？"
+        expect_route: MedicineQA
+        text_should_contain:
+          - "ドーピング"
+
+  # --- 境界・複合意図 ---
+  - id: boundary_symptom_plus_gpt
+    description: "症状＋GPT技術"
+    category: boundary
+    turns:
+      - user: "のど痛いんだけど、このチャットGPT使ってる？"
+        expect_render: sage_reco
+        timeout_s: 180
+        text_should_contain:
+          - "のど"
+
+  - id: boundary_medicine_then_tech
+    description: "薬→技術の話題転換"
+    category: boundary
+    turns:
+      - user: "頭痛がする"
+        expect_render: sage_reco
+        timeout_s: 180
+      - user: "GitHubとGitLabどっちが正本？"
+        expect_route: Concierge
+        must_not_kind: medicine_qa
+        text_must_not_contain:
+          - "医薬品相談回答"
+
+  - id: boundary_tech_then_medicine
+    description: "技術→症状転換"
+    category: boundary
+    turns:
+      - user: "技術スタック教えて"
+        expect_route: Concierge
+        must_not_kind: medicine_qa
+      - user: "話変わるけど、頭痛がする"
+        expect_render: sage_reco
+        timeout_s: 180
+
+  - id: boundary_compound_priority_tech
+    description: "複合・技術優先（Concierge または症状優先の明示defer）"
+    category: boundary
+    turns:
+      - user: "頭痛だけど、まずGitHubとGitLabの違いを教えて"
+        timeout_s: 180
+        text_should_contain:
+          - "GitHub"
+          - "GitLab"
+        text_must_not_contain:
+          - "医薬品相談回答"
+
+  # --- 多ターン文脈 ---
+  - id: flow_tech_followup
+    description: "技術→深掘り"
+    category: multi_turn
+    turns:
+      - user: "このサービスの技術構成は？"
+        expect_route: Concierge
+        must_not_kind: medicine_qa
+      - user: "もっと詳しく"
+        expect_route: Concierge
+        must_not_kind: medicine_qa
+      - user: "ありがとう"
+        expect_route: Concierge
+
+  - id: flow_reco_then_qa
+    description: "推奨→追質問"
+    category: multi_turn
+    turns:
+      - user: "頭が痛いです"
+        expect_render: sage_reco
+        timeout_s: 180
+      - user: "1番目の薬、眠くならない？"
+        expect_render: sage_qa
+        must_not_kind: medicine_type_unrecognized
+
+  - id: flow_counseling_ack
+    description: "相槌・雑談"
+    category: multi_turn
+    turns:
+      - user: "のど痛くてつらい"
+        expect_render: sage_reco
+        timeout_s: 180
+      - user: "了解"
+        expect_route: Concierge
+
+  # --- オフトピック・リダイレクト ---
+  - id: off_topic_weather
+    description: "天気はリダイレクト"
+    category: redirect
+    turns:
+      - user: "今日の天気教えて"
+        expect_route: Concierge
+        must_not_kind: medicine_qa
+
+  - id: greeting_only
+    description: "挨拶"
+    category: redirect
+    turns:
+      - user: "こんにちは"
+        expect_route: Concierge
+
+  - id: thanks_after_help
+    description: "感謝"
+    category: redirect
+    turns:
+      - user: "GitlabとGithubの違いは？"
+        expect_route: Concierge
+        must_not_kind: medicine_qa
+      - user: "ありがとう、助かった"
+        expect_route: Concierge

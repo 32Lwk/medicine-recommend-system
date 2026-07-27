@@ -98,6 +98,10 @@ _EXACT_THANKS = frozenset({
 
     "thank you",
 
+    "サンキュー",
+
+    "サンクス",
+
 })
 
 CONCIERGE_META_INTENTS = frozenset({
@@ -219,7 +223,10 @@ def _is_medicine_term_definition(text: str) -> bool:
     if re.search(r"otc", tl):
         return True
     if "市販薬" in t and not is_symptom_input(t):
-        return True
+        # 「市販薬とは？」等の定義質問のみ。相談・探索（「市販薬でなんとか」）は除外。
+        if re.search(r"(って|とは|てなに|の意味|是什么)", t):
+            return True
+        return False
     return False
 
 
@@ -269,6 +276,36 @@ def looks_like_user_question(text: str) -> bool:
             t.rstrip("？?"),
         )
     )
+
+
+_INQUIRY_REQUEST_RE = re.compile(
+    r"教えて|教えてください|知りたい|聞きたい|説明して|話して",
+    re.I,
+)
+_CONVERSATIONAL_REQUEST_RE = re.compile(
+    r"話相手|話しかけ|付き合って|退屈|暇だから|退屈だから|寂しい|誰か.*?話|話聞いて",
+    re.I,
+)
+
+
+def looks_like_conversational_request(text: str) -> bool:
+    """雑談・会話相手を求める入力（医薬品相談ではない）。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    return bool(_CONVERSATIONAL_REQUEST_RE.search(t))
+
+
+def looks_like_inquiry(text: str) -> bool:
+    """疑問符・語尾がなくても、情報や説明を求める入力か。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    if looks_like_user_question(t):
+        return True
+    if _INQUIRY_REQUEST_RE.search(t):
+        return True
+    return bool(_CONVERSATIONAL_REQUEST_RE.search(t))
 
 
 def looks_like_service_identity_question(text: str) -> bool:
@@ -436,8 +473,16 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"利用規約|免責|禁止事項"), "doc_terms"),
     (re.compile(r"(あなた|あんた)(について|は誰|って何|は何|のこと)"), "app_about"),
     (re.compile(r"自己紹介"), "app_about"),
-    (re.compile(r"(このツール|このアプリ|このボット)(について|とは|は何)"), "app_about"),
-    (re.compile(r"(更新履歴|最近.{0,16}更新|更新内容|更新.{0,6}教え|CHANGELOG|リリース履歴|変更履歴|関連更新)"), "doc_changelog"),
+    (re.compile(r"(この|本)(ツール|アプリ|ボット|チャット|サービス).{0,16}(誰|だれ).{0,8}(作|開発)"), "app_about"),
+    (re.compile(r"(誰|だれ).{0,12}(作|開発|作った|作って).{0,8}(の|か)"), "app_about"),
+    (re.compile(
+        r"(この|本)(ツール|アプリ|ボット|チャット|サービス).{0,16}"
+        r"(どうやって|どういう仕組み|どう動|何で|なにで|何を|なにを).{0,8}(動|使|動い|走|稼働)"
+    ), "architecture"),
+    (re.compile(r"(会話|相談|チャット|メッセージ).{0,12}(内容|履歴|データ).{0,8}(保存|どこ|残|記録)"), "architecture"),
+    (re.compile(r"(この|本)(チャット|サービス|アプリ|ツール).{0,16}(GPT|OpenAI|LLM|AI|人工知能|生成AI)", re.I), "architecture"),
+    (re.compile(r"(GPT|OpenAI|LLM|ChatGPT).{0,12}(使|利用|採用|ベース)", re.I), "architecture"),
+    (re.compile(r"(更新履歴|最近.{0,16}(更新|変わ|新機能|改良|リリース|アップデート)|更新内容|更新.{0,6}教え|CHANGELOG|リリース履歴|変更履歴|関連更新)"), "doc_changelog"),
     (re.compile(r"what changed|recent(ly)?.*(update|change|release|app)", re.I), "doc_changelog"),
     (re.compile(r"(マルチエージェント|薬はどうやって|選び方の仕組み|内部構成)"), "architecture"),
     (re.compile(r"(技術スタック|技術構成|開発環境|使ってる技術|tech\s*stack|デプロイ|インフラ)"), "architecture"),
@@ -456,7 +501,9 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"(運営者|連絡先|お問い合わせ|不具合.{0,4}報告)"), "doc_operator"),
     (re.compile(r"LINE.{0,16}(どこ|動|ホスト|Webhook|サーバ)", re.I), "architecture"),
     (re.compile(r"(CloudWatch|Cloud\s*Logging|/health|ヘルスチェック|監視|ログ(?:の|は|を|で|先|出力|確認))", re.I), "architecture"),
-    (re.compile(r"(CDN|医薬品画像|images\.yutok)", re.I), "architecture"),
+    (re.compile(r"(CDN|医薬品.{0,6}画像|images\.yutok|画像.{0,8}(CDN|配信|どこ))", re.I), "architecture"),
+    (re.compile(r"(推奨|おすすめ|オススメ).{0,16}(ルール|LLM|AI|仕組み|ロジック|ベース)", re.I), "architecture"),
+    (re.compile(r"(ルールベース|rule[_\s-]?based).{0,16}(推奨|おすすめ|市販薬|選)", re.I), "architecture"),
     (re.compile(r"Chat\s*Pipeline|IntentRouter", re.I), "architecture"),
     (re.compile(r"PhysicalOrchestrator|TriageAgent|ConciergeAgent", re.I), "architecture"),
     (re.compile(r"Comprehend\s*Medical", re.I), "architecture"),
@@ -549,12 +596,10 @@ def probe_session_admin_intent(user_text: str) -> Optional[str]:
 def probe_meta_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
     """
     メタ質問のキーワードプローブ。LLM トリアージ・meta_triage を省略する高速パス用。
-    医薬品相談・症状入力は None。
+    構造パターン（architecture 等）を医薬品相談ヒューリスティックより先に評価する。
     """
     text = (user_text or "").strip()
-    if not text or _is_medicine_consultation(text):
-        return None
-    if len(text) > 120:
+    if not text or len(text) > 120:
         return None
     for pattern, intent in _META_PROBE_RULES:
         if pattern.search(text):
@@ -567,6 +612,8 @@ def probe_meta_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
         for pattern, intent in _META_PROBE_RULES_EXTENDED:
             if pattern.search(text):
                 return intent
+    if _is_medicine_consultation(text):
+        return None
     return None
 
 

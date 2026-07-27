@@ -270,20 +270,30 @@ def has_explicit_symptom_signal(message: str) -> bool:
     if classify_concierge_intent(text) in ("greeting", "thanks"):
         return False
 
+    if re.match(r"^お疲れ(?:様|さま)?[。!！]?$", text.strip()):
+        return False
+
     normalized = normalize_latin_width(text)
     if is_known_short_symptom(text) or is_known_short_symptom(normalized):
+        return True
+
+    symptom_keywords = [
+        '痛い', '痛み', '熱', '発熱', '咳', '鼻水', '頭痛', '腹痛', '吐き気', '嘔吐', '下痢', '便秘',
+        '痒い', 'かゆい', '腫れ', '炎症', '発疹', '湿疹', 'めまい', 'だるい', '倦怠感', '疲れ', '不調', '症状',
+        '喉', 'のど', '胃', 'お腹', '腸', '目', '耳', '鼻', '皮膚', '関節', '筋肉', '肩こり', '腰痛', '風邪', 'インフルエンザ',
+        '寒気', '寒気がする', '寒気がします', '寒気があります', '寒気があり', '寒気が',
+        '痺れ', 'しびれ', 'むくみ', '倦怠', '倦怠感', 'だるさ',
+    ]
+    if any(keyword in text for keyword in symptom_keywords):
+        return True
+    if re.search(r"しんど|つらい|きつい|キツイ|だるい|でら痛|めっちゃ痛|が痛い|痛っ|ぐるぐる", text):
+        return True
+    if re.search(r"調子.{0,2}悪|体調.{0,2}悪|体調不良", text):
         return True
 
     if not is_symptom_input(text):
         return False
 
-    symptom_keywords = [
-        '痛い', '痛み', '熱', '発熱', '咳', '鼻水', '頭痛', '腹痛', '吐き気', '嘔吐', '下痢', '便秘',
-        '痒い', 'かゆい', '腫れ', '炎症', '発疹', '湿疹', 'めまい', 'だるい', '倦怠感', '疲れ', '不調', '症状',
-        '喉', 'のど', '胃', '腸', '目', '耳', '鼻', '皮膚', '関節', '筋肉', '肩こり', '腰痛', '風邪', 'インフルエンザ',
-        '寒気', '寒気がする', '寒気がします', '寒気があります', '寒気があり', '寒気が',
-        '痺れ', 'しびれ', 'むくみ', '倦怠', '倦怠感', 'だるさ',
-    ]
     recommendation_intent_keywords = [
         'おすすめ', 'お勧め', 'オススメ',
         'どの薬', 'どれ', '何がいい', 'なにがいい', '何を飲めば', 'なにを飲めば',
@@ -291,9 +301,6 @@ def has_explicit_symptom_signal(message: str) -> bool:
         '薬ありますか', '薬ある', '市販薬', '薬ください', '薬ちょうだい',
     ]
 
-    has_symptom_keyword = any(keyword in text for keyword in symptom_keywords)
-    if has_symptom_keyword:
-        return True
     if any(k in text for k in recommendation_intent_keywords):
         if _is_store_procurement_intent(text):
             return False

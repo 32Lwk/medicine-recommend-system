@@ -1949,6 +1949,12 @@ body:has(#app > .ui-app) #app {
   aspect-ratio: 20 / 13;
 }
 
+.ui-med-image--card img,
+.ui-med-image--hero img {
+  object-fit: contain;
+  object-position: center;
+}
+
 .ui-med-image--playful {
   aspect-ratio: 4 / 3;
 }

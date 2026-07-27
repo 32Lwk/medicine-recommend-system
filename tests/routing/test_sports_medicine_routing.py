@@ -94,6 +94,7 @@ def test_try_triage_ask_qa_skipped_on_cold_start(mock_agent):
         "sid",
         "陸上競技でも使える風邪薬を教えてください。",
         "陸上競技でも使える風邪薬を教えてください。",
+        MagicMock(),
         routing=MagicMock(triage_category="Ask"),
     )
     assert result is None
