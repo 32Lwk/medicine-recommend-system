@@ -320,12 +320,27 @@ def generate_personalized_advice(
 
     try:
         from src.core.i18n_prompts import normalize_lang
-        from src.core.llm_client import chat_completion_create
-        from src.core.i18n_prompts import append_dialect_counseling_hints, append_language_instruction
-        from src.core.translation_service import translate_medicine_recommendation
         from src.services.sse_emit import is_streaming_active
 
         lang = normalize_lang((user_attrs or {}).get("language") or (user_attrs or {}).get("lang"))
+        sid = session_id
+        stream_active = is_streaming_active(sid)
+
+        # 推奨フロー中は counsel LLM を避け SSE 180s 内に収める（stream sink 未束縛時も含む）
+        if lang == "ja" or stream_active:
+            if stream_active:
+                logger.info("SSE/recommendation path — template personalized_advice (skip counsel LLM)")
+            return _personalized_advice_fallback(
+                user_attrs,
+                user_text=user_text,
+                influenza_risk=influenza_risk,
+                influenza_reason=influenza_reason,
+            )
+
+        from src.core.llm_client import chat_completion_create
+        from src.core.i18n_prompts import append_dialect_counseling_hints, append_language_instruction
+        from src.core.translation_service import translate_medicine_recommendation
+
         system_content = append_dialect_counseling_hints(
             "あなたは親切な登録販売者です。ユーザーに寄り添った温かいアドバイスを提供してください。",
             lang,
@@ -334,44 +349,20 @@ def generate_personalized_advice(
             {"role": "system", "content": system_content},
             {"role": "user", "content": prompt},
         ]
-        sid = session_id
-        stream_active = is_streaming_active(sid)
-
-        if stream_active and lang == "ja":
-            logger.info("SSE active — using template personalized_advice (skip counsel LLM)")
-            return _personalized_advice_fallback(
-                user_attrs,
-                user_text=user_text,
-                influenza_risk=influenza_risk,
-                influenza_reason=influenza_reason,
-            )
-
-        if stream_active or lang != "ja":
-            user_content = append_language_instruction(prompt, lang) if lang != "ja" else prompt
-            response = chat_completion_create(
-                client,
-                model_role="counsel",
-                path="chat_response_service.personalized_advice",
-                messages=[
-                    messages[0],
-                    {"role": "user", "content": user_content},
-                ],
-                temperature=0.7,
-                max_tokens=200,
-            )
-            advice = response.choices[0].message.content.strip()
-            if lang != "ja":
-                advice = translate_medicine_recommendation(advice, lang, session_id=sid)
-        else:
-            response = chat_completion_create(
-                client,
-                model_role="counsel",
-                path="chat_response_service.personalized_advice",
-                messages=messages,
-                temperature=0.7,
-                max_tokens=200,
-            )
-            advice = response.choices[0].message.content.strip()
+        user_content = append_language_instruction(prompt, lang)
+        response = chat_completion_create(
+            client,
+            model_role="counsel",
+            path="chat_response_service.personalized_advice",
+            messages=[
+                messages[0],
+                {"role": "user", "content": user_content},
+            ],
+            temperature=0.7,
+            max_tokens=200,
+        )
+        advice = response.choices[0].message.content.strip()
+        advice = translate_medicine_recommendation(advice, lang, session_id=sid)
 
         logger.info(f"✅ 個別アドバイス生成完了: {len(advice)}字")
         return advice

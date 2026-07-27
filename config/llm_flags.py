@@ -253,6 +253,11 @@ def is_explain_batch_stabilize_enabled() -> bool:
     return _flag("LATENCY_EXPLAIN_BATCH_STABILIZE", False)
 
 
+def is_physical_preview_rb_enabled() -> bool:
+    """Physical カテゴリ確定前の rule_based プレビュー（二重スコアリングの原因になりやすい）。"""
+    return _flag("PHYSICAL_PREVIEW_RB", False)
+
+
 def is_rb_llm_external_enabled() -> bool:
     """missing_info / 説明生成 LLM を rule_based 関数外（chat flow）へ移す（既定 OFF）。
 
