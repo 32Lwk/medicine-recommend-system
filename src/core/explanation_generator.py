@@ -10,7 +10,7 @@ import math
 import os
 import re
 import time
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError, as_completed
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from typing import Dict, List
 
 from openai import OpenAI
@@ -54,6 +54,48 @@ def _rule_based_individual_notes(recommended_medicines: List[Dict]) -> List[str]
             parts.append(f"年齢制限: {age_restriction.strip()}")
         notes.append("\n".join(parts))
     return notes
+
+
+def _rule_based_note_for_medicine(med: Dict, index: int) -> str:
+    """単一医薬品のルールベース使用上の注意（本文のみ）。"""
+    notes = _rule_based_individual_notes([med])
+    if not notes:
+        return "用法用量を守ってご使用ください。"
+    body = notes[0]
+    prefix = f"{index}つ目：{med.get('product_name', '')}\n"
+    if body.startswith(prefix):
+        return body[len(prefix):]
+    return body
+
+
+def _augment_medicine_prompt_with_timeout(
+    user_text: str,
+    base_prompt: str,
+    *,
+    recommended_medicines: List[Dict],
+    timeout_sec: float,
+) -> str:
+    """Medicine KB / Local RAG 追記。タイムアウト時は base_prompt のみ返す。"""
+    from src.services.bedrock_kb_retrieve import augment_medicine_prompt_with_kb
+
+    with ThreadPoolExecutor(max_workers=1, thread_name_prefix="explain_kb") as pool:
+        fut = pool.submit(
+            augment_medicine_prompt_with_kb,
+            user_text,
+            base_prompt,
+            recommended_medicines=recommended_medicines,
+        )
+        try:
+            return fut.result(timeout=timeout_sec)
+        except FuturesTimeoutError:
+            logger.warning(
+                "Medicine KB augment hard timeout after %.0fs — using base prompt",
+                timeout_sec,
+            )
+            return base_prompt
+        except Exception as exc:
+            logger.warning("Medicine KB augment failed: %s — using base prompt", exc)
+            return base_prompt
 
 
 def _fetch_batch_usage_notes_text(
@@ -775,12 +817,13 @@ def generate_usage_notes_and_consultation_with_gpt(
         or ""
     )
     prompt += _sports_context_instruction(user_text)
-    from src.services.bedrock_kb_retrieve import augment_medicine_prompt_with_kb
+    from config.llm_config import get_medicine_kb_augment_timeout_sec
 
-    prompt = augment_medicine_prompt_with_kb(
+    prompt = _augment_medicine_prompt_with_timeout(
         user_text,
         prompt,
         recommended_medicines=recommended_medicines,
+        timeout_sec=get_medicine_kb_augment_timeout_sec(),
     )
     prompt += """JSON形式で出力:
 {
@@ -867,7 +910,7 @@ def generate_usage_notes_and_consultation_with_gpt(
             if med_result:
                 individual_note = med_result.get('usage_notes', '')
             else:
-                individual_note = generate_individual_usage_notes_with_gpt(med, client)
+                individual_note = _rule_based_note_for_medicine(med, i)
 
             age_restriction = med.get('age_restriction', '')
             age_restriction_display = ''
@@ -922,73 +965,11 @@ def generate_usage_notes_and_consultation_with_gpt(
         individual_notes = _rule_based_individual_notes(recommended_medicines)
         usage_notes_individual = '\n\n'.join(individual_notes)
     except Exception as e:
-        logger.warning(f"バッチ処理エラー: {e}。フォールバック: 個別並列処理に切り替えます")
-
-        def _build_fallback_note(i_med_tuple):
-            i, med = i_med_tuple
-            individual_note = generate_individual_usage_notes_with_gpt(med, client)
-
-            ingredients = str(med.get('ingredients', '')).lower()
-            has_irritant_laxative = any(
-                ingredient.lower() in ingredients
-                for ingredient in IRRITANT_LAXATIVE_INGREDIENTS
-            )
-            if has_irritant_laxative:
-                warning_text = "刺激性下剤が含まれています"
-                if warning_text not in individual_note and "連用" not in individual_note:
-                    warning_html = '<strong>⚠️ 重要：</strong>本品には刺激性下剤が含まれています。連用により耐性が生じる可能性があるため、3日以上の連用は避けてください。症状が続く場合は医師にご相談ください。'
-                    individual_note = individual_note + '\n\n' + warning_html if individual_note else warning_html
-
-            from src.core.recommendation.pollen_rhinitis_scoring import (
-                append_vasoconstrictor_nasal_warning,
-                mark_vasoconstrictor_flag,
-            )
-            mark_vasoconstrictor_flag(med)
-            individual_note = append_vasoconstrictor_nasal_warning(individual_note or "", med)
-
-            age_restriction = med.get('age_restriction', '')
-            age_restriction_display = ''
-            if isinstance(age_restriction, float) and math.isnan(age_restriction):
-                age_restriction = ''
-            if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
-                if '15歳未満' in age_restriction:
-                    age_restriction_display = '年齢制限: 15歳以上の方が対象です。'
-                elif '7歳未満' in age_restriction:
-                    age_restriction_display = '年齢制限: 7歳以上の方が対象です。'
-                elif '12歳未満' in age_restriction:
-                    age_restriction_display = '年齢制限: 12歳以上の方が対象です。'
-                else:
-                    match = re.search(r'(\d+)歳', age_restriction)
-                    if match:
-                        age_val = match.group(1)
-                        age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
-            elif isinstance(age_restriction, (int, float)):
-                if not (isinstance(age_restriction, float) and math.isnan(age_restriction)):
-                    try:
-                        age_restriction_display = f'年齢制限: {int(age_restriction)}歳以上の方が対象です。'
-                    except (ValueError, OverflowError):
-                        pass
-
-            note_text = f"{i}つ目：{med.get('product_name', '')}\n{individual_note}"
-            if age_restriction_display:
-                note_text += f"\n{age_restriction_display}"
-            if user_info.get('treatment_mention', False):
-                note_text += "\n⚠️ <strong>治療中の方へ</strong>: 現在治療中の疾患がある場合、市販薬の服用前に必ず主治医や薬剤師にご相談ください。重篤な疾患で治療中の方が市販薬を服用する場合、主疾患への影響が重要になります。"
-            return i, note_text
-
-        notes_by_index: dict[int, str] = {}
-        meds_indexed = list(enumerate(recommended_medicines, 1))
-        max_w = min(3, len(meds_indexed)) if meds_indexed else 1
-        with ThreadPoolExecutor(max_workers=max_w) as pool:
-            futs = {pool.submit(_build_fallback_note, item): item[0] for item in meds_indexed}
-            for fut in as_completed(futs):
-                try:
-                    idx, note_text = fut.result()
-                    notes_by_index[idx] = note_text
-                except Exception as exc:
-                    logger.warning("Parallel fallback usage_notes task failed: %s", exc)
-
-        individual_notes = [notes_by_index[i] for i in sorted(notes_by_index)]
+        logger.warning(
+            "バッチ処理エラー: %s。フォールバック: ルールベース使用上の注意",
+            e,
+        )
+        individual_notes = _rule_based_individual_notes(recommended_medicines)
         usage_notes_individual = '\n\n'.join(individual_notes)
 
     enhanced_user_info = user_info.copy()

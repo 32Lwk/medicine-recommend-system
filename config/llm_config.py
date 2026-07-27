@@ -128,12 +128,17 @@ def get_role_timeout_sec(role: str) -> float:
 
 def get_explain_batch_hard_timeout_sec() -> float:
     """バッチ使用上の注意 LLM 全体の上限（SSE 180s 以内に収める）。"""
-    return _get_float("EXPLAIN_BATCH_HARD_TIMEOUT_SEC", 90.0)
+    return _get_float("EXPLAIN_BATCH_HARD_TIMEOUT_SEC", 60.0)
 
 
 def get_explain_empty_retry_max_latency_sec() -> float:
     """空応答リトライは初回がこの秒数未満のときのみ（タイムアウト後の二重 60s を防ぐ）。"""
     return _get_float("EXPLAIN_EMPTY_RETRY_MAX_LATENCY_SEC", 20.0)
+
+
+def get_medicine_kb_augment_timeout_sec() -> float:
+    """explain 前の Medicine KB / Local RAG 追記上限。"""
+    return _get_float("MEDICINE_KB_AUGMENT_TIMEOUT_SEC", 15.0)
 
 
 def get_reasoning_effort(role: str = "triage") -> str:

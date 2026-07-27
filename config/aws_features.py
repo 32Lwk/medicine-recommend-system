@@ -15,9 +15,11 @@ TRANSLATION_PROVIDER_AWS = "translate"
 
 CONCIERGE_RAG_LOCAL = "local"
 CONCIERGE_RAG_BEDROCK = "bedrock_kb"
+CONCIERGE_RAG_NONE = "none"
 
 MEDICINE_RAG_LOCAL = "local"
 MEDICINE_RAG_BEDROCK = "bedrock_kb"
+MEDICINE_RAG_NONE = "none"
 
 BEDROCK_KB_SEARCH_MANAGED = "managed"
 BEDROCK_KB_SEARCH_VECTOR = "vector"
@@ -56,6 +58,8 @@ def get_concierge_rag_provider() -> str:
     p = _env("CONCIERGE_RAG_PROVIDER", CONCIERGE_RAG_LOCAL).lower()
     if p in (CONCIERGE_RAG_BEDROCK, "bedrock", "kb"):
         return CONCIERGE_RAG_BEDROCK
+    if p in (CONCIERGE_RAG_NONE, "off", "false", "0", "disabled"):
+        return CONCIERGE_RAG_NONE
     return CONCIERGE_RAG_LOCAL
 
 
@@ -67,6 +71,8 @@ def get_medicine_rag_provider() -> str:
     p = _env("MEDICINE_RAG_PROVIDER", MEDICINE_RAG_LOCAL).lower()
     if p in (MEDICINE_RAG_BEDROCK, "bedrock", "kb"):
         return MEDICINE_RAG_BEDROCK
+    if p in (MEDICINE_RAG_NONE, "off", "false", "0", "disabled"):
+        return MEDICINE_RAG_NONE
     return MEDICINE_RAG_LOCAL
 
 
