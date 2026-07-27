@@ -47,6 +47,7 @@ import json
 import re
 import logging
 import math
+import time
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from openai import OpenAI
@@ -1676,6 +1677,7 @@ def rule_based_recommendation(
     # ステップ6: 説明生成
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ6: 説明生成 ---")
+    _step6_t0 = time.time()
     recommendations = []
     for i, candidate in enumerate(validated_candidates, 1):
         explanation = generate_explanation(candidate, nlu_result, safety_result, scoring_user_info)
@@ -1721,10 +1723,18 @@ def rule_based_recommendation(
             recommendation_item['has_vasoconstrictor_nasal'] = True
         
         recommendations.append(recommendation_item)
+
+    logger.info(
+        "rule_based step6 explanations done: count=%s elapsed_ms=%.0f sid=%s",
+        len(recommendations),
+        (time.time() - _step6_t0) * 1000,
+        session_id or "",
+    )
     
     # ステップ7: 使用上の注意と医師相談アドバイスをChatGPTで生成
     if DEBUG_MODE or logger.level <= logging.DEBUG:
         logger.debug(f"\n--- ステップ7: 使用上の注意と医師相談アドバイスの生成 ---")
+    _step7_t0 = time.time()
     if defer_explanation_llm:
         usage_and_consultation = {"usage_notes": "", "doctor_consultation": ""}
     else:
@@ -1732,6 +1742,12 @@ def rule_based_recommendation(
             recommendations, nlu_result, scoring_user_info, client
         )
         _mark_rb_pipeline_step("rb_explain_batch_done")
+    logger.info(
+        "rule_based step7 usage_notes done: defer=%s elapsed_ms=%.0f sid=%s",
+        defer_explanation_llm,
+        (time.time() - _step7_t0) * 1000,
+        session_id or "",
+    )
 
     usage_and_consultation = merge_pollen_combination_into_usage(
         usage_and_consultation, recommendations, nlu_result, user_text

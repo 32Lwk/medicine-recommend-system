@@ -129,6 +129,19 @@ def test_medicine_retrieve_builds_query_with_product_names(monkeypatch):
     assert "カロナールA" in query
 
 
+def test_medicine_retrieve_none_provider_skips_rag(monkeypatch):
+    monkeypatch.setenv("MEDICINE_RAG_PROVIDER", "none")
+
+    with patch(
+        "src.services.local_rag_retrieve.retrieve_local_context",
+    ) as mock_local:
+        from src.services.bedrock_kb_retrieve import retrieve_medicine_context
+
+        result = retrieve_medicine_context("のどが痛い", use_cache=False)
+    assert result["chunk_count"] == 0
+    mock_local.assert_not_called()
+
+
 def test_augment_medicine_prompt_appends_kb_block(monkeypatch):
     monkeypatch.setenv("MEDICINE_RAG_PROVIDER", "bedrock_kb")
     monkeypatch.setenv("BEDROCK_MEDICINE_KB_ID", "MEDKB")
@@ -249,7 +262,44 @@ def test_sse_and_non_stream_share_kb_augment(monkeypatch):
     assert all("KB_BLOCK" not in c for c in calls)  # augment appends, records pre-augment base
 
 
+def test_augment_reference_local_rag_appends_block(monkeypatch):
+    """CONCIERGE_RAG_PROVIDER=local（既定）でも retrieve 結果を参照ブロックに追記する。"""
+    monkeypatch.delenv("CONCIERGE_RAG_PROVIDER", raising=False)
+
+    with patch(
+        "src.services.bedrock_kb_retrieve.retrieve_concierge_context",
+        return_value={
+            "chunks": ["CodePipeline → CodeBuild → ECR → ECS"],
+            "source_uris": ["docs/concierge/technical/01-cross-cloud-architecture.md"],
+            "provider": "local_rag",
+        },
+    ):
+        from src.services.bedrock_kb_retrieve import augment_reference_with_kb
+
+        out = augment_reference_with_kb(
+            "CodePipeline デプロイ", "LOCAL SSOT", intent="architecture"
+        )
+    assert "LOCAL SSOT" in out
+    assert "ローカルナレッジ参照" in out
+    assert "CodePipeline" in out
+
+
+def test_augment_reference_empty_local_returns_base(monkeypatch):
+    monkeypatch.delenv("CONCIERGE_RAG_PROVIDER", raising=False)
+
+    with patch(
+        "src.services.bedrock_kb_retrieve.retrieve_concierge_context",
+        return_value={"chunks": [], "source_uris": [], "provider": "local_rag"},
+    ):
+        from src.services.bedrock_kb_retrieve import augment_reference_with_kb
+
+        out = augment_reference_with_kb("質問", "LOCAL ONLY", intent="architecture")
+    assert out == "LOCAL ONLY"
+
+
 def test_augment_reference_kb_off_returns_base(monkeypatch):
+    monkeypatch.setenv("CONCIERGE_RAG_PROVIDER", "none")
+
     from src.services.bedrock_kb_retrieve import augment_reference_with_kb
 
     out = augment_reference_with_kb("CodePipeline", "LOCAL SSOT", intent="architecture")

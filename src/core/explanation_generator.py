@@ -477,7 +477,11 @@ def _kb_citation_for_explanation(
     user_info: Dict,
 ) -> str:
     """方式 A: retrieve 結果から citation 1–2 文を返す（LLM 追加呼び出しなし）。"""
+    from config.aws_features import MEDICINE_RAG_NONE, get_medicine_rag_provider
     from src.services.bedrock_kb_retrieve import retrieve_medicine_context
+
+    if get_medicine_rag_provider() == MEDICINE_RAG_NONE:
+        return ""
 
     user_text = str(
         (user_info or {}).get("user_text")

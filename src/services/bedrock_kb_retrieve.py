@@ -454,8 +454,16 @@ def retrieve_medicine_context(
     qa_focuses: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """医薬品 Q&A / 説明補強用 KB retrieve。"""
-    from config.aws_features import get_bedrock_medicine_kb_id, use_medicine_bedrock_kb_rag
+    from config.aws_features import (
+        MEDICINE_RAG_NONE,
+        get_bedrock_medicine_kb_id,
+        get_medicine_rag_provider,
+        use_medicine_bedrock_kb_rag,
+    )
     from src.services.local_rag_context import normalize_conversation_history
+
+    if get_medicine_rag_provider() == MEDICINE_RAG_NONE:
+        return _empty_result()
 
     hist = normalize_conversation_history(conversation_history)
     retrieval_query = build_medicine_retrieval_query(
@@ -570,10 +578,15 @@ def augment_reference_with_kb(
     deep: bool = False,
     top_k: Optional[int] = None,
 ) -> str:
-    """ローカル参照ブロックに Concierge KB チャンクを追記（障害時は base のみ）。"""
-    from config.aws_features import use_bedrock_kb_rag
+    """ローカル参照ブロックに Concierge KB チャンクを追記（Local / Bedrock 共通、障害時は base のみ）。"""
+    from config.aws_features import (
+        CONCIERGE_RAG_BEDROCK,
+        CONCIERGE_RAG_LOCAL,
+        get_concierge_rag_provider,
+    )
 
-    if not use_bedrock_kb_rag():
+    provider = get_concierge_rag_provider()
+    if provider not in (CONCIERGE_RAG_LOCAL, CONCIERGE_RAG_BEDROCK):
         return base_reference
 
     effective_top_k = _concierge_kb_top_k(intent, override=top_k)
@@ -584,11 +597,21 @@ def augment_reference_with_kb(
     if not retrieval_query:
         return base_reference
 
-    result = retrieve_concierge_context(retrieval_query, top_k=effective_top_k)
-    block = format_kb_context_block(result)
+    result = retrieve_concierge_context(
+        retrieval_query,
+        top_k=effective_top_k,
+        intent=intent,
+    )
+    heading = (
+        "【Bedrock Knowledge Base 参照（補助）】"
+        if provider == CONCIERGE_RAG_BEDROCK
+        else "【ローカルナレッジ参照（補助）】"
+    )
+    block = format_kb_context_block(result, heading=heading)
     if not block:
         logger.info(
-            "Bedrock KB retrieve empty — using local SSOT reference only (ingestion pending?)"
+            "Concierge KB retrieve empty — using SSOT reference only (provider=%s)",
+            provider,
         )
         return base_reference
     return f"{base_reference.rstrip()}\n\n{block}"
