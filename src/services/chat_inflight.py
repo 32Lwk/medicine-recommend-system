@@ -5,7 +5,7 @@ import threading
 import time
 from typing import Dict, Optional
 
-_IN_FLIGHT_TTL_SEC = 120.0
+_IN_FLIGHT_TTL_SEC = 300.0
 _lock = threading.Lock()
 _in_flight: Dict[str, float] = {}
 

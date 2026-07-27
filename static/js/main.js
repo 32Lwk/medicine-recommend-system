@@ -108,38 +108,34 @@
                         title: "チャット型医薬品相談ツール(β版)",
                         visual: "🤝💊",
                         visualAlt: "薬剤師がスマートフォン越しに相談を受けるイメージ",
-                        subtitle: "β版（試験運用）— より安全で分かりやすい情報提供に向けて改善を続けています",
+                        subtitle: "β版（安定運用）— GCP 本番環境（medicine.yutok.dev）",
                         body: [
                             "症状を入力すると、市販薬の候補と受診の目安をAIが案内します。医療診断の代わりではありません。"
                         ],
                         details: [
                             {
                                 summary: "完了した主な改善",
-                                description: "β版として、会話の分かりやすさ・安全性の向上を続けています。サーバー基盤とAIルーティングの大規模刷新は完了済みです。",
+                                description: "会話の分かりやすさと安全性の向上を続けています。",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask → FastAPI への移行", defaultChecked: true },
                                     { text: "GPT-5 系モデル（トリアージ・NLU・説明）", defaultChecked: true },
-                                    { text: "マルチエージェント振り分け", defaultChecked: true },
-                                    { text: "潜在空間ベースの推薦スコアリング改修", defaultChecked: true },
                                     { text: "Sage Terrace UI・導線の最適化", defaultChecked: true },
-                                    { text: "カルーセル型の医薬品表示", defaultChecked: true },
                                     { text: "LINE 連携（Messaging API）", defaultChecked: true },
-                                    { text: "LINE → Web 引き継ぎ", defaultChecked: true },
-                                    { text: "画像入力への対応", defaultChecked: true },
-                                    { text: "入力ガード・セキュリティ強化", defaultChecked: true },
-                                    { text: "店舗・施設案内の精度向上", defaultChecked: true },
-                                    { text: "Concierge 文脈ルーティング", defaultChecked: true }
+                                    { text: "Chat Pipeline v2（IntentRouter・会話基盤の刷新）", defaultChecked: true },
+                                    { text: "Medicine QA（製品画像・比較・文脈ルーティング）", defaultChecked: true },
+                                    { text: "Local RAG（医薬品ナレッジベース）", defaultChecked: true },
+                                    { text: "OTC 製品画像 CDN（Cloudflare R2）", defaultChecked: true }
                                 ]
                             },
                             {
                                 summary: "開発中・今後の予定",
-                                description: "新しい会話パイプライン（Chat Pipeline v2）の本番展開を準備中です。開発環境で先行検証しています。",
+                                description: "v2 本番カナリア展開と応答速度の改善を進めています。",
                                 itemsChecklist: true,
                                 items: [
-                                    { text: "Chat Pipeline v2（IntentRouter・会話基盤の刷新）" },
-                                    { text: "本番カナリア展開（段階的ロールアウト）" },
+                                    { text: "Chat Pipeline v2 本番カナリア展開（段階的ロールアウト）" },
                                     { text: "応答速度の最適化" },
+                                    { text: "AWS Bedrock Knowledge Base 本番連携の検討" },
                                     { text: "音声入力の改善" },
                                     { text: "体調推定（計画中）" },
                                     { text: "パーソナライズ機能（計画中）" }
@@ -148,9 +144,14 @@
                         ],
                         links: [
                             {
-                                text: "🔗 開発環境を別タブで開く",
+                                text: "🔗 GCP 開発環境を別タブで開く",
                                 url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
-                                ariaLabel: "開発環境を新しいタブで開く"
+                                ariaLabel: "GCP 開発環境を新しいタブで開く"
+                            },
+                            {
+                                text: "☁️ AWS ステージングを別タブで開く",
+                                url: "https://aws.medicine.yutok.dev/",
+                                ariaLabel: "AWS ステージングを新しいタブで開く"
                             },
                             {
                                 text: "📝 ご意見・不具合の報告",
@@ -162,18 +163,17 @@
                         buttonAria: "次のステップへ進む"
                     },
                     development: {
-                        title: "🛠️ 開発環境(dev)へようこそ",
+                        title: "🛠️ GCP 開発環境(dev)へようこそ",
                         visual: "🚧💊",
-                        visualAlt: "開発中の薬剤師相談ツールのアイコン",
-                        subtitle: '<span class="onboarding-env-badge">🛠️ ここは開発環境(dev)です</span>',
+                        visualAlt: "GCP 上で開発中の薬剤師相談ツールのアイコン",
+                        subtitle: '<span class="onboarding-env-badge">🛠️ ここは GCP 開発環境(dev)です</span>',
                         body: [
-                            'このページは<span class="onboarding-env-here">テスター・開発者向けの開発環境(dev)</span>です。本番とは別サーバーで最新機能を試せますが、表示崩れ・エラー・データリセットがある場合があります。',
-                            "一般の方は本番環境（安定版）をご利用ください。"
+                            '<span class="onboarding-env-here">GCP Cloud Run 上の開発環境(dev)</span>で、本番前の最新機能を試せます。'
                         ],
                         details: [
                             {
                                 summary: "改善・開発の進捗",
-                                description: "本番（GCP）・AWS ステージングに反映済みの改善と、この dev 環境で検証中の項目です。",
+                                description: "本番（GCP）・AWS ステージングに反映済みの改善と、この GCP dev 環境で検証中の項目です。",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask → FastAPI への移行", defaultChecked: true },
@@ -191,17 +191,64 @@
                                     { text: "Chat Pipeline v2（IntentRouter PRIMARY・dispatch 最適化）", defaultChecked: true },
                                     { text: "入力ブロックのカテゴリ別応答", defaultChecked: true },
                                     { text: "管理画面（admin）Sage Terrace UI 刷新", defaultChecked: true },
-                                    { text: "AWS ステージング（ECS Express / CodePipeline）", defaultChecked: true },
                                     { text: "Medicine QA（製品画像・比較・文脈ルーティング）", defaultChecked: true },
                                     { text: "Local RAG（医薬品ナレッジベース）", defaultChecked: true },
                                     { text: "Concierge 更新履歴・技術 Q&A", defaultChecked: true },
                                     { text: "OTC 製品画像 CDN（Cloudflare R2）", defaultChecked: true },
+                                    { text: "AWS ステージング（ECS Express / CodePipeline）", defaultChecked: true },
                                     { text: "応答速度・デプロイ時間の最適化" },
-                                    { text: "AWS Bedrock Knowledge Base 連携" },
                                     { text: "Cloud Run 起動安定化・ビルドメタ自動化" },
+                                    { text: "本番カナリア展開の準備" },
                                     { text: "音声入力の改善" },
                                     { text: "体調推定（計画中）" },
                                     { text: "パーソナライズ機能（計画中）" }
+                                ]
+                            }
+                        ],
+                        links: [
+                            {
+                                text: "🌐 本番環境(安定版)を開く",
+                                url: "https://medicine.yutok.dev/",
+                                ariaLabel: "本番環境(安定版)を新しいタブで開く"
+                            },
+                            {
+                                text: "📝 クレーム・ご意見",
+                                url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                                ariaLabel: "Googleフォームでクレーム・ご意見を送る"
+                            }
+                        ],
+                        buttonText: "次へ",
+                        buttonAria: "次のステップへ進む"
+                    },
+                    aws_staging: {
+                        title: "☁️ AWS ステージングへようこそ",
+                        visual: "☁️💊",
+                        visualAlt: "AWS 上で試験運用中の薬剤師相談ツール",
+                        subtitle: '<span class="onboarding-env-badge onboarding-env-badge--aws">☁️ ここは AWS ステージングです</span>',
+                        body: [
+                            '<span class="onboarding-env-here">AWS ECS 上のステージング環境</span>で、Amazon Translate・Polly・Bedrock Knowledge Base など GCP 本番とは異なる AWS 向け機能を試験できます。'
+                        ],
+                        details: [
+                            {
+                                summary: "この環境で試せる AWS 機能",
+                                description: "GCP 本番・GCP dev と共通の改善に加え、AWS ステージングで有効化されている機能です。",
+                                itemsChecklist: true,
+                                items: [
+                                    { text: "Chat Pipeline v2（IntentRouter PRIMARY・dispatch 最適化）", defaultChecked: true },
+                                    { text: "Medicine QA（製品画像・比較・文脈ルーティング）", defaultChecked: true },
+                                    { text: "Local RAG（医薬品ナレッジベース）", defaultChecked: true },
+                                    { text: "OTC 製品画像 CDN（Cloudflare R2）", defaultChecked: true },
+                                    { text: "Amazon Translate（翻訳）", defaultChecked: true },
+                                    { text: "Amazon Polly（読み上げ）", defaultChecked: true },
+                                    { text: "Bedrock Knowledge Base（Concierge RAG）", defaultChecked: true },
+                                    { text: "Bedrock Knowledge Base（医薬品 RAG）", defaultChecked: true },
+                                    { text: "CloudFront 静的 CDN", defaultChecked: true },
+                                    { text: "Comprehend Medical（NLU 補助）", defaultChecked: true },
+                                    { text: "ElastiCache / Redis キャッシュ", defaultChecked: true },
+                                    { text: "Concierge 更新履歴・技術 Q&A", defaultChecked: true },
+                                    { text: "Personalize ランキング（試験）" },
+                                    { text: "GCP 本番への AWS 機能反映検討" },
+                                    { text: "応答速度・デプロイ時間の最適化" }
                                 ]
                             }
                         ],
@@ -249,8 +296,7 @@
                     visual: "📞👨‍⚕️",
                     visualAlt: "薬剤師とつながることを表すアイコン",
                     body: [
-                        "AIの回答に迷ったら「薬剤師要請」から専門家に直接相談できます。",
-                        "右上の ℹ️ ボタンから使い方ガイドやFAQをいつでも確認できます。"
+                        "AIの回答に迷ったら、右上の人型ボタン（薬剤師要請）から専門家に相談できます。"
                     ],
                     buttonText: "次へ",
                     buttonAria: "次のステップへ進む"
@@ -270,6 +316,7 @@
                         "絵文字のみの送信",
                         "季節イベント対応（新年、クリスマスなど）"
                     ],
+                    hidden: true,
                     buttonText: "次へ",
                     buttonAria: "次のステップへ進む"
                 },
@@ -431,38 +478,34 @@
                         title: "Welcome to the Chat-based OTC Assistant (Beta)",
                         visual: "🤝💊",
                         visualAlt: "Illustration of a pharmacist supporting via smartphone",
-                        subtitle: "Beta release — we keep improving clarity and safety.",
+                        subtitle: "Beta (stable) — GCP production (medicine.yutok.dev)",
                         body: [
                             "Describe your symptoms; the AI suggests OTC options and when to seek care. It is not a medical diagnosis."
                         ],
                         details: [
                             {
                                 summary: "Completed improvements",
-                                description: "As a beta release, we keep improving clarity and safety. Major server and AI routing upgrades are already in place.",
+                                description: "We keep improving clarity and safety.",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Migration from Flask to FastAPI", defaultChecked: true },
                                     { text: "GPT-5 class models (triage, NLU, explanations)", defaultChecked: true },
-                                    { text: "Multi-agent routing", defaultChecked: true },
-                                    { text: "Latent-space recommendation scoring revamp", defaultChecked: true },
                                     { text: "Sage Terrace UI and flow optimization", defaultChecked: true },
-                                    { text: "Carousel-style medicine display", defaultChecked: true },
                                     { text: "LINE integration (Messaging API)", defaultChecked: true },
-                                    { text: "LINE→Web handoff", defaultChecked: true },
-                                    { text: "Image input support", defaultChecked: true },
-                                    { text: "Input guards and security hardening", defaultChecked: true },
-                                    { text: "Store and facility guidance improvements", defaultChecked: true },
-                                    { text: "Concierge context routing", defaultChecked: true }
+                                    { text: "Chat Pipeline v2 (IntentRouter and conversation foundation)", defaultChecked: true },
+                                    { text: "Medicine QA (product images, comparison, context routing)", defaultChecked: true },
+                                    { text: "Local RAG (medicine knowledge base)", defaultChecked: true },
+                                    { text: "OTC product image CDN (Cloudflare R2)", defaultChecked: true }
                                 ]
                             },
                             {
                                 summary: "In progress and planned",
-                                description: "We are preparing the production rollout of Chat Pipeline v2 (new conversation foundation), currently validated in the dev environment.",
+                                description: "Rolling out v2 production canary and improving response latency.",
                                 itemsChecklist: true,
                                 items: [
-                                    { text: "Chat Pipeline v2 (IntentRouter and conversation foundation)" },
-                                    { text: "Production canary rollout (phased)" },
+                                    { text: "Chat Pipeline v2 production canary rollout (phased)" },
                                     { text: "Response latency optimization" },
+                                    { text: "Evaluate AWS Bedrock Knowledge Base for production" },
                                     { text: "Better voice input" },
                                     { text: "Health state estimation (planned)" },
                                     { text: "Personalization features (planned)" }
@@ -471,9 +514,14 @@
                         ],
                         links: [
                             {
-                                text: "🔗 Open the development environment",
+                                text: "🔗 Open GCP dev environment",
                                 url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
-                                ariaLabel: "Open the development environment in a new tab"
+                                ariaLabel: "Open the GCP dev environment in a new tab"
+                            },
+                            {
+                                text: "☁️ Open AWS staging",
+                                url: "https://aws.medicine.yutok.dev/",
+                                ariaLabel: "Open AWS staging in a new tab"
                             },
                             {
                                 text: "📝 Feedback or bug reports",
@@ -485,18 +533,17 @@
                         buttonAria: "Go to the next step"
                     },
                     development: {
-                        title: "🛠️ Welcome to the Dev environment",
+                        title: "🛠️ Welcome to GCP Dev",
                         visual: "🚧💊",
-                        visualAlt: "Icon representing the OTC assistant under development",
-                        subtitle: '<span class="onboarding-env-badge">🛠️ This is the DEV environment</span>',
+                        visualAlt: "Icon representing the OTC assistant on GCP dev",
+                        subtitle: '<span class="onboarding-env-badge">🛠️ This is GCP dev</span>',
                         body: [
-                            'This is the <span class="onboarding-env-here">dev environment for testers and developers</span> on a separate server from production. Try the latest here; layouts, errors, or data resets may occur.',
-                            "Regular users should use the production (stable) environment."
+                            '<span class="onboarding-env-here">GCP Cloud Run dev</span> for early access before production.'
                         ],
                         details: [
                             {
                                 summary: "Improvements & progress",
-                                description: "Shipped improvements on production (GCP) and AWS staging, plus items validated in this dev environment.",
+                                description: "Shipped on GCP production and AWS staging, plus items validated in this GCP dev environment.",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Migration from Flask to FastAPI", defaultChecked: true },
@@ -514,17 +561,64 @@
                                     { text: "Chat Pipeline v2 (IntentRouter PRIMARY, dispatch optimization)", defaultChecked: true },
                                     { text: "Categorized input-block responses", defaultChecked: true },
                                     { text: "Admin Sage Terrace UI refresh", defaultChecked: true },
-                                    { text: "AWS staging (ECS Express / CodePipeline)", defaultChecked: true },
                                     { text: "Medicine QA (product images, comparison, context routing)", defaultChecked: true },
                                     { text: "Local RAG (medicine knowledge base)", defaultChecked: true },
                                     { text: "Concierge changelog & technical Q&A", defaultChecked: true },
                                     { text: "OTC product image CDN (Cloudflare R2)", defaultChecked: true },
+                                    { text: "AWS staging (ECS Express / CodePipeline)", defaultChecked: true },
                                     { text: "Response latency & deploy time optimization" },
-                                    { text: "AWS Bedrock Knowledge Base integration" },
                                     { text: "Cloud Run startup stability & build meta automation" },
+                                    { text: "Production canary rollout preparation" },
                                     { text: "Better voice input" },
                                     { text: "Health state estimation (planned)" },
                                     { text: "Personalization features (planned)" }
+                                ]
+                            }
+                        ],
+                        links: [
+                            {
+                                text: "🌐 Open production (stable)",
+                                url: "https://medicine.yutok.dev/",
+                                ariaLabel: "Open the production (stable) environment in a new tab"
+                            },
+                            {
+                                text: "📝 Feedback & claims",
+                                url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                                ariaLabel: "Submit feedback or claims via Google Forms"
+                            }
+                        ],
+                        buttonText: "Next",
+                        buttonAria: "Go to the next step"
+                    },
+                    aws_staging: {
+                        title: "☁️ Welcome to AWS Staging",
+                        visual: "☁️💊",
+                        visualAlt: "OTC assistant running on AWS staging",
+                        subtitle: '<span class="onboarding-env-badge onboarding-env-badge--aws">☁️ This is AWS staging</span>',
+                        body: [
+                            'Try AWS-specific features such as Amazon Translate, Polly, and Bedrock Knowledge Base on <span class="onboarding-env-here">AWS ECS staging</span>.'
+                        ],
+                        details: [
+                            {
+                                summary: "AWS features enabled here",
+                                description: "Shared improvements with GCP production/dev, plus features enabled on AWS staging.",
+                                itemsChecklist: true,
+                                items: [
+                                    { text: "Chat Pipeline v2 (IntentRouter PRIMARY, dispatch optimization)", defaultChecked: true },
+                                    { text: "Medicine QA (product images, comparison, context routing)", defaultChecked: true },
+                                    { text: "Local RAG (medicine knowledge base)", defaultChecked: true },
+                                    { text: "OTC product image CDN (Cloudflare R2)", defaultChecked: true },
+                                    { text: "Amazon Translate", defaultChecked: true },
+                                    { text: "Amazon Polly (TTS)", defaultChecked: true },
+                                    { text: "Bedrock Knowledge Base (Concierge RAG)", defaultChecked: true },
+                                    { text: "Bedrock Knowledge Base (medicine RAG)", defaultChecked: true },
+                                    { text: "CloudFront static CDN", defaultChecked: true },
+                                    { text: "Comprehend Medical (NLU assist)", defaultChecked: true },
+                                    { text: "ElastiCache / Redis cache", defaultChecked: true },
+                                    { text: "Concierge changelog & technical Q&A", defaultChecked: true },
+                                    { text: "Personalize ranking (trial)" },
+                                    { text: "Evaluate AWS features for GCP production" },
+                                    { text: "Response latency & deploy time optimization" }
                                 ]
                             }
                         ],
@@ -572,8 +666,7 @@
                     visual: "📞👨‍⚕️",
                     visualAlt: "Icons showing a call with a pharmacist",
                     body: [
-                        "If you are unsure about the AI's reply, tap “Request Pharmacist” to speak with a professional.",
-                        "Use the ℹ️ button in the top right to open guides and FAQs whenever you like."
+                        "If you are unsure about the AI's reply, tap the person icon (Request Pharmacist) in the top right."
                     ],
                     buttonText: "Next",
                     buttonAria: "Go to the next step"
@@ -593,6 +686,7 @@
                         "Sending only emojis",
                         "Seasonal event support (New Year, Christmas, etc.)"
                     ],
+                    hidden: true,
                     buttonText: "Next",
                     buttonAria: "Go to the next step"
                 },
@@ -766,38 +860,34 @@
                         title: "채팅형 의약품 상담 도구(베타)에 오신 것을 환영합니다",
                         visual: "🤝💊",
                         visualAlt: "약사가 스마트폰으로 상담하는 모습을 나타내는 아이콘",
-                        subtitle: "베타(시험 운영) — 더 안전하고 이해하기 쉬운 안내를 위해 계속 개선합니다",
+                        subtitle: "베타(안정 운영) — GCP 운영 환경(medicine.yutok.dev)",
                         body: [
                             "증상을 알려주면 AI가 일반의약품 후보와 진료 시기를 안내합니다. 의료 진단을 대신하지 않습니다."
                         ],
                         details: [
                             {
                                 summary: "완료된 주요 개선",
-                                description: "베타로서 대화의 이해하기 쉬움과 안전성 향상을 계속합니다. 서버 기반과 AI 라우팅의 대규모 개편은 완료되었습니다.",
+                                description: "대화의 이해하기 쉬움과 안전성 향상을 계속합니다.",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask에서 FastAPI로 이전", defaultChecked: true },
                                     { text: "GPT-5 계열 모델(트리아지·NLU·설명)", defaultChecked: true },
-                                    { text: "멀티 에이전트 라우팅", defaultChecked: true },
-                                    { text: "잠재 공간 기반 추천 스코어링 개편", defaultChecked: true },
                                     { text: "Sage Terrace UI·사용자 동선 최적화", defaultChecked: true },
-                                    { text: "캐러셀형 의약품 표시", defaultChecked: true },
                                     { text: "LINE 연동(Messaging API)", defaultChecked: true },
-                                    { text: "LINE→Web 연속(Handoff)", defaultChecked: true },
-                                    { text: "이미지 입력 지원", defaultChecked: true },
-                                    { text: "입력 가드·보안 강화", defaultChecked: true },
-                                    { text: "매장·시설 안내 정확도 향상", defaultChecked: true },
-                                    { text: "Concierge 문맥 라우팅", defaultChecked: true }
+                                    { text: "Chat Pipeline v2(IntentRouter·대화 기반 개편)", defaultChecked: true },
+                                    { text: "Medicine QA(제품 이미지·비교·문맥 라우팅)", defaultChecked: true },
+                                    { text: "Local RAG(의약품 지식베이스)", defaultChecked: true },
+                                    { text: "OTC 제품 이미지 CDN(Cloudflare R2)", defaultChecked: true }
                                 ]
                             },
                             {
                                 summary: "개발 중·향후 예정",
-                                description: "새 대화 파이프라인(Chat Pipeline v2)의 운영 반영을 준비 중이며, 개발 환경에서 선행 검증하고 있습니다.",
+                                description: "v2 운영 카나리아 롤아웃과 응답 속도 개선을 진행 중입니다.",
                                 itemsChecklist: true,
                                 items: [
-                                    { text: "Chat Pipeline v2(IntentRouter·대화 기반 개편)" },
-                                    { text: "운영 카나리아 단계적 롤아웃" },
+                                    { text: "Chat Pipeline v2 운영 카나리아 단계적 롤아웃" },
                                     { text: "응답 속도 최적화" },
+                                    { text: "AWS Bedrock Knowledge Base 운영 반영 검토" },
                                     { text: "음성 입력 개선" },
                                     { text: "컨디션 추정(계획)" },
                                     { text: "개인화 기능(계획)" }
@@ -806,9 +896,14 @@
                         ],
                         links: [
                             {
-                                text: "🔗 개발 환경 새 탭에서 열기",
+                                text: "🔗 GCP 개발 환경 새 탭에서 열기",
                                 url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
-                                ariaLabel: "개발 환경을 새 탭에서 엽니다"
+                                ariaLabel: "GCP 개발 환경을 새 탭에서 엽니다"
+                            },
+                            {
+                                text: "☁️ AWS 스테이징 새 탭에서 열기",
+                                url: "https://aws.medicine.yutok.dev/",
+                                ariaLabel: "AWS 스테이징을 새 탭에서 엽니다"
                             },
                             {
                                 text: "📝 의견·오류 신고",
@@ -820,18 +915,17 @@
                         buttonAria: "다음 단계로 이동"
                     },
                     development: {
-                        title: "🛠️ 개발 환경(dev)에 오신 것을 환영합니다",
+                        title: "🛠️ GCP 개발 환경(dev)에 오신 것을 환영합니다",
                         visual: "🚧💊",
-                        visualAlt: "개발 중인 의약품 상담 도구 아이콘",
-                        subtitle: '<span class="onboarding-env-badge">🛠️ 여기는 개발 환경(dev)입니다</span>',
+                        visualAlt: "GCP에서 개발 중인 의약품 상담 도구 아이콘",
+                        subtitle: '<span class="onboarding-env-badge">🛠️ 여기는 GCP 개발 환경(dev)입니다</span>',
                         body: [
-                            '이 페이지는 <span class="onboarding-env-here">테스터·개발자용 개발 환경(dev)</span>입니다. 운영과 별도 서버에서 최신 기능을 시험할 수 있으나, 레이아웃 깨짐·오류·데이터 리셋이 있을 수 있습니다.',
-                            "일반 이용자는 운영 환경(안정판)을 이용해 주세요."
+                            '<span class="onboarding-env-here">GCP Cloud Run 개발 환경(dev)</span>에서 운영 반영 전 최신 기능을 시험할 수 있습니다.'
                         ],
                         details: [
                             {
                                 summary: "개선·개발 진행",
-                                description: "운영(GCP)·AWS 스테이징에 반영된 개선과 이 dev 환경에서 검증 중인 항목입니다.",
+                                description: "운영(GCP)·AWS 스테이징에 반영된 개선과 이 GCP dev 환경에서 검증 중인 항목입니다.",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Flask에서 FastAPI로 이전", defaultChecked: true },
@@ -849,17 +943,64 @@
                                     { text: "Chat Pipeline v2(IntentRouter PRIMARY·dispatch 최적화)", defaultChecked: true },
                                     { text: "입력 차단 카테고리별 응답", defaultChecked: true },
                                     { text: "관리 화면(admin) Sage Terrace UI 개편", defaultChecked: true },
-                                    { text: "AWS 스테이징(ECS Express / CodePipeline)", defaultChecked: true },
                                     { text: "Medicine QA(제품 이미지·비교·문맥 라우팅)", defaultChecked: true },
                                     { text: "Local RAG(의약품 지식베이스)", defaultChecked: true },
                                     { text: "Concierge 업데이트 이력·기술 Q&A", defaultChecked: true },
                                     { text: "OTC 제품 이미지 CDN(Cloudflare R2)", defaultChecked: true },
+                                    { text: "AWS 스테이징(ECS Express / CodePipeline)", defaultChecked: true },
                                     { text: "응답 속도·배포 시간 최적화" },
-                                    { text: "AWS Bedrock Knowledge Base 연동" },
                                     { text: "Cloud Run 기동 안정화·빌드 메타 자동화" },
+                                    { text: "운영 카나리아 롤아웃 준비" },
                                     { text: "음성 입력 개선" },
                                     { text: "컨디션 추정(계획)" },
                                     { text: "개인화 기능(계획)" }
+                                ]
+                            }
+                        ],
+                        links: [
+                            {
+                                text: "🌐 운영 환경(안정판) 열기",
+                                url: "https://medicine.yutok.dev/",
+                                ariaLabel: "운영 환경(안정판)을 새 탭에서 엽니다"
+                            },
+                            {
+                                text: "📝 클레임·의견",
+                                url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                                ariaLabel: "Google 양식으로 클레임·의견 제출"
+                            }
+                        ],
+                        buttonText: "다음",
+                        buttonAria: "다음 단계로 이동"
+                    },
+                    aws_staging: {
+                        title: "☁️ AWS 스테이징에 오신 것을 환영합니다",
+                        visual: "☁️💊",
+                        visualAlt: "AWS에서 시험 운영 중인 의약품 상담 도구",
+                        subtitle: '<span class="onboarding-env-badge onboarding-env-badge--aws">☁️ 여기는 AWS 스테이징입니다</span>',
+                        body: [
+                            '<span class="onboarding-env-here">AWS ECS 스테이징 환경</span>에서 Amazon Translate·Polly·Bedrock Knowledge Base 등 GCP 운영과 다른 AWS 기능을 시험할 수 있습니다.'
+                        ],
+                        details: [
+                            {
+                                summary: "이 환경에서 시험 가능한 AWS 기능",
+                                description: "GCP 운영·GCP dev와 공통 개선에 더해 AWS 스테이징에서 활성화된 기능입니다.",
+                                itemsChecklist: true,
+                                items: [
+                                    { text: "Chat Pipeline v2(IntentRouter PRIMARY·dispatch 최적화)", defaultChecked: true },
+                                    { text: "Medicine QA(제품 이미지·비교·문맥 라우팅)", defaultChecked: true },
+                                    { text: "Local RAG(의약품 지식베이스)", defaultChecked: true },
+                                    { text: "OTC 제품 이미지 CDN(Cloudflare R2)", defaultChecked: true },
+                                    { text: "Amazon Translate(번역)", defaultChecked: true },
+                                    { text: "Amazon Polly(읽기)", defaultChecked: true },
+                                    { text: "Bedrock Knowledge Base(Concierge RAG)", defaultChecked: true },
+                                    { text: "Bedrock Knowledge Base(의약품 RAG)", defaultChecked: true },
+                                    { text: "CloudFront 정적 CDN", defaultChecked: true },
+                                    { text: "Comprehend Medical(NLU 보조)", defaultChecked: true },
+                                    { text: "ElastiCache / Redis 캐시", defaultChecked: true },
+                                    { text: "Concierge 업데이트 이력·기술 Q&A", defaultChecked: true },
+                                    { text: "Personalize 랭킹(시험)" },
+                                    { text: "GCP 운영으로 AWS 기능 반영 검토" },
+                                    { text: "응답 속도·배포 시간 최적화" }
                                 ]
                             }
                         ],
@@ -907,8 +1048,7 @@
                     visual: "📞👨‍⚕️",
                     visualAlt: "약사와 연결되는 모습을 나타내는 아이콘",
                     body: [
-                        "AI 답변이 불확실하다면 “약사 요청”을 통해 전문가와 직접 상담하세요.",
-                        "오른쪽 상단의 ℹ️ 버튼에서 언제든지 이용 가이드와 FAQ를 확인할 수 있습니다."
+                        "AI 답변이 불확실하면 오른쪽 상단의 사람 아이콘(약사 요청)으로 전문가와 상담할 수 있습니다."
                     ],
                     buttonText: "다음",
                     buttonAria: "다음 단계로 이동"
@@ -928,6 +1068,7 @@
                         "이모지만 보내기",
                         "계절 이벤트 지원(새해, 크리스마스 등)"
                     ],
+                    hidden: true,
                     buttonText: "다음",
                     buttonAria: "다음 단계로 이동"
                 },
@@ -1089,38 +1230,34 @@
                         title: "欢迎使用聊天式药品咨询工具（测试版）",
                         visual: "🤝💊",
                         visualAlt: "药师通过手机提供咨询的示意图",
-                        subtitle: "测试版（试运行）— 我们持续改进说明的清晰度与安全性",
+                        subtitle: "测试版（稳定运行）— GCP 生产环境（medicine.yutok.dev）",
                         body: [
                             "描述症状后，AI 会提示非处方药候选与就医建议，不能替代医疗诊断。"
                         ],
                         details: [
                             {
                                 summary: "已完成的主要改进",
-                                description: "作为测试版，我们持续改进对话的清晰度与安全性。服务器基础与 AI 路由的大规模升级已完成。",
+                                description: "我们持续改进对话的清晰度与安全性。",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "从 Flask 迁移至 FastAPI", defaultChecked: true },
                                     { text: "GPT-5 系列模型（分流、NLU、说明）", defaultChecked: true },
-                                    { text: "多智能体路由", defaultChecked: true },
-                                    { text: "基于潜在空间的推荐评分改造", defaultChecked: true },
                                     { text: "Sage Terrace UI 与流程优化", defaultChecked: true },
-                                    { text: "轮播式药品展示", defaultChecked: true },
                                     { text: "LINE 对接（Messaging API）", defaultChecked: true },
-                                    { text: "LINE→Web 接续", defaultChecked: true },
-                                    { text: "图片输入支持", defaultChecked: true },
-                                    { text: "输入拦截与安全加固", defaultChecked: true },
-                                    { text: "门店与设施指引精度提升", defaultChecked: true },
-                                    { text: "Concierge 上下文路由", defaultChecked: true }
+                                    { text: "Chat Pipeline v2（IntentRouter 与对话基础刷新）", defaultChecked: true },
+                                    { text: "Medicine QA（产品图片、对比、上下文路由）", defaultChecked: true },
+                                    { text: "Local RAG（药品知识库）", defaultChecked: true },
+                                    { text: "OTC 产品图片 CDN（Cloudflare R2）", defaultChecked: true }
                                 ]
                             },
                             {
                                 summary: "进行中与计划中",
-                                description: "正在准备 Chat Pipeline v2（新对话基础）的生产环境逐步上线，目前在开发环境先行验证。",
+                                description: "正在推进 v2 生产环境金丝雀上线与响应速度优化。",
                                 itemsChecklist: true,
                                 items: [
-                                    { text: "Chat Pipeline v2（IntentRouter 与对话基础刷新）" },
-                                    { text: "生产环境金丝雀分阶段上线" },
+                                    { text: "Chat Pipeline v2 生产环境金丝雀分阶段上线" },
                                     { text: "响应速度优化" },
+                                    { text: "评估 AWS Bedrock Knowledge Base 生产接入" },
                                     { text: "语音输入改进" },
                                     { text: "身体状况推断（规划中）" },
                                     { text: "个性化功能（规划中）" }
@@ -1129,9 +1266,14 @@
                         ],
                         links: [
                             {
-                                text: "🔗 在新标签页打开开发环境",
+                                text: "🔗 在新标签页打开 GCP 开发环境",
                                 url: "https://medicine-recommend-dev-340042923793.asia-northeast1.run.app/",
-                                ariaLabel: "在新标签页中打开开发环境"
+                                ariaLabel: "在新标签页中打开 GCP 开发环境"
+                            },
+                            {
+                                text: "☁️ 在新标签页打开 AWS 预发环境",
+                                url: "https://aws.medicine.yutok.dev/",
+                                ariaLabel: "在新标签页中打开 AWS 预发环境"
                             },
                             {
                                 text: "📝 意见或问题反馈",
@@ -1143,18 +1285,17 @@
                         buttonAria: "前往下一步"
                     },
                     development: {
-                        title: "🛠️ 欢迎来到开发环境(dev)",
+                        title: "🛠️ 欢迎来到 GCP 开发环境(dev)",
                         visual: "🚧💊",
-                        visualAlt: "开发中的药品咨询工具图标",
-                        subtitle: '<span class="onboarding-env-badge">🛠️ 这里是开发环境(dev)</span>',
+                        visualAlt: "GCP 上开发中的药品咨询工具图标",
+                        subtitle: '<span class="onboarding-env-badge">🛠️ 这里是 GCP 开发环境(dev)</span>',
                         body: [
-                            '本页面是<span class="onboarding-env-here">面向测试与开发者的开发环境(dev)</span>，与生产环境分属不同服务器，可抢先试用最新功能，但可能出现布局错乱、错误或数据重置。',
-                            "普通用户请使用生产环境（稳定版）。"
+                            '可在 <span class="onboarding-env-here">GCP Cloud Run 开发环境(dev)</span> 抢先试用上线前的新功能。'
                         ],
                         details: [
                             {
                                 summary: "改进与开发进度",
-                                description: "已上线至生产（GCP）与 AWS 预发环境的改进，以及本 dev 环境验证中的项目。",
+                                description: "已上线至生产（GCP）与 AWS 预发环境的改进，以及本 GCP dev 环境验证中的项目。",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "从 Flask 迁移至 FastAPI", defaultChecked: true },
@@ -1172,17 +1313,64 @@
                                     { text: "Chat Pipeline v2（IntentRouter PRIMARY、dispatch 优化）", defaultChecked: true },
                                     { text: "输入拦截分类响应", defaultChecked: true },
                                     { text: "管理后台 Sage Terrace UI 刷新", defaultChecked: true },
-                                    { text: "AWS 预发（ECS Express / CodePipeline）", defaultChecked: true },
                                     { text: "Medicine QA（产品图片、对比、上下文路由）", defaultChecked: true },
                                     { text: "Local RAG（药品知识库）", defaultChecked: true },
                                     { text: "Concierge 更新记录与技术 Q&A", defaultChecked: true },
                                     { text: "OTC 产品图片 CDN（Cloudflare R2）", defaultChecked: true },
+                                    { text: "AWS 预发（ECS Express / CodePipeline）", defaultChecked: true },
                                     { text: "响应速度与部署时间优化" },
-                                    { text: "AWS Bedrock Knowledge Base 对接" },
                                     { text: "Cloud Run 启动稳定化与构建元数据自动化" },
+                                    { text: "生产环境金丝雀上线准备" },
                                     { text: "语音输入改进" },
                                     { text: "身体状况推断（规划中）" },
                                     { text: "个性化功能（规划中）" }
+                                ]
+                            }
+                        ],
+                        links: [
+                            {
+                                text: "🌐 打开生产环境（稳定版）",
+                                url: "https://medicine.yutok.dev/",
+                                ariaLabel: "在新标签页中打开生产环境（稳定版）"
+                            },
+                            {
+                                text: "📝 投诉与意见",
+                                url: "https://forms.gle/UB8kZHd4VHenmRUN6",
+                                ariaLabel: "通过 Google 表单提交投诉或意见"
+                            }
+                        ],
+                        buttonText: "下一步",
+                        buttonAria: "前往下一步"
+                    },
+                    aws_staging: {
+                        title: "☁️ 欢迎来到 AWS 预发环境",
+                        visual: "☁️💊",
+                        visualAlt: "AWS 上试运行中的药品咨询工具",
+                        subtitle: '<span class="onboarding-env-badge onboarding-env-badge--aws">☁️ 这里是 AWS 预发环境</span>',
+                        body: [
+                            '可在 <span class="onboarding-env-here">AWS ECS 预发环境</span> 试验 Amazon Translate、Polly、Bedrock Knowledge Base 等与 GCP 生产环境不同的 AWS 功能。'
+                        ],
+                        details: [
+                            {
+                                summary: "本环境可试用的 AWS 功能",
+                                description: "与 GCP 生产/dev 共通的改进，以及 AWS 预发环境启用的功能。",
+                                itemsChecklist: true,
+                                items: [
+                                    { text: "Chat Pipeline v2（IntentRouter PRIMARY、dispatch 优化）", defaultChecked: true },
+                                    { text: "Medicine QA（产品图片、对比、上下文路由）", defaultChecked: true },
+                                    { text: "Local RAG（药品知识库）", defaultChecked: true },
+                                    { text: "OTC 产品图片 CDN（Cloudflare R2）", defaultChecked: true },
+                                    { text: "Amazon Translate（翻译）", defaultChecked: true },
+                                    { text: "Amazon Polly（朗读）", defaultChecked: true },
+                                    { text: "Bedrock Knowledge Base（Concierge RAG）", defaultChecked: true },
+                                    { text: "Bedrock Knowledge Base（药品 RAG）", defaultChecked: true },
+                                    { text: "CloudFront 静态 CDN", defaultChecked: true },
+                                    { text: "Comprehend Medical（NLU 辅助）", defaultChecked: true },
+                                    { text: "ElastiCache / Redis 缓存", defaultChecked: true },
+                                    { text: "Concierge 更新记录与技术 Q&A", defaultChecked: true },
+                                    { text: "Personalize 排序（试验）" },
+                                    { text: "评估 AWS 功能接入 GCP 生产" },
+                                    { text: "响应速度与部署时间优化" }
                                 ]
                             }
                         ],
@@ -1230,8 +1418,7 @@
                     visual: "📞👨‍⚕️",
                     visualAlt: "与药师沟通的图示",
                     body: [
-                        "如果对 AI 的回答仍感到不确定，可点击“请求药师”与专业人士对话。",
-                        "右上角的 ℹ️ 按钮可以随时打开使用指南和常见问题。"
+                        "如对 AI 的回答仍不确定，可点击右上角的人形按钮（请求药师）咨询专业人士。"
                     ],
                     buttonText: "下一步",
                     buttonAria: "前往下一步"
@@ -1251,6 +1438,7 @@
                         "仅发送表情符号",
                         "季节性活动支持（新年、圣诞节等）"
                     ],
+                    hidden: true,
                     buttonText: "下一步",
                     buttonAria: "前往下一步"
                 },
@@ -1991,6 +2179,141 @@
         overlay.style.removeProperty('transform');
         overlay.style.removeProperty('will-change');
         overlay.classList.remove('onboarding-overlay--lang-cutout');
+        overlay.classList.remove('onboarding-overlay--highlight-cutout');
+    }
+
+    function getOnboardingHighlightCutoutTarget(slideIndex) {
+        if (typeof slideIndex !== 'number') {
+            return null;
+        }
+        if (slideIndex === 1) {
+            return document.querySelector('.chat-container .chat-input.onboarding-highlight')
+                || document.querySelector('.chat-container #chatForm.onboarding-highlight');
+        }
+        if (slideIndex === 2) {
+            if (isSageUi()) {
+                return document.getElementById('safetyRailCta');
+            }
+            return document.getElementById('userInfoBtn');
+        }
+        if (slideIndex === 3) {
+            if (isSageUi()) {
+                return document.getElementById('sage-admin-request-btn');
+            }
+            return document.getElementById('admin-request-btn');
+        }
+        return null;
+    }
+
+    function resolveOnboardingCutoutRadius(targetEl, w, h) {
+        const minSide = Math.min(w, h);
+        const maxCap = minSide / 2;
+        if (targetEl) {
+            if (targetEl.id === 'safetyRailCta' || targetEl.classList.contains('ui-safety-rail__cta')) {
+                return maxCap;
+            }
+        }
+        if (!targetEl || typeof getComputedStyle !== 'function') {
+            return Math.min(8, maxCap);
+        }
+        const cs = getComputedStyle(targetEl);
+        const raw = cs.borderTopLeftRadius || cs.borderRadius || '0';
+        const parsed = parseFloat(String(raw).split(/\s+/)[0]);
+        if (Number.isFinite(parsed) && parsed >= 999) {
+            return maxCap;
+        }
+        const base = Number.isFinite(parsed) ? parsed : 8;
+        return Math.min(base, maxCap);
+    }
+
+    function buildOnboardingOverlayCutoutPath(rect, targetEl) {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const x = rect.left;
+        const y = rect.top;
+        const w = rect.width;
+        const h = rect.height;
+        if (w <= 0 || h <= 0) {
+            return '';
+        }
+        const x2 = x + w;
+        const y2 = y + h;
+        const r = resolveOnboardingCutoutRadius(targetEl, w, h);
+        const outer = 'M 0 0 H ' + vw + ' V ' + vh + ' H 0 Z';
+        const inner = 'M ' + (x + r) + ' ' + y
+            + ' H ' + (x2 - r)
+            + ' A ' + r + ' ' + r + ' 0 0 1 ' + x2 + ' ' + (y + r)
+            + ' V ' + (y2 - r)
+            + ' A ' + r + ' ' + r + ' 0 0 1 ' + (x2 - r) + ' ' + y2
+            + ' H ' + (x + r)
+            + ' A ' + r + ' ' + r + ' 0 0 1 ' + x + ' ' + (y2 - r)
+            + ' V ' + (y + r)
+            + ' A ' + r + ' ' + r + ' 0 0 1 ' + (x + r) + ' ' + y
+            + ' Z';
+        return 'path(evenodd, "' + outer + ' ' + inner + '")';
+    }
+
+    function syncOnboardingOverlayCutout(slideIndex) {
+        const overlay = document.getElementById('onboarding-overlay');
+        if (!overlay || !document.body.classList.contains('onboarding-open')) {
+            return;
+        }
+        const target = getOnboardingHighlightCutoutTarget(slideIndex);
+        if (!target) {
+            resetOnboardingOverlayStyles();
+            return;
+        }
+        const rect = target.getBoundingClientRect();
+        if (!rect.width || !rect.height) {
+            resetOnboardingOverlayStyles();
+            return;
+        }
+        const clipPath = buildOnboardingOverlayCutoutPath(rect, target);
+        if (!clipPath) {
+            resetOnboardingOverlayStyles();
+            return;
+        }
+        overlay.style.clipPath = clipPath;
+        overlay.style.willChange = 'clip-path';
+        overlay.classList.add('onboarding-overlay--highlight-cutout');
+    }
+
+    function scheduleOnboardingOverlayCutout(slideIndex) {
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                syncOnboardingOverlayCutout(slideIndex);
+                if (slideIndex === 2 && isSageUi() && !document.getElementById('safetyRailCta')) {
+                    window.setTimeout(function() {
+                        syncOnboardingOverlayCutout(slideIndex);
+                    }, 120);
+                }
+            });
+        });
+    }
+
+    let onboardingCutoutResizeBound = false;
+
+    function handleOnboardingCutoutResize() {
+        if (!document.body.classList.contains('onboarding-open') || !onboardingState.initialized) {
+            return;
+        }
+        syncOnboardingOverlayCutout(onboardingState.currentSlide);
+    }
+
+    function ensureOnboardingCutoutResizeListener() {
+        if (onboardingCutoutResizeBound) {
+            return;
+        }
+        onboardingCutoutResizeBound = true;
+        window.addEventListener('resize', handleOnboardingCutoutResize);
+    }
+
+    function teardownOnboardingCutoutResizeListener() {
+        if (!onboardingCutoutResizeBound) {
+            return;
+        }
+        onboardingCutoutResizeBound = false;
+        window.removeEventListener('resize', handleOnboardingCutoutResize);
     }
 
     function teardownOnboardingModalHeightTracking() {
@@ -2300,16 +2623,119 @@
         );
     }
 
-    // 開発環境かどうかを判定する
-    // 優先順位: 1) サーバが埋め込んだ #app-runtime-config（本番判定の単一ソース）、2) body[data-env]、3) ホスト名フォールバック
-    function isDevEnv() {
+    function getRuntimeClientConfig() {
         try {
             const cfgEl = typeof document !== 'undefined' ? document.getElementById('app-runtime-config') : null;
             if (cfgEl && cfgEl.textContent) {
-                const cfg = JSON.parse(cfgEl.textContent.trim());
-                if (cfg && typeof cfg.isDevelopment === 'boolean') {
-                    return cfg.isDevelopment;
-                }
+                return JSON.parse(cfgEl.textContent.trim());
+            }
+        } catch (e) {
+            // フォールスルー
+        }
+        return {};
+    }
+
+    function isLocalPreviewHost() {
+        try {
+            const host = (typeof location !== 'undefined' && location.hostname)
+                ? location.hostname.toLowerCase()
+                : '';
+            return host === 'localhost' || host === '127.0.0.1';
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /**
+     * localhost / 127.0.0.1 のみ: ?onboarding_env= または ?onb= で 1 枚目スライドを強制切替。
+     * production | prod / development | dev | aws_staging | aws | staging
+     */
+    function getOnboardingEnvPreviewOverride() {
+        if (!isLocalPreviewHost()) {
+            return null;
+        }
+        try {
+            const params = new URLSearchParams(location.search);
+            const raw = (params.get('onboarding_env') || params.get('onb') || '').toLowerCase().trim();
+            if (!raw) {
+                return null;
+            }
+            if (raw === 'production' || raw === 'prod') {
+                return 'production';
+            }
+            if (raw === 'development' || raw === 'dev' || raw === 'gcp-dev') {
+                return 'development';
+            }
+            if (raw === 'aws_staging' || raw === 'aws' || raw === 'staging') {
+                return 'aws_staging';
+            }
+        } catch (e) {
+            // フォールスルー
+        }
+        return null;
+    }
+
+    function shouldForceOnboardingPreview() {
+        if (!isLocalPreviewHost()) {
+            return false;
+        }
+        try {
+            const params = new URLSearchParams(location.search);
+            if (getOnboardingEnvPreviewOverride()) {
+                return true;
+            }
+            const flag = (params.get('onboarding_preview') || '').toLowerCase().trim();
+            return flag === '1' || flag === 'true' || flag === 'yes';
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function getOnboardingEnvKind() {
+        const override = getOnboardingEnvPreviewOverride();
+        if (override) {
+            return override;
+        }
+        if (isAwsStagingEnvCore()) {
+            return 'aws_staging';
+        }
+        if (isDevEnvCore()) {
+            return 'development';
+        }
+        return 'production';
+    }
+
+    function isAwsStagingEnvCore() {
+        try {
+            const cfg = getRuntimeClientConfig();
+            if (cfg && typeof cfg.isAwsStaging === 'boolean') {
+                return cfg.isAwsStaging;
+            }
+        } catch (e) {
+            // フォールスルー
+        }
+        try {
+            const host = (typeof location !== 'undefined' && location.hostname) ? location.hostname.toLowerCase() : '';
+            return host.includes('aws.medicine');
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function isAwsStagingEnv() {
+        if (getOnboardingEnvPreviewOverride()) {
+            return getOnboardingEnvKind() === 'aws_staging';
+        }
+        return isAwsStagingEnvCore();
+    }
+
+    // 開発環境かどうかを判定する
+    // 優先順位: 1) サーバが埋め込んだ #app-runtime-config（本番判定の単一ソース）、2) body[data-env]、3) ホスト名フォールバック
+    function isDevEnvCore() {
+        try {
+            const cfg = getRuntimeClientConfig();
+            if (cfg && typeof cfg.isDevelopment === 'boolean') {
+                return cfg.isDevelopment;
             }
         } catch (e) {
             // フォールスルー
@@ -2342,8 +2768,15 @@
         }
     }
 
+    function isDevEnv() {
+        if (getOnboardingEnvPreviewOverride()) {
+            return getOnboardingEnvKind() === 'development';
+        }
+        return isDevEnvCore();
+    }
+
     /**
-     * onboarding[0] が { production, development } のとき、isDevEnv() に応じて実スライドを返す。
+     * onboarding[0] が { production, development, aws_staging } のとき、環境に応じて実スライドを返す。
      * 従来の単一オブジェクトのままの onboarding[0] はそのまま返す（2〜枚目は常に通常スライド）。
      */
     function resolveOnboardingFirstSlide(firstSlide, locale, fallbackLocale) {
@@ -2352,15 +2785,32 @@
         }
         const prod = firstSlide.production;
         const dev = firstSlide.development;
+        const aws = firstSlide.aws_staging;
+        const envKind = getOnboardingEnvKind();
+        if (envKind === 'aws_staging' && aws) {
+            return aws;
+        }
+        if (envKind === 'development' && dev) {
+            return dev;
+        }
+        if (envKind === 'production' && prod) {
+            return prod;
+        }
+        if (isAwsStagingEnvCore() && aws) {
+            return aws;
+        }
         if (prod && dev) {
             return isDevEnv() ? dev : prod;
         }
-        if (prod || dev) {
+        if (prod || dev || aws) {
             if (isDevEnv() && dev) {
                 return dev;
             }
             if (prod) {
                 return prod;
+            }
+            if (aws) {
+                return aws;
             }
             return dev;
         }
@@ -2717,22 +3167,17 @@
             case 0: // ステップ0: 言語選択（視覚強調は末尾で共通適用）
                 break;
             
-            case 1: // ステップ1: 入力欄、マイクボタン、言語選択ボタン
-                const messageInput = document.getElementById('messageInput');
-                const micBtn = document.getElementById('micBtn');
-                
-                if (messageInput) {
-                    const inputGroup = messageInput.closest('.input-group')
-                        || messageInput.closest('.ui-input-row')
-                        || messageInput.closest('.message-input-field');
-                    if (inputGroup) {
-                        inputGroup.classList.add('onboarding-highlight');
+            case 1: // ステップ1: 症状入力バー（テキスト・マイク・送信を一体で強調）
+                {
+                    const chatInputBar = document.querySelector('.chat-input');
+                    if (chatInputBar) {
+                        chatInputBar.classList.add('onboarding-highlight');
                     } else {
-                        messageInput.classList.add('onboarding-highlight');
+                        const chatForm = document.getElementById('chatForm');
+                        if (chatForm) {
+                            chatForm.classList.add('onboarding-highlight');
+                        }
                     }
-                }
-                if (micBtn) {
-                    micBtn.classList.add('onboarding-highlight');
                 }
                 break;
             
@@ -2750,29 +3195,16 @@
                 }
                 break;
             
-            case 3: // ステップ3: 薬剤師要請・情報
+            case 3: // ステップ3: 薬剤師要請（右上の人型ボタン）
                 if (isSageUi()) {
                     const sageAdminBtn = document.getElementById('sage-admin-request-btn');
-                    const sageInfoBtn = document.getElementById('sage-info-btn');
                     if (sageAdminBtn) {
                         sageAdminBtn.classList.add('onboarding-highlight');
                     }
-                    if (sageInfoBtn) {
-                        sageInfoBtn.classList.add('onboarding-highlight');
-                    }
                 } else {
                     const adminRequestBtn = document.getElementById('admin-request-btn');
-                    const infoBtn = document.getElementById('infoBtn');
-                    const infoSelector = document.querySelector('.info-selector');
-                    
                     if (adminRequestBtn) {
                         adminRequestBtn.classList.add('onboarding-highlight');
-                    }
-                    if (infoBtn) {
-                        infoBtn.classList.add('onboarding-highlight');
-                        if (infoSelector) {
-                            infoSelector.classList.add('onboarding-highlight-parent');
-                        }
                     }
                 }
                 break;
@@ -2791,6 +3223,8 @@
                 onboardingLangSelector.classList.add('onboarding-highlight-parent');
             }
         }
+
+        scheduleOnboardingOverlayCutout(slideIndex);
     }
 
     function getOnboardingInteractionMode(slideIndex) {
@@ -2951,7 +3385,9 @@
             '#userInfoBtn',
             '#clearBtn',
             '#new-session-btn',
-            '#admin-request-btn'
+            '#admin-request-btn',
+            '#sage-clear-btn',
+            '#sage-info-btn'
         ];
         const disabledElements = [
             '#chatForm',
@@ -2989,10 +3425,14 @@
                 break;
 
             case 1: {
+                const chatInputBar = document.querySelector('.chat-input');
                 const messageInput = document.getElementById('messageInput');
                 const micBtn = document.getElementById('micBtn');
                 const sendButton = document.querySelector('#chatForm button[type="submit"]');
                 const chatForm = document.getElementById('chatForm');
+                if (chatInputBar) {
+                    chatInputBar.style.opacity = '1';
+                }
                 if (messageInput) {
                     messageInput.style.opacity = '1';
                 }
@@ -3013,17 +3453,21 @@
                 if (userInfoBtn) {
                     userInfoBtn.style.opacity = '1';
                 }
+                const safetyRailCta = document.getElementById('safetyRailCta');
+                if (safetyRailCta) {
+                    safetyRailCta.style.opacity = '1';
+                }
                 break;
             }
 
             case 3: {
                 const adminRequestBtn = document.getElementById('admin-request-btn');
-                const infoBtnStep3 = document.getElementById('infoBtn');
+                const sageAdminBtn = document.getElementById('sage-admin-request-btn');
                 if (adminRequestBtn) {
                     adminRequestBtn.style.opacity = '1';
                 }
-                if (infoBtnStep3) {
-                    infoBtnStep3.style.opacity = '1';
+                if (sageAdminBtn) {
+                    sageAdminBtn.style.opacity = '1';
                 }
                 break;
             }
@@ -3106,6 +3550,7 @@
 
     function hideOnboardingOverlay() {
         detachOnboardingChatInteractionGuard();
+        teardownOnboardingCutoutResizeListener();
         const overlay = document.getElementById('onboarding-overlay');
         const container = document.getElementById('onboarding-container');
         const slidesContainer = document.getElementById('onboarding-slides');
@@ -3207,6 +3652,7 @@
         container.setAttribute('aria-hidden', 'false');
         document.body.classList.add('onboarding-open');
         attachOnboardingChatInteractionGuard();
+        ensureOnboardingCutoutResizeListener();
         setOnboardingStepControls(0);
         syncOnboardingChatTabstops(getOnboardingInteractionMode(0));
         renderOnboardingSlides(0);
@@ -5388,16 +5834,18 @@
         }
     }
     
-    // 開発環境のときタイトル中の「β版」相当表記を「dev」に置換する
-    // β版表記が無い場合は末尾に " (dev)" を追加する
+    // 開発環境のときタイトル中の「β版」相当表記を環境ラベルに置換する
+    // β版表記が無い場合は末尾に " (dev)" / " (AWS)" を追加する
     function transformTitleForEnv(rawTitle) {
-        if (!isDevEnv() || !rawTitle) return rawTitle;
+        if (!rawTitle) return rawTitle;
+        const envSuffix = isAwsStagingEnv() ? '(AWS)' : (isDevEnv() ? '(dev)' : null);
+        if (!envSuffix) return rawTitle;
         const betaPatterns = [
-            { re: /\(β版\)/g, replacement: '(dev)' },
-            { re: /\(Beta\)/gi, replacement: '(dev)' },
-            { re: /\(베타\)/g, replacement: '(dev)' },
-            { re: /（测试版）/g, replacement: '(dev)' },
-            { re: /\(测试版\)/g, replacement: '(dev)' },
+            { re: /\(β版\)/g, replacement: `(${envSuffix === '(AWS)' ? 'AWS' : 'dev'})` },
+            { re: /\(Beta\)/gi, replacement: `(${envSuffix === '(AWS)' ? 'AWS' : 'dev'})` },
+            { re: /\(베타\)/g, replacement: `(${envSuffix === '(AWS)' ? 'AWS' : 'dev'})` },
+            { re: /（测试版）/g, replacement: `(${envSuffix === '(AWS)' ? 'AWS' : 'dev'})` },
+            { re: /\(测试版\)/g, replacement: `(${envSuffix === '(AWS)' ? 'AWS' : 'dev'})` },
         ];
         let result = rawTitle;
         let replaced = false;
@@ -5408,7 +5856,7 @@
             }
         }
         if (!replaced) {
-            result = rawTitle + ' (dev)';
+            result = rawTitle + ` ${envSuffix}`;
         }
         return result;
     }
@@ -5843,12 +6291,26 @@
         }, 250);
     }
 
-    // 開発環境のときヘッダーの DEV バッジを表示する
+    // 開発環境 / AWS ステージングのときヘッダーの環境バッジを表示する
     function applyEnvBadge() {
         const badge = document.getElementById('envBadge');
         if (!badge) return;
-        if (isDevEnv()) {
+        const envKind = getOnboardingEnvKind();
+        if (envKind === 'aws_staging') {
             badge.hidden = false;
+            badge.textContent = 'AWS';
+            badge.classList.remove('env-badge--dev');
+            badge.classList.add('env-badge--aws');
+            badge.setAttribute('aria-label', 'AWSステージング');
+            if (document.body && document.body.dataset) {
+                document.body.dataset.env = 'aws-staging';
+            }
+        } else if (envKind === 'development') {
+            badge.hidden = false;
+            badge.textContent = 'DEV';
+            badge.classList.remove('env-badge--aws');
+            badge.classList.add('env-badge--dev');
+            badge.setAttribute('aria-label', '開発環境(dev)');
             // フォールバックでホスト名から判定された場合に備え、data-env も同期する
             if (document.body && document.body.dataset && document.body.dataset.env !== 'dev') {
                 document.body.dataset.env = 'dev';
@@ -6035,6 +6497,15 @@
             onboardingCompleted = localStorage.getItem('onboardingCompleted');
         } catch (error) {
             console.warn('Onboarding storage access failed:', error);
+        }
+
+        if (shouldForceOnboardingPreview()) {
+            try {
+                localStorage.removeItem('onboardingCompleted');
+            } catch (error) {
+                console.warn('Onboarding preview reset failed:', error);
+            }
+            onboardingCompleted = null;
         }
 
         if (!onboardingCompleted) {
@@ -6515,6 +6986,7 @@
         const opts = options || {};
         postResponseResolved = true;
         processingBubbleLocked = false;
+        deferredRecoveryActive = false;
         lastProcessingStatusPayload = null;
         stopProcessingBubbleWatchdog();
         clearChatSubmitBaseline();
@@ -8744,6 +9216,99 @@
     }
 
     let deferredRecoveryToken = 0;
+    let deferredRecoveryActive = false;
+
+    function handleRecoverableStreamError(gen, errData, options) {
+        const opts = options || {};
+        chatStreamInProgress = false;
+        resetRecommendationSseBulkState();
+        clearSlowRequestTimer();
+        restoreSubmitButton();
+        ensureProcessingBubbleVisible();
+        const recoveryOpts = {
+            maxAttempts: opts.maxAttempts != null ? opts.maxAttempts : 180,
+            fixedDelayMs: opts.fixedDelayMs != null ? opts.fixedDelayMs : 1000,
+            errorMessage: (errData && errData.message) || opts.errorMessage || '',
+            force: opts.force,
+        };
+        if (trySseReattachRecovery(gen, recoveryOpts)) {
+            return;
+        }
+        scheduleDeferredSessionRecovery(gen, 0, recoveryOpts);
+    }
+
+    function trySseReattachRecovery(generation, opts) {
+        if (!window.ChatSSE || !window.ChatSSE.submitStream) {
+            return false;
+        }
+        const lastEventId = sessionStorage.getItem('chatSseLastEventId');
+        const lastUser = (sessionStorage.getItem('lastUserMessage') || '').trim();
+        if (!lastEventId || !lastUser) {
+            return false;
+        }
+        let handled = false;
+        window.ChatSSE.submitStream({
+            url: mainAppPath('/api/chat/stream'),
+            message: lastUser,
+            withVersion: withVersion,
+            lastEventId: lastEventId,
+            onEvent: function (ev) {
+                if (generation !== chatSubmitGeneration) {
+                    return;
+                }
+                if (ev.event === 'done' && ev.data) {
+                    handled = true;
+                    if (unlockPostResponseUI(ev.data)) {
+                        deferredRecoveryActive = false;
+                        sessionStorage.removeItem('chatSseLastEventId');
+                        clearSlowRequestTimer();
+                    } else {
+                        scheduleDeferredSessionRecovery(generation, 0, opts);
+                    }
+                }
+                if (ev.event === 'error' && ev.data && ev.data.recoverable) {
+                    scheduleDeferredSessionRecovery(generation, 0, opts);
+                }
+            },
+            onDone: function () {
+                if (generation !== chatSubmitGeneration || handled || postResponseResolved) {
+                    return;
+                }
+                scheduleDeferredSessionRecovery(generation, 0, opts);
+            },
+            onError: function () {
+                if (generation !== chatSubmitGeneration || postResponseResolved) {
+                    return;
+                }
+                scheduleDeferredSessionRecovery(generation, 0, opts);
+            },
+        });
+        return true;
+    }
+
+    function tryRecoverFromStreamResult(generation, token) {
+        return fetch(withVersion('/api/chat/stream-result'), {
+            credentials: 'include',
+            headers: { 'Cache-Control': 'no-cache' },
+        })
+            .then(function (response) {
+                return response.ok ? response.json() : null;
+            })
+            .then(function (data) {
+                if (generation !== chatSubmitGeneration || token !== deferredRecoveryToken || postResponseResolved) {
+                    return false;
+                }
+                if (data && data.ready && data.done && unlockPostResponseUI(data.done)) {
+                    deferredRecoveryActive = false;
+                    clearSlowRequestTimer();
+                    return true;
+                }
+                return false;
+            })
+            .catch(function () {
+                return false;
+            });
+    }
 
     /**
      * 末尾が未応答の user（楽観表示）だけのとき修復し、bot を末尾に戻す。
@@ -10014,7 +10579,8 @@
                     restartProcessingPollIfNeeded();
                 }
             },
-            interval: 1000,
+            interval: 2500,
+            maxPolls: 72,
         };
     }
 
@@ -11487,21 +12053,41 @@ function appendQaDelta(text, section) {
         );
     }
 
-    function scheduleDeferredSessionRecovery(generation, attempt) {
+    function scheduleDeferredSessionRecovery(generation, attempt, options) {
         if (postResponseResolved) {
             return;
         }
+        const opts = options || {};
         const tryNum = attempt || 0;
-        const token = ++deferredRecoveryToken;
-        const delayMs = tryNum === 0 ? 120 : Math.min(400, 80 + tryNum * 60);
-        setTimeout(function () {
-            if (generation !== chatSubmitGeneration || token !== deferredRecoveryToken || postResponseResolved) {
+        const maxAttempts = opts.maxAttempts != null ? opts.maxAttempts : 12;
+        if (tryNum === 0) {
+            if (deferredRecoveryActive && !opts.force) {
                 return;
             }
-            fetch(withVersion('/api/sessions'), {
-                credentials: 'include',
-                headers: { 'Cache-Control': 'no-cache' },
-            })
+            deferredRecoveryActive = true;
+        }
+        const token = ++deferredRecoveryToken;
+        const delayMs = opts.fixedDelayMs != null
+            ? opts.fixedDelayMs
+            : (tryNum === 0 ? 120 : Math.min(400, 80 + tryNum * 60));
+        setTimeout(function () {
+            if (generation !== chatSubmitGeneration || token !== deferredRecoveryToken || postResponseResolved) {
+                if (tryNum === 0) {
+                    deferredRecoveryActive = false;
+                }
+                return;
+            }
+            tryRecoverFromStreamResult(generation, token).then(function (recoveredFromStream) {
+                if (recoveredFromStream) {
+                    return;
+                }
+                if (generation !== chatSubmitGeneration || token !== deferredRecoveryToken || postResponseResolved) {
+                    return;
+                }
+                return fetch(withVersion('/api/sessions'), {
+                    credentials: 'include',
+                    headers: { 'Cache-Control': 'no-cache' },
+                })
                 .then(function (response) {
                     if (!response.ok) {
                         throw new Error('HTTP ' + response.status);
@@ -11515,8 +12101,15 @@ function appendQaDelta(text, section) {
                     syncSessionUserAttributes(sessionData);
                     const merged = resolveSessionMessages(sessionData || {}, { allowRestore: false });
                     if (!isChatResponseComplete(merged)) {
-                        if (tryNum < 12) {
-                            scheduleDeferredSessionRecovery(generation, tryNum + 1);
+                        if (tryNum < maxAttempts) {
+                            scheduleDeferredSessionRecovery(generation, tryNum + 1, opts);
+                        } else {
+                            deferredRecoveryActive = false;
+                            if (opts.errorMessage) {
+                                showErrorMessage(opts.errorMessage);
+                            }
+                            dismissTypingIndicator(null, { force: true });
+                            restoreSubmitButton();
                         }
                         return;
                     }
@@ -11532,23 +12125,40 @@ function appendQaDelta(text, section) {
                             });
                             if (isSessionRenderStable(merged)) {
                                 markPostResponseResolved();
+                                deferredRecoveryActive = false;
                                 restoreSubmitButton();
                                 clearSlowRequestTimer();
                                 return;
                             }
                         }
-                        if (tryNum < 12) {
-                            scheduleDeferredSessionRecovery(generation, tryNum + 1);
+                        if (tryNum < maxAttempts) {
+                            scheduleDeferredSessionRecovery(generation, tryNum + 1, opts);
+                        } else {
+                            deferredRecoveryActive = false;
+                            if (opts.errorMessage) {
+                                showErrorMessage(opts.errorMessage);
+                            }
+                            dismissTypingIndicator(null, { force: true });
+                            restoreSubmitButton();
                         }
                         return;
                     }
+                    deferredRecoveryActive = false;
                     clearSlowRequestTimer();
                 })
                 .catch(function () {
-                    if (generation === chatSubmitGeneration && tryNum < 12) {
-                        scheduleDeferredSessionRecovery(generation, tryNum + 1);
+                    if (generation === chatSubmitGeneration && tryNum < maxAttempts) {
+                        scheduleDeferredSessionRecovery(generation, tryNum + 1, opts);
+                    } else {
+                        deferredRecoveryActive = false;
+                        if (opts.errorMessage) {
+                            showErrorMessage(opts.errorMessage);
+                        }
+                        dismissTypingIndicator(null, { force: true });
+                        restoreSubmitButton();
                     }
                 });
+            });
         }, delayMs);
     }
 
@@ -12002,12 +12612,16 @@ function appendQaDelta(text, section) {
                 }
                 if (ev.event === 'error') {
                     const errCode = ev.data && ev.data.code;
-                    if (errCode === 'stream_timeout' && hasActiveStreamingContent()) {
-                        chatStreamInProgress = false;
-                        resetRecommendationSseBulkState();
-                        scheduleDeferredSessionRecovery(gen);
-                        restoreSubmitButton();
-                        clearSlowRequestTimer();
+                    const recoverable = !!(ev.data && ev.data.recoverable);
+                    if (
+                        errCode === 'stream_timeout'
+                        || errCode === 'worker_queue_timeout'
+                        || (recoverable && !postResponseResolved)
+                    ) {
+                        handleRecoverableStreamError(gen, ev.data, {
+                            maxAttempts: errCode === 'worker_queue_timeout' ? 30 : 180,
+                            fixedDelayMs: errCode === 'worker_queue_timeout' ? 1000 : 1000,
+                        });
                         return;
                     }
                     chatStreamInProgress = false;

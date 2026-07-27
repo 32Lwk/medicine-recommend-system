@@ -24,6 +24,7 @@ def reset_cache():
         ps._last_flush_at.clear()
         ps._pending_flush.clear()
         ps._session_lang.clear()
+        ps._read_cache.clear()
     yield
     with ps._lock:
         ps._cache.clear()
@@ -32,6 +33,7 @@ def reset_cache():
         ps._last_flush_at.clear()
         ps._pending_flush.clear()
         ps._session_lang.clear()
+        ps._read_cache.clear()
 
 
 def test_mark_increases_percent_monotonically():

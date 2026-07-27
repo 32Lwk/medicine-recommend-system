@@ -18,7 +18,7 @@ from src.services.processing_status import append_advice_preview
 _stream_sink: ContextVar[Optional["StreamSink"]] = ContextVar("sse_stream_sink", default=None)
 
 _SENTINEL = object()
-_RING_TTL_SEC = 120.0
+_RING_TTL_SEC = 600.0
 _RING_MAX = 512
 
 _lock = threading.Lock()
@@ -138,6 +138,16 @@ def get_active_session_sink(session_id: str) -> Optional[StreamSink]:
 def set_stream_result(session_id: str, body: Any, status_code: int) -> None:
     with _lock:
         _stream_results[session_id] = (body, status_code, time.time())
+
+
+def peek_stream_result(session_id: str) -> Optional[Tuple[Any, int]]:
+    """SSE 切断後にワーカーが保存した結果を参照（消費しない）。"""
+    _purge_stale_rings()
+    with _lock:
+        raw = _stream_results.get(session_id)
+    if not raw:
+        return None
+    return raw[0], raw[1]
 
 
 def pop_stream_result(session_id: str) -> Optional[Tuple[Any, int]]:

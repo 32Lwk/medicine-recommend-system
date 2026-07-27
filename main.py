@@ -622,12 +622,16 @@ def _render_index(request: Request, sid: str, app_base_path: str, status_code: i
     particle_profile_json = _particle_profile_json()
     # 開発環境かどうか（config.app_config.is_development_runtime をテンプレート data-env に反映）
     is_dev_env = is_development_runtime()
+    from config.aws_features import is_aws_staging_site
+
+    is_aws_staging = is_aws_staging_site()
     query_ui = request.query_params.get(UI_VARIANT_QUERY)
     cookie_ui = request.cookies.get(UI_VARIANT_COOKIE)
     ui_variant = resolve_ui_variant(query_ui=query_ui, cookie_ui=cookie_ui)
     runtime_client_config_json = json.dumps(
         {
             "isDevelopment": bool(is_dev_env),
+            "isAwsStaging": bool(is_aws_staging),
             "uiVariant": ui_variant,
             "gitCommitShort": _resolve_git_commit_short(),
             "gitCommitDateIso": _resolve_git_commit_date_iso(),
@@ -1134,6 +1138,32 @@ def post_test_root_chat(
     sid: str = Depends(get_sid),
 ):
     return _post_chat_json_response(request, message, sid)
+
+
+@app.get("/api/chat/stream-result")
+def api_chat_stream_result(
+    request: Request,
+    sid: str = Depends(get_sid),
+):
+    """SSE 切断後にワーカーが保存した done ペイロード（ポーリング回復用）。"""
+    from src.handlers.chat_stream import build_stream_done_payload
+    from src.services.sse_emit import peek_stream_result
+    from src.utils.request_safe_session import RequestSafeSession
+
+    if not sid:
+        return {"ready": False}
+    cached = peek_stream_result(sid)
+    if not cached:
+        return {"ready": False}
+    body, status_code = cached
+    safe_session = RequestSafeSession()
+    from src.handlers.chat_stream import _prime_safe_session_for_chat
+
+    _prime_safe_session_for_chat(safe_session, sid, request)
+    return {
+        "ready": True,
+        "done": build_stream_done_payload(body, status_code, safe_session, sid),
+    }
 
 
 @app.post("/api/chat/stream")

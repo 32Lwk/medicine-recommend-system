@@ -10,7 +10,7 @@ import math
 import os
 import re
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError, as_completed
 from typing import Dict, List
 
 from openai import OpenAI
@@ -30,6 +30,88 @@ _usage_notes_cache = {}
 _batch_notes_cache: dict[str, tuple[float, Dict]] = {}
 _BATCH_NOTES_TTL_SEC = 24 * 3600
 _BATCH_NOTES_MAX = 200
+
+
+class ExplainBatchHardTimeout(Exception):
+    """バッチ使用上の注意 LLM が EXPLAIN_BATCH_HARD_TIMEOUT_SEC を超えた。"""
+
+
+def _rule_based_individual_notes(recommended_medicines: List[Dict]) -> List[str]:
+    """LLM なしの使用上の注意（タイムアウト時フォールバック）。"""
+    notes: List[str] = []
+    for i, med in enumerate(recommended_medicines, 1):
+        efficacy = str(med.get("efficacy") or "").strip()
+        usage = str(med.get("usage") or "").strip()
+        parts = [f"{i}つ目：{med.get('product_name', '')}"]
+        if efficacy:
+            parts.append(f"効能: {efficacy}")
+        usage_lines = ["・用法用量を守ってご使用ください。"]
+        if usage:
+            usage_lines.append(f"・{usage[:120]}")
+        parts.append("用法用量の注意:\n" + "\n".join(usage_lines))
+        age_restriction = med.get("age_restriction", "")
+        if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
+            parts.append(f"年齢制限: {age_restriction.strip()}")
+        notes.append("\n".join(parts))
+    return notes
+
+
+def _fetch_batch_usage_notes_text(
+    client: OpenAI,
+    prompt: str,
+    fast_model: str,
+    *,
+    batch_stabilize: bool,
+) -> str:
+    from src.core.llm_client import chat_completion_create, extract_completion_text
+    from config.llm_config import get_explain_empty_retry_max_latency_sec
+
+    _batch_max_tokens = 900 if batch_stabilize else 600
+    t0 = time.time()
+    response = chat_completion_create(
+        client,
+        model_role="explain",
+        path="explanation_generator.batch_usage_notes",
+        model=fast_model,
+        messages=[
+            {
+                "role": "system",
+                "content": "登録販売者として、効能は全文、用法用量注意は2項目以内で簡潔に。年齢制限が複雑な場合は「年齢制限: 用法用量を参照してください」と記載。JSON形式で出力。",
+            },
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.1,
+        max_tokens=_batch_max_tokens,
+        response_format={"type": "json_object"},
+    )
+    result_text = extract_completion_text(response)
+    first_latency = time.time() - t0
+    retry_max = get_explain_empty_retry_max_latency_sec()
+    if not result_text and batch_stabilize and first_latency < retry_max:
+        logger.info(
+            "batch usage_notes empty — retrying with max_tokens=1200 (latency=%.1fs)",
+            first_latency,
+        )
+        response = chat_completion_create(
+            client,
+            model_role="explain",
+            path="explanation_generator.batch_usage_notes",
+            model=fast_model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "登録販売者として、効能は全文、用法用量注意は2項目以内で簡潔に。年齢制限が複雑な場合は「年齢制限: 用法用量を参照してください」と記載。JSON形式で出力。",
+                },
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.0,
+            max_tokens=1200,
+            response_format={"type": "json_object"},
+        )
+        result_text = extract_completion_text(response)
+    if not result_text:
+        raise ValueError("empty completion content")
+    return result_text
 
 
 def _apply_age_policy_to_usage_result(
@@ -716,8 +798,7 @@ def generate_usage_notes_and_consultation_with_gpt(
 {symptoms_context and f'ユーザーの症状に合わせた注意事項を含めてください。' or ''}"""
 
     try:
-        from src.core.llm_client import chat_completion_create
-        from config.llm_config import get_explain_model
+        from config.llm_config import get_explain_batch_hard_timeout_sec, get_explain_model
 
         try:
             from config.llm_flags import is_explain_batch_stabilize_enabled
@@ -729,42 +810,24 @@ def generate_usage_notes_and_consultation_with_gpt(
         fast_model = get_explain_model(
             assess_explanation_risk(user_info, nlu_result, recommended_medicines)
         )
-        _batch_max_tokens = 900 if _batch_stabilize else 600
-        response = chat_completion_create(
-            client,
-            model_role="explain",
-            path="explanation_generator.batch_usage_notes",
-            model=fast_model,
-            messages=[
-                {"role": "system", "content": "登録販売者として、効能は全文、用法用量注意は2項目以内で簡潔に。年齢制限が複雑な場合は「年齢制限: 用法用量を参照してください」と記載。JSON形式で出力。"},
-                {"role": "user", "content": prompt},
-            ],
-            temperature=0.1,
-            max_tokens=_batch_max_tokens,
-            response_format={"type": "json_object"},
-        )
-
-        from src.core.llm_client import extract_completion_text
-
-        result_text = extract_completion_text(response)
-        if not result_text and _batch_stabilize:
-            logger.info("batch usage_notes empty — retrying with max_tokens=1200")
-            response = chat_completion_create(
+        hard_timeout = get_explain_batch_hard_timeout_sec()
+        with ThreadPoolExecutor(max_workers=1, thread_name_prefix="explain_batch") as pool:
+            fut = pool.submit(
+                _fetch_batch_usage_notes_text,
                 client,
-                model_role="explain",
-                path="explanation_generator.batch_usage_notes",
-                model=fast_model,
-                messages=[
-                    {"role": "system", "content": "登録販売者として、効能は全文、用法用量注意は2項目以内で簡潔に。年齢制限が複雑な場合は「年齢制限: 用法用量を参照してください」と記載。JSON形式で出力。"},
-                    {"role": "user", "content": prompt},
-                ],
-                temperature=0.0,
-                max_tokens=1200,
-                response_format={"type": "json_object"},
+                prompt,
+                fast_model,
+                batch_stabilize=_batch_stabilize,
             )
-            result_text = extract_completion_text(response)
-        if not result_text:
-            raise ValueError("empty completion content")
+            try:
+                result_text = fut.result(timeout=hard_timeout)
+            except FuturesTimeoutError as exc:
+                logger.warning(
+                    "explain batch hard timeout after %.0fs — rule-based fallback",
+                    hard_timeout,
+                )
+                raise ExplainBatchHardTimeout() from exc
+
         result_json = json.loads(result_text)
 
         individual_notes = []
@@ -855,6 +918,9 @@ def generate_usage_notes_and_consultation_with_gpt(
 
         usage_notes_individual = '\n\n'.join(individual_notes)
 
+    except ExplainBatchHardTimeout:
+        individual_notes = _rule_based_individual_notes(recommended_medicines)
+        usage_notes_individual = '\n\n'.join(individual_notes)
     except Exception as e:
         logger.warning(f"バッチ処理エラー: {e}。フォールバック: 個別並列処理に切り替えます")
 

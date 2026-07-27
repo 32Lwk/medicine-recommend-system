@@ -4,15 +4,18 @@
 from __future__ import annotations
 
 import logging
+import os
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
 _DEBOUNCE_SEC = 0.4
+_READ_CACHE_TTL_SEC = float(os.getenv("PROCESSING_STATUS_READ_CACHE_SEC", "2.5"))
 _executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="proc_status")
+_read_cache: Dict[str, Tuple[float, Dict[str, Any]]] = {}
 
 PROCESSING_STEPS: List[Dict[str, Any]] = [
     {"id": "validate", "label": "入力を確認しています", "weight": 5},
@@ -421,6 +424,58 @@ def _schedule_flush(session_id: str, payload: Dict[str, Any]) -> None:
     _executor.submit(_delayed)
 
 
+def _read_cache_key(session_id: str) -> str:
+    return f"proc_status:{session_id}"
+
+
+def _publish_read_cache(session_id: str, response: Dict[str, Any]) -> None:
+    """ワーカー間共有: 直近レスポンスを短 TTL で保持（Neon 読み取り削減）。"""
+    expires = time.time() + _READ_CACHE_TTL_SEC
+    with _lock:
+        _read_cache[session_id] = (expires, response)
+    try:
+        from src.services.redis_cache import cache_set_json
+
+        cache_set_json(
+            _read_cache_key(session_id),
+            response,
+            ttl_sec=max(1, int(_READ_CACHE_TTL_SEC) + 1),
+        )
+    except Exception:
+        pass
+
+
+def _pop_read_cache(session_id: str) -> None:
+    with _lock:
+        _read_cache.pop(session_id, None)
+    try:
+        from src.services.redis_cache import cache_delete
+
+        cache_delete(_read_cache_key(session_id))
+    except Exception:
+        pass
+
+
+def _get_read_cache(session_id: str) -> Optional[Dict[str, Any]]:
+    now = time.time()
+    with _lock:
+        hit = _read_cache.get(session_id)
+        if hit and hit[0] > now:
+            return hit[1]
+        if hit:
+            _read_cache.pop(session_id, None)
+    try:
+        from src.services.redis_cache import cache_get_json
+
+        cached = cache_get_json(_read_cache_key(session_id))
+        if isinstance(cached, dict):
+            _publish_read_cache(session_id, cached)
+            return cached
+    except Exception:
+        pass
+    return None
+
+
 def _flush_to_db(session_id: str, payload: Dict[str, Any]) -> None:
     try:
         from src.services.database import get_database
@@ -428,6 +483,8 @@ def _flush_to_db(session_id: str, payload: Dict[str, Any]) -> None:
         db = get_database()
         if db and (db.connection or db.connection_pool):
             db.update_processing_status_only(session_id, payload)
+        if payload.get("active"):
+            _publish_read_cache(session_id, _active_response(session_id, payload))
     except Exception as exc:
         logger.debug("processing_status flush skipped: %s", exc)
 
@@ -453,6 +510,8 @@ def mark_processing_step(
             payload["language"] = lang
         _cache[session_id] = payload
         _last_step[session_id] = step_id
+        active_response = _active_response(session_id, payload)
+    _publish_read_cache(session_id, active_response)
     _schedule_flush(session_id, payload)
     try:
         from src.services.sse_emit import emit_sse_event, is_session_stream_active
@@ -478,6 +537,7 @@ def clear_processing_status(session_id: Optional[str]) -> None:
         _session_lang.pop(session_id, None)
         _flow_context.pop(session_id, None)
         _advice_preview.pop(session_id, None)
+    _pop_read_cache(session_id)
     try:
         from src.services.database import get_database
 
@@ -495,6 +555,9 @@ def get_processing_status(session_id: Optional[str]) -> Dict[str, Any]:
         cached = _cache.get(session_id)
     if cached and cached.get("active"):
         return _active_response(session_id, cached)
+    read_cached = _get_read_cache(session_id)
+    if read_cached is not None:
+        return read_cached
     try:
         from src.services.database import get_database
 
@@ -502,7 +565,14 @@ def get_processing_status(session_id: Optional[str]) -> Dict[str, Any]:
         if db and (db.connection or db.connection_pool):
             raw = db.get_processing_status_only(session_id)
             if raw and raw.get("active"):
-                return _active_response(session_id, raw)
+                response = _active_response(session_id, raw)
+                _publish_read_cache(session_id, response)
+                return response
+            inactive = _inactive_payload()
+            _publish_read_cache(session_id, inactive)
+            return inactive
     except Exception as exc:
         logger.debug("processing_status read skipped: %s", exc)
-    return _inactive_payload()
+    inactive = _inactive_payload()
+    _publish_read_cache(session_id, inactive)
+    return inactive

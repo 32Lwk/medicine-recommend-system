@@ -1169,8 +1169,8 @@
         pollRoot.keepAliveWhileLocked = Boolean(options.keepAliveWhileLocked);
         pollRoot.hasSeenActive = false;
         pollRoot.inactiveStreak = 0;
-        var interval = options.interval || 1000;
-        var maxPolls = options.maxPolls || 180;
+        var interval = options.interval || 2500;
+        var maxPolls = options.maxPolls || 72;
         var pollCount = 0;
         lastRenderedKey = '';
         lastApiLanguage = null;

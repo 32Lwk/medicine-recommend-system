@@ -10,7 +10,7 @@ from typing import Any, Callable, TypeVar
 
 T = TypeVar("T")
 
-_DEFAULT_CHAT_WORKERS = 4
+_DEFAULT_CHAT_WORKERS = 8
 
 
 def resolve_chat_max_workers() -> int:

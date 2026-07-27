@@ -1,4 +1,5 @@
 """SSE chat stream API"""
+import time
 from unittest.mock import patch
 
 from src.handlers.chat_stream import _extract_done_messages
@@ -119,6 +120,66 @@ def test_extract_done_messages_when_trailing_user():
     assert user["content"] == "a"
 
 
+def test_run_chat_post_records_worker_timing():
+    from src.handlers.chat_stream import _run_chat_post
+    from src.utils.chat_http_context import ChatClientInfo
+    from src.utils.request_safe_session import RequestSafeSession
+
+    session = RequestSafeSession()
+    client_info = ChatClientInfo(user_agent="", client_ip="127.0.0.1")
+    monitor = object()
+    timing: dict = {"started": False, "started_at": None}
+
+    with patch("src.handlers.chat_stream.bind_worker_stream_sink"):
+        with patch("src.handlers.chat_stream.handle_chat_post", return_value=({"status": "ok"}, 200)):
+            _run_chat_post(session, client_info, "test", "sid-timing", monitor, timing)
+
+    assert timing["started"] is True
+    assert timing["started_at"] is not None
+
+
+def test_stream_elapsed_sec_before_and_after_worker_start():
+    from src.handlers.chat_stream import _stream_elapsed_sec
+
+    started_at = time.monotonic()
+    timing = {"started": False, "started_at": None}
+    elapsed, worker_started = _stream_elapsed_sec(started_at, timing)
+    assert worker_started is False
+    assert elapsed >= 0
+
+    timing["started"] = True
+    timing["started_at"] = time.monotonic()
+    elapsed2, worker_started2 = _stream_elapsed_sec(started_at, timing)
+    assert worker_started2 is True
+    assert elapsed2 >= 0
+
+
+def test_build_stream_done_payload():
+    from src.handlers.chat_stream import build_stream_done_payload
+
+    bot = {"type": "bot", "content": "ok", "diagnosis": {"render": "sage_reco"}}
+    user = {"type": "user", "content": "test"}
+    session = {"messages": [user, bot]}
+    payload = build_stream_done_payload(
+        {"status": "ok", "message_count": 2},
+        200,
+        session,
+        "sid1",
+    )
+    assert payload["bot_message"]["content"] == "ok"
+    assert payload["message_count"] == 2
+
+
+def test_peek_stream_result_does_not_consume():
+    from src.services.sse_emit import peek_stream_result, pop_stream_result, set_stream_result
+
+    set_stream_result("sid-peek", {"status": "ok", "message_count": 1}, 200)
+    assert peek_stream_result("sid-peek") is not None
+    assert peek_stream_result("sid-peek") is not None
+    assert pop_stream_result("sid-peek") is not None
+    assert peek_stream_result("sid-peek") is None
+
+
 def test_run_chat_post_uses_sync_handler_not_nested_asyncio():
     """GUNICORN_WORKERS=1 でも SSE ワーカーが同一 ThreadPool でデッドロックしないこと。"""
     from src.handlers.chat_stream import _run_chat_post
@@ -131,7 +192,7 @@ def test_run_chat_post_uses_sync_handler_not_nested_asyncio():
 
     with patch("src.handlers.chat_stream.bind_worker_stream_sink") as bind_mock:
         with patch("src.handlers.chat_stream.handle_chat_post", return_value=({"status": "ok"}, 200)) as post_mock:
-            body, status = _run_chat_post(session, client_info, "こんにちは", "sid-test", monitor)
+            body, status = _run_chat_post(session, client_info, "こんにちは", "sid-test", monitor, {})
 
     assert status == 200
     bind_mock.assert_called_once_with("sid-test")

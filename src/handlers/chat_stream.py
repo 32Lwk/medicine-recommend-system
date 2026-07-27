@@ -30,15 +30,18 @@ from src.services.sse_emit import (
     deactivate_stream_sink,
     get_active_session_sink,
     is_session_stream_active,
+    peek_stream_result,
     pop_stream_result,
     replay_session_events,
     set_stream_result,
 )
+from src.services.chat_inflight import is_chat_job_in_flight
 from src.utils.chat_http_context import ChatClientInfo
 
 logger = logging.getLogger(__name__)
 
 _STREAM_TIMEOUT_SEC = float(os.getenv("CHAT_STREAM_TIMEOUT_SEC", "180"))
+_QUEUE_WAIT_SEC = float(os.getenv("CHAT_STREAM_QUEUE_WAIT_SEC", "120"))
 _KEEPALIVE_SEC = float(os.getenv("CHAT_STREAM_KEEPALIVE_SEC", "10"))
 def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, request: Any = None) -> None:
     from config.ui_config import UI_VARIANT_COOKIE, UI_VARIANT_QUERY, resolve_ui_variant
@@ -110,10 +113,48 @@ def _run_chat_post(
     message: str,
     sid: str,
     monitor: Any,
+    worker_timing: Optional[Dict[str, Any]] = None,
 ) -> tuple:
     """SSE ワーカー内では sync pipeline を直接実行（同一 ThreadPool への二重 submit を避ける）。"""
+    if worker_timing is not None:
+        worker_timing["started"] = True
+        worker_timing["started_at"] = time.monotonic()
     bind_worker_stream_sink(sid)
     return handle_chat_post(safe_session, client_info, message, sid, monitor)
+
+
+async def _finalize_orphan_worker(
+    worker: asyncio.Future,
+    sid: str,
+    safe_session: RequestSafeSession,
+    request: Request,
+) -> None:
+    """SSE 切断後もワーカーが完了したら DB 保存・再接続用結果を残す。"""
+    try:
+        body, status_code = await worker
+        if sid:
+            set_stream_result(sid, body, status_code)
+            try:
+                persist_session_from_chat_state(sid, safe_session, request)
+            except Exception:
+                logger.exception("SSE orphan worker persist failed sid=%s", sid)
+    except Exception:
+        logger.exception("SSE orphan worker failed sid=%s", sid)
+    finally:
+        if sid:
+            from src.services.processing_status import clear_processing_status
+
+            clear_processing_status(sid)
+
+
+def _stream_elapsed_sec(
+    started_at: float,
+    worker_timing: Dict[str, Any],
+) -> tuple[float, bool]:
+    """経過秒と、処理タイムアウト判定対象か（ワーカー開始後）を返す。"""
+    if worker_timing.get("started") and worker_timing.get("started_at") is not None:
+        return time.monotonic() - float(worker_timing["started_at"]), True
+    return time.monotonic() - started_at, False
 
 
 def _yield_sink_events(sink: StreamSink) -> list[str]:
@@ -196,6 +237,57 @@ def _build_sse_done_event(
     )
 
 
+def _build_done_lines(
+    body: Any,
+    status_code: int,
+    safe_session: RequestSafeSession,
+    sid: str,
+    *,
+    trace_id: Optional[str] = None,
+    reattach: bool = False,
+) -> list[str]:
+    """done (+ 必要なら client_preview) の SSE 行リスト。"""
+    messages = _messages_for_sse_done(safe_session, sid, body)
+    done = _build_sse_done_event(body, status_code, messages, trace_id=trace_id)
+    payload = done.to_payload()
+    from src.dialogue.adapters.web_sse import merge_dialogue_delivery_into_done
+
+    payload = merge_dialogue_delivery_into_done(payload, safe_session, sid)
+    lines: list[str] = []
+    if done.error or done.warning:
+        preview_payload = {
+            "error": done.error,
+            "warning": done.warning,
+            "response": done.response,
+            "message_count": done.message_count,
+            "dev_preview_kind": done.dev_preview_kind,
+        }
+        if done.risk_score is not None:
+            preview_payload["risk_score"] = done.risk_score
+        lines.append(_sse_line("client_preview", preview_payload, event_id="client_preview"))
+    if reattach:
+        payload["reattach"] = True
+    lines.append(_sse_line("done", payload, event_id="done"))
+    return lines
+
+
+def build_stream_done_payload(
+    body: Any,
+    status_code: int,
+    safe_session: RequestSafeSession,
+    sid: str,
+    *,
+    trace_id: Optional[str] = None,
+) -> Dict[str, Any]:
+    """GET /api/chat/stream-result 用の done ペイロード。"""
+    messages = _messages_for_sse_done(safe_session, sid, body)
+    done = _build_sse_done_event(body, status_code, messages, trace_id=trace_id)
+    payload = done.to_payload()
+    from src.dialogue.adapters.web_sse import merge_dialogue_delivery_into_done
+
+    return merge_dialogue_delivery_into_done(payload, safe_session, sid)
+
+
 async def stream_chat_events(
     request: Request,
     message: str,
@@ -218,6 +310,39 @@ async def stream_chat_events(
     safe_session = RequestSafeSession()
     _prime_safe_session_for_chat(safe_session, sid, request)
 
+    cached_early = peek_stream_result(sid) if sid else None
+    if cached_early:
+        body, status_code = pop_stream_result(sid)
+        if body is not None:
+            for line in _build_done_lines(body, status_code, safe_session, sid, reattach=True):
+                yield line
+            return
+
+    if sid and last_event_id and is_chat_job_in_flight(sid):
+        wait_started = time.monotonic()
+        while True:
+            cached = pop_stream_result(sid)
+            if cached:
+                body, status_code = cached
+                for line in _build_done_lines(body, status_code, safe_session, sid, reattach=True):
+                    yield line
+                return
+            if not is_chat_job_in_flight(sid):
+                break
+            if time.monotonic() - wait_started > _STREAM_TIMEOUT_SEC:
+                yield _sse_line(
+                    "error",
+                    {
+                        "code": "stream_timeout",
+                        "message": "処理に時間がかかりすぎています。回答の取得を続けています…",
+                        "recoverable": True,
+                        "fallback_hint": "POST /",
+                    },
+                    event_id="error",
+                )
+                return
+            await asyncio.sleep(0.25)
+
     sink: Optional[StreamSink] = None
     reattach = False
     if sid:
@@ -231,6 +356,7 @@ async def stream_chat_events(
 
     worker: Optional[asyncio.Future] = None
     owns_worker = False
+    worker_timing: Dict[str, Any] = {"started": False, "started_at": None}
 
     if reattach:
         sink = get_active_session_sink(sid) or sink
@@ -248,6 +374,7 @@ async def stream_chat_events(
             message,
             sid,
             monitor,
+            worker_timing,
         )
 
     started_at = time.monotonic()
@@ -265,41 +392,50 @@ async def stream_chat_events(
 
             if owns_worker and worker and worker.done():
                 break
-            if owns_worker and worker and (time.monotonic() - started_at) > _STREAM_TIMEOUT_SEC:
-                logger.error("SSE chat worker timeout after %.0fs sid=%s", _STREAM_TIMEOUT_SEC, sid)
-                yield _sse_line(
-                    "error",
-                    {
-                        "code": "stream_timeout",
-                        "message": "処理に時間がかかりすぎています。もう一度お試しください。",
-                        "fallback_hint": "POST /",
-                    },
-                    event_id="error",
-                )
-                break
+            if owns_worker and worker:
+                elapsed, worker_started = _stream_elapsed_sec(started_at, worker_timing)
+                if worker_started and elapsed > _STREAM_TIMEOUT_SEC:
+                    logger.error(
+                        "SSE chat worker timeout after %.0fs sid=%s",
+                        _STREAM_TIMEOUT_SEC,
+                        sid,
+                    )
+                    yield _sse_line(
+                        "error",
+                        {
+                            "code": "stream_timeout",
+                            "message": "処理に時間がかかりすぎています。回答の取得を続けています…",
+                            "recoverable": True,
+                            "fallback_hint": "POST /",
+                        },
+                        event_id="error",
+                    )
+                    break
+                if not worker_started and elapsed > _QUEUE_WAIT_SEC:
+                    logger.error(
+                        "SSE chat worker queue wait timeout after %.0fs sid=%s",
+                        _QUEUE_WAIT_SEC,
+                        sid,
+                    )
+                    yield _sse_line(
+                        "error",
+                        {
+                            "code": "worker_queue_timeout",
+                            "message": "混雑のため処理開始に時間がかかっています。しばらくしてからもう一度お試しください。",
+                            "recoverable": True,
+                            "fallback_hint": "POST /",
+                        },
+                        event_id="error",
+                    )
+                    break
             if reattach and sid and not is_session_stream_active(sid):
                 cached = pop_stream_result(sid)
                 if cached:
                     body, status_code = cached
-                    messages = _messages_for_sse_done(safe_session, sid, body)
-                    done = _build_sse_done_event(body, status_code, messages)
-                    payload = done.to_payload()
-                    from src.dialogue.adapters.web_sse import merge_dialogue_delivery_into_done
-
-                    payload = merge_dialogue_delivery_into_done(payload, session_data, sid)
-                    if done.error or done.warning:
-                        preview_payload = {
-                            "error": done.error,
-                            "warning": done.warning,
-                            "response": done.response,
-                            "message_count": done.message_count,
-                            "dev_preview_kind": done.dev_preview_kind,
-                        }
-                        if done.risk_score is not None:
-                            preview_payload["risk_score"] = done.risk_score
-                        yield _sse_line("client_preview", preview_payload, event_id="client_preview")
-                    payload["reattach"] = True
-                    yield _sse_line("done", payload, event_id="done")
+                    for line in _build_done_lines(
+                        body, status_code, safe_session, sid, reattach=True
+                    ):
+                        yield line
                 return
             await asyncio.sleep(0.02)
 
@@ -316,31 +452,14 @@ async def stream_chat_events(
                 except Exception:
                     logger.exception("SSE persist before done failed sid=%s", sid)
             trace_id = safe_session.get("last_trace_id")
-            messages = _messages_for_sse_done(safe_session, sid, body)
-            done = _build_sse_done_event(
+            for line in _build_done_lines(
                 body,
                 status_code,
-                messages,
+                safe_session,
+                sid,
                 trace_id=trace_id,
-            )
-            done_payload = done.to_payload()
-            from src.dialogue.adapters.web_sse import merge_dialogue_delivery_into_done
-
-            done_payload = merge_dialogue_delivery_into_done(
-                done_payload, safe_session, sid
-            )
-            if done.error or done.warning:
-                preview_payload = {
-                    "error": done.error,
-                    "warning": done.warning,
-                    "response": done.response,
-                    "message_count": done.message_count,
-                    "dev_preview_kind": done.dev_preview_kind,
-                }
-                if done.risk_score is not None:
-                    preview_payload["risk_score"] = done.risk_score
-                yield _sse_line("client_preview", preview_payload, event_id="client_preview")
-            yield _sse_line("done", done_payload, event_id="done")
+            ):
+                yield line
         elif owns_worker and worker and not worker.done():
             logger.warning("SSE stream ended before worker completed sid=%s", sid)
 
@@ -352,13 +471,16 @@ async def stream_chat_events(
             event_id="error",
         )
     finally:
+        worker_still_running = owns_worker and worker is not None and not worker.done()
         if sink and owns_worker:
             sink.close()
         if sid and owns_worker:
             deactivate_stream_sink(sid)
         elif not owns_worker:
             deactivate_stream_sink(None)
-        if sid and owns_worker:
+        if worker_still_running:
+            asyncio.create_task(_finalize_orphan_worker(worker, sid, safe_session, request))
+        elif sid and owns_worker:
             try:
                 persist_session_from_chat_state(sid, safe_session, request)
             except Exception:

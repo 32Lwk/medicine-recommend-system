@@ -61,7 +61,8 @@ steps:
           --platform=managed \
           --memory=1Gi \
           --cpu=1 \
-          --update-env-vars "GIT_COMMIT=${COMMIT_SHA},GIT_COMMIT_DATE=$${COMMIT_DATE},MEDICINE_IMAGE_CDN_BASE=https://images.yutok.dev/otc/" \
+          --no-cpu-throttling \
+          --update-env-vars "GIT_COMMIT=${COMMIT_SHA},GIT_COMMIT_DATE=$${COMMIT_DATE},MEDICINE_IMAGE_CDN_BASE=https://images.yutok.dev/otc/,CHAT_WORKER_MAX=8,CHAT_STREAM_TIMEOUT_SEC=180,GUNICORN_WORKER_CLASS=uvicorn.workers.UvicornWorker,EXPLAIN_BATCH_HARD_TIMEOUT_SEC=90,PROCESSING_STATUS_READ_CACHE_SEC=2.5" \
           --startup-probe=httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=3,periodSeconds=5,failureThreshold=36 \
           --quiet
 

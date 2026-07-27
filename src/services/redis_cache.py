@@ -67,3 +67,13 @@ def cache_get_json(key: str) -> Any:
 
 def cache_set_json(key: str, value: Any, *, ttl_sec: int = 600) -> None:
     cache_set(key, json.dumps(value, ensure_ascii=False), ttl_sec=ttl_sec)
+
+
+def cache_delete(key: str) -> None:
+    client = _redis_client()
+    if not client:
+        return
+    try:
+        client.delete(key)
+    except Exception as exc:
+        logger.debug("Redis DEL failed for %s: %s", key, exc)

@@ -12660,3 +12660,16 @@
 {"timestamp": "2026-07-26T13:05:34.205672", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-26T13:05:34.206227", "event_type": "input_validation", "user_id": "ユーザー10", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "カロナールの画像見せて"}}
 {"timestamp": "2026-07-26T06:56:15.418297", "original_length": 9, "sanitized_length": 9, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-27T17:53:09.406665", "original_length": 26, "sanitized_length": 26, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-27T17:53:09.406665", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 26, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "GithubとGitlabの使い分けを教えてください"}}
+{"timestamp": "2026-07-27T18:00:41.884085", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-27T18:00:41.885084", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛いです。"}}
+{"timestamp": "2026-07-27T18:00:48.775937", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-27T18:04:45.431079", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-27T18:04:45.432081", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛いです。"}}
+{"timestamp": "2026-07-27T18:06:05.626736", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-27T18:06:05.627735", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブを比較して"}}
+{"timestamp": "2026-07-27T18:38:21.394590", "original_length": 18, "sanitized_length": 18, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-27T18:38:21.394590", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 18, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "GitlabとGithubの違いは？"}}
+{"timestamp": "2026-07-27T19:04:36.964206", "original_length": 18, "sanitized_length": 18, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-27T19:04:36.965208", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 18, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "GitlabとGithubの違いは？"}}
