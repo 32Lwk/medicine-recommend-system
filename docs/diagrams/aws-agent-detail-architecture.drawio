@@ -1,0 +1,49 @@
+<mxfile host="Electron" version="29.6.1">
+  <diagram name="Agent Detail Architecture" id="diagram-1">
+    <mxGraphModel dx="1200" dy="800" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1700" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title-text" value="medicine-recommend 各エージェント内部アーキテクチャ" style="text;html=1;align=left;verticalAlign=top;fontSize=30;fontStyle=1;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="50" y="30" width="1700" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle-text" value="主要エージェントの処理フローと依存関係" style="text;html=1;align=left;verticalAlign=top;fontSize=16;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="55" y="72" width="1700" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="title-separator" style="line;strokeWidth=2;html=1;strokeColor=#FF9900;fontFamily=Helvetica;" value="" vertex="1" parent="1">
+          <mxGeometry x="55" y="105" width="1690" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="box-PhysicalOrchestrator" value="&lt;b&gt;PhysicalOrchestrator&lt;/b&gt;&lt;br&gt;1. NLUAgent → resolve_nlu_for_recommendation&lt;br&gt;2. hybrid_nlu_extraction (症状 ∥ 嗜好)&lt;br&gt;3. rule_based_recommendation.py + data/*.csv&lt;br&gt;4. Personalize (AWS) で表示順最適化&lt;br&gt;5. SSE cards → ExplanationAgent → explanations&lt;br&gt;6. AskAgent で推奨後 Q&amp;A" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#147EBA;fontSize=10;fontFamily=Helvetica;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="220" y="150" width="360" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="box-ConciergeAgent" value="&lt;b&gt;ConciergeAgent&lt;/b&gt;&lt;br&gt;1. IntentRouter → Concierge route&lt;br&gt;2. 挨拶 / 技術 FAQ / アプリ説明&lt;br&gt;3. Bedrock KB retrieve (AWS) / local JSON (GCP)&lt;br&gt;4. docs/concierge/technical/ を参照&lt;br&gt;5. OpenAI で自然文生成" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#01A88D;fontSize=10;fontFamily=Helvetica;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="620" y="150" width="360" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="box-TriageAgent" value="&lt;b&gt;TriageAgent&lt;/b&gt;&lt;br&gt;1. SafetyGate pre 通過後に実行&lt;br&gt;2. OpenAI structured output&lt;br&gt;3. Physical / Emotional / Emergency / Ask / Other&lt;br&gt;4. triage_cache.py (LRU + TTL)&lt;br&gt;5. SafetyGate post で再検証" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#147EBA;fontSize=10;fontFamily=Helvetica;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="150" width="360" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="box-EmergencyRouter" value="&lt;b&gt;EmergencyRouter&lt;/b&gt;&lt;br&gt;1. is_emergency_candidate() ゲート&lt;br&gt;2. classify_emergency() → subtype&lt;br&gt;3. store_incident / medical_self / crisis_language&lt;br&gt;4. dispatch_emergency() → manual_queue&lt;br&gt;5. emergency_notify (SMTP)&lt;br&gt;6. OTC ロック / ソフトバナー" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#DD344C;fontSize=10;fontFamily=Helvetica;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="220" y="420" width="360" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="box-CounselingManager" value="&lt;b&gt;CounselingManager&lt;/b&gt;&lt;br&gt;1. Emotional カテゴリ / Counseling route&lt;br&gt;2. line_memory_context 長期記憶注入&lt;br&gt;3. OpenAI カウンセリング応答&lt;br&gt;4. ModerationAgent で境界チェック&lt;br&gt;5. セッション履歴を context_provider 経由" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#01A88D;fontSize=10;fontFamily=Helvetica;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="620" y="420" width="360" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="box-SessionOps / Memory" value="&lt;b&gt;SessionOps / Memory&lt;/b&gt;&lt;br&gt;SessionOps: 削除確認・ステータス・要約&lt;br&gt;ProfileMemoryAgent: LINE → line_user_profile&lt;br&gt;EpisodeSummaryAgent: consultation_summaries&lt;br&gt;MemoryDeleteAgent: 全件/部分削除&lt;br&gt;dialogue/context.py dual-write" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#8C4FFF;fontSize=10;fontFamily=Helvetica;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="420" width="360" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="box-StoreInquiryAgent" value="&lt;b&gt;StoreInquiryAgent&lt;/b&gt;&lt;br&gt;1. Store route (IntentRouter)&lt;br&gt;2. 店舗案内・購入先クエリ&lt;br&gt;3. 店舗データ参照&lt;br&gt;4. Emergency store_incident と連携" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#01A88D;fontSize=10;fontFamily=Helvetica;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="220" y="690" width="360" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="box-NLUAgent + AskAgent" value="&lt;b&gt;NLUAgent + AskAgent&lt;/b&gt;&lt;br&gt;NLUAgent: hybrid_nlu_extraction ファサード&lt;br&gt;Comprehend Medical (AWS, optional)&lt;br&gt;AskAgent: chat_with_medicine_context&lt;br&gt;推奨カードコンテキスト付き Q&amp;A&lt;br&gt;medicine_context 早期分岐" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#147EBA;fontSize=10;fontFamily=Helvetica;align=left;spacingLeft=10;verticalAlign=top;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="620" y="690" width="360" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="sec-shared" value="&lt;b&gt;共通基盤 (全エージェント)&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=13;fontColor=#232F3E;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="220" y="940" width="200" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="shared-infra" value="chat_post_pipeline → finalize_pipeline_response → SSE/JSON | PostgreSQL セッション永続化 | config/llm_flags.py フラグ制御 | src/dialogue/ パッケージ (context, envelope, history)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#ED7100;fontSize=11;fontFamily=Helvetica;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="220" y="970" width="1160" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

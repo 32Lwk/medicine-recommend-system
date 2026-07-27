@@ -1,0 +1,295 @@
+<mxfile host="Electron" version="29.6.1">
+  <diagram name="Multi-Agent Architecture" id="diagram-1">
+    <mxGraphModel dx="1200" dy="800" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1900" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title-text" value="medicine-recommend マルチエージェントアーキテクチャ (AWS)" style="text;html=1;align=left;verticalAlign=top;fontSize=30;fontStyle=1;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="50" y="30" width="1900" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle-text" value="Chat Pipeline v2 — SafetyGate → Triage → IntentRouter → AgentDispatcher → 各専門エージェント" style="text;html=1;align=left;verticalAlign=top;fontSize=16;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="55" y="72" width="1900" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="title-separator" style="line;strokeWidth=2;html=1;strokeColor=#FF9900;fontFamily=Helvetica;" value="" vertex="1" parent="1">
+          <mxGeometry x="55" y="105" width="1890" height="10" as="geometry" />
+        </mxCell>
+        <mxCell id="user-ma" value="User / Browser" style="fillColor=#f5f5f5;strokeColor=light-dark(#666666,#D4D4D4);rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontSize=12;fontColor=#333333;fontFamily=Helvetica;container=1;collapsible=0;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="280" width="120" height="98" as="geometry" />
+        </mxCell>
+        <mxCell id="user-ma-icon" value="" style="sketch=0;outlineConnect=0;fontColor=#232F3E;fillColor=#232F3D;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.users;fontFamily=Helvetica;" vertex="1" parent="user-ma">
+          <mxGeometry x="36" y="30" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="p-post" value="POST /api/chat" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#ED7100;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="420" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p-fastapi" value="FastAPI main.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#ED7100;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="500" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p-pipeline" value="chat_post_pipeline" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#ED7100;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="580" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="sg-pre" value="SafetyGate (pre)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#DD344C;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="220" y="200" width="130" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="sess-fp" value="SessionOps fast-path" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#147EBA;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="380" y="200" width="150" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="triage" value="TriageAgent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#147EBA;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="560" y="200" width="120" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="sg-post" value="SafetyGate (post)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#DD344C;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="720" y="200" width="130" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="sess-tri" value="SessionOps triage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#147EBA;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="880" y="200" width="140" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="sync-ctx" value="sync_routing_context" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#ED7100;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="200" width="160" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="router" value="IntentRouter shadow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#ED7100;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="200" width="150" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="dispatch" value="AgentDispatcher" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#ED7100;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="200" width="140" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="orchestrator" value="ChatOrchestrator (fallback)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#666666;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1640" y="200" width="170" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="sec-router" value="&lt;b&gt;IntentRouter Stages (src/dialogue/routing/)&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=13;fontColor=#232F3E;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="220" y="270" width="200" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="stage-a" value="Stage A: gate.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#8C4FFF;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="220" y="300" width="130" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="stage-b" value="Stage B: intent_router_llm.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#8C4FFF;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="380" y="300" width="180" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="stage-c" value="Stage C: guards.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#8C4FFF;fontSize=11;fontStyle=1;fontFamily=Helvetica;align=center;" vertex="1" parent="1">
+          <mxGeometry x="590" y="300" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="sec-agents" value="&lt;b&gt;Specialized Agents (AgentDispatcher routes)&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=13;fontColor=#232F3E;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="220" y="380" width="200" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="a-safety" value="&lt;b&gt;SafetyGate&lt;/b&gt;&lt;div&gt;&lt;i&gt;pre/post 2段チェック&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#DD344C;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="220" y="420" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-emergency" value="&lt;b&gt;EmergencyRouter&lt;/b&gt;&lt;div&gt;&lt;i&gt;store/medical/crisis&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#DD344C;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="390" y="420" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-moderation" value="&lt;b&gt;ModerationAgent&lt;/b&gt;&lt;div&gt;&lt;i&gt;境界クライス検知&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#DD344C;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="560" y="420" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-physical" value="&lt;b&gt;PhysicalOrchestrator&lt;/b&gt;&lt;div&gt;&lt;i&gt;rule_based 推奨唯一入口&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#147EBA;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="220" y="510" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-nlu" value="&lt;b&gt;NLUAgent&lt;/b&gt;&lt;div&gt;&lt;i&gt;症状・属性 NLU&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#147EBA;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="390" y="510" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-explain" value="&lt;b&gt;ExplanationAgent&lt;/b&gt;&lt;div&gt;&lt;i&gt;SSE explanations&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#147EBA;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="560" y="510" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-ask" value="&lt;b&gt;AskAgent&lt;/b&gt;&lt;div&gt;&lt;i&gt;推奨後 Q&amp;A&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#147EBA;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="730" y="510" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-concierge" value="&lt;b&gt;ConciergeAgent&lt;/b&gt;&lt;div&gt;&lt;i&gt;挨拶・FAQ・雑談&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#01A88D;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="220" y="600" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-store" value="&lt;b&gt;StoreInquiryAgent&lt;/b&gt;&lt;div&gt;&lt;i&gt;店舗案内&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#01A88D;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="390" y="600" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-counsel" value="&lt;b&gt;CounselingManager&lt;/b&gt;&lt;div&gt;&lt;i&gt;Emotional カウンセリング&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#01A88D;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="560" y="600" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-triage" value="&lt;b&gt;TriageAgent&lt;/b&gt;&lt;div&gt;&lt;i&gt;Physical/Emotional/Emergency/Ask/Other&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#147EBA;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="730" y="600" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-session" value="&lt;b&gt;SessionOps / SessionAgent&lt;/b&gt;&lt;div&gt;&lt;i&gt;削除・要約・ステータス&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#8C4FFF;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="220" y="690" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-profile" value="&lt;b&gt;ProfileMemoryAgent&lt;/b&gt;&lt;div&gt;&lt;i&gt;LINE 属性保存&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#8C4FFF;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="390" y="690" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-episode" value="&lt;b&gt;EpisodeSummaryAgent&lt;/b&gt;&lt;div&gt;&lt;i&gt;相談エピソード要約&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#8C4FFF;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="560" y="690" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="a-memdel" value="&lt;b&gt;MemoryDeleteAgent&lt;/b&gt;&lt;div&gt;&lt;i&gt;記憶削除意図分類&lt;/i&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#8C4FFF;fontSize=11;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="730" y="690" width="150" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sec-deps" value="&lt;b&gt;External Dependencies (AWS Staging)&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=13;fontColor=#232F3E;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="220" y="790" width="200" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="g-openai" value="LLM" style="fillColor=#FFF2E8;strokeColor=#ED7100;rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontSize=12;fontColor=#ED7100;fontFamily=Helvetica;container=1;collapsible=0;shadow=1;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="220" y="820" width="130" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="s-openai" value="OpenAI&lt;div&gt;&lt;i&gt;Triage/Concierge/Explain&lt;/i&gt;&lt;/div&gt;" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.generic;fontFamily=Helvetica;shadow=1;" vertex="1" parent="g-openai">
+          <mxGeometry x="41" y="30" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="g-kb" value="RAG" style="fillColor=#E6F6F3;strokeColor=#01A88D;rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontSize=12;fontColor=#01A88D;fontFamily=Helvetica;container=1;collapsible=0;shadow=1;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="380" y="820" width="130" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="s-kb" value="Bedrock KB&lt;div&gt;&lt;i&gt;Concierge + Medicine&lt;/i&gt;&lt;/div&gt;" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#01A88D;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.bedrock;fontFamily=Helvetica;shadow=1;" vertex="1" parent="g-kb">
+          <mxGeometry x="41" y="30" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="g-rule" value="Scoring" style="fillColor=#E9F3E6;strokeColor=#569A31;rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontSize=12;fontColor=#569A31;fontFamily=Helvetica;container=1;collapsible=0;shadow=1;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="540" y="820" width="130" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="s-rule" value="rule_based_recommendation&lt;div&gt;&lt;i&gt;data/*.csv&lt;/i&gt;&lt;/div&gt;" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#569A31;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;fontFamily=Helvetica;shadow=1;" vertex="1" parent="g-rule">
+          <mxGeometry x="41" y="30" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="g-pg" value="Database" style="fillColor=#F5E6F7;strokeColor=#C925D1;rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontSize=12;fontColor=#C925D1;fontFamily=Helvetica;container=1;collapsible=0;shadow=1;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="700" y="820" width="130" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="s-pg" value="Neon PostgreSQL&lt;div&gt;&lt;i&gt;sessions/messages&lt;/i&gt;&lt;/div&gt;" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#C925D1;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.rds;fontFamily=Helvetica;shadow=1;" vertex="1" parent="g-pg">
+          <mxGeometry x="41" y="30" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="g-tr" value="Translation" style="fillColor=#E6F6F3;strokeColor=#01A88D;rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontSize=12;fontColor=#01A88D;fontFamily=Helvetica;container=1;collapsible=0;shadow=1;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="860" y="820" width="130" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="s-tr" value="Amazon Translate" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#01A88D;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.translate;fontFamily=Helvetica;shadow=1;" vertex="1" parent="g-tr">
+          <mxGeometry x="41" y="30" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="g-po" value="TTS" style="fillColor=#E6F6F3;strokeColor=#01A88D;rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontSize=12;fontColor=#01A88D;fontFamily=Helvetica;container=1;collapsible=0;shadow=1;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="820" width="130" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="s-po" value="Amazon Polly" style="sketch=0;points=[[0,0,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0,0],[0,1,0],[0.25,1,0],[0.5,1,0],[0.75,1,0],[1,1,0],[0,0.25,0],[0,0.5,0],[0,0.75,0],[1,0.25,0],[1,0.5,0],[1,0.75,0]];outlineConnect=0;fontColor=#232F3E;fillColor=#01A88D;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=10;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.polly;fontFamily=Helvetica;shadow=1;" vertex="1" parent="g-po">
+          <mxGeometry x="41" y="30" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="sec-route-map" value="&lt;b&gt;primary_route → handler マッピング&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=13;fontColor=#232F3E;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="220" y="960" width="200" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="route-table" value="Physical → physical_agent | Emergency → emergency_agent | Concierge → concierge_agent | Store → store_inquiry | Counseling → counseling_processor | SessionOps → session_ops | Security → security_gate | Unknown → legacy_fallback" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2E8;strokeColor=#ED7100;fontSize=11;fontFamily=Helvetica;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="220" y="990" width="1200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="sec-sse" value="&lt;b&gt;SSE Events&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=13;fontColor=#232F3E;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="220" y="1060" width="200" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="sse-box" value="status | cards | explanations | bot_followup | advice_delta" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F4FC;strokeColor=#147EBA;fontSize=11;fontFamily=Helvetica;" vertex="1" parent="1">
+          <mxGeometry x="220" y="1090" width="500" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="m1" edge="1" parent="1" source="user-ma" target="p-post" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m2" edge="1" parent="1" source="p-post" target="p-fastapi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m3" edge="1" parent="1" source="p-fastapi" target="p-pipeline" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m4" edge="1" parent="1" source="p-pipeline" target="sg-pre" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m5" edge="1" parent="1" source="sg-pre" target="sess-fp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m6" edge="1" parent="1" source="sess-fp" target="triage" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m6-label" value="miss" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontFamily=Helvetica;" connectable="0" vertex="1" parent="m6">
+          <mxGeometry relative="1" x="-0.2" y="-12" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m7" edge="1" parent="1" source="triage" target="sg-post" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m8" edge="1" parent="1" source="sg-post" target="sess-tri" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m9" edge="1" parent="1" source="sess-tri" target="sync-ctx" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m9-label" value="miss" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontFamily=Helvetica;" connectable="0" vertex="1" parent="m9">
+          <mxGeometry relative="1" x="-0.2" y="-12" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m10" edge="1" parent="1" source="sync-ctx" target="router" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m11" edge="1" parent="1" source="router" target="dispatch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m12" edge="1" parent="1" source="dispatch" target="orchestrator" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m12-label" value="miss" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontFamily=Helvetica;" connectable="0" vertex="1" parent="m12">
+          <mxGeometry relative="1" x="-0.2" y="-12" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m13" edge="1" parent="1" source="stage-a" target="stage-b" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m14" edge="1" parent="1" source="stage-b" target="stage-c" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m15" edge="1" parent="1" source="router" target="stage-a" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m15-label" value="resolve" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontFamily=Helvetica;" connectable="0" vertex="1" parent="m15">
+          <mxGeometry relative="1" x="-0.2" y="-12" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m16" edge="1" parent="1" source="dispatch" target="a-physical" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m16-label" value="Physical" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontFamily=Helvetica;" connectable="0" vertex="1" parent="m16">
+          <mxGeometry relative="1" x="-0.2" y="-12" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m17" edge="1" parent="1" source="dispatch" target="a-concierge" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m17-label" value="Concierge" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontFamily=Helvetica;" connectable="0" vertex="1" parent="m17">
+          <mxGeometry relative="1" x="-0.2" y="-12" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m18" edge="1" parent="1" source="dispatch" target="a-store" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m18-label" value="Store" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontFamily=Helvetica;" connectable="0" vertex="1" parent="m18">
+          <mxGeometry relative="1" x="-0.2" y="-12" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m19" edge="1" parent="1" source="dispatch" target="a-counsel" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m19-label" value="Counseling" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontFamily=Helvetica;" connectable="0" vertex="1" parent="m19">
+          <mxGeometry relative="1" x="-0.2" y="-12" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m20" edge="1" parent="1" source="dispatch" target="a-emergency" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m20-label" value="Emergency" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontFamily=Helvetica;" connectable="0" vertex="1" parent="m20">
+          <mxGeometry relative="1" x="-0.2" y="-12" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m21" edge="1" parent="1" source="dispatch" target="a-session" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m21-label" value="SessionOps" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontFamily=Helvetica;" connectable="0" vertex="1" parent="m21">
+          <mxGeometry relative="1" x="-0.2" y="-12" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m22" edge="1" parent="1" source="a-physical" target="a-nlu" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m23" edge="1" parent="1" source="a-physical" target="g-rule" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m23-label" value="score" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontFamily=Helvetica;" connectable="0" vertex="1" parent="m23">
+          <mxGeometry relative="1" x="-0.2" y="-12" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m24" edge="1" parent="1" source="a-physical" target="a-explain" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m25" edge="1" parent="1" source="a-concierge" target="g-kb" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m25-label" value="RAG" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontFamily=Helvetica;" connectable="0" vertex="1" parent="m25">
+          <mxGeometry relative="1" x="-0.2" y="-12" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+        <mxCell id="m26" edge="1" parent="1" source="a-concierge" target="g-openai" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m27" edge="1" parent="1" source="a-triage" target="g-openai" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m28" edge="1" parent="1" source="p-pipeline" target="g-pg" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontFamily=Helvetica;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="m28-label" value="persist" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontFamily=Helvetica;" connectable="0" vertex="1" parent="m28">
+          <mxGeometry relative="1" x="-0.2" y="-12" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
