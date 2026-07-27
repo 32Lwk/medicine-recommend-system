@@ -80,52 +80,18 @@ def generate_usage_notes_parallel(
     nlu_result: dict[str, Any] | None,
     max_workers: int = 3,
 ) -> list[str]:
-    """フォールバック用 usage_notes を最大3件並列生成（順序維持）。"""
-    from src.core.medicine_logic import generate_usage_notes
+    """フォールバック用 usage_notes（ルールベース・LLM なし）。"""
+    from src.core.explanation_generator import _rule_based_individual_notes
 
     meds = recommended_medicines[:3]
     if not meds:
         return []
 
-    symptoms_list: list[Any] = []
-    if nlu_result and "symptoms" in nlu_result:
-        symptoms_list = nlu_result.get("symptoms") or []
-
-    notes_by_index: dict[int, str] = {}
-
-    def _one(idx: int, medicine: dict[str, Any]) -> tuple[int, str]:
-        medicine_with_details = medicine.copy()
-        medicine_with_details.setdefault(
-            "age_restriction", medicine.get("age_restriction", "情報なし")
-        )
-        medicine_with_details.setdefault(
-            "doping_prohibited", medicine.get("doping_prohibited", "なし")
-        )
-        medicine_with_details.setdefault(
-            "competition_category", medicine.get("competition_category", "情報なし")
-        )
-        medicine_with_details.setdefault(
-            "conditions", medicine.get("conditions", "情報なし")
-        )
-        name = medicine.get("name") or medicine.get("product_name") or ""
-        text = generate_usage_notes(
-            name,
-            medicine_with_details,
-            user_info,
-            symptoms=symptoms_list,
-        )
-        if text and text != "使用上の注意の生成に失敗しました。薬剤師または登録販売者にご相談ください。":
-            return idx, f"<strong>{name}:</strong><br>{text}"
-        return idx, ""
-
-    with ThreadPoolExecutor(max_workers=min(max_workers, len(meds))) as pool:
-        futures = [pool.submit(_one, i, m) for i, m in enumerate(meds)]
-        for fut in futures:
-            try:
-                idx, note = fut.result()
-                if note:
-                    notes_by_index[idx] = note
-            except Exception as exc:
-                logger.warning("Parallel usage_notes task failed: %s", exc)
-
-    return [notes_by_index[i] for i in sorted(notes_by_index)]
+    notes = _rule_based_individual_notes(meds)
+    out: list[str] = []
+    for med, note in zip(meds, notes):
+        name = med.get("name") or med.get("product_name") or ""
+        body = note.split("\n", 1)[-1] if note else ""
+        if body:
+            out.append(f"<strong>{name}:</strong><br>{body}")
+    return out

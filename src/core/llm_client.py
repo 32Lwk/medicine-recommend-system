@@ -193,10 +193,12 @@ def _invoke_llm(
     model: str,
     messages: List[Dict[str, str]],
     model_role: Optional[str] = None,
+    force_chat_completions: bool = False,
     **kwargs: Any,
 ) -> tuple[Any, str]:
     use_resp = (
-        hasattr(client, "responses")
+        not force_chat_completions
+        and hasattr(client, "responses")
         and (
             use_responses_api()
             or (model_role is not None and use_responses_api_for_role(model_role))
@@ -225,13 +227,19 @@ def chat_completion_create(
     path: str,
     messages: List[Dict[str, str]],
     model: Optional[str] = None,
+    force_chat_completions: bool = False,
     **kwargs: Any,
 ) -> Any:
     _budget_guard_or_raise()
     resolved = model or get_model(model_role)
     t0 = time.time()
     response, api_kind = _invoke_llm(
-        client, model=resolved, messages=messages, model_role=model_role, **kwargs
+        client,
+        model=resolved,
+        messages=messages,
+        model_role=model_role,
+        force_chat_completions=force_chat_completions,
+        **kwargs,
     )
     _record_response(resolved, path, (time.time() - t0) * 1000, response, api_kind=api_kind)
     return response

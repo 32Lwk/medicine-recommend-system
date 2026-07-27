@@ -138,6 +138,74 @@ def build_greeting_response(user_message: str) -> str:
     return random.choice(GREETING_INTRO_POOL)
 
 
+def _personalized_advice_fallback(
+    user_attrs: Dict,
+    user_text: str = "",
+    influenza_risk: bool = False,
+    influenza_reason: str = "",
+) -> str:
+    """LLM 不可時の定型アドバイス（SSE タイムアウト回避）。"""
+    age = user_attrs.get("age")
+    pregnant = user_attrs.get("pregnant")
+    breastfeeding = user_attrs.get("breastfeeding")
+    duration_days = user_attrs.get("symptom_duration_days")
+
+    duration_warning = ""
+    if duration_days and duration_days >= 3:
+        if duration_days >= 7:
+            duration_warning = (
+                f"症状が{duration_days}日間続いているとのこと、"
+                "1週間以上症状が続く場合は早めに医師の診察を受けることをお勧めします。"
+            )
+        else:
+            duration_warning = f"症状が{duration_days}日間続いているとのこと、"
+
+    if influenza_risk:
+        flu = (
+            f"インフルエンザの可能性（{influenza_reason}）がある場合は、"
+            "早めの受診をご検討ください。"
+        )
+        duration_warning = f"{duration_warning}{flu}"
+
+    if pregnant is True or pregnant == "True":
+        base_msg = (
+            "妊娠中のためご連絡ありがとうございます。推奨した医薬品は妊娠中でも使用可能なものを"
+            "選んでいますが、服用前に必ず医師にご相談いただくとより安心です。お大事になさってください。"
+        )
+        return f"{duration_warning}{base_msg}"
+    if breastfeeding is True or breastfeeding == "True":
+        base_msg = (
+            "授乳中のためご連絡ありがとうございます。推奨した医薬品は授乳中でも使用可能なものを"
+            "選んでいますが、服用前に医師にご相談いただくとより安心です。"
+        )
+        return f"{duration_warning}{base_msg}"
+    if age and age < 15:
+        base_msg = (
+            f"{age}歳のお子様への服用となります。推奨医薬品は年齢に適したものを選んでいますが、"
+            "必ず保護者の方が用法用量を確認し、監督のもとで服用してください。"
+        )
+        return f"{duration_warning}{base_msg}"
+    if age and age >= 65:
+        base_msg = (
+            "ご高齢の方への推奨となります。持病をお持ちの場合や他のお薬を服用されている場合は、"
+            "飲み合わせにご注意ください。"
+        )
+        return f"{duration_warning}{base_msg}"
+
+    symptom_hint = (user_text or "").strip()[:40]
+    if symptom_hint:
+        return (
+            f"{duration_warning}"
+            f"「{symptom_hint}」の症状に合わせて医薬品を選んでいます。"
+            "用法用量を守ってご使用ください。症状が続く場合は医師・薬剤師にご相談ください。"
+        )
+    return (
+        f"{duration_warning}"
+        "あなたの症状に合わせて医薬品を選んでいます。"
+        "用法用量を守ってご使用ください。お大事にしてください。"
+    )
+
+
 def generate_personalized_advice(
     user_attrs: Dict,
     medicines: List[Dict],
@@ -269,6 +337,15 @@ def generate_personalized_advice(
         sid = session_id
         stream_active = is_streaming_active(sid)
 
+        if stream_active and lang == "ja":
+            logger.info("SSE active — using template personalized_advice (skip counsel LLM)")
+            return _personalized_advice_fallback(
+                user_attrs,
+                user_text=user_text,
+                influenza_risk=influenza_risk,
+                influenza_reason=influenza_reason,
+            )
+
         if stream_active or lang != "ja":
             user_content = append_language_instruction(prompt, lang) if lang != "ja" else prompt
             response = chat_completion_create(
@@ -302,48 +379,12 @@ def generate_personalized_advice(
     except Exception as e:
         logger.error(f"❌ 個別アドバイス生成エラー: {e}")
         logger.error(f"エラー詳細: {str(e)}")
-        # フォールバック
-        age = user_attrs.get('age')
-        pregnant = user_attrs.get('pregnant')
-        breastfeeding = user_attrs.get('breastfeeding')
-
-        duration_days = user_attrs.get('symptom_duration_days')
-
-        logger.info(f"フォールバック: age={age}, pregnant={pregnant}, breastfeeding={breastfeeding}, duration={duration_days}")
-
-        # 症状期間の警告
-        duration_warning = ""
-        if duration_days and duration_days >= 3:
-            if duration_days >= 7:
-                duration_warning = f"症状が{duration_days}日間続いているとのこと、1週間以上症状が続く場合は早めに医師の診察を受けることをお勧めします。"
-            else:
-                duration_warning = f"症状が{duration_days}日間続いているとのこと、"
-
-        if pregnant is True or pregnant == 'True':
-            base_msg = "妊娠中のためご連絡ありがとうございます。推奨した医薬品は妊娠中でも使用可能なものを選んでいますが、服用前に必ず医師にご相談いただくとより安心です。お大事になさってください。"
-            return f"{duration_warning}{base_msg}"
-        elif breastfeeding is True or breastfeeding == 'True':
-            base_msg = "授乳中のためご連絡ありがとうございます。推奨した医薬品は授乳中でも使用可能なものを選んでいますが、服用前に医師にご相談いただくとより安心です。"
-            return f"{duration_warning}{base_msg}"
-        elif age and age < 15:
-            base_msg = f"{age}歳のお子様への服用となります。推奨医薬品は年齢に適したものを選んでいますが、必ず保護者の方が用法用量を確認し、監督のもとで服用してください。"
-            return f"{duration_warning}{base_msg}"
-        elif age and age >= 65:
-            base_msg = "ご高齢の方への推奨となります。推奨医薬品は適切なものを選んでいますが、持病をお持ちの場合や他のお薬を服用されている場合は、飲み合わせにご注意ください。"
-            return f"{duration_warning}{base_msg}"
-        else:
-            # 属性情報があればそれを含める
-            info_parts = []
-            if age:
-                info_parts.append(f"{age}歳")
-            if user_attrs.get('gender'):
-                info_parts.append(user_attrs['gender'])
-
-            if info_parts:
-                info_str = '、'.join(info_parts)
-                return f"{info_str}の方への推奨です。あなたの情報を考慮して最適な医薬品を選んでいます。服用前に添付文書をよく読み、用法用量を守ってご使用ください。お大事にしてください。"
-            else:
-                return "あなたの情報を考慮して、最適な医薬品を推奨しています。服用前に添付文書をよく読み、用法用量を守ってご使用ください。お大事にしてください。"
+        return _personalized_advice_fallback(
+            user_attrs,
+            user_text=user_text,
+            influenza_risk=influenza_risk,
+            influenza_reason=influenza_reason,
+        )
 
 
 def _safe_format_html(text: Optional[str]) -> str:

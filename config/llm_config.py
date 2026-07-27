@@ -131,6 +131,16 @@ def get_explain_batch_hard_timeout_sec() -> float:
     return _get_float("EXPLAIN_BATCH_HARD_TIMEOUT_SEC", 60.0)
 
 
+def is_explain_rule_based_only() -> bool:
+    """explain バッチ LLM をスキップしルールベースのみ（本番緊急用）。"""
+    return _get_bool("EXPLAIN_RULE_BASED_ONLY", False)
+
+
+def get_explain_batch_llm_timeout_sec() -> float:
+    """explain バッチ 1 リクエストの httpx 上限。"""
+    return min(get_explain_batch_hard_timeout_sec(), get_role_timeout_sec("explain"))
+
+
 def get_explain_empty_retry_max_latency_sec() -> float:
     """空応答リトライは初回がこの秒数未満のときのみ（タイムアウト後の二重 60s を防ぐ）。"""
     return _get_float("EXPLAIN_EMPTY_RETRY_MAX_LATENCY_SEC", 20.0)

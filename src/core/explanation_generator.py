@@ -104,10 +104,15 @@ def _fetch_batch_usage_notes_text(
     fast_model: str,
     *,
     batch_stabilize: bool,
+    timeout_sec: float | None = None,
 ) -> str:
     from src.core.llm_client import chat_completion_create, extract_completion_text
-    from config.llm_config import get_explain_empty_retry_max_latency_sec
+    from config.llm_config import (
+        get_explain_batch_llm_timeout_sec,
+        get_explain_empty_retry_max_latency_sec,
+    )
 
+    llm_timeout = timeout_sec if timeout_sec is not None else get_explain_batch_llm_timeout_sec()
     _batch_max_tokens = 900 if batch_stabilize else 600
     t0 = time.time()
     response = chat_completion_create(
@@ -125,6 +130,8 @@ def _fetch_batch_usage_notes_text(
         temperature=0.1,
         max_tokens=_batch_max_tokens,
         response_format={"type": "json_object"},
+        timeout=llm_timeout,
+        force_chat_completions=True,
     )
     result_text = extract_completion_text(response)
     first_latency = time.time() - t0
@@ -149,6 +156,8 @@ def _fetch_batch_usage_notes_text(
             temperature=0.0,
             max_tokens=1200,
             response_format={"type": "json_object"},
+            timeout=llm_timeout,
+            force_chat_completions=True,
         )
         result_text = extract_completion_text(response)
     if not result_text:
@@ -840,137 +849,145 @@ def generate_usage_notes_and_consultation_with_gpt(
 年齢制限が複雑な表現（「1歳以下は1／12量以下」「15歳以下8歳まで：1／2量」など）を含む場合は、「年齢制限: 用法用量を参照してください」と記載してください。
 {symptoms_context and f'ユーザーの症状に合わせた注意事項を含めてください。' or ''}"""
 
-    try:
-        from config.llm_config import get_explain_batch_hard_timeout_sec, get_explain_model
+    from config.llm_config import is_explain_rule_based_only
 
+    if is_explain_rule_based_only():
+        individual_notes = _rule_based_individual_notes(recommended_medicines)
+        usage_notes_individual = "\n\n".join(individual_notes)
+    else:
         try:
-            from config.llm_flags import is_explain_batch_stabilize_enabled
+            from config.llm_config import get_explain_batch_hard_timeout_sec, get_explain_model
 
-            _batch_stabilize = is_explain_batch_stabilize_enabled()
-        except Exception:
-            _batch_stabilize = False
-
-        fast_model = get_explain_model(
-            assess_explanation_risk(user_info, nlu_result, recommended_medicines)
-        )
-        hard_timeout = get_explain_batch_hard_timeout_sec()
-        with ThreadPoolExecutor(max_workers=1, thread_name_prefix="explain_batch") as pool:
-            fut = pool.submit(
-                _fetch_batch_usage_notes_text,
-                client,
-                prompt,
-                fast_model,
-                batch_stabilize=_batch_stabilize,
-            )
             try:
-                result_text = fut.result(timeout=hard_timeout)
-            except FuturesTimeoutError as exc:
-                logger.warning(
-                    "explain batch hard timeout after %.0fs — rule-based fallback",
-                    hard_timeout,
+                from config.llm_flags import is_explain_batch_stabilize_enabled
+
+                _batch_stabilize = is_explain_batch_stabilize_enabled()
+            except Exception:
+                _batch_stabilize = False
+
+            fast_model = get_explain_model(
+                assess_explanation_risk(user_info, nlu_result, recommended_medicines)
+            )
+            hard_timeout = get_explain_batch_hard_timeout_sec()
+            try:
+                result_text = _fetch_batch_usage_notes_text(
+                    client,
+                    prompt,
+                    fast_model,
+                    batch_stabilize=_batch_stabilize,
+                    timeout_sec=hard_timeout,
                 )
-                raise ExplainBatchHardTimeout() from exc
+            except Exception as exc:
+                exc_name = type(exc).__name__
+                if exc_name in ("APITimeoutError", "TimeoutError") or "timeout" in str(exc).lower():
+                    logger.warning(
+                        "explain batch hard timeout after %.0fs — rule-based fallback (%s)",
+                        hard_timeout,
+                        exc_name,
+                    )
+                    raise ExplainBatchHardTimeout() from exc
+                raise
 
-        result_json = json.loads(result_text)
+            result_json = json.loads(result_text)
 
-        individual_notes = []
-        medicines_dict = {m['number']: m for m in result_json.get('medicines', [])}
+            individual_notes = []
+            medicines_dict = {m['number']: m for m in result_json.get('medicines', [])}
 
-        for i, med in enumerate(recommended_medicines, 1):
-            med_result = medicines_dict.get(i)
-            ingredients = str(med.get('ingredients', '')).lower()
-            usage_notes = med_result.get('usage_notes', '') if med_result else ''
+            for i, med in enumerate(recommended_medicines, 1):
+                med_result = medicines_dict.get(i)
+                ingredients = str(med.get('ingredients', '')).lower()
+                usage_notes = med_result.get('usage_notes', '') if med_result else ''
 
-            has_irritant_laxative = any(
-                ingredient.lower() in ingredients
-                for ingredient in IRRITANT_LAXATIVE_INGREDIENTS
-            )
+                has_irritant_laxative = any(
+                    ingredient.lower() in ingredients
+                    for ingredient in IRRITANT_LAXATIVE_INGREDIENTS
+                )
 
-            if has_irritant_laxative:
-                warning_text = "刺激性下剤が含まれています"
-                if warning_text not in usage_notes and "連用" not in usage_notes:
-                    warning_html = '<strong>⚠️ 重要：</strong>本品には刺激性下剤が含まれています。連用により耐性が生じる可能性があるため、3日以上の連用は避けてください。症状が続く場合は医師にご相談ください。'
-                    usage_notes = usage_notes + '\n\n' + warning_html if usage_notes else warning_html
+                if has_irritant_laxative:
+                    warning_text = "刺激性下剤が含まれています"
+                    if warning_text not in usage_notes and "連用" not in usage_notes:
+                        warning_html = '<strong>⚠️ 重要：</strong>本品には刺激性下剤が含まれています。連用により耐性が生じる可能性があるため、3日以上の連用は避けてください。症状が続く場合は医師にご相談ください。'
+                        usage_notes = usage_notes + '\n\n' + warning_html if usage_notes else warning_html
+                        if med_result:
+                            med_result['usage_notes'] = usage_notes
+                        if _DEBUG_MODE or logger.level <= logging.DEBUG:
+                            logger.debug(f"刺激性下剤の警告を追加: {med.get('product_name', '')}")
+
+                from src.core.recommendation.pollen_rhinitis_scoring import (
+                    append_vasoconstrictor_nasal_warning,
+                    mark_vasoconstrictor_flag,
+                )
+
+                mark_vasoconstrictor_flag(med)
+                if med.get("has_vasoconstrictor_nasal"):
+                    usage_notes = append_vasoconstrictor_nasal_warning(usage_notes or "", med)
                     if med_result:
-                        med_result['usage_notes'] = usage_notes
-                    if _DEBUG_MODE or logger.level <= logging.DEBUG:
-                        logger.debug(f"刺激性下剤の警告を追加: {med.get('product_name', '')}")
+                        med_result["usage_notes"] = usage_notes
 
-            from src.core.recommendation.pollen_rhinitis_scoring import (
-                append_vasoconstrictor_nasal_warning,
-                mark_vasoconstrictor_flag,
-            )
-
-            mark_vasoconstrictor_flag(med)
-            if med.get("has_vasoconstrictor_nasal"):
-                usage_notes = append_vasoconstrictor_nasal_warning(usage_notes or "", med)
                 if med_result:
-                    med_result["usage_notes"] = usage_notes
+                    individual_note = med_result.get('usage_notes', '')
+                else:
+                    individual_note = _rule_based_note_for_medicine(med, i)
 
-            if med_result:
-                individual_note = med_result.get('usage_notes', '')
-            else:
-                individual_note = _rule_based_note_for_medicine(med, i)
+                age_restriction = med.get('age_restriction', '')
+                age_restriction_display = ''
 
-            age_restriction = med.get('age_restriction', '')
-            age_restriction_display = ''
+                if isinstance(age_restriction, float) and math.isnan(age_restriction):
+                    age_restriction = ''
 
-            if isinstance(age_restriction, float) and math.isnan(age_restriction):
-                age_restriction = ''
-
-            is_complex_age_restriction = False
-            if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
-                if re.search(r'\d+[／/]\d+量', age_restriction):
-                    is_complex_age_restriction = True
-                elif '歳以下' in age_restriction and '量' in age_restriction:
-                    is_complex_age_restriction = True
-                elif len(re.findall(r'\d+歳', age_restriction)) >= 2:
-                    is_complex_age_restriction = True
-
-            if not is_complex_age_restriction:
+                is_complex_age_restriction = False
                 if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
-                    if '15歳未満' in age_restriction:
-                        age_restriction_display = '年齢制限: 15歳以上の方が対象です。'
-                    elif '7歳未満' in age_restriction:
-                        age_restriction_display = '年齢制限: 7歳以上の方が対象です。'
-                    elif '12歳未満' in age_restriction:
-                        age_restriction_display = '年齢制限: 12歳以上の方が対象です。'
-                    else:
-                        match = re.search(r'(\d+)歳', age_restriction)
-                        if match:
-                            age_val = match.group(1)
-                            age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
-                elif isinstance(age_restriction, (int, float)):
-                    if not (isinstance(age_restriction, float) and math.isnan(age_restriction)):
-                        try:
-                            age_val = int(age_restriction)
-                            age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
-                        except (ValueError, OverflowError):
-                            pass
+                    if re.search(r'\d+[／/]\d+量', age_restriction):
+                        is_complex_age_restriction = True
+                    elif '歳以下' in age_restriction and '量' in age_restriction:
+                        is_complex_age_restriction = True
+                    elif len(re.findall(r'\d+歳', age_restriction)) >= 2:
+                        is_complex_age_restriction = True
 
-            note_text = f"{i}つ目：{med.get('product_name', '')}\n{individual_note}"
-            if age_restriction_display and age_restriction_display not in individual_note and not is_complex_age_restriction:
-                note_text += f"\n{age_restriction_display}"
+                if not is_complex_age_restriction:
+                    if age_restriction and isinstance(age_restriction, str) and age_restriction.strip():
+                        if '15歳未満' in age_restriction:
+                            age_restriction_display = '年齢制限: 15歳以上の方が対象です。'
+                        elif '7歳未満' in age_restriction:
+                            age_restriction_display = '年齢制限: 7歳以上の方が対象です。'
+                        elif '12歳未満' in age_restriction:
+                            age_restriction_display = '年齢制限: 12歳以上の方が対象です。'
+                        else:
+                            match = re.search(r'(\d+)歳', age_restriction)
+                            if match:
+                                age_val = match.group(1)
+                                age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
+                    elif isinstance(age_restriction, (int, float)):
+                        if not (isinstance(age_restriction, float) and math.isnan(age_restriction)):
+                            try:
+                                age_val = int(age_restriction)
+                                age_restriction_display = f'年齢制限: {age_val}歳以上の方が対象です。'
+                            except (ValueError, OverflowError):
+                                pass
 
-            treatment_warning = user_info.get('treatment_mention', False)
-            if treatment_warning:
-                treatment_warning_message = "\n⚠️ <strong>治療中の方へ</strong>: 現在治療中の疾患がある場合、市販薬の服用前に必ず主治医や薬剤師にご相談ください。重篤な疾患で治療中の方が市販薬を服用する場合、主疾患への影響が重要になります。"
-                note_text += treatment_warning_message
+                note_text = f"{i}つ目：{med.get('product_name', '')}\n{individual_note}"
+                if age_restriction_display and age_restriction_display not in individual_note and not is_complex_age_restriction:
+                    note_text += f"\n{age_restriction_display}"
 
-            individual_notes.append(note_text)
+                treatment_warning = user_info.get('treatment_mention', False)
+                if treatment_warning:
+                    treatment_warning_message = "\n⚠️ <strong>治療中の方へ</strong>: 現在治療中の疾患がある場合、市販薬の服用前に必ず主治医や薬剤師にご相談ください。重篤な疾患で治療中の方が市販薬を服用する場合、主疾患への影響が重要になります。"
+                    note_text += treatment_warning_message
 
-        usage_notes_individual = '\n\n'.join(individual_notes)
+                individual_notes.append(note_text)
 
-    except ExplainBatchHardTimeout:
-        individual_notes = _rule_based_individual_notes(recommended_medicines)
-        usage_notes_individual = '\n\n'.join(individual_notes)
-    except Exception as e:
-        logger.warning(
-            "バッチ処理エラー: %s。フォールバック: ルールベース使用上の注意",
-            e,
-        )
-        individual_notes = _rule_based_individual_notes(recommended_medicines)
-        usage_notes_individual = '\n\n'.join(individual_notes)
+            usage_notes_individual = '\n\n'.join(individual_notes)
+
+        except ExplainBatchHardTimeout:
+            individual_notes = _rule_based_individual_notes(recommended_medicines)
+            usage_notes_individual = '\n\n'.join(individual_notes)
+        except Exception as e:
+            logger.warning(
+                "バッチ処理エラー: %s。フォールバック: ルールベース使用上の注意",
+                e,
+            )
+            individual_notes = _rule_based_individual_notes(recommended_medicines)
+            usage_notes_individual = '\n\n'.join(individual_notes)
 
     enhanced_user_info = user_info.copy()
     user_body_part = nlu_result.get("user_body_part")
