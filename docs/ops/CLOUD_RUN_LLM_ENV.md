@@ -33,6 +33,51 @@ Cloud Run リクエスト timeout: **300s** 推奨（LINE Webhook バックグ�
 
 Gunicorn（`start.sh` 既定）: `GUNICORN_TIMEOUT=300`, `GUNICORN_GRACEFUL_TIMEOUT=60`
 
+## レイテンシ改善（2026-07 確定）
+
+dev / 本番とも [`cloudbuild.yaml`](../../cloudbuild.yaml) の deploy 引数で以下を設定する。
+
+| 変数 | 値 | 用途 |
+|------|-----|------|
+| `GUNICORN_WORKERS` | **2** | SSE + 並行 POST 対応（**1Gi メモリ必須**） |
+| `CHAT_STREAM_TIMEOUT_SEC` | **120** | SSE ワーカー処理タイムアウト（Phase 1 後） |
+| `CHAT_STREAM_ORPHAN_MAX_SEC` | **120** | 切断後 orphan ワーカー上限 |
+| `LATENCY_TRIAGE_SINGLE_CALL` | **1** | triage stage1+2 統合（精度テスト済み） |
+| `LATENCY_EXPLAIN_CACHE` | **1** | explain Redis キャッシュ |
+| `LATENCY_SCORE_PARALLEL` | **1** | rule_based スコア並列 |
+| `LATENCY_RECO_PARALLEL` | **1** | 推奨候補並列 |
+
+Cloud Run リソース（deploy）:
+
+| 項目 | dev | 本番 |
+|------|-----|------|
+| memory | 1Gi | 1Gi |
+| cpu | 1 | **2** |
+| concurrency | **10** | **10** |
+| max-instances | **2** | **2** |
+| min-instances | 0 | 0 |
+
+## Redis（Upstash — GCP dev + 本番）
+
+cross-worker `chat_inflight` / triage / explain / processing-status 用。
+
+```bash
+# Upstash コンソールで DB 作成 → rediss:// URL を取得
+export UPSTASH_REDIS_URL='rediss://default:TOKEN@xxx.upstash.io:6379'
+./scripts/setup-gcp-upstash-redis.sh medicine-recommend-dev
+./scripts/setup-gcp-upstash-redis.sh medicine-recommend
+```
+
+- **AWS staging** は ElastiCache 維持（[`scripts/setup-aws-elasticache.sh`](../../scripts/setup-aws-elasticache.sh)）
+- `REDIS_URL` 未設定時はローカル fallback（精度影響なし、cross-worker 重複のみ一時許容）
+
+`.env.example` にローカル用 `REDIS_URL` 例あり。
+
+### Cloud Build デプロイスキップ
+
+- コミットメッセージに `[skip deploy]` → deploy ステップのみスキップ（イメージ build/push は実行）
+- `docs/` / `log/` / `.cursor/` のみの変更 → deploy 自動スキップ（paths-filter）
+
 ## コールドスタート対策（LINE 応答速度）
 
 LINE Webhook は単独リクエストでインスタンスがスケールゼロから起動すると、初回応答が数十秒遅くなることがあります。**ウォーム時 SLA**（挨拶 <1秒、症状相談 4〜6秒）を満たすには、検証・本番いずれも次を推奨します。

@@ -163,11 +163,13 @@ def run_chat_post_pipeline(
         trace_id=str(uuid.uuid4()),
     )
 
-    logger.info("📨 POST処理開始 trace_id=%s", ctx.trace_id)
+    logger.info("📨 POST処理開始 trace_id=%s sid=%s", ctx.trace_id, sid)
     from src.services.pipeline_perf import activate_pipeline_perf, mark_pipeline_step
     from src.handlers.line.line_session import count_bot_messages_in_session
     from src.handlers.chat.chat_pipeline_end_guard import finalize_pipeline_response
+    from src.utils.session_sid import bind_request_session_sid
 
+    bind_request_session_sid(session, sid)
     activate_pipeline_perf(sid)
     mark_pipeline_step("post_start")
     session.pop("_router_dispatch_handled_turn", None)
@@ -357,9 +359,9 @@ def run_chat_post_pipeline(
     sync_routing_context(ctx)
 
     try:
-        from src.dialogue.routing.shadow import run_and_record_shadow
+        from src.dialogue.routing.shadow import schedule_shadow_observation
 
-        run_and_record_shadow(
+        schedule_shadow_observation(
             session,
             sid,
             ctx.sanitized_message or ctx.user_message,
@@ -418,6 +420,8 @@ def run_chat_post_pipeline(
     if early_resp is not None:
         return _guard_return(early_resp)
 
+    mark_pipeline_step("after_triage_follow_ups")
+
     from config.llm_flags import is_agent_enabled
 
     if not is_agent_enabled():
@@ -447,6 +451,8 @@ def run_chat_post_pipeline(
     if counseling_response is not None:
         return _guard_return(counseling_response)
 
+    mark_pipeline_step("after_counseling_flow")
+
     apply_emotional_keyword_routing(
         session, ctx.triage_result, ctx.sanitized_message, phase="insomnia"
     )
@@ -454,6 +460,8 @@ def run_chat_post_pipeline(
     ctx.has_insomnia_keyword = session.get("has_insomnia_keyword", False)
 
     _run_moderation_if_needed(ctx)
+
+    mark_pipeline_step("moderation_done")
 
     try:
         from config.llm_flags import is_medicine_side_effect_qa_enabled
@@ -464,16 +472,35 @@ def run_chat_post_pipeline(
             should_use_medicine_qa_unified,
         )
         from src.services.medicine_side_effect_routing import is_medicine_side_effect_route
+        from src.services.medicine_qa_eligibility import (
+            MedicineQaRoute,
+            resolve_medicine_qa_route,
+            should_route_medicine_information_qa,
+        )
 
         user_msg = ctx.sanitized_message or ctx.user_message
         qa_ctx = get_medicine_qa_session_context(session, sid)
+        mark_pipeline_step("before_medicine_qa_route")
+        route_decision = resolve_medicine_qa_route(
+            user_msg,
+            session=session,
+            triage_result=ctx.triage_result,
+            conversation_history=qa_ctx["conversation_history"],
+            recommended_medicines=qa_ctx["recommended_medicines"],
+            client=ctx.recommendation_client,
+        )
+        skip_focus_llm = route_decision.route in (
+            MedicineQaRoute.CONCIERGE,
+            MedicineQaRoute.PHYSICAL,
+        )
         focuses = infer_medicine_qa_focuses(
             user_msg,
             conversation_history=qa_ctx["conversation_history"],
             recommended_medicines=qa_ctx["recommended_medicines"],
             user_attributes=qa_ctx["user_attributes"],
+            use_llm_enrichment=not skip_focus_llm,
         )
-        from src.services.medicine_qa_eligibility import should_route_medicine_information_qa
+        mark_pipeline_step("after_medicine_qa_route")
 
         if is_medicine_information_question(
             user_msg,
@@ -492,7 +519,8 @@ def run_chat_post_pipeline(
             )
 
             logger.info("💬 medicine_qa early route (information question)")
-            return _guard_return(
+            mark_pipeline_step("medicine_qa_early_route_start")
+            resp = _guard_return(
                 handle_medicine_information_qa(
                     session,
                     client_info,
@@ -500,6 +528,8 @@ def run_chat_post_pipeline(
                     ctx.original_user_message or user_msg,
                 )
             )
+            mark_pipeline_step("medicine_qa_early_route_end")
+            return resp
         if is_medicine_side_effect_qa_enabled(sid) and is_medicine_side_effect_route(user_msg):
             if should_use_medicine_qa_unified(focuses, user_message=user_msg):
                 from src.handlers.chat.medicine_context_handlers import (
@@ -661,9 +691,12 @@ def run_chat_post_pipeline(
 
                 orch_resp = try_orchestrator_route(ctx, monitor)
                 if orch_resp is not None:
+                    mark_pipeline_step("orchestrator_end")
                     return _guard_return(orch_resp)
             except Exception as orch_err:
                 logger.warning("⚠️ ChatOrchestrator をスキップ: %s", orch_err)
+
+        mark_pipeline_step("orchestrator_end")
 
         if not _legacy_trim_blocks_path(ctx, "other_post_orchestrator"):
             resp = _run_other_post_orchestrator_followups(ctx)

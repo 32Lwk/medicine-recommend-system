@@ -167,6 +167,16 @@ class TriageCache:
         self._store: OrderedDict[str, Tuple[float, Dict[str, Any]]] = OrderedDict()
 
     def get(self, key: str) -> Optional[Dict[str, Any]]:
+        redis_key = f"triage:{key}"
+        try:
+            from src.services.redis_cache import cache_get_json
+
+            hit = cache_get_json(redis_key)
+            if isinstance(hit, dict):
+                record_cache_event("hit", reason="redis")
+                return hit
+        except Exception:
+            pass
         entry = self._store.get(key)
         if not entry:
             return None
@@ -175,6 +185,7 @@ class TriageCache:
             self._store.pop(key, None)
             return None
         self._store.move_to_end(key)
+        record_cache_event("hit", reason="local")
         return dict(result)
 
     def set(self, key: str, result: Dict[str, Any]) -> None:
@@ -182,6 +193,12 @@ class TriageCache:
         self._store.move_to_end(key)
         while len(self._store) > max_entries():
             self._store.popitem(last=False)
+        try:
+            from src.services.redis_cache import cache_set_json
+
+            cache_set_json(f"triage:{key}", result, ttl_sec=ttl_sec())
+        except Exception:
+            pass
 
 
 _cache = TriageCache()

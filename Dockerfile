@@ -69,8 +69,7 @@ RUN COMMIT="${GIT_COMMIT:-${COMMIT_SHA}}" \
 
 # Cloud Run のデフォルトポート（環境変数 PORT が渡される）
 # FastAPI は ASGI のため sync ワーカー不可（未設定時のフォールバック）
-# Workers 既定 1: Local RAG BM25（~240MiB/worker）で 512Mi インスタンスの OOM を避ける。
-# AWS ECS 等はタスク定義で GUNICORN_WORKERS=2 を上書き可能。
+# Workers 既定 1: ローカル 512Mi 向け OOM 回避。Cloud Run は cloudbuild.yaml が 1Gi + GUNICORN_WORKERS=2 で上書き。
 ENV PORT=8080 \
     GUNICORN_WORKER_CLASS=uvicorn.workers.UvicornWorker \
     GUNICORN_WORKERS=1

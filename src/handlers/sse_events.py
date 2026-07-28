@@ -63,6 +63,7 @@ class SseDoneEvent:
     http_status: int = 200
     status: str = "ok"
     message_count: int = 0
+    session_id: Optional[str] = None
     trace_id: Optional[str] = None
     bot_message: Optional[Dict[str, Any]] = None
     user_message: Optional[Dict[str, Any]] = None
@@ -83,6 +84,8 @@ class SseDoneEvent:
         }
         if self.trace_id:
             p["trace_id"] = self.trace_id
+        if self.session_id:
+            p["session_id"] = self.session_id
         if self.bot_message:
             p["bot_message"] = self.bot_message
         if self.user_message:

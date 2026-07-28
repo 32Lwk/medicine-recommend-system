@@ -1,0 +1,61 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 3,
+    "by_status": {
+      "404": 2,
+      "405": 1
+    },
+    "by_path": {
+      "GET /apple-touch-icon-precomposed.png (404)": 1,
+      "GET /apple-touch-icon.png (404)": 1,
+      "HEAD / (405)": 1
+    },
+    "slow_endpoints_ge_5s": {
+      "POST /api/chat/stream": {
+        "count": 2,
+        "min": 182.095,
+        "max": 182.367,
+        "avg": 182.231,
+        "median": 182.231,
+        "p95": 182.367
+      }
+    },
+    "samples": [
+      {
+        "timestamp": "2026-07-26T06:07:32.645769Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.012398088,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00197-5cm",
+        "commit_sha": "99bf141f92fa9919764e115257ca3657ebf1edd8"
+      },
+      {
+        "timestamp": "2026-07-26T06:07:32.646273Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.011725188,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00197-5cm",
+        "commit_sha": "99bf141f92fa9919764e115257ca3657ebf1edd8"
+      },
+      {
+        "timestamp": "2026-07-26T06:09:04.738698Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.008433533,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00197-5cm",
+        "commit_sha": "99bf141f92fa9919764e115257ca3657ebf1edd8"
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 0,
+    "top_patterns": [],
+    "samples": []
+  }
+}

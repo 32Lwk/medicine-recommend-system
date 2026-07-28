@@ -14,6 +14,7 @@ substitutions:
   _AR_REPOSITORY: cloud-run-source-deploy
   _AR_HOSTNAME: asia-northeast1-docker.pkg.dev
   _CACHE_TAG: cache
+  # dev トリガーは _SERVICE_NAME=medicine-recommend-dev で上書き（CPU=1 のまま）
 
 steps:
   - name: gcr.io/cloud-builders/docker
@@ -53,16 +54,38 @@ steps:
       - |
         COMMIT_DATE="$(cat /workspace/_commit_date.txt)"
         IMAGE="$(cat /workspace/_image_ref.txt)"
+        COMMIT_MSG="$(git log -1 --format=%B "${COMMIT_SHA}" 2>/dev/null || true)"
+        if echo "$${COMMIT_MSG}" | grep -qi '\[skip deploy\]'; then
+          echo "==> Skipping Cloud Run deploy ([skip deploy] in commit message)"
+          exit 0
+        fi
+        CHANGED="$(git diff --name-only "${COMMIT_SHA}^" "${COMMIT_SHA}" 2>/dev/null || true)"
+        if [ -n "$${CHANGED}" ]; then
+          NON_DOC="$(echo "$${CHANGED}" | grep -Ev '^(docs/|log/|\.cursor/|README\.md$|\.github/)' || true)"
+          if [ -z "$${NON_DOC}" ]; then
+            echo "==> Skipping Cloud Run deploy (docs/log/.cursor only changes)"
+            exit 0
+          fi
+        fi
+        DEPLOY_CPU=1
+        if [ "${_SERVICE_NAME}" = "medicine-recommend" ]; then
+          DEPLOY_CPU=2
+        fi
         # Local RAG BM25 はワーカーあたり ~240MiB。2 workers でも OOM しないよう 1Gi を確保。
+        # concurrency=10 / max-instances=2 で head-of-line blocking と 429 を抑制。
         # startup probe は /health（DB/RAG 非依存）。failureThreshold=36 → 最大約 180s。
+        # REDIS_URL は Secret Manager から別途設定（Upstash rediss://...）。
         gcloud run deploy "${_SERVICE_NAME}" \
           --image="$${IMAGE}" \
           --region="${_DEPLOY_REGION}" \
           --platform=managed \
           --memory=1Gi \
-          --cpu=1 \
+          --cpu="$${DEPLOY_CPU}" \
+          --concurrency=10 \
+          --max-instances=2 \
+          --min-instances=0 \
           --no-cpu-throttling \
-          --update-env-vars "GIT_COMMIT=${COMMIT_SHA},GIT_COMMIT_DATE=$${COMMIT_DATE},MEDICINE_IMAGE_CDN_BASE=https://images.yutok.dev/otc/,CHAT_WORKER_MAX=8,CHAT_STREAM_TIMEOUT_SEC=180,GUNICORN_WORKER_CLASS=uvicorn.workers.UvicornWorker,GUNICORN_WORKERS=2,EXPLAIN_BATCH_HARD_TIMEOUT_SEC=45,MEDICINE_KB_AUGMENT_TIMEOUT_SEC=15,PROCESSING_STATUS_READ_CACHE_SEC=2.5,OPENAI_MODEL_EXPLAIN=gpt-4o-mini,LATENCY_EXPLAIN_FAST_LOWRISK=1,MEDICINE_RAG_PROVIDER=none" \
+          --update-env-vars "GIT_COMMIT=${COMMIT_SHA},GIT_COMMIT_DATE=$${COMMIT_DATE},MEDICINE_IMAGE_CDN_BASE=https://images.yutok.dev/otc/,CHAT_WORKER_MAX=8,CHAT_STREAM_TIMEOUT_SEC=120,GUNICORN_WORKER_CLASS=uvicorn.workers.UvicornWorker,GUNICORN_WORKERS=2,EXPLAIN_BATCH_HARD_TIMEOUT_SEC=45,MEDICINE_KB_AUGMENT_TIMEOUT_SEC=15,PROCESSING_STATUS_READ_CACHE_SEC=2.5,OPENAI_MODEL_EXPLAIN=gpt-4o-mini,LATENCY_EXPLAIN_FAST_LOWRISK=1,LATENCY_TRIAGE_SINGLE_CALL=1,LATENCY_EXPLAIN_CACHE=1,LATENCY_SCORE_PARALLEL=1,LATENCY_RECO_PARALLEL=1,MEDICINE_RAG_PROVIDER=none" \
           --startup-probe=httpGet.path=/health,httpGet.port=8080,initialDelaySeconds=0,timeoutSeconds=3,periodSeconds=5,failureThreshold=36 \
           --quiet
 

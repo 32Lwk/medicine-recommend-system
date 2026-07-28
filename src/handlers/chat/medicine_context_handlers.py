@@ -58,9 +58,40 @@ def handle_medicine_information_qa(
     user_message: str,
 ) -> ResponseTuple:
     """推奨履歴なしの医薬品情報 Q&A（比較・説明など LLM 回答）。"""
-    from src.handlers.chat.chat_medicine_qa_html import run_medicine_question_qa
+    from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
 
-    count, _ = run_medicine_question_qa(session, client_info, sid, user_message)
+    from src.handlers.chat.chat_medicine_qa_html import run_medicine_question_qa
+    from src.services.medicine_qa_routing import _has_product_image_intent
+    from src.services.pipeline_perf import mark_pipeline_step
+
+    mark_pipeline_step("product_image_fast_path_start")
+    timeout_sec = 30.0 if _has_product_image_intent(user_message) else 120.0
+    try:
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(
+                run_medicine_question_qa,
+                session,
+                client_info,
+                sid,
+                user_message,
+            )
+            count, _ = future.result(timeout=timeout_sec)
+    except FuturesTimeout:
+        logger.error(
+            "medicine_information_qa timeout after %.0fs sid=%s",
+            timeout_sec,
+            sid,
+        )
+        mark_pipeline_step("product_image_fast_path_timeout")
+        return (
+            {
+                "status": "error",
+                "error": True,
+                "response": "処理に時間がかかりすぎました。しばらくしてからもう一度お試しください。",
+            },
+            504,
+        )
+    mark_pipeline_step("product_image_fast_path_end")
     return {"status": "ok", "message_count": count}, 200
 
 

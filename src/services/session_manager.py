@@ -882,6 +882,10 @@ def persist_session_from_chat_state(sid, session, request=None, *, force_persist
     """チャット POST 終了時にセッション状態（メッセージ含む）を永続化する。"""
     if not sid:
         return
+    from src.utils.session_sid import warn_session_sid_mismatch
+
+    if not warn_session_sid_mismatch(session, sid, context="persist_session_from_chat_state"):
+        return
     if session_data is None:
         session_data = get_session_from_db(sid) or {}
     messages = session.get('messages')

@@ -97,4 +97,29 @@ def run_and_record_shadow(
     return decision
 
 
-__all__ = ["run_and_record_shadow", "_mismatch", "classify_shadow_mismatch", "MismatchKind"]
+def schedule_shadow_observation(
+    session: Any,
+    sid: str | None,
+    user_text: str,
+    triage_result: dict[str, Any] | None,
+    client: Any = None,
+) -> None:
+    """IntentRouter shadow を非同期実行（本線ルーティングは変更しない）。"""
+    import threading
+
+    def _worker() -> None:
+        try:
+            run_and_record_shadow(session, sid, user_text, triage_result, client)
+        except Exception:
+            logger.debug("intent_router_shadow async failed", exc_info=True)
+
+    threading.Thread(target=_worker, daemon=True, name="intent_router_shadow").start()
+
+
+__all__ = [
+    "run_and_record_shadow",
+    "schedule_shadow_observation",
+    "_mismatch",
+    "classify_shadow_mismatch",
+    "MismatchKind",
+]

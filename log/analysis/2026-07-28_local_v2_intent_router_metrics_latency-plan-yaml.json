@@ -1,0 +1,231 @@
+{
+  "meta": {
+    "report_suffix": "latency-plan-yaml",
+    "date": "2026-07-28",
+    "started_at": "2026-07-28T05:35:18.662104+00:00",
+    "elapsed_sec": 1024.2,
+    "scenario_count": 105,
+    "total_turns": 138
+  },
+  "skipped": false,
+  "sources": {
+    "shadow_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_shadow_log.jsonl",
+    "dispatch_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_dispatch_log.jsonl",
+    "gcp_log": null
+  },
+  "local": {
+    "shadow_total": 1052,
+    "shadow_mismatch": 118,
+    "shadow_mismatch_rate_pct": 11.22,
+    "shadow_improvement_mismatch": 89,
+    "shadow_improvement_mismatch_rate_pct": 8.46,
+    "shadow_regression_mismatch": 14,
+    "shadow_regression_mismatch_rate_pct": 1.33,
+    "shadow_exempt": 15,
+    "shadow_exempt_rate_pct": 1.43,
+    "shadow_by_mismatch_kind": {
+      "agree": 934,
+      "gate_improvement": 89,
+      "exempt": 15,
+      "regression": 14
+    },
+    "shadow_by_primary_route": {
+      "Physical": 477,
+      "Concierge": 387,
+      "Counseling": 94,
+      "Emergency": 32,
+      "Store": 56,
+      "Unknown": 3,
+      "Security": 3
+    },
+    "shadow_by_resolved_by": {
+      "gate": 497,
+      "legacy": 43,
+      "llm": 374,
+      "guard": 138
+    },
+    "shadow_with_fever_context_flag": 64,
+    "shadow_with_pending_cancelled_flag": 0,
+    "dispatch_with_fever_context_flag": 52,
+    "dispatch_with_pending_cancelled_flag": 0,
+    "dispatch_total": 850,
+    "dispatch_handled": 844,
+    "dispatch_unhandled": 6,
+    "dispatch_success_rate_pct": 99.29,
+    "dispatch_by_handler": {
+      "concierge_agent": 356,
+      "physical_agent": 357,
+      "counseling_processor": 72,
+      "store_inquiry": 56,
+      "emergency_agent": 6,
+      "security_gate": 3
+    },
+    "execution_total": 0,
+    "execution_mismatch": 0,
+    "execution_mismatch_rate_pct": 0.0,
+    "execution_by_layer_used": {},
+    "execution_side_effect_qa": 0,
+    "mismatch_samples": [
+      {
+        "session_id": "1782973789622525865487",
+        "user_input": "近くの薬局",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782973917916280451456",
+        "user_input": "近くの薬局を教えて",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782973931406085911208",
+        "user_input": "ドラッグストアはどこ？",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782973944286547860166",
+        "user_input": "OTCを買える店",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782973958078709834251",
+        "user_input": "処方箋なしで買える場所",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782973972138396339780",
+        "user_input": "マツキヨは近くにありますか",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782973985776412873150",
+        "user_input": "市販薬の購入先",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782974025130304889943",
+        "user_input": "マツキヨは近くにありますか",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782974034953233964996",
+        "user_input": "ドラッグストアはどこ？",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782974044763563580264",
+        "user_input": "2週間くらいです",
+        "primary_route": "Counseling",
+        "triage_category": "Ask",
+        "mismatch_kind": "exempt",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782976790703085148705",
+        "user_input": "近くの薬局を教えて",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782976803771382313097",
+        "user_input": "ドラッグストアはどこ？",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782976817282718313459",
+        "user_input": "OTCを買える店",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782976831242466417989",
+        "user_input": "処方箋なしで買える場所",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782976844060063906193",
+        "user_input": "マツキヨは近くにありますか",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782976857874404248980",
+        "user_input": "市販薬の購入先",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782976871542386910077",
+        "user_input": "マツキヨは近くにありますか",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782976882031883795208",
+        "user_input": "ドラッグストアはどこ？",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782978124369208942322",
+        "user_input": "近くの薬局を教えて",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      },
+      {
+        "session_id": "1782978137413880726841",
+        "user_input": "ドラッグストアはどこ？",
+        "primary_route": "Store",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      }
+    ]
+  }
+}

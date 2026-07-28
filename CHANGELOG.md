@@ -1,6 +1,62 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月26日**（Medicine QA 文脈／LLM 補完・ロバストネス 253/253）
+**最終更新日: 2026年7月28日**（返信遅延改善 v3 — SSE/Redis/LLM dedup/フロント）
+
+---
+
+## 2026-07-28 — 返信遅延改善計画 v3（SSE・Upstash・LLM 最適化・session 混線修正）
+
+### 概要
+
+GCP dev ログ分析（2026-07-26〜28）で特定した **180〜351s ハング・429 輻輳・15〜78s 構造遅延** を、推奬精度・返信水準を維持したまま解消。Cloud Run 1Gi/Workers=2/concurrency=10、SSE in_flight 修正、Upstash Redis、LLM 重複排除・並列フラグ、フロント輻輳対策を一括実装。
+
+### インフラ・Cloud Run
+
+| 項目 | 変更 |
+|------|------|
+| memory | **1Gi**（Workers=2 安全運用） |
+| CPU | dev 1 / **本番 2** |
+| GUNICORN_WORKERS | **2** |
+| concurrency | **10** |
+| max-instances | **2** |
+| SSE タイムアウト | **120s**（旧 180s） |
+
+### バックエンド
+
+| 項目 | 内容 |
+|------|------|
+| SSE / in_flight | タイムアウト時 `end_chat_job()`、orphan 120s、stale persist ガード、`duplicate_skip` |
+| Redis（Upstash） | cross-worker in_flight、triage/explain キャッシュ |
+| LLM 最適化 | `LATENCY_TRIAGE_SINGLE_CALL`、focus_llm/meta_triage ターン内キャッシュ、ルート先行判定 |
+| session 混線 | `session_sid` 束縛、StreamSink ContextVar クリア、done に `session_id` |
+| shadow / timeout | IntentRouter shadow 非同期、product_image 30s ハードタイムアウト |
+
+### フロント
+
+| 項目 | 内容 |
+|------|------|
+| SSE 中 poll 停止 | `setProcessingPollSsePaused` |
+| 429 / recovery | 指数バックオフ |
+| マルチタブ | localStorage ロック + AbortController |
+| activeSubmitSid | 送信開始 sid 固定（cookie 変化による混線防止） |
+
+### 検証（ローカル）
+
+| スイート | 結果 |
+|---------|------|
+| pytest 精度 + レイテンシコア | **107 passed** |
+| Medicine QA eligibility 等 | **120 passed** |
+| local v2 YAML 105 シナリオ | **96/105 auto-pass**、応答欠落 0 |
+| E2E p95（138 ターン） | **23.2s**（KPI <25s 達成）、180s ハング **0** |
+
+```powershell
+python scripts/verify_latency_plan.py
+python scripts/verify_latency_plan.py --smoke-v2
+```
+
+- 技術正本: [`docs/ops/LATENCY_IMPROVEMENT_V3.md`](docs/ops/LATENCY_IMPROVEMENT_V3.md)
+- 運用 env: [`docs/ops/CLOUD_RUN_LLM_ENV.md`](docs/ops/CLOUD_RUN_LLM_ENV.md)
+- Upstash 設定: [`scripts/setup-gcp-upstash-redis.sh`](scripts/setup-gcp-upstash-redis.sh)
 
 ---
 

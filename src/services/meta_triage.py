@@ -171,9 +171,30 @@ def classify_meta_concierge_intent(
     *,
     conversation_history: Optional[list] = None,
 ) -> Optional[ConciergeIntent]:
+    from src.services.request_scope_cache import get_or_set
+
     cache_key = _meta_cache_key(user_text, conversation_history)
+    return get_or_set(
+        ("meta_triage", cache_key),
+        lambda: _classify_meta_concierge_intent_impl(
+            user_text,
+            client,
+            conversation_history=conversation_history,
+            cache_key=cache_key,
+        ),
+    )
+
+
+def _classify_meta_concierge_intent_impl(
+    user_text: str,
+    client: OpenAI,
+    *,
+    conversation_history: Optional[list] = None,
+    cache_key: Optional[str] = None,
+) -> Optional[ConciergeIntent]:
+    key = cache_key or _meta_cache_key(user_text, conversation_history)
     _purge_meta_cache()
-    cached = _META_CACHE.get(cache_key)
+    cached = _META_CACHE.get(key)
     if cached and time.time() - cached[0] <= _META_CACHE_TTL_SEC:
         return cached[1]
 
@@ -210,16 +231,16 @@ def classify_meta_concierge_intent(
             intent = "app_about"
         if intent == "session_ops":
             result = "session_ops"  # type: ignore[assignment]
-            _META_CACHE[cache_key] = (time.time(), result)
+            _META_CACHE[key] = (time.time(), result)
             return result
         if intent == "none":
-            _META_CACHE[cache_key] = (time.time(), None)
+            _META_CACHE[key] = (time.time(), None)
             return None
         if intent not in _VALID_INTENTS:
-            _META_CACHE[cache_key] = (time.time(), None)
+            _META_CACHE[key] = (time.time(), None)
             return None
         result = intent  # type: ignore[assignment]
-        _META_CACHE[cache_key] = (time.time(), result)
+        _META_CACHE[key] = (time.time(), result)
         return result
     except Exception as exc:
         logger.warning("meta_triage failed: %s", exc)

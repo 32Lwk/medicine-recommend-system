@@ -1,0 +1,368 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 24,
+    "by_status": {
+      "401": 1,
+      "404": 2,
+      "405": 3,
+      "429": 18
+    },
+    "by_path": {
+      "GET /api/processing-status (429)": 9,
+      "HEAD / (405)": 3,
+      "GET /api/main_sessions (401)": 1,
+      "GET /apple-touch-icon-precomposed.png (404)": 1,
+      "GET /apple-touch-icon.png (404)": 1,
+      "GET /static/css/sage_terrace.css (429)": 1,
+      "GET /static/js/chat_sse.js (429)": 1,
+      "GET /static/js/ui/medicine_card.js (429)": 1,
+      "GET /static/js/easter-eggs.js (429)": 1,
+      "GET /static/js/ui/ui_strings.js (429)": 1,
+      "GET /static/js/processing_status.js (429)": 1,
+      "GET /static/js/ui/tts_builder.js (429)": 1,
+      "GET /static/js/sage_shell.js (429)": 1,
+      "GET / (429)": 1
+    },
+    "slow_endpoints_ge_5s": {
+      "GET /api/processing-status": {
+        "count": 958,
+        "min": 0.0,
+        "max": 64.232,
+        "avg": 0.511,
+        "median": 0.298,
+        "p95": 1.421
+      },
+      "GET /api/sessions": {
+        "count": 1730,
+        "min": 0.29,
+        "max": 21.746,
+        "avg": 0.619,
+        "median": 0.596,
+        "p95": 1.13
+      },
+      "GET /": {
+        "count": 49,
+        "min": 0.0,
+        "max": 21.455,
+        "avg": 2.522,
+        "median": 0.015,
+        "p95": 21.293
+      },
+      "PATCH /api/sessions/activity": {
+        "count": 685,
+        "min": 0.29,
+        "max": 16.292,
+        "avg": 0.802,
+        "median": 0.637,
+        "p95": 1.558
+      },
+      "POST /api/chat/stream": {
+        "count": 17,
+        "min": 1.325,
+        "max": 182.795,
+        "avg": 69.099,
+        "median": 25.422,
+        "p95": 182.522
+      },
+      "POST /new_session": {
+        "count": 6,
+        "min": 2.048,
+        "max": 6.184,
+        "avg": 2.963,
+        "median": 2.234,
+        "p95": 6.184
+      },
+      "GET /static/css/easter-eggs.css": {
+        "count": 24,
+        "min": 0.002,
+        "max": 21.985,
+        "avg": 0.974,
+        "median": 0.028,
+        "p95": 0.473
+      },
+      "GET /static/css/ui_shell_components.css": {
+        "count": 22,
+        "min": 0.002,
+        "max": 13.734,
+        "avg": 0.7,
+        "median": 0.011,
+        "p95": 1.282
+      },
+      "GET /static/js/ui/color_presets.js": {
+        "count": 31,
+        "min": 0.003,
+        "max": 13.804,
+        "avg": 0.545,
+        "median": 0.02,
+        "p95": 0.524
+      },
+      "GET /static/img/summer/%E3%82%A2%E3%82%B5%E3%82%AC%E3%82%AA.png": {
+        "count": 9,
+        "min": 0.003,
+        "max": 39.877,
+        "avg": 4.472,
+        "median": 0.014,
+        "p95": 39.877
+      }
+    },
+    "samples": [
+      {
+        "timestamp": "2026-07-26T06:09:04.738698Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.008433533,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00197-5cm",
+        "commit_sha": "99bf141f92fa9919764e115257ca3657ebf1edd8"
+      },
+      {
+        "timestamp": "2026-07-26T08:09:38.804246Z",
+        "status": 401,
+        "method": "GET",
+        "path": "/api/main_sessions",
+        "latency_s": 0.009949361,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00200-dwr",
+        "commit_sha": "d6332e565a0a4a454fa75d5565ecc1fe0bd1a464"
+      },
+      {
+        "timestamp": "2026-07-26T09:02:46.856288Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.192770274,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00204-zwt",
+        "commit_sha": "d98352e3d626a85f55fec7728618abb9f4adc655"
+      },
+      {
+        "timestamp": "2026-07-26T09:02:46.858354Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.189547144,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00204-zwt",
+        "commit_sha": "d98352e3d626a85f55fec7728618abb9f4adc655"
+      },
+      {
+        "timestamp": "2026-07-26T09:33:36.915122Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/static/css/sage_terrace.css",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00205-xk4",
+        "commit_sha": "388694cfb440b2aaf99eb384e4fb1a7403733080"
+      },
+      {
+        "timestamp": "2026-07-26T09:33:36.919394Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/static/js/chat_sse.js",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00205-xk4",
+        "commit_sha": "388694cfb440b2aaf99eb384e4fb1a7403733080"
+      },
+      {
+        "timestamp": "2026-07-26T09:33:36.927758Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/static/js/ui/medicine_card.js",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00205-xk4",
+        "commit_sha": "388694cfb440b2aaf99eb384e4fb1a7403733080"
+      },
+      {
+        "timestamp": "2026-07-26T09:33:36.928589Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/static/js/easter-eggs.js",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00205-xk4",
+        "commit_sha": "388694cfb440b2aaf99eb384e4fb1a7403733080"
+      },
+      {
+        "timestamp": "2026-07-26T09:33:36.931302Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/static/js/ui/ui_strings.js",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00205-xk4",
+        "commit_sha": "388694cfb440b2aaf99eb384e4fb1a7403733080"
+      },
+      {
+        "timestamp": "2026-07-26T09:33:36.931303Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/static/js/processing_status.js",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00205-xk4",
+        "commit_sha": "388694cfb440b2aaf99eb384e4fb1a7403733080"
+      },
+      {
+        "timestamp": "2026-07-26T09:33:36.931877Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/static/js/ui/tts_builder.js",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00205-xk4",
+        "commit_sha": "388694cfb440b2aaf99eb384e4fb1a7403733080"
+      },
+      {
+        "timestamp": "2026-07-26T09:33:36.937353Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/static/js/sage_shell.js",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00205-xk4",
+        "commit_sha": "388694cfb440b2aaf99eb384e4fb1a7403733080"
+      },
+      {
+        "timestamp": "2026-07-27T09:36:40.263774Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.00333621,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00213-rnz",
+        "commit_sha": "0fd859356c7f02bd434603273752a86f10f663df"
+      },
+      {
+        "timestamp": "2026-07-27T09:37:51.083679Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.005012518,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00213-rnz",
+        "commit_sha": "0fd859356c7f02bd434603273752a86f10f663df"
+      },
+      {
+        "timestamp": "2026-07-28T02:20:32.767579Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/api/processing-status",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00220-vt4",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T02:20:35.268238Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/api/processing-status",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00220-vt4",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T02:20:52.344915Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/api/processing-status",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00220-vt4",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T02:20:54.845210Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/api/processing-status",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00220-vt4",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T02:20:59.857355Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/api/processing-status",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00220-vt4",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T02:21:02.352739Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/api/processing-status",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00220-vt4",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T02:21:04.890706Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/api/processing-status",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00220-vt4",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T02:21:08.142350Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/api/processing-status",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00220-vt4",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T02:21:10.627549Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/api/processing-status",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00220-vt4",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T02:21:39.400517Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00220-vt4",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 1,
+    "top_patterns": [
+      {
+        "message": "Memory limit of 512 MiB exceeded with 517 MiB used. Consider increasing the memory limit, see https://cloud.google.com/r",
+        "count": 1
+      }
+    ],
+    "samples": [
+      {
+        "timestamp": "2026-07-26T09:39:54.380347Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 517 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-dev-00205-xk4"
+      }
+    ]
+  }
+}

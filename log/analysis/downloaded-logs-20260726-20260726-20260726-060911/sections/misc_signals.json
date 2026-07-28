@@ -1,0 +1,82 @@
+{
+  "gunicorn": [
+    {
+      "timestamp": "2026-07-26T05:24:41.755603Z",
+      "message": "2026-07-26 05:24:41,756 - ERROR - SSE chat worker timeout after 180s sid=1785043297125159107246"
+    },
+    {
+      "timestamp": "2026-07-26T05:24:41.755909Z",
+      "message": "2026-07-26 05:24:41,756 - WARNING - SSE stream ended before worker completed sid=1785043297125159107246"
+    },
+    {
+      "timestamp": "2026-07-26T05:27:54.671524Z",
+      "message": "2026-07-26 05:27:54,671 - ERROR - SSE chat worker timeout after 180s sid=1785043297125159107246"
+    },
+    {
+      "timestamp": "2026-07-26T05:27:54.671834Z",
+      "message": "2026-07-26 05:27:54,672 - WARNING - SSE stream ended before worker completed sid=1785043297125159107246"
+    },
+    {
+      "timestamp": "2026-07-26T05:36:13.225173Z",
+      "message": "2026-07-26 05:36:13,225 - ERROR - SSE chat worker timeout after 180s sid=1785043297125159107246"
+    },
+    {
+      "timestamp": "2026-07-26T05:36:13.225551Z",
+      "message": "2026-07-26 05:36:13,226 - WARNING - SSE stream ended before worker completed sid=1785043297125159107246"
+    },
+    {
+      "timestamp": "2026-07-26T05:49:58.789413Z",
+      "message": "[2026-07-26 05:49:58 +0000] [1] [ERROR] Worker (pid:2) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:29.698254Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:29.698294Z",
+      "message": "   - Workers: 1"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:29.698298Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:33.707527Z",
+      "message": "[2026-07-26 06:05:33 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:33.708990Z",
+      "message": "[2026-07-26 06:05:33 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:33.726021Z",
+      "message": "[2026-07-26 06:05:33 +0000] [2] [INFO] Booting worker with pid: 2"
+    },
+    {
+      "timestamp": "2026-07-26T06:06:02.606522Z",
+      "message": "[2026-07-26 06:06:02 +0000] [1] [ERROR] Worker (pid:2) was sent SIGTERM!"
+    }
+  ],
+  "openai_errors": [
+    {
+      "timestamp": "2026-07-26T05:24:41.755603Z",
+      "message": "2026-07-26 05:24:41,756 - ERROR - SSE chat worker timeout after 180s sid=1785043297125159107246"
+    },
+    {
+      "timestamp": "2026-07-26T05:27:54.671524Z",
+      "message": "2026-07-26 05:27:54,671 - ERROR - SSE chat worker timeout after 180s sid=1785043297125159107246"
+    },
+    {
+      "timestamp": "2026-07-26T05:36:13.225173Z",
+      "message": "2026-07-26 05:36:13,225 - ERROR - SSE chat worker timeout after 180s sid=1785043297125159107246"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:29.698284Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:29.698289Z",
+      "message": "   - Graceful Timeout: 60s"
+    }
+  ]
+}

@@ -6556,9 +6556,64 @@
     
     // 送信中フラグ（グローバル変数）
     let isSubmitting = false;
+    /** 送信開始時に固定した sid（処理中の cookie 変化で混線しない） */
+    let activeSubmitSid = '';
     let submitStartedAt = null;
     let chatSubmitGeneration = 0;
     const SUBMIT_DEBOUNCE_MS = 2500;
+    const CHAT_SUBMIT_LOCK_PREFIX = 'mrcChatSubmitLock:';
+    const CHAT_TAB_ID = 'tab_' + Math.random().toString(36).slice(2);
+    const CHAT_LOCK_TTL_MS = 5 * 60 * 1000;
+    let activeSseAbortController = null;
+
+    function tryAcquireChatSubmitLock(sid) {
+        const id = (sid || getSidFromCookie() || '').trim();
+        if (!id) {
+            return true;
+        }
+        try {
+            const key = CHAT_SUBMIT_LOCK_PREFIX + id;
+            const now = Date.now();
+            const raw = localStorage.getItem(key);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && parsed.tab !== CHAT_TAB_ID && now - (parsed.at || 0) < CHAT_LOCK_TTL_MS) {
+                    return false;
+                }
+            }
+            localStorage.setItem(key, JSON.stringify({ at: now, tab: CHAT_TAB_ID }));
+            return true;
+        } catch (e) {
+            return true;
+        }
+    }
+
+    function releaseChatSubmitLock(sid) {
+        const id = (sid || getSidFromCookie() || '').trim();
+        if (!id) {
+            return;
+        }
+        try {
+            const key = CHAT_SUBMIT_LOCK_PREFIX + id;
+            const raw = localStorage.getItem(key);
+            if (!raw) {
+                return;
+            }
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.tab === CHAT_TAB_ID) {
+                localStorage.removeItem(key);
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    function abortActiveChatStream() {
+        if (activeSseAbortController) {
+            try {
+                activeSseAbortController.abort();
+            } catch (e) { /* ignore */ }
+            activeSseAbortController = null;
+        }
+    }
     let lastSubmitPayload = { message: '', at: 0 };
     let submitWatchdogTimer = null;
     let slowRequestTimerId = null;
@@ -6990,7 +7045,7 @@
         lastProcessingStatusPayload = null;
         stopProcessingBubbleWatchdog();
         clearChatSubmitBaseline();
-        clearInFlightTurn(getSidFromCookie());
+        clearInFlightTurn(resolveActiveSubmitSid());
         endAwaitingPostResponse();
         if (opts.preserveStatusCards !== true) {
             clearPersistentStatusMessages();
@@ -7220,6 +7275,13 @@
             }
             
             // 送信処理開始
+            const submitSid = getSidFromCookie();
+            if (!tryAcquireChatSubmitLock(submitSid)) {
+                showProcessingMessage();
+                return;
+            }
+            abortActiveChatStream();
+            activeSubmitSid = submitSid;
             isSubmitting = true;
             submitStartedAt = Date.now();
             resetPostResponseTracking();
@@ -7484,6 +7546,28 @@
         return '';
     }
 
+    function resolveActiveSubmitSid() {
+        return (activeSubmitSid || getSidFromCookie() || '').trim();
+    }
+
+    function isDonePayloadForActiveSession(donePayload) {
+        if (!donePayload || !donePayload.session_id) {
+            return true;
+        }
+        const expected = resolveActiveSubmitSid();
+        if (!expected) {
+            return true;
+        }
+        if (String(donePayload.session_id) === String(expected)) {
+            return true;
+        }
+        console.warn('SSE done session_id mismatch', {
+            expected: expected,
+            got: donePayload.session_id,
+        });
+        return false;
+    }
+
     function rememberSid(sid) {
         if (!sid) {
             return;
@@ -7568,7 +7652,7 @@
 
     /** 送信直後の楽観 user を sessionStorage に保持（処理中リロード用） */
     function persistInFlightTurn(userText, pendingTurnId) {
-        const sid = getSidFromCookie();
+        const sid = resolveActiveSubmitSid();
         const storageKey = inFlightTurnStorageKey(sid);
         const text = String(userText || '').trim();
         const turnId = pendingTurnId || getActivePendingTurnId() || createPendingTurnId();
@@ -9221,13 +9305,17 @@
     function handleRecoverableStreamError(gen, errData, options) {
         const opts = options || {};
         chatStreamInProgress = false;
+        isSubmitting = false;
+        activeSubmitSid = '';
         resetRecommendationSseBulkState();
         clearSlowRequestTimer();
         restoreSubmitButton();
         ensureProcessingBubbleVisible();
+        if (window.ProcessingStatus && ProcessingStatus.setProcessingPollSsePaused) {
+            ProcessingStatus.setProcessingPollSsePaused(false);
+        }
         const recoveryOpts = {
-            maxAttempts: opts.maxAttempts != null ? opts.maxAttempts : 180,
-            fixedDelayMs: opts.fixedDelayMs != null ? opts.fixedDelayMs : 1000,
+            maxAttempts: opts.maxAttempts != null ? opts.maxAttempts : 30,
             errorMessage: (errData && errData.message) || opts.errorMessage || '',
             force: opts.force,
         };
@@ -9747,6 +9835,10 @@
     /** SSE done 後に応答反映・バブル除去・送信ボタン復帰を試みる */
     function unlockPostResponseUI(donePayload) {
         try {
+            if (donePayload && !isDonePayloadForActiveSession(donePayload)) {
+                scheduleDeferredSessionRecovery(chatSubmitGeneration, 0);
+                return false;
+            }
             if (applyClientPreviewFromDone(donePayload, { skipIfShown: true })) {
                 return true;
             }
@@ -9778,7 +9870,7 @@
                 }
             }
 
-            const sid = getSidFromCookie();
+            const sid = resolveActiveSubmitSid() || getSidFromCookie();
             let payload = donePayload;
             if (payload && !payload.bot_message) {
                 const cachedBot = findLastTurnCompletingBotMessage(loadChatCache(sid));
@@ -10067,6 +10159,8 @@
         isSubmitting = false;
         clearSubmitWatchdog();
         clearSlowRequestTimer();
+        releaseChatSubmitLock(resolveActiveSubmitSid());
+        activeSubmitSid = '';
         if (submitBtn) {
             submitBtn.disabled = false;
             setChatSendButtonState(submitBtn, 'idle');
@@ -12069,7 +12163,7 @@ function appendQaDelta(text, section) {
         const token = ++deferredRecoveryToken;
         const delayMs = opts.fixedDelayMs != null
             ? opts.fixedDelayMs
-            : (tryNum === 0 ? 120 : Math.min(400, 80 + tryNum * 60));
+            : (tryNum === 0 ? 500 : Math.min(10000, 500 * Math.pow(2, Math.min(tryNum, 4))));
         setTimeout(function () {
             if (generation !== chatSubmitGeneration || token !== deferredRecoveryToken || postResponseResolved) {
                 if (tryNum === 0) {
@@ -12399,6 +12493,9 @@ function appendQaDelta(text, section) {
         }
         const gen = ++chatSubmitGeneration;
         chatStreamInProgress = true;
+        if (window.ProcessingStatus && ProcessingStatus.setProcessingPollSsePaused) {
+            ProcessingStatus.setProcessingPollSsePaused(true);
+        }
         clientPreviewShownForGeneration = false;
         processingBubbleLocked = true;
         resetRecommendationSseBulkState();
@@ -12410,8 +12507,15 @@ function appendQaDelta(text, section) {
             if (gen !== chatSubmitGeneration || sseDoneHandled) {
                 return;
             }
+            if (donePayload && !isDonePayloadForActiveSession(donePayload)) {
+                scheduleDeferredSessionRecovery(gen, 0);
+                return;
+            }
             sseDoneHandled = true;
             chatStreamInProgress = false;
+            if (window.ProcessingStatus && ProcessingStatus.setProcessingPollSsePaused) {
+                ProcessingStatus.setProcessingPollSsePaused(false);
+            }
             sessionStorage.removeItem('chatSseLastEventId');
             if (isDuplicateSkipDonePayload(donePayload)) {
                 fetch(withVersion('/api/sessions'), {
@@ -12519,11 +12623,14 @@ function appendQaDelta(text, section) {
             );
         }
 
+        abortActiveChatStream();
+        activeSseAbortController = typeof AbortController !== 'undefined' ? new AbortController() : null;
         return window.ChatSSE.submitStream({
             url: mainAppPath('/api/chat/stream'),
             message: message,
             withVersion: withVersion,
             lastEventId: lastEventId,
+            signal: activeSseAbortController ? activeSseAbortController.signal : undefined,
             onEvent: function (ev) {
                 if (ev.id) {
                     sessionStorage.setItem('chatSseLastEventId', ev.id);
@@ -13500,6 +13607,15 @@ function appendQaDelta(text, section) {
         }
         if (postResponseResolved) {
             return;
+        }
+        if (chatStreamInProgress) {
+            if (ProcessingStatus.setProcessingPollSsePaused) {
+                ProcessingStatus.setProcessingPollSsePaused(true);
+            }
+            return;
+        }
+        if (ProcessingStatus.setProcessingPollSsePaused) {
+            ProcessingStatus.setProcessingPollSsePaused(false);
         }
         if (!processingBubbleLocked && !isProcessingInFlight()) {
             return;

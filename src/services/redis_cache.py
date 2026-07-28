@@ -77,3 +77,15 @@ def cache_delete(key: str) -> None:
         client.delete(key)
     except Exception as exc:
         logger.debug("Redis DEL failed for %s: %s", key, exc)
+
+
+def cache_set_nx(key: str, value: str, *, ttl_sec: int = 600) -> bool:
+    """SET key value NX EX ttl。成功時 True（キーが存在しなかった）。"""
+    client = _redis_client()
+    if not client:
+        return False
+    try:
+        return bool(client.set(key, value, nx=True, ex=max(1, int(ttl_sec))))
+    except Exception as exc:
+        logger.debug("Redis SET NX failed for %s: %s", key, exc)
+        return False

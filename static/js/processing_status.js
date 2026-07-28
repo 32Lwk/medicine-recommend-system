@@ -14,6 +14,9 @@
         hasSeenActive: false,
         inactiveStreak: 0,
         generation: 0,
+        pollIntervalMs: 2500,
+        pollBackoffMs: 2500,
+        ssePaused: false,
     };
     var lastRenderedKey = '';
     var lastApiLanguage = null;
@@ -1126,7 +1129,7 @@
     }
 
     function pollOnce() {
-        if (!pollRoot.timer) {
+        if (!pollRoot.timer || pollRoot.ssePaused) {
             return;
         }
         var gen = pollRoot.generation;
@@ -1135,7 +1138,18 @@
             url += (url.indexOf('?') >= 0 ? '&' : '?') + 'session_id=' + encodeURIComponent(pollRoot.sessionId);
         }
         fetch(url, { credentials: 'include', headers: { 'Cache-Control': 'no-cache' } })
-            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (r) {
+                if (r.status === 429 || r.status === 503) {
+                    pollRoot.pollBackoffMs = Math.min(20000, Math.max(pollRoot.pollIntervalMs, pollRoot.pollBackoffMs * 2));
+                    rescheduleProcessingPollInterval();
+                    return null;
+                }
+                if (!r.ok) {
+                    return null;
+                }
+                pollRoot.pollBackoffMs = pollRoot.pollIntervalMs;
+                return r.json();
+            })
             .then(function (data) {
                 if (!pollRoot.timer || gen !== pollRoot.generation) {
                     return;
@@ -1157,6 +1171,21 @@
             .catch(function () { /* ignore */ });
     }
 
+    function rescheduleProcessingPollInterval() {
+        if (!pollRoot.timer) {
+            return;
+        }
+        clearInterval(pollRoot.timer);
+        pollRoot.timer = setInterval(function () {
+            pollRoot._pollCount = (pollRoot._pollCount || 0) + 1;
+            if (pollRoot._pollCount >= (pollRoot._maxPolls || 72)) {
+                finishPollingInactive();
+                return;
+            }
+            pollOnce();
+        }, pollRoot.pollBackoffMs);
+    }
+
     function startProcessingPoll(options) {
         options = options || {};
         stopProcessingPoll();
@@ -1169,21 +1198,28 @@
         pollRoot.keepAliveWhileLocked = Boolean(options.keepAliveWhileLocked);
         pollRoot.hasSeenActive = false;
         pollRoot.inactiveStreak = 0;
-        var interval = options.interval || 2500;
+        pollRoot.pollIntervalMs = options.interval || 2500;
+        pollRoot.pollBackoffMs = pollRoot.pollIntervalMs;
+        pollRoot.ssePaused = Boolean(options.ssePaused);
         var maxPolls = options.maxPolls || 72;
-        var pollCount = 0;
+        pollRoot._maxPolls = maxPolls;
+        pollRoot._pollCount = 0;
         lastRenderedKey = '';
         lastApiLanguage = null;
         pollOnce();
-        pollCount += 1;
+        pollRoot._pollCount = 1;
         pollRoot.timer = setInterval(function () {
-            pollCount += 1;
-            if (pollCount >= maxPolls) {
+            pollRoot._pollCount += 1;
+            if (pollRoot._pollCount >= maxPolls) {
                 finishPollingInactive();
                 return;
             }
             pollOnce();
-        }, interval);
+        }, pollRoot.pollBackoffMs);
+    }
+
+    function setProcessingPollSsePaused(paused) {
+        pollRoot.ssePaused = Boolean(paused);
     }
 
     function isProcessingPollActive() {
@@ -1204,6 +1240,8 @@
         pollRoot.keepAliveWhileLocked = false;
         pollRoot.hasSeenActive = false;
         pollRoot.inactiveStreak = 0;
+        pollRoot.pollBackoffMs = pollRoot.pollIntervalMs || 2500;
+        pollRoot.ssePaused = false;
         lastRenderedKey = '';
         lastApiLanguage = null;
     }
@@ -1221,6 +1259,7 @@
         startProcessingPoll: startProcessingPoll,
         stopProcessingPoll: stopProcessingPoll,
         isProcessingPollActive: isProcessingPollActive,
+        setProcessingPollSsePaused: setProcessingPollSsePaused,
         renderProcessingStatus: renderProcessingStatus,
         patchProcessingStatusDom: patchProcessingStatusDom,
         getTypingIndicatorHtml: getTypingIndicatorHtml,

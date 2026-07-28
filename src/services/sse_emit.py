@@ -191,10 +191,13 @@ def activate_stream_sink(
 def bind_worker_stream_sink(session_id: Optional[str]) -> None:
     """ワーカースレッドで ContextVar に StreamSink を束縛（SSE 配信を有効化）。"""
     if not session_id:
+        _stream_sink.set(None)
         return
     sink = get_active_session_sink(session_id)
-    if sink:
+    if sink and sink.session_id == session_id:
         _stream_sink.set(sink)
+    else:
+        _stream_sink.set(None)
 
 
 def deactivate_stream_sink(session_id: Optional[str] = None) -> None:

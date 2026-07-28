@@ -13,6 +13,7 @@ from src.analysis.gcp_log_export import (
     merge_log_entries,
     parse_freshness,
     parse_timestamp,
+    resolve_project_id,
     resolve_time_range,
 )
 from src.analysis.log_secret_redaction import REDACTED
@@ -131,3 +132,13 @@ def test_export_logs_redacts_sensitive_env_values():
     )
     env = entries[0]["protoPayload"]["serviceData"]["env"][0]
     assert env["value"] == REDACTED
+
+
+def test_resolve_project_id_explicit():
+    assert resolve_project_id("my-project") == "my-project"
+
+
+def test_resolve_project_id_normalizes_numeric_project_number():
+    """gcloud config がプロジェクト番号のとき ID にフォールバック。"""
+    assert resolve_project_id("340042923793") == "medicine-recommend"
+    assert resolve_project_id(None) == "medicine-recommend" or resolve_project_id(None) != "340042923793"

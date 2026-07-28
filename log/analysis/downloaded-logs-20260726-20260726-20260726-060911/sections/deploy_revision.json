@@ -1,0 +1,23 @@
+{
+  "revision_timeline": [
+    {
+      "timestamp": "2026-07-26T05:24:22.435909Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00196-pmj",
+      "commit_sha": "7ea6bb17ae0a47134a97d286c798960d13cbb092"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:23.908697Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00197-5cm",
+      "commit_sha": "99bf141f92fa9919764e115257ca3657ebf1edd8"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:51.911627Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00197-5cm",
+      "commit_sha": null
+    }
+  ],
+  "revision_count": 3
+}

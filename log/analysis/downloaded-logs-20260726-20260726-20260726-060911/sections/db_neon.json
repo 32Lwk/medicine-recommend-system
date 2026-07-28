@@ -1,0 +1,71 @@
+{
+  "count": 8,
+  "top_patterns": [
+    {
+      "message": "2026-07-26 05:24:41,756 - ERROR - SSE chat worker timeout after 180s sid=1785043297125159107246",
+      "count": 1
+    },
+    {
+      "message": "2026-07-26 05:27:54,671 - ERROR - SSE chat worker timeout after 180s sid=1785043297125159107246",
+      "count": 1
+    },
+    {
+      "message": "2026-07-26 05:36:13,225 - ERROR - SSE chat worker timeout after 180s sid=1785043297125159107246",
+      "count": 1
+    },
+    {
+      "message": "   - Timeout: 300s",
+      "count": 1
+    },
+    {
+      "message": "   - Graceful Timeout: 60s",
+      "count": 1
+    },
+    {
+      "message": "2026-07-26 06:05:43,540 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)",
+      "count": 1
+    },
+    {
+      "message": "2026-07-26 06:05:45,314 - INFO - ✅ Database tables initialized successfully",
+      "count": 1
+    },
+    {
+      "message": "2026-07-26 06:05:46,223 - INFO - ✅ Database initialized successfully.",
+      "count": 1
+    }
+  ],
+  "samples": [
+    {
+      "timestamp": "2026-07-26T05:24:41.755603Z",
+      "message": "2026-07-26 05:24:41,756 - ERROR - SSE chat worker timeout after 180s sid=1785043297125159107246"
+    },
+    {
+      "timestamp": "2026-07-26T05:27:54.671524Z",
+      "message": "2026-07-26 05:27:54,671 - ERROR - SSE chat worker timeout after 180s sid=1785043297125159107246"
+    },
+    {
+      "timestamp": "2026-07-26T05:36:13.225173Z",
+      "message": "2026-07-26 05:36:13,225 - ERROR - SSE chat worker timeout after 180s sid=1785043297125159107246"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:29.698284Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:29.698289Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:43.539655Z",
+      "message": "2026-07-26 06:05:43,540 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:45.313949Z",
+      "message": "2026-07-26 06:05:45,314 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-26T06:05:46.222465Z",
+      "message": "2026-07-26 06:05:46,223 - INFO - ✅ Database initialized successfully."
+    }
+  ]
+}

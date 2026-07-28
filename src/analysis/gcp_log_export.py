@@ -119,9 +119,20 @@ def _gcloud_executable() -> str:
     return path
 
 
+def _normalize_gcloud_project(raw: str) -> str:
+    """gcloud config project がプロジェクト番号の場合は ID に正規化する。"""
+    text = raw.strip()
+    if not text or text == "(unset)":
+        return DEFAULT_PROJECT_ID
+    # 数字のみ → プロジェクト番号（gcloud logging read は ID 必須）
+    if text.isdigit():
+        return DEFAULT_PROJECT_ID
+    return text
+
+
 def resolve_project_id(explicit: Optional[str]) -> str:
     if explicit:
-        return explicit
+        return _normalize_gcloud_project(explicit)
     try:
         gcloud = _gcloud_executable()
     except RuntimeError:
@@ -133,7 +144,7 @@ def resolve_project_id(explicit: Optional[str]) -> str:
         return DEFAULT_PROJECT_ID
     project = (result.stdout or "").strip()
     if result.returncode == 0 and project and project != "(unset)":
-        return project
+        return _normalize_gcloud_project(project)
     return DEFAULT_PROJECT_ID
 
 

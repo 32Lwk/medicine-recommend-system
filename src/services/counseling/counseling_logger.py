@@ -83,9 +83,17 @@ def log_counseling_response(
         logger.warning("structured_loggerがインポートできません。旧形式のログを出力します。")
         log_counseling_detail = None
 
+    from src.utils.session_sid import resolve_effective_session_id, warn_session_sid_mismatch
+
+    effective_sid = resolve_effective_session_id(session, session_id)
+    if not effective_sid:
+        return
+    if session is not None and session_id:
+        warn_session_sid_mismatch(session, session_id, context="log_counseling_response")
+
     log_entry = {
         "timestamp": datetime.now().isoformat(),
-        "session_id": session_id,
+        "session_id": effective_sid,
         "response_type": response_type,
         "response_content": response_content[:200] + "..."
         if len(response_content) > 200
@@ -133,7 +141,7 @@ def log_counseling_response(
 
     if log_counseling_detail and user_input:
         log_counseling_detail(
-            session_id=session_id,
+            session_id=effective_sid,
             user_input=user_input,
             response=response_content,
             conversation_history=conversation_history,
@@ -155,11 +163,9 @@ def maybe_log_turn_counseling_detail(
     """
     if not user_message or not bot_message:
         return
-    effective_sid = session_id or (
-        str(session.get("session_id") or session.get("_id") or "")
-        if isinstance(session, dict)
-        else ""
-    )
+    from src.utils.session_sid import resolve_effective_session_id
+
+    effective_sid = resolve_effective_session_id(session, session_id)
     if was_counseling_detail_logged(session, user_message):
         return
     response_content = resolve_bot_message_plain_text(bot_message)

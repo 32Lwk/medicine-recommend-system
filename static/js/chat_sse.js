@@ -45,12 +45,17 @@
             headers['Last-Event-ID'] = String(options.lastEventId);
         }
 
-        return fetch(withVersion(url), {
+        const fetchOpts = {
             method: 'POST',
             credentials: 'include',
             body: formData,
             headers: headers,
-        }).then(function (response) {
+        };
+        if (options.signal) {
+            fetchOpts.signal = options.signal;
+        }
+
+        return fetch(withVersion(url), fetchOpts).then(function (response) {
             if (!response.ok) {
                 throw new Error('SSE HTTP ' + response.status);
             }

@@ -782,6 +782,17 @@ def generate_usage_notes_and_consultation_with_gpt(
 
         if is_explain_cache_enabled():
             cache_key = _batch_notes_cache_key(recommended_medicines, nlu_result, user_info)
+            try:
+                from src.services.redis_cache import cache_get_json
+
+                redis_hit = cache_get_json(f"explain:{cache_key}")
+                if isinstance(redis_hit, dict):
+                    logger.info("📋 バッチ使用上の注意を Redis キャッシュから取得")
+                    return _apply_age_policy_to_usage_result(
+                        dict(redis_hit), recommended_medicines, user_info
+                    )
+            except Exception:
+                pass
             hit = _batch_notes_cache.get(cache_key)
             if hit and (time.time() - hit[0]) <= _BATCH_NOTES_TTL_SEC:
                 logger.info("📋 バッチ使用上の注意をキャッシュから取得")
@@ -1023,6 +1034,12 @@ def generate_usage_notes_and_consultation_with_gpt(
             oldest = min(_batch_notes_cache, key=lambda k: _batch_notes_cache[k][0])
             _batch_notes_cache.pop(oldest, None)
         _batch_notes_cache[cache_key] = (time.time(), dict(result))
+        try:
+            from src.services.redis_cache import cache_set_json
+
+            cache_set_json(f"explain:{cache_key}", result, ttl_sec=_BATCH_NOTES_TTL_SEC)
+        except Exception:
+            pass
 
     return _apply_age_policy_to_usage_result(result, recommended_medicines, user_info)
 

@@ -829,7 +829,38 @@ def infer_medicine_qa_focuses(
     use_llm_enrichment: bool = True,
 ) -> list[MedicineQaFocus]:
     """質問意図に応じた focus 一覧（複合 intent 対応）。"""
+    from src.services.request_scope_cache import get_or_set
+
     t = (user_message or "").strip()
+    cache_key = (
+        "medicine_qa_focuses",
+        t,
+        use_llm_enrichment,
+        len(conversation_history or ()),
+        len(recommended_medicines or ()),
+        tuple(sorted((user_attributes or {}).keys())),
+    )
+
+    def _compute() -> list[MedicineQaFocus]:
+        return _infer_medicine_qa_focuses_uncached(
+            t,
+            conversation_history=conversation_history,
+            recommended_medicines=recommended_medicines,
+            user_attributes=user_attributes,
+            use_llm_enrichment=use_llm_enrichment,
+        )
+
+    return list(get_or_set(cache_key, _compute))
+
+
+def _infer_medicine_qa_focuses_uncached(
+    t: str,
+    *,
+    conversation_history: list[dict[str, Any]] | None = None,
+    recommended_medicines: list[dict[str, Any]] | None = None,
+    user_attributes: dict[str, Any] | None = None,
+    use_llm_enrichment: bool = True,
+) -> list[MedicineQaFocus]:
     focuses: list[MedicineQaFocus] = []
 
     has_product_image = _has_product_image_intent(t)

@@ -1,0 +1,54 @@
+{
+  "generated_at": "2026-07-28T13:51:45",
+  "metadata_path": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\metadata.json",
+  "sections": {
+    "metadata": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\metadata.json",
+    "errors_http": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sections\\errors_http.json",
+    "pipeline_perf": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sections\\pipeline_perf.json",
+    "llm_cost": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sections\\llm_cost.json",
+    "deploy_revision": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sections\\deploy_revision.json",
+    "db_neon": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sections\\db_neon.json",
+    "line_webhook": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sections\\line_webhook.json",
+    "chat_flow": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sections\\chat_flow.json",
+    "user_sessions": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sections\\user_sessions.json",
+    "misc_signals": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sections\\misc_signals.json",
+    "manifest": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\manifest.json"
+  },
+  "analysis_groups": {
+    "infra_errors": [
+      "errors_http",
+      "deploy_revision"
+    ],
+    "performance_cost": [
+      "pipeline_perf",
+      "llm_cost"
+    ],
+    "conversation_quality": [
+      "chat_flow",
+      "user_sessions"
+    ],
+    "integrations": [
+      "line_webhook",
+      "db_neon",
+      "misc_signals"
+    ]
+  },
+  "conversation_quality_focus": {
+    "session_timelines": "user_sessions.session_conversations.sessions",
+    "conversation_history": "sessions[].conversation_history / turns[].conversation_history",
+    "heuristic_hints": "user_sessions.intent_mismatches (LLM must re-judge)",
+    "physical_advisor": "sessions[].physical_recommendation_summary",
+    "quality_summary": "quality_metrics.json"
+  },
+  "session_transcripts": {
+    "1785057159607653291042": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sessions\\1785057159607653291042.md",
+    "1785045987774595935322": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sessions\\1785045987774595935322.md",
+    "1785046932452832237424": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sessions\\1785046932452832237424.md",
+    "1785046946908234934393": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sessions\\1785046946908234934393.md",
+    "1785057141702808759270": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sessions\\1785057141702808759270.md",
+    "1785058292428368289258": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sessions\\1785058292428368289258.md",
+    "1785058927087582422001": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sessions\\1785058927087582422001.md",
+    "1785075195430764131055": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sessions\\1785075195430764131055.md",
+    "1785205185643537553845": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260726-20260728-20260728-044951\\sessions\\1785205185643537553845.md"
+  }
+}

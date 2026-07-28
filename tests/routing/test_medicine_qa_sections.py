@@ -115,8 +115,16 @@ def test_product_image_focus_excludes_comparison():
 def test_streaming_qa_attaches_product_images_and_unifies_answer():
     msg = "ロキソニンとイブの画像見せて"
     meds = [
-        {"product_name": "ロキソニンＳ", "ingredients": "ロキソプロフェン"},
-        {"product_name": "イブ", "ingredients": "イブプロフェン"},
+        {
+            "product_name": "ロキソニンＳ",
+            "ingredients": "ロキソプロフェン",
+            "image_url": "https://example.test/loxonin.png",
+        },
+        {
+            "product_name": "イブ",
+            "ingredients": "イブプロフェン",
+            "image_url": "https://example.test/ib.png",
+        },
     ]
     parsed = _build_structured_qa_from_stream(
         msg,

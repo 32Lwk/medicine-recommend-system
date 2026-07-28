@@ -35,14 +35,19 @@ from src.services.sse_emit import (
     replay_session_events,
     set_stream_result,
 )
-from src.services.chat_inflight import is_chat_job_in_flight
+from src.services.chat_inflight import (
+    end_chat_job,
+    is_chat_job_in_flight,
+    should_orphan_persist,
+)
 from src.utils.chat_http_context import ChatClientInfo
 
 logger = logging.getLogger(__name__)
 
-_STREAM_TIMEOUT_SEC = float(os.getenv("CHAT_STREAM_TIMEOUT_SEC", "180"))
+_STREAM_TIMEOUT_SEC = float(os.getenv("CHAT_STREAM_TIMEOUT_SEC", "120"))
 _QUEUE_WAIT_SEC = float(os.getenv("CHAT_STREAM_QUEUE_WAIT_SEC", "120"))
 _KEEPALIVE_SEC = float(os.getenv("CHAT_STREAM_KEEPALIVE_SEC", "10"))
+_ORPHAN_MAX_SEC = float(os.getenv("CHAT_STREAM_ORPHAN_MAX_SEC", "120"))
 def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, request: Any = None) -> None:
     from config.ui_config import UI_VARIANT_COOKIE, UI_VARIANT_QUERY, resolve_ui_variant
 
@@ -116,11 +121,25 @@ def _run_chat_post(
     worker_timing: Optional[Dict[str, Any]] = None,
 ) -> tuple:
     """SSE ワーカー内では sync pipeline を直接実行（同一 ThreadPool への二重 submit を避ける）。"""
+    from src.utils.session_sid import bind_request_session_sid
+
     if worker_timing is not None:
         worker_timing["started"] = True
         worker_timing["started_at"] = time.monotonic()
-    bind_worker_stream_sink(sid)
-    return handle_chat_post(safe_session, client_info, message, sid, monitor)
+    bind_request_session_sid(safe_session, sid)
+    try:
+        bind_worker_stream_sink(sid)
+        body, status_code = handle_chat_post(
+            safe_session,
+            client_info,
+            message,
+            sid,
+            monitor,
+            job_meta=worker_timing,
+        )
+        return body, status_code
+    finally:
+        deactivate_stream_sink(None)
 
 
 async def _finalize_orphan_worker(
@@ -128,16 +147,31 @@ async def _finalize_orphan_worker(
     sid: str,
     safe_session: RequestSafeSession,
     request: Request,
+    *,
+    orphan_token: Optional[str] = None,
 ) -> None:
     """SSE 切断後もワーカーが完了したら DB 保存・再接続用結果を残す。"""
     try:
-        body, status_code = await worker
+        body, status_code = await asyncio.wait_for(worker, timeout=_ORPHAN_MAX_SEC)
         if sid:
             set_stream_result(sid, body, status_code)
-            try:
-                persist_session_from_chat_state(sid, safe_session, request)
-            except Exception:
-                logger.exception("SSE orphan worker persist failed sid=%s", sid)
+            if should_orphan_persist(sid, orphan_token):
+                try:
+                    persist_session_from_chat_state(sid, safe_session, request)
+                except Exception:
+                    logger.exception("SSE orphan worker persist failed sid=%s", sid)
+            else:
+                logger.warning(
+                    "SSE orphan persist skipped (stale job) sid=%s orphan_token=%s",
+                    sid,
+                    orphan_token,
+                )
+    except asyncio.TimeoutError:
+        logger.error(
+            "SSE orphan worker exceeded %.0fs sid=%s",
+            _ORPHAN_MAX_SEC,
+            sid,
+        )
     except Exception:
         logger.exception("SSE orphan worker failed sid=%s", sid)
     finally:
@@ -208,6 +242,7 @@ def _build_sse_done_event(
     status_code: int,
     messages: list,
     *,
+    sid: Optional[str] = None,
     trace_id: Optional[str] = None,
 ) -> "SseDoneEvent":
     from src.handlers.sse_events import SseDoneEvent
@@ -224,6 +259,7 @@ def _build_sse_done_event(
         http_status=status_code,
         status=body_dict.get("status", "ok"),
         message_count=body_dict.get("message_count", 0),
+        session_id=sid,
         trace_id=trace_id,
         bot_message=bot_message,
         user_message=user_message,
@@ -248,7 +284,7 @@ def _build_done_lines(
 ) -> list[str]:
     """done (+ 必要なら client_preview) の SSE 行リスト。"""
     messages = _messages_for_sse_done(safe_session, sid, body)
-    done = _build_sse_done_event(body, status_code, messages, trace_id=trace_id)
+    done = _build_sse_done_event(body, status_code, messages, sid=sid, trace_id=trace_id)
     payload = done.to_payload()
     from src.dialogue.adapters.web_sse import merge_dialogue_delivery_into_done
 
@@ -281,7 +317,7 @@ def build_stream_done_payload(
 ) -> Dict[str, Any]:
     """GET /api/chat/stream-result 用の done ペイロード。"""
     messages = _messages_for_sse_done(safe_session, sid, body)
-    done = _build_sse_done_event(body, status_code, messages, trace_id=trace_id)
+    done = _build_sse_done_event(body, status_code, messages, sid=sid, trace_id=trace_id)
     payload = done.to_payload()
     from src.dialogue.adapters.web_sse import merge_dialogue_delivery_into_done
 
@@ -356,7 +392,7 @@ async def stream_chat_events(
 
     worker: Optional[asyncio.Future] = None
     owns_worker = False
-    worker_timing: Dict[str, Any] = {"started": False, "started_at": None}
+    worker_timing: Dict[str, Any] = {"started": False, "started_at": None, "job_token": None}
 
     if reattach:
         sink = get_active_session_sink(sid) or sink
@@ -472,6 +508,8 @@ async def stream_chat_events(
         )
     finally:
         worker_still_running = owns_worker and worker is not None and not worker.done()
+        if worker_still_running and sid:
+            end_chat_job(sid)
         if sink and owns_worker:
             sink.close()
         if sid and owns_worker:
@@ -479,7 +517,15 @@ async def stream_chat_events(
         elif not owns_worker:
             deactivate_stream_sink(None)
         if worker_still_running:
-            asyncio.create_task(_finalize_orphan_worker(worker, sid, safe_session, request))
+            asyncio.create_task(
+                _finalize_orphan_worker(
+                    worker,
+                    sid,
+                    safe_session,
+                    request,
+                    orphan_token=worker_timing.get("job_token"),
+                )
+            )
         elif sid and owns_worker:
             try:
                 persist_session_from_chat_state(sid, safe_session, request)

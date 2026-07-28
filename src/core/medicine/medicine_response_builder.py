@@ -755,19 +755,24 @@ def chat_with_medicine_context(
 - 安全性を最優先に考え、不明な点がある場合は医師相談を推奨してください
 - 質問の内容が推奨医薬品の情報では回答できない場合は、「お近くの登録販売者にご相談ください」と回答してください
 """
-    prompt = augment_medicine_prompt_with_kb(
-        user_message,
-        prompt_body,
-        recommended_medicines=recommended_medicines,
-        conversation_history=conversation_history,
-        qa_focuses=qa_focuses,
-    )
+    from src.services.sse_emit import is_streaming_active
+
+    stream_active = is_streaming_active(session_id)
+    if stream_active:
+        prompt = prompt_body
+    else:
+        prompt = augment_medicine_prompt_with_kb(
+            user_message,
+            prompt_body,
+            recommended_medicines=recommended_medicines,
+            conversation_history=conversation_history,
+            qa_focuses=qa_focuses,
+        )
     try:
         from src.core.llm_client import chat_completion_create, chat_completion_stream
         from src.services.sse_emit import (
             emit_qa_delta,
             emit_qa_sections_from_response,
-            is_streaming_active,
         )
 
         system_msg = (
@@ -783,7 +788,6 @@ def chat_with_medicine_context(
         _mark_qa("interaction_check")
         _mark_qa("doping_check")
         _mark_qa("side_effect_check")
-        stream_active = is_streaming_active(session_id)
         streamed_answer = ""
         if stream_active and session_id:
             try:
