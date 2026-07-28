@@ -7361,9 +7361,6 @@
     });
     }
 
-    // 前回の送信中断などでボタンが無効のまま残っている場合に復旧
-    restoreSubmitButton();
-
     function setupChatInputHandlers() {
         const input = document.getElementById('messageInput');
         const form = document.getElementById('chatForm');
@@ -7549,6 +7546,9 @@
     function resolveActiveSubmitSid() {
         return (activeSubmitSid || getSidFromCookie() || '').trim();
     }
+
+    // 前回の送信中断などでボタンが無効のまま残っている場合に復旧（getSidFromCookie 定義後）
+    restoreSubmitButton();
 
     function isDonePayloadForActiveSession(donePayload) {
         if (!donePayload || !donePayload.session_id) {

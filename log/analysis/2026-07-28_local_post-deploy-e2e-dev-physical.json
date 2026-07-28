@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-07-28",
+  "scenarios": [
+    {
+      "id": "symptom_casual_headache",
+      "category": "physical",
+      "description": "口語頭痛",
+      "passed": false,
+      "turns": [
+        {
+          "user": "頭バキバキ…",
+          "passed": false,
+          "route": "Concierge",
+          "kind": "concierge_greeting",
+          "render": "sage_status",
+          "concierge_intent": "greeting",
+          "elapsed_ms": 23122,
+          "bot_text": "頭がバキバキするのですね、お辛そうです。こちらは市販薬に関する相談窓口ですので、頭痛やのどの痛みなどの症状に対する市販薬のご提案が可能です。どのような症状でお悩みですか？\nご挨拶",
+          "errors": [
+            "render expected 'sage_reco' got 'sage_status'"
+          ]
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "by_category": {
+      "physical": {
+        "passed": 0,
+        "failed": 1
+      }
+    }
+  }
+}

@@ -13458,3 +13458,8 @@
 {"timestamp": "2026-07-28T14:52:05.884872", "event_type": "input_validation", "user_id": "ユーザー116", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ああ"}}
 {"timestamp": "2026-07-28T14:52:11.769924", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-28T14:52:11.769924", "event_type": "input_validation", "user_id": "ユーザー115", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ああ"}}
+{"timestamp": "2026-07-28T15:21:30.380974", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:21:30.381971", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛い"}}
+{"timestamp": "2026-07-28T15:21:35.036893", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:23:20.301051", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:23:20.302049", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}

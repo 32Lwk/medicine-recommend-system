@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-07-28",
+  "scenarios": [
+    {
+      "id": "tech_gitlab_github_diff",
+      "category": "tech_concierge",
+      "description": "GitLab/GitHub 比較は Concierge（医薬品Q&A禁止）",
+      "passed": true,
+      "turns": [
+        {
+          "user": "GitlabとGithubの違いは？",
+          "passed": true,
+          "route": "Concierge",
+          "kind": "concierge_architecture",
+          "render": "sage_status",
+          "concierge_intent": "architecture",
+          "elapsed_ms": 21921,
+          "bot_text": "GitLab と GitHub はどちらもソースコードを管理して共有するためのサービスですが、GitHub は公開リポジトリのコミュニティ利用が特に広く、GitLab は自分たちで運用しやすい一体型の機能がまとまっている点が特徴です。\n\nどちらも issue や pull request 相当のレビュー、CI/CD などに対応します。\n\nざっくり言うと、GitHub は「広い利用者層と公開コードの交流」、GitLab は「開発から運用までをまとめて管理しやすい」イメージです。\n\nどちらが向いているかは、公開重視か、社内運用や一体管理重視かで変わります。\n仕組み・技術",
+          "errors": []
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "by_category": {
+      "tech_concierge": {
+        "passed": 1,
+        "failed": 0
+      }
+    }
+  }
+}

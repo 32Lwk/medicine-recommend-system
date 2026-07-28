@@ -842,3 +842,4 @@
 {"ts": 1783092371.1900015, "trace_id": "b126d033-1572-4a58-870f-eefa1eeb0310", "agent": "StoreInquiryAgent", "step": "complete", "session_id": "1783092344612188482793", "ms": 1204.35, "payload": {"handled": false}}
 {"ts": 1785152567.2556963, "trace_id": "c56d2ff8-ebc5-455f-9b51-522ae89a3636", "agent": "ChatOrchestrator", "step": "handoff", "session_id": "1785152463401275839417", "payload": {"target": "AskHandler", "category": "Ask"}}
 {"ts": 1785152568.2598145, "trace_id": "c56d2ff8-ebc5-455f-9b51-522ae89a3636", "agent": "AskAgent", "step": "complete", "session_id": "1785152463401275839417", "ms": 0.0}
+{"ts": 1785219711.8799577, "trace_id": "9f3e67c1-4863-4511-80bb-4cac735aec58", "agent": "ChatOrchestrator", "step": "handoff", "session_id": "1785219687811121429427", "payload": {"target": "PhysicalOrchestrator", "category": "Physical"}}
