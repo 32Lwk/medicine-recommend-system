@@ -1,0 +1,4419 @@
+{
+  "trace_count": 21,
+  "exported_traces": [
+    {
+      "trace_id": "9c583f5f-9a0a-49a6-87c3-d2784c302792",
+      "events": [
+        {
+          "ts": "2026-07-28T06:06:00.506466Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:06:00.512964Z",
+          "type": "received_message",
+          "text": "GitlabとGithubの違いは？"
+        },
+        {
+          "ts": "2026-07-28T06:06:02.479845Z",
+          "type": "user_message",
+          "text": "GitlabとGithubの違いは？"
+        },
+        {
+          "ts": "2026-07-28T06:06:04.549098Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:06:12.762305Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:06:23.843485Z",
+          "type": "pipeline_perf",
+          "total_ms": 23355.7,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:06:00.506466Z",
+      "session_id": "1785218757672651243946",
+      "user_message": "GitlabとGithubの違いは？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218757672651243946",
+        "total_ms": 23355.7,
+        "breakdown": {
+          "post_start": 25.27,
+          "parsed_message": 25.49,
+          "session_db_read": 25.66,
+          "after_get_session_db": 376.55,
+          "before_llm_setup": 864.56,
+          "before_security": 1586.51,
+          "after_security": 2282.27,
+          "before_emoji_route": 2571.3,
+          "before_triage": 2590.32,
+          "after_triage": 4415.86,
+          "safety_gate_done": 5624.91,
+          "after_triage_follow_ups": 5669.1,
+          "after_counseling_flow": 7516.91,
+          "moderation_done": 7516.96,
+          "before_medicine_qa_route": 7863.31,
+          "after_medicine_qa_route": 7864.8,
+          "concierge_resolve_intent_start": 12275.4,
+          "concierge_resolve_intent_end": 12275.56,
+          "concierge_build_payload_start": 12275.86,
+          "concierge_build_payload_end": 22531.36
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:06:09.327318",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 969.58,
+              "prompt_tokens": 375,
+              "completion_tokens": 41,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:06:22.259141",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 2313.39,
+              "prompt_tokens": 9751,
+              "completion_tokens": 192,
+              "cost_jpy": 0.2983,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 3282.97,
+          "llm_session_cost_jpy": 0.3108,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "a80631de-c5e6-4a38-895c-3a7097f9ea60",
+      "events": [
+        {
+          "ts": "2026-07-28T06:06:35.737716Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:06:35.737971Z",
+          "type": "received_message",
+          "text": "頭バキバキ…"
+        }
+      ],
+      "started_at": "2026-07-28T06:06:35.737716Z",
+      "session_id": null,
+      "user_message": "頭バキバキ…",
+      "triage": null,
+      "concierge_intent": null,
+      "pipeline_perf": null,
+      "agent_steps": []
+    },
+    {
+      "trace_id": "c359d4d0-5e1b-44ea-ae33-5466cfd9c6d4",
+      "events": [
+        {
+          "ts": "2026-07-28T06:06:36.695237Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:06:36.695442Z",
+          "type": "received_message",
+          "text": "GitlabとGithubの違いは？"
+        },
+        {
+          "ts": "2026-07-28T06:06:37.791706Z",
+          "type": "user_message",
+          "text": "頭バキバキ…"
+        },
+        {
+          "ts": "2026-07-28T06:06:39.753092Z",
+          "type": "user_message",
+          "text": "GitlabとGithubの違いは？"
+        },
+        {
+          "ts": "2026-07-28T06:06:42.183361Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:06:42.879920Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "headache",
+          "confidence": 0.92
+        },
+        {
+          "ts": "2026-07-28T06:06:52.263553Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:06:53.155536Z",
+          "type": "concierge_intent",
+          "value": "greeting"
+        },
+        {
+          "ts": "2026-07-28T06:06:55.521652Z",
+          "type": "pipeline_perf",
+          "total_ms": 18830.16,
+          "channel": "web"
+        },
+        {
+          "ts": "2026-07-28T06:06:56.603149Z",
+          "type": "pipeline_perf",
+          "total_ms": 20869.18,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:06:36.695237Z",
+      "session_id": "1785218793800095495623",
+      "user_message": "GitlabとGithubの違いは？",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "headache",
+        "confidence": 0.92
+      },
+      "concierge_intent": "greeting",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218792301894425632",
+        "total_ms": 20869.18,
+        "breakdown": {
+          "post_start": 4.19,
+          "parsed_message": 4.31,
+          "session_db_read": 4.37,
+          "after_get_session_db": 701.7,
+          "before_llm_setup": 955.91,
+          "before_security": 1939.01,
+          "after_security": 2088.28,
+          "before_emoji_route": 2089.76,
+          "before_triage": 2089.78,
+          "after_triage": 7764.55,
+          "safety_gate_done": 9651.39,
+          "after_triage_follow_ups": 9651.79,
+          "after_counseling_flow": 11613.52,
+          "moderation_done": 11613.57,
+          "before_medicine_qa_route": 12666.33,
+          "after_medicine_qa_route": 14496.55,
+          "concierge_resolve_intent_start": 17421.5,
+          "concierge_resolve_intent_end": 17421.68,
+          "concierge_build_payload_start": 17421.97,
+          "concierge_build_payload_end": 20099.74
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:06:40.671560",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1377.81,
+              "prompt_tokens": 3106,
+              "completion_tokens": 107,
+              "cost_jpy": 0.0964,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:06:49.419453",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1016.26,
+              "prompt_tokens": 371,
+              "completion_tokens": 41,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:06:55.169465",
+              "model": "gpt-4o-mini",
+              "path": "concierge_agent.greeting",
+              "latency_ms": 2012.49,
+              "prompt_tokens": 869,
+              "completion_tokens": 69,
+              "cost_jpy": 0.0281,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 3,
+          "llm_total_latency_ms": 4406.5599999999995,
+          "llm_session_cost_jpy": 0.1369,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "12dfc3a8-983d-4e1b-bf34-41d6ee1729ce",
+      "events": [
+        {
+          "ts": "2026-07-28T06:07:08.293689Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:07:08.293881Z",
+          "type": "received_message",
+          "text": "GitlabとGithubの違いは？"
+        },
+        {
+          "ts": "2026-07-28T06:07:09.665326Z",
+          "type": "user_message",
+          "text": "GitlabとGithubの違いは？"
+        },
+        {
+          "ts": "2026-07-28T06:07:11.103887Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:07:19.598792Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:07:22.946819Z",
+          "type": "pipeline_perf",
+          "total_ms": 14656.3,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:07:08.293689Z",
+      "session_id": "1785218826105867158690",
+      "user_message": "GitlabとGithubの違いは？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218826105867158690",
+        "total_ms": 14656.3,
+        "breakdown": {
+          "post_start": 3.79,
+          "parsed_message": 3.93,
+          "session_db_read": 3.98,
+          "after_get_session_db": 329.29,
+          "before_llm_setup": 683.03,
+          "before_security": 1372.76,
+          "after_security": 1405.8,
+          "before_emoji_route": 1407.37,
+          "before_triage": 1407.39,
+          "after_triage": 3065.57,
+          "safety_gate_done": 4135.28,
+          "after_triage_follow_ups": 4138.87,
+          "after_counseling_flow": 6292.54,
+          "moderation_done": 6292.59,
+          "before_medicine_qa_route": 6925.93,
+          "after_medicine_qa_route": 6927.01,
+          "concierge_resolve_intent_start": 11304.87,
+          "concierge_resolve_intent_end": 11305.06,
+          "concierge_build_payload_start": 11309.26,
+          "concierge_build_payload_end": 13979.04
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:07:16.322523",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1099.78,
+              "prompt_tokens": 375,
+              "completion_tokens": 41,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:07:21.594160",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 1974.46,
+              "prompt_tokens": 9751,
+              "completion_tokens": 162,
+              "cost_jpy": 0.2974,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 3074.24,
+          "llm_session_cost_jpy": 0.3099,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "e5c52149-532a-4b45-a827-3a1b06365a18",
+      "events": [
+        {
+          "ts": "2026-07-28T06:07:28.537612Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:07:28.537876Z",
+          "type": "received_message",
+          "text": "githubが正本なの？gitlabは？"
+        },
+        {
+          "ts": "2026-07-28T06:07:30.065821Z",
+          "type": "user_message",
+          "text": "githubが正本なの？gitlabは？"
+        },
+        {
+          "ts": "2026-07-28T06:07:31.513233Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:07:39.505041Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:07:42.579682Z",
+          "type": "pipeline_perf",
+          "total_ms": 14045.12,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:07:28.537612Z",
+      "session_id": "1785218846669245454475",
+      "user_message": "githubが正本なの？gitlabは？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218846669245454475",
+        "total_ms": 14045.12,
+        "breakdown": {
+          "post_start": 3.93,
+          "parsed_message": 4.3,
+          "session_db_read": 4.35,
+          "after_get_session_db": 349.97,
+          "before_llm_setup": 694.31,
+          "before_security": 1383.92,
+          "after_security": 1553.54,
+          "before_emoji_route": 1554.2,
+          "before_triage": 1554.21,
+          "after_triage": 3228.18,
+          "safety_gate_done": 4338.39,
+          "after_triage_follow_ups": 4342.95,
+          "after_counseling_flow": 5879.68,
+          "moderation_done": 5879.73,
+          "before_medicine_qa_route": 6211.78,
+          "after_medicine_qa_route": 6212.0,
+          "concierge_resolve_intent_start": 10969.8,
+          "concierge_resolve_intent_end": 10970.03,
+          "concierge_build_payload_start": 10970.35,
+          "concierge_build_payload_end": 13362.63
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:07:36.337562",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1588.75,
+              "prompt_tokens": 377,
+              "completion_tokens": 35,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:07:41.228464",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 1198.26,
+              "prompt_tokens": 9488,
+              "completion_tokens": 57,
+              "cost_jpy": 0.2863,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 2787.01,
+          "llm_session_cost_jpy": 0.2987,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "a7e59b0a-8fa0-4317-a8f6-0a148790785d",
+      "events": [
+        {
+          "ts": "2026-07-28T06:07:48.417395Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:07:48.417600Z",
+          "type": "received_message",
+          "text": "このアプリ何で動いてるの？"
+        },
+        {
+          "ts": "2026-07-28T06:07:49.794166Z",
+          "type": "user_message",
+          "text": "このアプリ何で動いてるの？"
+        },
+        {
+          "ts": "2026-07-28T06:07:51.292603Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:07:59.480584Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:08:02.974786Z",
+          "type": "pipeline_perf",
+          "total_ms": 14560.67,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:07:48.417395Z",
+      "session_id": "1785218866297373955409",
+      "user_message": "このアプリ何で動いてるの？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218866297373955409",
+        "total_ms": 14560.67,
+        "breakdown": {
+          "post_start": 3.61,
+          "parsed_message": 3.72,
+          "session_db_read": 3.77,
+          "after_get_session_db": 344.73,
+          "before_llm_setup": 694.61,
+          "before_security": 1375.84,
+          "after_security": 1399.61,
+          "before_emoji_route": 1401.51,
+          "before_triage": 1401.77,
+          "after_triage": 3136.29,
+          "safety_gate_done": 4267.25,
+          "after_triage_follow_ups": 4270.93,
+          "after_counseling_flow": 6411.3,
+          "moderation_done": 6411.35,
+          "before_medicine_qa_route": 6763.41,
+          "after_medicine_qa_route": 6764.2,
+          "concierge_resolve_intent_start": 11065.57,
+          "concierge_resolve_intent_end": 11065.83,
+          "concierge_build_payload_start": 11066.25,
+          "concierge_build_payload_end": 13806.8
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:07:55.981546",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 798.09,
+              "prompt_tokens": 378,
+              "completion_tokens": 30,
+              "cost_jpy": 0.0122,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:08:01.481907",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 1720.74,
+              "prompt_tokens": 9488,
+              "completion_tokens": 133,
+              "cost_jpy": 0.2886,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 2518.83,
+          "llm_session_cost_jpy": 0.3009,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "3d960824-78c0-4912-92ff-2131a3714185",
+      "events": [
+        {
+          "ts": "2026-07-28T06:08:08.942173Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:08:08.942335Z",
+          "type": "received_message",
+          "text": "GCP と AWS の構成の違いを詳しく教えて"
+        },
+        {
+          "ts": "2026-07-28T06:08:10.573142Z",
+          "type": "user_message",
+          "text": "GCP と AWS の構成の違いを詳しく教えて"
+        },
+        {
+          "ts": "2026-07-28T06:08:12.031743Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:08:20.213523Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:08:24.688102Z",
+          "type": "pipeline_perf",
+          "total_ms": 15749.72,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:08:08.942173Z",
+      "session_id": "1785218886883157416322",
+      "user_message": "GCP と AWS の構成の違いを詳しく教えて",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218886883157416322",
+        "total_ms": 15749.72,
+        "breakdown": {
+          "post_start": 3.98,
+          "parsed_message": 4.09,
+          "session_db_read": 4.15,
+          "after_get_session_db": 350.04,
+          "before_llm_setup": 726.78,
+          "before_security": 1479.98,
+          "after_security": 1661.0,
+          "before_emoji_route": 1661.82,
+          "before_triage": 1661.88,
+          "after_triage": 3336.47,
+          "safety_gate_done": 4384.86,
+          "after_triage_follow_ups": 4385.25,
+          "after_counseling_flow": 6019.95,
+          "moderation_done": 6020.16,
+          "before_medicine_qa_route": 6364.96,
+          "after_medicine_qa_route": 6365.43,
+          "concierge_resolve_intent_start": 11275.13,
+          "concierge_resolve_intent_end": 11275.28,
+          "concierge_build_payload_start": 11275.58,
+          "concierge_build_payload_end": 15036.62
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:08:17.035420",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1729.11,
+              "prompt_tokens": 389,
+              "completion_tokens": 39,
+              "cost_jpy": 0.0128,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:08:23.265846",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture_deep",
+              "latency_ms": 2151.46,
+              "prompt_tokens": 12420,
+              "completion_tokens": 201,
+              "cost_jpy": 0.3786,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 3880.5699999999997,
+          "llm_session_cost_jpy": 0.3915,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "5daf9b91-6f87-4dc8-8c36-74f89c375e2d",
+      "events": [
+        {
+          "ts": "2026-07-28T06:08:30.091184Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:08:30.097365Z",
+          "type": "received_message",
+          "text": "ここは何ができるの？"
+        },
+        {
+          "ts": "2026-07-28T06:08:31.396602Z",
+          "type": "user_message",
+          "text": "ここは何ができるの？"
+        },
+        {
+          "ts": "2026-07-28T06:08:32.876023Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 0.98
+        },
+        {
+          "ts": "2026-07-28T06:08:41.080574Z",
+          "type": "concierge_intent",
+          "value": "app_about"
+        },
+        {
+          "ts": "2026-07-28T06:08:44.776982Z",
+          "type": "pipeline_perf",
+          "total_ms": 14707.71,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:08:30.091184Z",
+      "session_id": "1785218908237153403986",
+      "user_message": "ここは何ができるの？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 0.98
+      },
+      "concierge_intent": "app_about",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218908237153403986",
+        "total_ms": 14707.71,
+        "breakdown": {
+          "post_start": 27.97,
+          "parsed_message": 34.5,
+          "session_db_read": 34.61,
+          "after_get_session_db": 344.67,
+          "before_llm_setup": 678.88,
+          "before_security": 1294.03,
+          "after_security": 1388.41,
+          "before_emoji_route": 1389.98,
+          "before_triage": 1390.0,
+          "after_triage": 3038.01,
+          "safety_gate_done": 4074.64,
+          "after_triage_follow_ups": 4078.55,
+          "after_counseling_flow": 6101.03,
+          "moderation_done": 6101.07,
+          "before_medicine_qa_route": 6446.03,
+          "after_medicine_qa_route": 8593.01,
+          "concierge_resolve_intent_start": 11011.12,
+          "concierge_resolve_intent_end": 11011.3,
+          "concierge_build_payload_start": 11012.5,
+          "concierge_build_payload_end": 13978.34
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:08:37.888107",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1341.42,
+              "prompt_tokens": 375,
+              "completion_tokens": 37,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:08:43.413967",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_app_about",
+              "latency_ms": 1703.15,
+              "prompt_tokens": 1375,
+              "completion_tokens": 111,
+              "cost_jpy": 0.0446,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 3044.57,
+          "llm_session_cost_jpy": 0.0569,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "51296cfb-a4b4-44e1-8d50-bd3a60f20120",
+      "events": [
+        {
+          "ts": "2026-07-28T06:08:50.790941Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:08:50.797256Z",
+          "type": "received_message",
+          "text": "最近何が変わった？"
+        },
+        {
+          "ts": "2026-07-28T06:08:52.089343Z",
+          "type": "user_message",
+          "text": "最近何が変わった？"
+        },
+        {
+          "ts": "2026-07-28T06:08:53.545605Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:09:01.162047Z",
+          "type": "concierge_intent",
+          "value": "doc_changelog"
+        },
+        {
+          "ts": "2026-07-28T06:09:03.936468Z",
+          "type": "pipeline_perf",
+          "total_ms": 13167.2,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:08:50.790941Z",
+      "session_id": "1785218928319193780848",
+      "user_message": "最近何が変わった？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "doc_changelog",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218928319193780848",
+        "total_ms": 13167.2,
+        "breakdown": {
+          "post_start": 27.32,
+          "parsed_message": 33.94,
+          "session_db_read": 34.05,
+          "after_get_session_db": 347.95,
+          "before_llm_setup": 674.02,
+          "before_security": 1298.18,
+          "after_security": 1373.26,
+          "before_emoji_route": 1380.07,
+          "before_triage": 1380.09,
+          "after_triage": 3026.23,
+          "safety_gate_done": 4045.46,
+          "after_triage_follow_ups": 4045.86,
+          "after_counseling_flow": 5696.83,
+          "moderation_done": 5696.91,
+          "before_medicine_qa_route": 6003.46,
+          "after_medicine_qa_route": 6003.61,
+          "concierge_resolve_intent_start": 10392.18,
+          "concierge_resolve_intent_end": 10392.34,
+          "concierge_build_payload_start": 10404.07,
+          "concierge_build_payload_end": 12441.78
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:08:57.969586",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1194.03,
+              "prompt_tokens": 371,
+              "completion_tokens": 33,
+              "cost_jpy": 0.0121,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:09:02.575283",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.doc_changelog_intro",
+              "latency_ms": 1365.47,
+              "prompt_tokens": 1285,
+              "completion_tokens": 91,
+              "cost_jpy": 0.0413,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 2559.5,
+          "llm_session_cost_jpy": 0.0534,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "4f840567-a9f9-44ff-8cf0-3b8d470a377f",
+      "events": [
+        {
+          "ts": "2026-07-28T06:09:10.173531Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:09:10.173717Z",
+          "type": "received_message",
+          "text": "頭バキバキ…"
+        },
+        {
+          "ts": "2026-07-28T06:09:11.512819Z",
+          "type": "user_message",
+          "text": "頭バキバキ…"
+        },
+        {
+          "ts": "2026-07-28T06:09:13.008515Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "headache",
+          "confidence": 0.92
+        },
+        {
+          "ts": "2026-07-28T06:09:20.472898Z",
+          "type": "concierge_intent",
+          "value": "greeting"
+        },
+        {
+          "ts": "2026-07-28T06:09:24.312105Z",
+          "type": "pipeline_perf",
+          "total_ms": 14147.8,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:09:10.173531Z",
+      "session_id": "1785218947942724642995",
+      "user_message": "頭バキバキ…",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "headache",
+        "confidence": 0.92
+      },
+      "concierge_intent": "greeting",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218947942724642995",
+        "total_ms": 14147.8,
+        "breakdown": {
+          "post_start": 9.49,
+          "parsed_message": 9.67,
+          "session_db_read": 9.73,
+          "after_get_session_db": 372.44,
+          "before_llm_setup": 692.56,
+          "before_security": 1329.35,
+          "after_security": 1414.92,
+          "before_emoji_route": 1415.92,
+          "before_triage": 1415.95,
+          "after_triage": 3098.56,
+          "safety_gate_done": 4444.7,
+          "after_triage_follow_ups": 4472.71,
+          "after_counseling_flow": 5601.28,
+          "moderation_done": 5601.32,
+          "before_medicine_qa_route": 5942.95,
+          "after_medicine_qa_route": 7801.04,
+          "concierge_resolve_intent_start": 10307.57,
+          "concierge_resolve_intent_end": 10307.73,
+          "concierge_build_payload_start": 10314.15,
+          "concierge_build_payload_end": 13472.94
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:09:17.201838",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1089.12,
+              "prompt_tokens": 371,
+              "completion_tokens": 41,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:09:23.003300",
+              "model": "gpt-4o-mini",
+              "path": "concierge_agent.greeting",
+              "latency_ms": 2523.35,
+              "prompt_tokens": 869,
+              "completion_tokens": 73,
+              "cost_jpy": 0.0283,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 3612.47,
+          "llm_session_cost_jpy": 0.0406,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "39cd186b-de00-4151-b28a-577f4a67572c",
+      "events": [
+        {
+          "ts": "2026-07-28T06:09:30.374692Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:09:30.380984Z",
+          "type": "received_message",
+          "text": "のどが痛くてつらいです"
+        },
+        {
+          "ts": "2026-07-28T06:09:31.707318Z",
+          "type": "user_message",
+          "text": "のどが痛くてつらいです"
+        },
+        {
+          "ts": "2026-07-28T06:09:35.864039Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "sore_throat",
+          "confidence": 0.99
+        },
+        {
+          "ts": "2026-07-28T06:10:35.839195Z",
+          "type": "pipeline_perf",
+          "total_ms": 65495.63,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:09:30.374692Z",
+      "session_id": "1785218968466488798177",
+      "user_message": "のどが痛くてつらいです",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "sore_throat",
+        "confidence": 0.99
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218968466488798177",
+        "total_ms": 65495.63,
+        "breakdown": {
+          "post_start": 38.24,
+          "parsed_message": 50.95,
+          "session_db_read": 51.05,
+          "after_get_session_db": 392.96,
+          "before_llm_setup": 711.38,
+          "before_security": 1326.54,
+          "after_security": 1445.4,
+          "before_emoji_route": 1458.49,
+          "before_triage": 1458.52,
+          "after_triage": 5800.22,
+          "safety_gate_done": 7100.4,
+          "after_triage_follow_ups": 7105.7,
+          "after_counseling_flow": 8355.9,
+          "moderation_done": 8355.96,
+          "before_medicine_qa_route": 9093.61,
+          "after_medicine_qa_route": 11095.27,
+          "before_orchestrator": 13324.23,
+          "nlu_batch_start": 31453.08,
+          "nlu_batch_done": 35568.43,
+          "rule_based_start": 36190.7,
+          "rb_missing_info_done": 38862.74,
+          "rb_scoring_only_done": 47729.37,
+          "rb_explain_batch_done": 63133.12,
+          "rule_based_scoring_only_done": 63149.02,
+          "line_carousel_push": 63159.29,
+          "explanation_phase_start": 63163.71,
+          "explanation_phase_done": 63163.72,
+          "personalized_advice": 63457.85
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:09:34.685938",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1530.16,
+              "prompt_tokens": 3110,
+              "completion_tokens": 94,
+              "cost_jpy": 0.0961,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:09:40.774417",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1334.02,
+              "prompt_tokens": 379,
+              "completion_tokens": 29,
+              "cost_jpy": 0.0122,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:09:52.709533",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1365.72,
+              "prompt_tokens": 379,
+              "completion_tokens": 29,
+              "cost_jpy": 0.0122,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:10:08.621345",
+              "model": "gpt-5.4-mini",
+              "path": "missing_info_service",
+              "latency_ms": 2085.83,
+              "prompt_tokens": 309,
+              "completion_tokens": 239,
+              "cost_jpy": 0.0164,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:10:19.229969",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1153.79,
+              "prompt_tokens": 387,
+              "completion_tokens": 29,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:10:21.727289",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1134.1,
+              "prompt_tokens": 387,
+              "completion_tokens": 29,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:10:23.486728",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 936.49,
+              "prompt_tokens": 383,
+              "completion_tokens": 29,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:10:32.886763",
+              "model": "gpt-5.4",
+              "path": "explanation_generator.batch_usage_notes",
+              "latency_ms": 4948.06,
+              "prompt_tokens": 1554,
+              "completion_tokens": 583,
+              "cost_jpy": 0.2564,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 8,
+          "llm_total_latency_ms": 14488.170000000002,
+          "llm_session_cost_jpy": 0.4308,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "b8bf2358-0d26-4668-bcdc-52bfc50095cf",
+      "events": [
+        {
+          "ts": "2026-07-28T06:10:44.980366Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:10:45.050616Z",
+          "type": "received_message",
+          "text": "なんか調子悪いんだけど"
+        },
+        {
+          "ts": "2026-07-28T06:10:49.028163Z",
+          "type": "user_message",
+          "text": "なんか調子悪いんだけど"
+        },
+        {
+          "ts": "2026-07-28T06:10:56.454647Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "general_symptom",
+          "confidence": 0.78
+        },
+        {
+          "ts": "2026-07-28T06:11:46.029014Z",
+          "type": "pipeline_perf",
+          "total_ms": 61060.72,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:10:44.980366Z",
+      "session_id": "1785219039382573376107",
+      "user_message": "なんか調子悪いんだけど",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "general_symptom",
+        "confidence": 0.78
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219039382573376107",
+        "total_ms": 61060.72,
+        "breakdown": {
+          "post_start": 81.55,
+          "parsed_message": 82.05,
+          "session_db_read": 82.37,
+          "after_get_session_db": 453.54,
+          "before_llm_setup": 2156.91,
+          "before_security": 3029.61,
+          "after_security": 5807.0,
+          "before_emoji_route": 7115.89,
+          "before_triage": 7294.59,
+          "after_triage": 11781.16,
+          "safety_gate_done": 12882.38,
+          "after_triage_follow_ups": 12896.99,
+          "after_counseling_flow": 13777.77,
+          "moderation_done": 13777.84,
+          "before_medicine_qa_route": 14098.43,
+          "after_medicine_qa_route": 15846.77,
+          "before_orchestrator": 18245.88,
+          "nlu_batch_start": 35039.77,
+          "nlu_batch_done": 39211.5,
+          "rule_based_start": 39871.6,
+          "rb_missing_info_done": 42726.48,
+          "rb_scoring_only_done": 45062.34,
+          "rb_explain_batch_done": 58727.77,
+          "rule_based_scoring_only_done": 58734.85,
+          "line_carousel_push": 58739.94,
+          "explanation_phase_start": 58744.51,
+          "explanation_phase_done": 58744.52,
+          "personalized_advice": 59067.78
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:10:55.788911",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1823.33,
+              "prompt_tokens": 3109,
+              "completion_tokens": 111,
+              "cost_jpy": 0.0966,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:00.181582",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1097.46,
+              "prompt_tokens": 379,
+              "completion_tokens": 37,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:11.679455",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 824.09,
+              "prompt_tokens": 379,
+              "completion_tokens": 36,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:27.061706",
+              "model": "gpt-5.4-mini",
+              "path": "missing_info_service",
+              "latency_ms": 2219.58,
+              "prompt_tokens": 306,
+              "completion_tokens": 269,
+              "cost_jpy": 0.0172,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:31.040872",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 993.71,
+              "prompt_tokens": 375,
+              "completion_tokens": 41,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:32.916301",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1041.67,
+              "prompt_tokens": 379,
+              "completion_tokens": 40,
+              "cost_jpy": 0.0126,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:35.055339",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1342.59,
+              "prompt_tokens": 387,
+              "completion_tokens": 49,
+              "cost_jpy": 0.0131,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:43.056243",
+              "model": "gpt-5.4",
+              "path": "explanation_generator.batch_usage_notes",
+              "latency_ms": 4653.12,
+              "prompt_tokens": 1037,
+              "completion_tokens": 600,
+              "cost_jpy": 0.1964,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 8,
+          "llm_total_latency_ms": 13995.55,
+          "llm_session_cost_jpy": 0.3734,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "0f555cba-63dd-4f8c-8d61-fcfd9ccb0d27",
+      "events": [
+        {
+          "ts": "2026-07-28T06:11:51.389772Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:11:51.389995Z",
+          "type": "received_message",
+          "text": "5歳の子供が38度の熱があります"
+        },
+        {
+          "ts": "2026-07-28T06:11:52.677763Z",
+          "type": "user_message",
+          "text": "5歳の子供が38度の熱があります"
+        },
+        {
+          "ts": "2026-07-28T06:11:56.120812Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "fever",
+          "confidence": 0.99
+        },
+        {
+          "ts": "2026-07-28T06:12:31.424789Z",
+          "type": "pipeline_perf",
+          "total_ms": 40037.8,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:11:51.389772Z",
+      "session_id": "1785219109820645196550",
+      "user_message": "5歳の子供が38度の熱があります",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "fever",
+        "confidence": 0.99
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219109820645196550",
+        "total_ms": 40037.8,
+        "breakdown": {
+          "post_start": 4.14,
+          "parsed_message": 4.59,
+          "session_db_read": 4.64,
+          "after_get_session_db": 292.51,
+          "before_llm_setup": 588.34,
+          "before_security": 1166.45,
+          "after_security": 2543.88,
+          "before_emoji_route": 2544.91,
+          "before_triage": 2544.93,
+          "after_triage": 4735.25,
+          "safety_gate_done": 5450.66,
+          "after_triage_follow_ups": 5455.7,
+          "after_counseling_flow": 5459.95,
+          "moderation_done": 5460.06,
+          "before_medicine_qa_route": 5787.98,
+          "after_medicine_qa_route": 5797.64,
+          "medicine_qa_early_route_start": 5808.03,
+          "product_image_fast_path_start": 5816.15,
+          "product_image_fast_path_end": 40027.6,
+          "medicine_qa_early_route_end": 40029.14
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:11:55.228833",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1283.93,
+              "prompt_tokens": 3159,
+              "completion_tokens": 70,
+              "cost_jpy": 0.0969,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 1,
+          "llm_total_latency_ms": 1283.93,
+          "llm_session_cost_jpy": 0.0969,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "4de441cf-8cb3-496a-a229-1de799468972",
+      "events": [
+        {
+          "ts": "2026-07-28T06:12:36.939916Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:12:36.943795Z",
+          "type": "received_message",
+          "text": "ロキソニンの副作用教えて"
+        },
+        {
+          "ts": "2026-07-28T06:12:38.238510Z",
+          "type": "user_message",
+          "text": "ロキソニンの副作用教えて"
+        },
+        {
+          "ts": "2026-07-28T06:12:41.840073Z",
+          "type": "triage",
+          "category": "Ask",
+          "subcategory": "side_effects_question",
+          "confidence": 0.99
+        },
+        {
+          "ts": "2026-07-28T06:12:47.078666Z",
+          "type": "pipeline_perf",
+          "total_ms": 10142.32,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:12:36.939916Z",
+      "session_id": "1785219155090084131187",
+      "user_message": "ロキソニンの副作用教えて",
+      "triage": {
+        "category": "Ask",
+        "subcategory": "side_effects_question",
+        "confidence": 0.99
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219155090084131187",
+        "total_ms": 10142.32,
+        "breakdown": {
+          "post_start": 4.88,
+          "parsed_message": 8.96,
+          "session_db_read": 9.04,
+          "after_get_session_db": 298.39,
+          "before_llm_setup": 589.1,
+          "before_security": 1166.71,
+          "after_security": 1318.83,
+          "before_emoji_route": 1319.63,
+          "before_triage": 1319.64,
+          "after_triage": 5124.96,
+          "safety_gate_done": 6009.8,
+          "after_triage_follow_ups": 6013.87,
+          "after_counseling_flow": 6598.89,
+          "moderation_done": 6598.95,
+          "before_medicine_qa_route": 6889.07,
+          "after_medicine_qa_route": 8347.07
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:12:40.801945",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1348.31,
+              "prompt_tokens": 3110,
+              "completion_tokens": 95,
+              "cost_jpy": 0.0961,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:12:44.697157",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 871.02,
+              "prompt_tokens": 381,
+              "completion_tokens": 38,
+              "cost_jpy": 0.0126,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 2219.33,
+          "llm_session_cost_jpy": 0.1087,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "1aef6dd4-0920-452f-9b3a-0e26440402a2",
+      "events": [
+        {
+          "ts": "2026-07-28T06:12:51.963082Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:12:51.963269Z",
+          "type": "received_message",
+          "text": "風邪薬ある？"
+        },
+        {
+          "ts": "2026-07-28T06:12:53.132270Z",
+          "type": "user_message",
+          "text": "風邪薬ある？"
+        },
+        {
+          "ts": "2026-07-28T06:12:56.736148Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "cold_medicine_inquiry",
+          "confidence": 0.98
+        },
+        {
+          "ts": "2026-07-28T06:13:21.711811Z",
+          "type": "pipeline_perf",
+          "total_ms": 29754.13,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:12:51.963082Z",
+      "session_id": "1785219170323271509212",
+      "user_message": "風邪薬ある？",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "cold_medicine_inquiry",
+        "confidence": 0.98
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219170323271509212",
+        "total_ms": 29754.13,
+        "breakdown": {
+          "post_start": 5.44,
+          "parsed_message": 5.58,
+          "session_db_read": 5.66,
+          "after_get_session_db": 298.6,
+          "before_llm_setup": 591.29,
+          "before_security": 1170.58,
+          "after_security": 1182.67,
+          "before_emoji_route": 1183.48,
+          "before_triage": 1183.5,
+          "after_triage": 5068.96,
+          "safety_gate_done": 5949.84,
+          "after_triage_follow_ups": 5950.4,
+          "after_counseling_flow": 6860.59,
+          "moderation_done": 6860.86,
+          "before_medicine_qa_route": 7152.37,
+          "after_medicine_qa_route": 8883.99,
+          "medicine_qa_early_route_start": 10374.41,
+          "product_image_fast_path_start": 10374.61,
+          "product_image_fast_path_end": 29743.63,
+          "medicine_qa_early_route_end": 29745.16
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:12:55.638532",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1309.86,
+              "prompt_tokens": 3105,
+              "completion_tokens": 87,
+              "cost_jpy": 0.0958,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:13:00.258493",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1146.48,
+              "prompt_tokens": 369,
+              "completion_tokens": 39,
+              "cost_jpy": 0.0122,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:13:01.738626",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 893.18,
+              "prompt_tokens": 369,
+              "completion_tokens": 35,
+              "cost_jpy": 0.0121,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 3,
+          "llm_total_latency_ms": 3349.52,
+          "llm_session_cost_jpy": 0.1201,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "4d34c354-29e8-4c5b-b61c-f8dddeee85c9",
+      "events": [
+        {
+          "ts": "2026-07-28T06:13:26.687910Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:13:26.688111Z",
+          "type": "received_message",
+          "text": "市販薬でドーピングに引っかかる成分ってある？"
+        },
+        {
+          "ts": "2026-07-28T06:13:27.979646Z",
+          "type": "user_message",
+          "text": "市販薬でドーピングに引っかかる成分ってある？"
+        },
+        {
+          "ts": "2026-07-28T06:13:31.360332Z",
+          "type": "triage",
+          "category": "Ask",
+          "subcategory": "medication_question",
+          "confidence": 0.95
+        },
+        {
+          "ts": "2026-07-28T06:13:47.792124Z",
+          "type": "pipeline_perf",
+          "total_ms": 21108.22,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:13:26.687910Z",
+      "session_id": "1785219205035056913004",
+      "user_message": "市販薬でドーピングに引っかかる成分ってある？",
+      "triage": {
+        "category": "Ask",
+        "subcategory": "medication_question",
+        "confidence": 0.95
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219205035056913004",
+        "total_ms": 21108.22,
+        "breakdown": {
+          "post_start": 4.9,
+          "parsed_message": 5.02,
+          "session_db_read": 5.08,
+          "after_get_session_db": 294.0,
+          "before_llm_setup": 587.51,
+          "before_security": 1168.92,
+          "after_security": 1311.5,
+          "before_emoji_route": 1314.95,
+          "before_triage": 1314.98,
+          "after_triage": 4967.07,
+          "safety_gate_done": 5859.25,
+          "after_triage_follow_ups": 5863.33,
+          "after_counseling_flow": 6450.5,
+          "moderation_done": 6450.55,
+          "before_medicine_qa_route": 6741.25,
+          "after_medicine_qa_route": 8264.53,
+          "medicine_qa_early_route_start": 10061.96,
+          "product_image_fast_path_start": 10062.0,
+          "product_image_fast_path_end": 21098.15,
+          "medicine_qa_early_route_end": 21099.64
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:13:30.773469",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1576.6,
+              "prompt_tokens": 3119,
+              "completion_tokens": 105,
+              "cost_jpy": 0.0967,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:13:34.367244",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 939.96,
+              "prompt_tokens": 396,
+              "completion_tokens": 34,
+              "cost_jpy": 0.0129,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:13:36.163670",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1205.74,
+              "prompt_tokens": 396,
+              "completion_tokens": 34,
+              "cost_jpy": 0.0129,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 3,
+          "llm_total_latency_ms": 3722.3,
+          "llm_session_cost_jpy": 0.1225,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "4a438282-050c-42a5-85e3-11652f71fdfb",
+      "events": [
+        {
+          "ts": "2026-07-28T06:13:52.691188Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:13:52.691413Z",
+          "type": "received_message",
+          "text": "のど痛いんだけど、このチャットGPT使ってる？"
+        },
+        {
+          "ts": "2026-07-28T06:13:53.983928Z",
+          "type": "user_message",
+          "text": "のど痛いんだけど、このチャットGPT使ってる？"
+        },
+        {
+          "ts": "2026-07-28T06:13:55.281255Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:14:02.461648Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:14:05.509154Z",
+          "type": "pipeline_perf",
+          "total_ms": 12821.52,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:13:52.691188Z",
+      "session_id": "1785219231050065800558",
+      "user_message": "のど痛いんだけど、このチャットGPT使ってる？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219231050065800558",
+        "total_ms": 12821.52,
+        "breakdown": {
+          "post_start": 4.83,
+          "parsed_message": 5.43,
+          "session_db_read": 5.5,
+          "after_get_session_db": 298.83,
+          "before_llm_setup": 590.51,
+          "before_security": 1169.57,
+          "after_security": 1310.23,
+          "before_emoji_route": 1311.01,
+          "before_triage": 1311.03,
+          "after_triage": 2838.19,
+          "safety_gate_done": 3727.4,
+          "after_triage_follow_ups": 3731.67,
+          "after_counseling_flow": 5069.65,
+          "moderation_done": 5069.7,
+          "before_medicine_qa_route": 5359.8,
+          "after_medicine_qa_route": 5360.07,
+          "concierge_resolve_intent_start": 9774.57,
+          "concierge_resolve_intent_end": 9774.78,
+          "concierge_build_payload_start": 9775.1,
+          "concierge_build_payload_end": 12228.46
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:13:59.243112",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1081.17,
+              "prompt_tokens": 387,
+              "completion_tokens": 41,
+              "cost_jpy": 0.0128,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:04.331743",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 1312.06,
+              "prompt_tokens": 9493,
+              "completion_tokens": 74,
+              "cost_jpy": 0.287,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 2393.23,
+          "llm_session_cost_jpy": 0.2999,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "b4906589-b82b-4196-a810-a36098c8dc6e",
+      "events": [
+        {
+          "ts": "2026-07-28T06:14:10.716483Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:14:10.716734Z",
+          "type": "received_message",
+          "text": "頭痛がする"
+        },
+        {
+          "ts": "2026-07-28T06:14:12.004767Z",
+          "type": "user_message",
+          "text": "頭痛がする"
+        },
+        {
+          "ts": "2026-07-28T06:14:15.679211Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "headache",
+          "confidence": 0.99
+        },
+        {
+          "ts": "2026-07-28T06:15:07.045510Z",
+          "type": "pipeline_perf",
+          "total_ms": 56332.98,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:14:10.716483Z",
+      "session_id": "1785219249035833933543",
+      "user_message": "頭痛がする",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "headache",
+        "confidence": 0.99
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219249035833933543",
+        "total_ms": 56332.98,
+        "breakdown": {
+          "post_start": 4.84,
+          "parsed_message": 5.35,
+          "session_db_read": 5.42,
+          "after_get_session_db": 295.14,
+          "before_llm_setup": 586.21,
+          "before_security": 1165.98,
+          "after_security": 1308.37,
+          "before_emoji_route": 1309.25,
+          "before_triage": 1309.27,
+          "after_triage": 5188.56,
+          "safety_gate_done": 6082.34,
+          "after_triage_follow_ups": 6087.71,
+          "after_counseling_flow": 7417.49,
+          "moderation_done": 7417.56,
+          "before_medicine_qa_route": 8011.31,
+          "after_medicine_qa_route": 9612.28,
+          "before_orchestrator": 11635.76,
+          "nlu_batch_start": 26885.62,
+          "nlu_batch_done": 30141.49,
+          "rule_based_start": 30748.52,
+          "rb_missing_info_done": 33645.14,
+          "rb_scoring_only_done": 42455.17,
+          "rb_explain_batch_done": 54022.02,
+          "rule_based_scoring_only_done": 54025.54,
+          "line_carousel_push": 54026.57,
+          "explanation_phase_start": 54031.4,
+          "explanation_phase_done": 54031.41,
+          "personalized_advice": 54325.14
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:14:14.635494",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1400.04,
+              "prompt_tokens": 3104,
+              "completion_tokens": 90,
+              "cost_jpy": 0.0958,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:19.742063",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1011.22,
+              "prompt_tokens": 369,
+              "completion_tokens": 43,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:29.986791",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 979.4,
+              "prompt_tokens": 369,
+              "completion_tokens": 29,
+              "cost_jpy": 0.0119,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:43.755673",
+              "model": "gpt-5.4-mini",
+              "path": "missing_info_service",
+              "latency_ms": 2292.72,
+              "prompt_tokens": 300,
+              "completion_tokens": 266,
+              "cost_jpy": 0.017,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:54.443885",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1271.09,
+              "prompt_tokens": 366,
+              "completion_tokens": 50,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:56.466646",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 819.5,
+              "prompt_tokens": 370,
+              "completion_tokens": 29,
+              "cost_jpy": 0.012,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:58.096479",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 759.48,
+              "prompt_tokens": 372,
+              "completion_tokens": 30,
+              "cost_jpy": 0.0121,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:15:04.144155",
+              "model": "gpt-5.4",
+              "path": "explanation_generator.batch_usage_notes",
+              "latency_ms": 5067.93,
+              "prompt_tokens": 1804,
+              "completion_tokens": 600,
+              "cost_jpy": 0.2885,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 8,
+          "llm_total_latency_ms": 13601.380000000001,
+          "llm_session_cost_jpy": 0.4621,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "1d9c03d2-7659-4720-ac4d-e52c107a823d",
+      "events": [
+        {
+          "ts": "2026-07-28T06:15:10.232934Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:15:10.233212Z",
+          "type": "received_message",
+          "text": "GitHubとGitLabどっちが正本？"
+        },
+        {
+          "ts": "2026-07-28T06:15:11.617736Z",
+          "type": "user_message",
+          "text": "GitHubとGitLabどっちが正本？"
+        },
+        {
+          "ts": "2026-07-28T06:15:11.666502Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:15:18.858219Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:15:21.872275Z",
+          "type": "pipeline_perf",
+          "total_ms": 11643.85,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:15:10.232934Z",
+      "session_id": "1785219249035833933543",
+      "user_message": "GitHubとGitLabどっちが正本？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219249035833933543",
+        "total_ms": 11643.85,
+        "breakdown": {
+          "post_start": 4.89,
+          "parsed_message": 5.06,
+          "session_db_read": 5.11,
+          "after_get_session_db": 371.38,
+          "before_llm_setup": 665.71,
+          "before_security": 1255.22,
+          "after_security": 1419.84,
+          "before_emoji_route": 1420.83,
+          "before_triage": 1420.84,
+          "after_triage": 1438.23,
+          "safety_gate_done": 2787.39,
+          "after_triage_follow_ups": 2791.94,
+          "after_counseling_flow": 3871.7,
+          "moderation_done": 3871.75,
+          "before_medicine_qa_route": 4630.57,
+          "after_medicine_qa_route": 4630.84,
+          "concierge_resolve_intent_start": 8629.93,
+          "concierge_resolve_intent_end": 8630.15,
+          "concierge_build_payload_start": 8630.49,
+          "concierge_build_payload_end": 10965.3
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:15:16.129636",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1266.43,
+              "prompt_tokens": 406,
+              "completion_tokens": 42,
+              "cost_jpy": 0.0134,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:15:20.601839",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 1215.79,
+              "prompt_tokens": 9773,
+              "completion_tokens": 59,
+              "cost_jpy": 0.295,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 2482.2200000000003,
+          "llm_session_cost_jpy": 0.3084,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "bf86ac7b-00db-4e44-b099-5373c6265cd5",
+      "events": [
+        {
+          "ts": "2026-07-28T06:15:26.551059Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:15:26.551313Z",
+          "type": "received_message",
+          "text": "技術スタック教えて"
+        },
+        {
+          "ts": "2026-07-28T06:15:27.901603Z",
+          "type": "user_message",
+          "text": "技術スタック教えて"
+        },
+        {
+          "ts": "2026-07-28T06:15:29.127601Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:15:36.158727Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:15:39.645692Z",
+          "type": "pipeline_perf",
+          "total_ms": 13099.77,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:15:26.551059Z",
+      "session_id": "1785219324946514909919",
+      "user_message": "技術スタック教えて",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219324946514909919",
+        "total_ms": 13099.77,
+        "breakdown": {
+          "post_start": 5.48,
+          "parsed_message": 5.88,
+          "session_db_read": 5.95,
+          "after_get_session_db": 332.02,
+          "before_llm_setup": 627.67,
+          "before_security": 1224.91,
+          "after_security": 1372.79,
+          "before_emoji_route": 1373.51,
+          "before_triage": 1373.52,
+          "after_triage": 2806.65,
+          "safety_gate_done": 3714.13,
+          "after_triage_follow_ups": 3729.33,
+          "after_counseling_flow": 5201.99,
+          "moderation_done": 5202.04,
+          "before_medicine_qa_route": 5517.0,
+          "after_medicine_qa_route": 5517.32,
+          "concierge_resolve_intent_start": 9612.56,
+          "concierge_resolve_intent_end": 9612.92,
+          "concierge_build_payload_start": 9613.35,
+          "concierge_build_payload_end": 12489.85
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:15:33.101297",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1029.63,
+              "prompt_tokens": 373,
+              "completion_tokens": 44,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:15:38.446960",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 2019.52,
+              "prompt_tokens": 9821,
+              "completion_tokens": 223,
+              "cost_jpy": 0.3013,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 3049.15,
+          "llm_session_cost_jpy": 0.3138,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "72a19b3b-8b22-4d6b-b0a9-b23b485214c0",
+      "events": [
+        {
+          "ts": "2026-07-28T06:15:42.801377Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:15:42.801719Z",
+          "type": "received_message",
+          "text": "話変わるけど、頭痛がする"
+        },
+        {
+          "ts": "2026-07-28T06:15:44.146704Z",
+          "type": "user_message",
+          "text": "話変わるけど、頭痛がする"
+        },
+        {
+          "ts": "2026-07-28T06:15:46.804897Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "headache",
+          "confidence": 0.99
+        }
+      ],
+      "started_at": "2026-07-28T06:15:42.801377Z",
+      "session_id": null,
+      "user_message": "話変わるけど、頭痛がする",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "headache",
+        "confidence": 0.99
+      },
+      "concierge_intent": null,
+      "pipeline_perf": null,
+      "agent_steps": []
+    }
+  ],
+  "slow_traces_ge_8s": [
+    {
+      "trace_id": "9c583f5f-9a0a-49a6-87c3-d2784c302792",
+      "events": [
+        {
+          "ts": "2026-07-28T06:06:00.506466Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:06:00.512964Z",
+          "type": "received_message",
+          "text": "GitlabとGithubの違いは？"
+        },
+        {
+          "ts": "2026-07-28T06:06:02.479845Z",
+          "type": "user_message",
+          "text": "GitlabとGithubの違いは？"
+        },
+        {
+          "ts": "2026-07-28T06:06:04.549098Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:06:12.762305Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:06:23.843485Z",
+          "type": "pipeline_perf",
+          "total_ms": 23355.7,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:06:00.506466Z",
+      "session_id": "1785218757672651243946",
+      "user_message": "GitlabとGithubの違いは？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218757672651243946",
+        "total_ms": 23355.7,
+        "breakdown": {
+          "post_start": 25.27,
+          "parsed_message": 25.49,
+          "session_db_read": 25.66,
+          "after_get_session_db": 376.55,
+          "before_llm_setup": 864.56,
+          "before_security": 1586.51,
+          "after_security": 2282.27,
+          "before_emoji_route": 2571.3,
+          "before_triage": 2590.32,
+          "after_triage": 4415.86,
+          "safety_gate_done": 5624.91,
+          "after_triage_follow_ups": 5669.1,
+          "after_counseling_flow": 7516.91,
+          "moderation_done": 7516.96,
+          "before_medicine_qa_route": 7863.31,
+          "after_medicine_qa_route": 7864.8,
+          "concierge_resolve_intent_start": 12275.4,
+          "concierge_resolve_intent_end": 12275.56,
+          "concierge_build_payload_start": 12275.86,
+          "concierge_build_payload_end": 22531.36
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:06:09.327318",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 969.58,
+              "prompt_tokens": 375,
+              "completion_tokens": 41,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:06:22.259141",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 2313.39,
+              "prompt_tokens": 9751,
+              "completion_tokens": 192,
+              "cost_jpy": 0.2983,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 3282.97,
+          "llm_session_cost_jpy": 0.3108,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "c359d4d0-5e1b-44ea-ae33-5466cfd9c6d4",
+      "events": [
+        {
+          "ts": "2026-07-28T06:06:36.695237Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:06:36.695442Z",
+          "type": "received_message",
+          "text": "GitlabとGithubの違いは？"
+        },
+        {
+          "ts": "2026-07-28T06:06:37.791706Z",
+          "type": "user_message",
+          "text": "頭バキバキ…"
+        },
+        {
+          "ts": "2026-07-28T06:06:39.753092Z",
+          "type": "user_message",
+          "text": "GitlabとGithubの違いは？"
+        },
+        {
+          "ts": "2026-07-28T06:06:42.183361Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:06:42.879920Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "headache",
+          "confidence": 0.92
+        },
+        {
+          "ts": "2026-07-28T06:06:52.263553Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:06:53.155536Z",
+          "type": "concierge_intent",
+          "value": "greeting"
+        },
+        {
+          "ts": "2026-07-28T06:06:55.521652Z",
+          "type": "pipeline_perf",
+          "total_ms": 18830.16,
+          "channel": "web"
+        },
+        {
+          "ts": "2026-07-28T06:06:56.603149Z",
+          "type": "pipeline_perf",
+          "total_ms": 20869.18,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:06:36.695237Z",
+      "session_id": "1785218793800095495623",
+      "user_message": "GitlabとGithubの違いは？",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "headache",
+        "confidence": 0.92
+      },
+      "concierge_intent": "greeting",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218792301894425632",
+        "total_ms": 20869.18,
+        "breakdown": {
+          "post_start": 4.19,
+          "parsed_message": 4.31,
+          "session_db_read": 4.37,
+          "after_get_session_db": 701.7,
+          "before_llm_setup": 955.91,
+          "before_security": 1939.01,
+          "after_security": 2088.28,
+          "before_emoji_route": 2089.76,
+          "before_triage": 2089.78,
+          "after_triage": 7764.55,
+          "safety_gate_done": 9651.39,
+          "after_triage_follow_ups": 9651.79,
+          "after_counseling_flow": 11613.52,
+          "moderation_done": 11613.57,
+          "before_medicine_qa_route": 12666.33,
+          "after_medicine_qa_route": 14496.55,
+          "concierge_resolve_intent_start": 17421.5,
+          "concierge_resolve_intent_end": 17421.68,
+          "concierge_build_payload_start": 17421.97,
+          "concierge_build_payload_end": 20099.74
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:06:40.671560",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1377.81,
+              "prompt_tokens": 3106,
+              "completion_tokens": 107,
+              "cost_jpy": 0.0964,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:06:49.419453",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1016.26,
+              "prompt_tokens": 371,
+              "completion_tokens": 41,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:06:55.169465",
+              "model": "gpt-4o-mini",
+              "path": "concierge_agent.greeting",
+              "latency_ms": 2012.49,
+              "prompt_tokens": 869,
+              "completion_tokens": 69,
+              "cost_jpy": 0.0281,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 3,
+          "llm_total_latency_ms": 4406.5599999999995,
+          "llm_session_cost_jpy": 0.1369,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "12dfc3a8-983d-4e1b-bf34-41d6ee1729ce",
+      "events": [
+        {
+          "ts": "2026-07-28T06:07:08.293689Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:07:08.293881Z",
+          "type": "received_message",
+          "text": "GitlabとGithubの違いは？"
+        },
+        {
+          "ts": "2026-07-28T06:07:09.665326Z",
+          "type": "user_message",
+          "text": "GitlabとGithubの違いは？"
+        },
+        {
+          "ts": "2026-07-28T06:07:11.103887Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:07:19.598792Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:07:22.946819Z",
+          "type": "pipeline_perf",
+          "total_ms": 14656.3,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:07:08.293689Z",
+      "session_id": "1785218826105867158690",
+      "user_message": "GitlabとGithubの違いは？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218826105867158690",
+        "total_ms": 14656.3,
+        "breakdown": {
+          "post_start": 3.79,
+          "parsed_message": 3.93,
+          "session_db_read": 3.98,
+          "after_get_session_db": 329.29,
+          "before_llm_setup": 683.03,
+          "before_security": 1372.76,
+          "after_security": 1405.8,
+          "before_emoji_route": 1407.37,
+          "before_triage": 1407.39,
+          "after_triage": 3065.57,
+          "safety_gate_done": 4135.28,
+          "after_triage_follow_ups": 4138.87,
+          "after_counseling_flow": 6292.54,
+          "moderation_done": 6292.59,
+          "before_medicine_qa_route": 6925.93,
+          "after_medicine_qa_route": 6927.01,
+          "concierge_resolve_intent_start": 11304.87,
+          "concierge_resolve_intent_end": 11305.06,
+          "concierge_build_payload_start": 11309.26,
+          "concierge_build_payload_end": 13979.04
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:07:16.322523",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1099.78,
+              "prompt_tokens": 375,
+              "completion_tokens": 41,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:07:21.594160",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 1974.46,
+              "prompt_tokens": 9751,
+              "completion_tokens": 162,
+              "cost_jpy": 0.2974,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 3074.24,
+          "llm_session_cost_jpy": 0.3099,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "e5c52149-532a-4b45-a827-3a1b06365a18",
+      "events": [
+        {
+          "ts": "2026-07-28T06:07:28.537612Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:07:28.537876Z",
+          "type": "received_message",
+          "text": "githubが正本なの？gitlabは？"
+        },
+        {
+          "ts": "2026-07-28T06:07:30.065821Z",
+          "type": "user_message",
+          "text": "githubが正本なの？gitlabは？"
+        },
+        {
+          "ts": "2026-07-28T06:07:31.513233Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:07:39.505041Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:07:42.579682Z",
+          "type": "pipeline_perf",
+          "total_ms": 14045.12,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:07:28.537612Z",
+      "session_id": "1785218846669245454475",
+      "user_message": "githubが正本なの？gitlabは？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218846669245454475",
+        "total_ms": 14045.12,
+        "breakdown": {
+          "post_start": 3.93,
+          "parsed_message": 4.3,
+          "session_db_read": 4.35,
+          "after_get_session_db": 349.97,
+          "before_llm_setup": 694.31,
+          "before_security": 1383.92,
+          "after_security": 1553.54,
+          "before_emoji_route": 1554.2,
+          "before_triage": 1554.21,
+          "after_triage": 3228.18,
+          "safety_gate_done": 4338.39,
+          "after_triage_follow_ups": 4342.95,
+          "after_counseling_flow": 5879.68,
+          "moderation_done": 5879.73,
+          "before_medicine_qa_route": 6211.78,
+          "after_medicine_qa_route": 6212.0,
+          "concierge_resolve_intent_start": 10969.8,
+          "concierge_resolve_intent_end": 10970.03,
+          "concierge_build_payload_start": 10970.35,
+          "concierge_build_payload_end": 13362.63
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:07:36.337562",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1588.75,
+              "prompt_tokens": 377,
+              "completion_tokens": 35,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:07:41.228464",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 1198.26,
+              "prompt_tokens": 9488,
+              "completion_tokens": 57,
+              "cost_jpy": 0.2863,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 2787.01,
+          "llm_session_cost_jpy": 0.2987,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "a7e59b0a-8fa0-4317-a8f6-0a148790785d",
+      "events": [
+        {
+          "ts": "2026-07-28T06:07:48.417395Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:07:48.417600Z",
+          "type": "received_message",
+          "text": "このアプリ何で動いてるの？"
+        },
+        {
+          "ts": "2026-07-28T06:07:49.794166Z",
+          "type": "user_message",
+          "text": "このアプリ何で動いてるの？"
+        },
+        {
+          "ts": "2026-07-28T06:07:51.292603Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:07:59.480584Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:08:02.974786Z",
+          "type": "pipeline_perf",
+          "total_ms": 14560.67,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:07:48.417395Z",
+      "session_id": "1785218866297373955409",
+      "user_message": "このアプリ何で動いてるの？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218866297373955409",
+        "total_ms": 14560.67,
+        "breakdown": {
+          "post_start": 3.61,
+          "parsed_message": 3.72,
+          "session_db_read": 3.77,
+          "after_get_session_db": 344.73,
+          "before_llm_setup": 694.61,
+          "before_security": 1375.84,
+          "after_security": 1399.61,
+          "before_emoji_route": 1401.51,
+          "before_triage": 1401.77,
+          "after_triage": 3136.29,
+          "safety_gate_done": 4267.25,
+          "after_triage_follow_ups": 4270.93,
+          "after_counseling_flow": 6411.3,
+          "moderation_done": 6411.35,
+          "before_medicine_qa_route": 6763.41,
+          "after_medicine_qa_route": 6764.2,
+          "concierge_resolve_intent_start": 11065.57,
+          "concierge_resolve_intent_end": 11065.83,
+          "concierge_build_payload_start": 11066.25,
+          "concierge_build_payload_end": 13806.8
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:07:55.981546",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 798.09,
+              "prompt_tokens": 378,
+              "completion_tokens": 30,
+              "cost_jpy": 0.0122,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:08:01.481907",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 1720.74,
+              "prompt_tokens": 9488,
+              "completion_tokens": 133,
+              "cost_jpy": 0.2886,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 2518.83,
+          "llm_session_cost_jpy": 0.3009,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "3d960824-78c0-4912-92ff-2131a3714185",
+      "events": [
+        {
+          "ts": "2026-07-28T06:08:08.942173Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:08:08.942335Z",
+          "type": "received_message",
+          "text": "GCP と AWS の構成の違いを詳しく教えて"
+        },
+        {
+          "ts": "2026-07-28T06:08:10.573142Z",
+          "type": "user_message",
+          "text": "GCP と AWS の構成の違いを詳しく教えて"
+        },
+        {
+          "ts": "2026-07-28T06:08:12.031743Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:08:20.213523Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:08:24.688102Z",
+          "type": "pipeline_perf",
+          "total_ms": 15749.72,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:08:08.942173Z",
+      "session_id": "1785218886883157416322",
+      "user_message": "GCP と AWS の構成の違いを詳しく教えて",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218886883157416322",
+        "total_ms": 15749.72,
+        "breakdown": {
+          "post_start": 3.98,
+          "parsed_message": 4.09,
+          "session_db_read": 4.15,
+          "after_get_session_db": 350.04,
+          "before_llm_setup": 726.78,
+          "before_security": 1479.98,
+          "after_security": 1661.0,
+          "before_emoji_route": 1661.82,
+          "before_triage": 1661.88,
+          "after_triage": 3336.47,
+          "safety_gate_done": 4384.86,
+          "after_triage_follow_ups": 4385.25,
+          "after_counseling_flow": 6019.95,
+          "moderation_done": 6020.16,
+          "before_medicine_qa_route": 6364.96,
+          "after_medicine_qa_route": 6365.43,
+          "concierge_resolve_intent_start": 11275.13,
+          "concierge_resolve_intent_end": 11275.28,
+          "concierge_build_payload_start": 11275.58,
+          "concierge_build_payload_end": 15036.62
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:08:17.035420",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1729.11,
+              "prompt_tokens": 389,
+              "completion_tokens": 39,
+              "cost_jpy": 0.0128,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:08:23.265846",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture_deep",
+              "latency_ms": 2151.46,
+              "prompt_tokens": 12420,
+              "completion_tokens": 201,
+              "cost_jpy": 0.3786,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 3880.5699999999997,
+          "llm_session_cost_jpy": 0.3915,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "5daf9b91-6f87-4dc8-8c36-74f89c375e2d",
+      "events": [
+        {
+          "ts": "2026-07-28T06:08:30.091184Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:08:30.097365Z",
+          "type": "received_message",
+          "text": "ここは何ができるの？"
+        },
+        {
+          "ts": "2026-07-28T06:08:31.396602Z",
+          "type": "user_message",
+          "text": "ここは何ができるの？"
+        },
+        {
+          "ts": "2026-07-28T06:08:32.876023Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 0.98
+        },
+        {
+          "ts": "2026-07-28T06:08:41.080574Z",
+          "type": "concierge_intent",
+          "value": "app_about"
+        },
+        {
+          "ts": "2026-07-28T06:08:44.776982Z",
+          "type": "pipeline_perf",
+          "total_ms": 14707.71,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:08:30.091184Z",
+      "session_id": "1785218908237153403986",
+      "user_message": "ここは何ができるの？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 0.98
+      },
+      "concierge_intent": "app_about",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218908237153403986",
+        "total_ms": 14707.71,
+        "breakdown": {
+          "post_start": 27.97,
+          "parsed_message": 34.5,
+          "session_db_read": 34.61,
+          "after_get_session_db": 344.67,
+          "before_llm_setup": 678.88,
+          "before_security": 1294.03,
+          "after_security": 1388.41,
+          "before_emoji_route": 1389.98,
+          "before_triage": 1390.0,
+          "after_triage": 3038.01,
+          "safety_gate_done": 4074.64,
+          "after_triage_follow_ups": 4078.55,
+          "after_counseling_flow": 6101.03,
+          "moderation_done": 6101.07,
+          "before_medicine_qa_route": 6446.03,
+          "after_medicine_qa_route": 8593.01,
+          "concierge_resolve_intent_start": 11011.12,
+          "concierge_resolve_intent_end": 11011.3,
+          "concierge_build_payload_start": 11012.5,
+          "concierge_build_payload_end": 13978.34
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:08:37.888107",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1341.42,
+              "prompt_tokens": 375,
+              "completion_tokens": 37,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:08:43.413967",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_app_about",
+              "latency_ms": 1703.15,
+              "prompt_tokens": 1375,
+              "completion_tokens": 111,
+              "cost_jpy": 0.0446,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 3044.57,
+          "llm_session_cost_jpy": 0.0569,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "51296cfb-a4b4-44e1-8d50-bd3a60f20120",
+      "events": [
+        {
+          "ts": "2026-07-28T06:08:50.790941Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:08:50.797256Z",
+          "type": "received_message",
+          "text": "最近何が変わった？"
+        },
+        {
+          "ts": "2026-07-28T06:08:52.089343Z",
+          "type": "user_message",
+          "text": "最近何が変わった？"
+        },
+        {
+          "ts": "2026-07-28T06:08:53.545605Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:09:01.162047Z",
+          "type": "concierge_intent",
+          "value": "doc_changelog"
+        },
+        {
+          "ts": "2026-07-28T06:09:03.936468Z",
+          "type": "pipeline_perf",
+          "total_ms": 13167.2,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:08:50.790941Z",
+      "session_id": "1785218928319193780848",
+      "user_message": "最近何が変わった？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "doc_changelog",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218928319193780848",
+        "total_ms": 13167.2,
+        "breakdown": {
+          "post_start": 27.32,
+          "parsed_message": 33.94,
+          "session_db_read": 34.05,
+          "after_get_session_db": 347.95,
+          "before_llm_setup": 674.02,
+          "before_security": 1298.18,
+          "after_security": 1373.26,
+          "before_emoji_route": 1380.07,
+          "before_triage": 1380.09,
+          "after_triage": 3026.23,
+          "safety_gate_done": 4045.46,
+          "after_triage_follow_ups": 4045.86,
+          "after_counseling_flow": 5696.83,
+          "moderation_done": 5696.91,
+          "before_medicine_qa_route": 6003.46,
+          "after_medicine_qa_route": 6003.61,
+          "concierge_resolve_intent_start": 10392.18,
+          "concierge_resolve_intent_end": 10392.34,
+          "concierge_build_payload_start": 10404.07,
+          "concierge_build_payload_end": 12441.78
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:08:57.969586",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1194.03,
+              "prompt_tokens": 371,
+              "completion_tokens": 33,
+              "cost_jpy": 0.0121,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:09:02.575283",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.doc_changelog_intro",
+              "latency_ms": 1365.47,
+              "prompt_tokens": 1285,
+              "completion_tokens": 91,
+              "cost_jpy": 0.0413,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 2559.5,
+          "llm_session_cost_jpy": 0.0534,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "4f840567-a9f9-44ff-8cf0-3b8d470a377f",
+      "events": [
+        {
+          "ts": "2026-07-28T06:09:10.173531Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:09:10.173717Z",
+          "type": "received_message",
+          "text": "頭バキバキ…"
+        },
+        {
+          "ts": "2026-07-28T06:09:11.512819Z",
+          "type": "user_message",
+          "text": "頭バキバキ…"
+        },
+        {
+          "ts": "2026-07-28T06:09:13.008515Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "headache",
+          "confidence": 0.92
+        },
+        {
+          "ts": "2026-07-28T06:09:20.472898Z",
+          "type": "concierge_intent",
+          "value": "greeting"
+        },
+        {
+          "ts": "2026-07-28T06:09:24.312105Z",
+          "type": "pipeline_perf",
+          "total_ms": 14147.8,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:09:10.173531Z",
+      "session_id": "1785218947942724642995",
+      "user_message": "頭バキバキ…",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "headache",
+        "confidence": 0.92
+      },
+      "concierge_intent": "greeting",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218947942724642995",
+        "total_ms": 14147.8,
+        "breakdown": {
+          "post_start": 9.49,
+          "parsed_message": 9.67,
+          "session_db_read": 9.73,
+          "after_get_session_db": 372.44,
+          "before_llm_setup": 692.56,
+          "before_security": 1329.35,
+          "after_security": 1414.92,
+          "before_emoji_route": 1415.92,
+          "before_triage": 1415.95,
+          "after_triage": 3098.56,
+          "safety_gate_done": 4444.7,
+          "after_triage_follow_ups": 4472.71,
+          "after_counseling_flow": 5601.28,
+          "moderation_done": 5601.32,
+          "before_medicine_qa_route": 5942.95,
+          "after_medicine_qa_route": 7801.04,
+          "concierge_resolve_intent_start": 10307.57,
+          "concierge_resolve_intent_end": 10307.73,
+          "concierge_build_payload_start": 10314.15,
+          "concierge_build_payload_end": 13472.94
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:09:17.201838",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1089.12,
+              "prompt_tokens": 371,
+              "completion_tokens": 41,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:09:23.003300",
+              "model": "gpt-4o-mini",
+              "path": "concierge_agent.greeting",
+              "latency_ms": 2523.35,
+              "prompt_tokens": 869,
+              "completion_tokens": 73,
+              "cost_jpy": 0.0283,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 3612.47,
+          "llm_session_cost_jpy": 0.0406,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "39cd186b-de00-4151-b28a-577f4a67572c",
+      "events": [
+        {
+          "ts": "2026-07-28T06:09:30.374692Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:09:30.380984Z",
+          "type": "received_message",
+          "text": "のどが痛くてつらいです"
+        },
+        {
+          "ts": "2026-07-28T06:09:31.707318Z",
+          "type": "user_message",
+          "text": "のどが痛くてつらいです"
+        },
+        {
+          "ts": "2026-07-28T06:09:35.864039Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "sore_throat",
+          "confidence": 0.99
+        },
+        {
+          "ts": "2026-07-28T06:10:35.839195Z",
+          "type": "pipeline_perf",
+          "total_ms": 65495.63,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:09:30.374692Z",
+      "session_id": "1785218968466488798177",
+      "user_message": "のどが痛くてつらいです",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "sore_throat",
+        "confidence": 0.99
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785218968466488798177",
+        "total_ms": 65495.63,
+        "breakdown": {
+          "post_start": 38.24,
+          "parsed_message": 50.95,
+          "session_db_read": 51.05,
+          "after_get_session_db": 392.96,
+          "before_llm_setup": 711.38,
+          "before_security": 1326.54,
+          "after_security": 1445.4,
+          "before_emoji_route": 1458.49,
+          "before_triage": 1458.52,
+          "after_triage": 5800.22,
+          "safety_gate_done": 7100.4,
+          "after_triage_follow_ups": 7105.7,
+          "after_counseling_flow": 8355.9,
+          "moderation_done": 8355.96,
+          "before_medicine_qa_route": 9093.61,
+          "after_medicine_qa_route": 11095.27,
+          "before_orchestrator": 13324.23,
+          "nlu_batch_start": 31453.08,
+          "nlu_batch_done": 35568.43,
+          "rule_based_start": 36190.7,
+          "rb_missing_info_done": 38862.74,
+          "rb_scoring_only_done": 47729.37,
+          "rb_explain_batch_done": 63133.12,
+          "rule_based_scoring_only_done": 63149.02,
+          "line_carousel_push": 63159.29,
+          "explanation_phase_start": 63163.71,
+          "explanation_phase_done": 63163.72,
+          "personalized_advice": 63457.85
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:09:34.685938",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1530.16,
+              "prompt_tokens": 3110,
+              "completion_tokens": 94,
+              "cost_jpy": 0.0961,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:09:40.774417",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1334.02,
+              "prompt_tokens": 379,
+              "completion_tokens": 29,
+              "cost_jpy": 0.0122,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:09:52.709533",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1365.72,
+              "prompt_tokens": 379,
+              "completion_tokens": 29,
+              "cost_jpy": 0.0122,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:10:08.621345",
+              "model": "gpt-5.4-mini",
+              "path": "missing_info_service",
+              "latency_ms": 2085.83,
+              "prompt_tokens": 309,
+              "completion_tokens": 239,
+              "cost_jpy": 0.0164,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:10:19.229969",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1153.79,
+              "prompt_tokens": 387,
+              "completion_tokens": 29,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:10:21.727289",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1134.1,
+              "prompt_tokens": 387,
+              "completion_tokens": 29,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:10:23.486728",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 936.49,
+              "prompt_tokens": 383,
+              "completion_tokens": 29,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:10:32.886763",
+              "model": "gpt-5.4",
+              "path": "explanation_generator.batch_usage_notes",
+              "latency_ms": 4948.06,
+              "prompt_tokens": 1554,
+              "completion_tokens": 583,
+              "cost_jpy": 0.2564,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 8,
+          "llm_total_latency_ms": 14488.170000000002,
+          "llm_session_cost_jpy": 0.4308,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "b8bf2358-0d26-4668-bcdc-52bfc50095cf",
+      "events": [
+        {
+          "ts": "2026-07-28T06:10:44.980366Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:10:45.050616Z",
+          "type": "received_message",
+          "text": "なんか調子悪いんだけど"
+        },
+        {
+          "ts": "2026-07-28T06:10:49.028163Z",
+          "type": "user_message",
+          "text": "なんか調子悪いんだけど"
+        },
+        {
+          "ts": "2026-07-28T06:10:56.454647Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "general_symptom",
+          "confidence": 0.78
+        },
+        {
+          "ts": "2026-07-28T06:11:46.029014Z",
+          "type": "pipeline_perf",
+          "total_ms": 61060.72,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:10:44.980366Z",
+      "session_id": "1785219039382573376107",
+      "user_message": "なんか調子悪いんだけど",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "general_symptom",
+        "confidence": 0.78
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219039382573376107",
+        "total_ms": 61060.72,
+        "breakdown": {
+          "post_start": 81.55,
+          "parsed_message": 82.05,
+          "session_db_read": 82.37,
+          "after_get_session_db": 453.54,
+          "before_llm_setup": 2156.91,
+          "before_security": 3029.61,
+          "after_security": 5807.0,
+          "before_emoji_route": 7115.89,
+          "before_triage": 7294.59,
+          "after_triage": 11781.16,
+          "safety_gate_done": 12882.38,
+          "after_triage_follow_ups": 12896.99,
+          "after_counseling_flow": 13777.77,
+          "moderation_done": 13777.84,
+          "before_medicine_qa_route": 14098.43,
+          "after_medicine_qa_route": 15846.77,
+          "before_orchestrator": 18245.88,
+          "nlu_batch_start": 35039.77,
+          "nlu_batch_done": 39211.5,
+          "rule_based_start": 39871.6,
+          "rb_missing_info_done": 42726.48,
+          "rb_scoring_only_done": 45062.34,
+          "rb_explain_batch_done": 58727.77,
+          "rule_based_scoring_only_done": 58734.85,
+          "line_carousel_push": 58739.94,
+          "explanation_phase_start": 58744.51,
+          "explanation_phase_done": 58744.52,
+          "personalized_advice": 59067.78
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:10:55.788911",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1823.33,
+              "prompt_tokens": 3109,
+              "completion_tokens": 111,
+              "cost_jpy": 0.0966,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:00.181582",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1097.46,
+              "prompt_tokens": 379,
+              "completion_tokens": 37,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:11.679455",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 824.09,
+              "prompt_tokens": 379,
+              "completion_tokens": 36,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:27.061706",
+              "model": "gpt-5.4-mini",
+              "path": "missing_info_service",
+              "latency_ms": 2219.58,
+              "prompt_tokens": 306,
+              "completion_tokens": 269,
+              "cost_jpy": 0.0172,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:31.040872",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 993.71,
+              "prompt_tokens": 375,
+              "completion_tokens": 41,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:32.916301",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1041.67,
+              "prompt_tokens": 379,
+              "completion_tokens": 40,
+              "cost_jpy": 0.0126,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:35.055339",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1342.59,
+              "prompt_tokens": 387,
+              "completion_tokens": 49,
+              "cost_jpy": 0.0131,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:11:43.056243",
+              "model": "gpt-5.4",
+              "path": "explanation_generator.batch_usage_notes",
+              "latency_ms": 4653.12,
+              "prompt_tokens": 1037,
+              "completion_tokens": 600,
+              "cost_jpy": 0.1964,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 8,
+          "llm_total_latency_ms": 13995.55,
+          "llm_session_cost_jpy": 0.3734,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "0f555cba-63dd-4f8c-8d61-fcfd9ccb0d27",
+      "events": [
+        {
+          "ts": "2026-07-28T06:11:51.389772Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:11:51.389995Z",
+          "type": "received_message",
+          "text": "5歳の子供が38度の熱があります"
+        },
+        {
+          "ts": "2026-07-28T06:11:52.677763Z",
+          "type": "user_message",
+          "text": "5歳の子供が38度の熱があります"
+        },
+        {
+          "ts": "2026-07-28T06:11:56.120812Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "fever",
+          "confidence": 0.99
+        },
+        {
+          "ts": "2026-07-28T06:12:31.424789Z",
+          "type": "pipeline_perf",
+          "total_ms": 40037.8,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:11:51.389772Z",
+      "session_id": "1785219109820645196550",
+      "user_message": "5歳の子供が38度の熱があります",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "fever",
+        "confidence": 0.99
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219109820645196550",
+        "total_ms": 40037.8,
+        "breakdown": {
+          "post_start": 4.14,
+          "parsed_message": 4.59,
+          "session_db_read": 4.64,
+          "after_get_session_db": 292.51,
+          "before_llm_setup": 588.34,
+          "before_security": 1166.45,
+          "after_security": 2543.88,
+          "before_emoji_route": 2544.91,
+          "before_triage": 2544.93,
+          "after_triage": 4735.25,
+          "safety_gate_done": 5450.66,
+          "after_triage_follow_ups": 5455.7,
+          "after_counseling_flow": 5459.95,
+          "moderation_done": 5460.06,
+          "before_medicine_qa_route": 5787.98,
+          "after_medicine_qa_route": 5797.64,
+          "medicine_qa_early_route_start": 5808.03,
+          "product_image_fast_path_start": 5816.15,
+          "product_image_fast_path_end": 40027.6,
+          "medicine_qa_early_route_end": 40029.14
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:11:55.228833",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1283.93,
+              "prompt_tokens": 3159,
+              "completion_tokens": 70,
+              "cost_jpy": 0.0969,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 1,
+          "llm_total_latency_ms": 1283.93,
+          "llm_session_cost_jpy": 0.0969,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "4de441cf-8cb3-496a-a229-1de799468972",
+      "events": [
+        {
+          "ts": "2026-07-28T06:12:36.939916Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:12:36.943795Z",
+          "type": "received_message",
+          "text": "ロキソニンの副作用教えて"
+        },
+        {
+          "ts": "2026-07-28T06:12:38.238510Z",
+          "type": "user_message",
+          "text": "ロキソニンの副作用教えて"
+        },
+        {
+          "ts": "2026-07-28T06:12:41.840073Z",
+          "type": "triage",
+          "category": "Ask",
+          "subcategory": "side_effects_question",
+          "confidence": 0.99
+        },
+        {
+          "ts": "2026-07-28T06:12:47.078666Z",
+          "type": "pipeline_perf",
+          "total_ms": 10142.32,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:12:36.939916Z",
+      "session_id": "1785219155090084131187",
+      "user_message": "ロキソニンの副作用教えて",
+      "triage": {
+        "category": "Ask",
+        "subcategory": "side_effects_question",
+        "confidence": 0.99
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219155090084131187",
+        "total_ms": 10142.32,
+        "breakdown": {
+          "post_start": 4.88,
+          "parsed_message": 8.96,
+          "session_db_read": 9.04,
+          "after_get_session_db": 298.39,
+          "before_llm_setup": 589.1,
+          "before_security": 1166.71,
+          "after_security": 1318.83,
+          "before_emoji_route": 1319.63,
+          "before_triage": 1319.64,
+          "after_triage": 5124.96,
+          "safety_gate_done": 6009.8,
+          "after_triage_follow_ups": 6013.87,
+          "after_counseling_flow": 6598.89,
+          "moderation_done": 6598.95,
+          "before_medicine_qa_route": 6889.07,
+          "after_medicine_qa_route": 8347.07
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:12:40.801945",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1348.31,
+              "prompt_tokens": 3110,
+              "completion_tokens": 95,
+              "cost_jpy": 0.0961,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:12:44.697157",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 871.02,
+              "prompt_tokens": 381,
+              "completion_tokens": 38,
+              "cost_jpy": 0.0126,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 2219.33,
+          "llm_session_cost_jpy": 0.1087,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "1aef6dd4-0920-452f-9b3a-0e26440402a2",
+      "events": [
+        {
+          "ts": "2026-07-28T06:12:51.963082Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:12:51.963269Z",
+          "type": "received_message",
+          "text": "風邪薬ある？"
+        },
+        {
+          "ts": "2026-07-28T06:12:53.132270Z",
+          "type": "user_message",
+          "text": "風邪薬ある？"
+        },
+        {
+          "ts": "2026-07-28T06:12:56.736148Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "cold_medicine_inquiry",
+          "confidence": 0.98
+        },
+        {
+          "ts": "2026-07-28T06:13:21.711811Z",
+          "type": "pipeline_perf",
+          "total_ms": 29754.13,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:12:51.963082Z",
+      "session_id": "1785219170323271509212",
+      "user_message": "風邪薬ある？",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "cold_medicine_inquiry",
+        "confidence": 0.98
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219170323271509212",
+        "total_ms": 29754.13,
+        "breakdown": {
+          "post_start": 5.44,
+          "parsed_message": 5.58,
+          "session_db_read": 5.66,
+          "after_get_session_db": 298.6,
+          "before_llm_setup": 591.29,
+          "before_security": 1170.58,
+          "after_security": 1182.67,
+          "before_emoji_route": 1183.48,
+          "before_triage": 1183.5,
+          "after_triage": 5068.96,
+          "safety_gate_done": 5949.84,
+          "after_triage_follow_ups": 5950.4,
+          "after_counseling_flow": 6860.59,
+          "moderation_done": 6860.86,
+          "before_medicine_qa_route": 7152.37,
+          "after_medicine_qa_route": 8883.99,
+          "medicine_qa_early_route_start": 10374.41,
+          "product_image_fast_path_start": 10374.61,
+          "product_image_fast_path_end": 29743.63,
+          "medicine_qa_early_route_end": 29745.16
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:12:55.638532",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1309.86,
+              "prompt_tokens": 3105,
+              "completion_tokens": 87,
+              "cost_jpy": 0.0958,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:13:00.258493",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1146.48,
+              "prompt_tokens": 369,
+              "completion_tokens": 39,
+              "cost_jpy": 0.0122,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:13:01.738626",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 893.18,
+              "prompt_tokens": 369,
+              "completion_tokens": 35,
+              "cost_jpy": 0.0121,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 3,
+          "llm_total_latency_ms": 3349.52,
+          "llm_session_cost_jpy": 0.1201,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "4d34c354-29e8-4c5b-b61c-f8dddeee85c9",
+      "events": [
+        {
+          "ts": "2026-07-28T06:13:26.687910Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:13:26.688111Z",
+          "type": "received_message",
+          "text": "市販薬でドーピングに引っかかる成分ってある？"
+        },
+        {
+          "ts": "2026-07-28T06:13:27.979646Z",
+          "type": "user_message",
+          "text": "市販薬でドーピングに引っかかる成分ってある？"
+        },
+        {
+          "ts": "2026-07-28T06:13:31.360332Z",
+          "type": "triage",
+          "category": "Ask",
+          "subcategory": "medication_question",
+          "confidence": 0.95
+        },
+        {
+          "ts": "2026-07-28T06:13:47.792124Z",
+          "type": "pipeline_perf",
+          "total_ms": 21108.22,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:13:26.687910Z",
+      "session_id": "1785219205035056913004",
+      "user_message": "市販薬でドーピングに引っかかる成分ってある？",
+      "triage": {
+        "category": "Ask",
+        "subcategory": "medication_question",
+        "confidence": 0.95
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219205035056913004",
+        "total_ms": 21108.22,
+        "breakdown": {
+          "post_start": 4.9,
+          "parsed_message": 5.02,
+          "session_db_read": 5.08,
+          "after_get_session_db": 294.0,
+          "before_llm_setup": 587.51,
+          "before_security": 1168.92,
+          "after_security": 1311.5,
+          "before_emoji_route": 1314.95,
+          "before_triage": 1314.98,
+          "after_triage": 4967.07,
+          "safety_gate_done": 5859.25,
+          "after_triage_follow_ups": 5863.33,
+          "after_counseling_flow": 6450.5,
+          "moderation_done": 6450.55,
+          "before_medicine_qa_route": 6741.25,
+          "after_medicine_qa_route": 8264.53,
+          "medicine_qa_early_route_start": 10061.96,
+          "product_image_fast_path_start": 10062.0,
+          "product_image_fast_path_end": 21098.15,
+          "medicine_qa_early_route_end": 21099.64
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:13:30.773469",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1576.6,
+              "prompt_tokens": 3119,
+              "completion_tokens": 105,
+              "cost_jpy": 0.0967,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:13:34.367244",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 939.96,
+              "prompt_tokens": 396,
+              "completion_tokens": 34,
+              "cost_jpy": 0.0129,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:13:36.163670",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1205.74,
+              "prompt_tokens": 396,
+              "completion_tokens": 34,
+              "cost_jpy": 0.0129,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 3,
+          "llm_total_latency_ms": 3722.3,
+          "llm_session_cost_jpy": 0.1225,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "4a438282-050c-42a5-85e3-11652f71fdfb",
+      "events": [
+        {
+          "ts": "2026-07-28T06:13:52.691188Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:13:52.691413Z",
+          "type": "received_message",
+          "text": "のど痛いんだけど、このチャットGPT使ってる？"
+        },
+        {
+          "ts": "2026-07-28T06:13:53.983928Z",
+          "type": "user_message",
+          "text": "のど痛いんだけど、このチャットGPT使ってる？"
+        },
+        {
+          "ts": "2026-07-28T06:13:55.281255Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:14:02.461648Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:14:05.509154Z",
+          "type": "pipeline_perf",
+          "total_ms": 12821.52,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:13:52.691188Z",
+      "session_id": "1785219231050065800558",
+      "user_message": "のど痛いんだけど、このチャットGPT使ってる？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219231050065800558",
+        "total_ms": 12821.52,
+        "breakdown": {
+          "post_start": 4.83,
+          "parsed_message": 5.43,
+          "session_db_read": 5.5,
+          "after_get_session_db": 298.83,
+          "before_llm_setup": 590.51,
+          "before_security": 1169.57,
+          "after_security": 1310.23,
+          "before_emoji_route": 1311.01,
+          "before_triage": 1311.03,
+          "after_triage": 2838.19,
+          "safety_gate_done": 3727.4,
+          "after_triage_follow_ups": 3731.67,
+          "after_counseling_flow": 5069.65,
+          "moderation_done": 5069.7,
+          "before_medicine_qa_route": 5359.8,
+          "after_medicine_qa_route": 5360.07,
+          "concierge_resolve_intent_start": 9774.57,
+          "concierge_resolve_intent_end": 9774.78,
+          "concierge_build_payload_start": 9775.1,
+          "concierge_build_payload_end": 12228.46
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:13:59.243112",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1081.17,
+              "prompt_tokens": 387,
+              "completion_tokens": 41,
+              "cost_jpy": 0.0128,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:04.331743",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 1312.06,
+              "prompt_tokens": 9493,
+              "completion_tokens": 74,
+              "cost_jpy": 0.287,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 2393.23,
+          "llm_session_cost_jpy": 0.2999,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "b4906589-b82b-4196-a810-a36098c8dc6e",
+      "events": [
+        {
+          "ts": "2026-07-28T06:14:10.716483Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:14:10.716734Z",
+          "type": "received_message",
+          "text": "頭痛がする"
+        },
+        {
+          "ts": "2026-07-28T06:14:12.004767Z",
+          "type": "user_message",
+          "text": "頭痛がする"
+        },
+        {
+          "ts": "2026-07-28T06:14:15.679211Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "headache",
+          "confidence": 0.99
+        },
+        {
+          "ts": "2026-07-28T06:15:07.045510Z",
+          "type": "pipeline_perf",
+          "total_ms": 56332.98,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:14:10.716483Z",
+      "session_id": "1785219249035833933543",
+      "user_message": "頭痛がする",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "headache",
+        "confidence": 0.99
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219249035833933543",
+        "total_ms": 56332.98,
+        "breakdown": {
+          "post_start": 4.84,
+          "parsed_message": 5.35,
+          "session_db_read": 5.42,
+          "after_get_session_db": 295.14,
+          "before_llm_setup": 586.21,
+          "before_security": 1165.98,
+          "after_security": 1308.37,
+          "before_emoji_route": 1309.25,
+          "before_triage": 1309.27,
+          "after_triage": 5188.56,
+          "safety_gate_done": 6082.34,
+          "after_triage_follow_ups": 6087.71,
+          "after_counseling_flow": 7417.49,
+          "moderation_done": 7417.56,
+          "before_medicine_qa_route": 8011.31,
+          "after_medicine_qa_route": 9612.28,
+          "before_orchestrator": 11635.76,
+          "nlu_batch_start": 26885.62,
+          "nlu_batch_done": 30141.49,
+          "rule_based_start": 30748.52,
+          "rb_missing_info_done": 33645.14,
+          "rb_scoring_only_done": 42455.17,
+          "rb_explain_batch_done": 54022.02,
+          "rule_based_scoring_only_done": 54025.54,
+          "line_carousel_push": 54026.57,
+          "explanation_phase_start": 54031.4,
+          "explanation_phase_done": 54031.41,
+          "personalized_advice": 54325.14
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:14:14.635494",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1400.04,
+              "prompt_tokens": 3104,
+              "completion_tokens": 90,
+              "cost_jpy": 0.0958,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:19.742063",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1011.22,
+              "prompt_tokens": 369,
+              "completion_tokens": 43,
+              "cost_jpy": 0.0124,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:29.986791",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 979.4,
+              "prompt_tokens": 369,
+              "completion_tokens": 29,
+              "cost_jpy": 0.0119,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:43.755673",
+              "model": "gpt-5.4-mini",
+              "path": "missing_info_service",
+              "latency_ms": 2292.72,
+              "prompt_tokens": 300,
+              "completion_tokens": 266,
+              "cost_jpy": 0.017,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:54.443885",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1271.09,
+              "prompt_tokens": 366,
+              "completion_tokens": 50,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:56.466646",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 819.5,
+              "prompt_tokens": 370,
+              "completion_tokens": 29,
+              "cost_jpy": 0.012,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:14:58.096479",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 759.48,
+              "prompt_tokens": 372,
+              "completion_tokens": 30,
+              "cost_jpy": 0.0121,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:15:04.144155",
+              "model": "gpt-5.4",
+              "path": "explanation_generator.batch_usage_notes",
+              "latency_ms": 5067.93,
+              "prompt_tokens": 1804,
+              "completion_tokens": 600,
+              "cost_jpy": 0.2885,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 8,
+          "llm_total_latency_ms": 13601.380000000001,
+          "llm_session_cost_jpy": 0.4621,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "1d9c03d2-7659-4720-ac4d-e52c107a823d",
+      "events": [
+        {
+          "ts": "2026-07-28T06:15:10.232934Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:15:10.233212Z",
+          "type": "received_message",
+          "text": "GitHubとGitLabどっちが正本？"
+        },
+        {
+          "ts": "2026-07-28T06:15:11.617736Z",
+          "type": "user_message",
+          "text": "GitHubとGitLabどっちが正本？"
+        },
+        {
+          "ts": "2026-07-28T06:15:11.666502Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:15:18.858219Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:15:21.872275Z",
+          "type": "pipeline_perf",
+          "total_ms": 11643.85,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:15:10.232934Z",
+      "session_id": "1785219249035833933543",
+      "user_message": "GitHubとGitLabどっちが正本？",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219249035833933543",
+        "total_ms": 11643.85,
+        "breakdown": {
+          "post_start": 4.89,
+          "parsed_message": 5.06,
+          "session_db_read": 5.11,
+          "after_get_session_db": 371.38,
+          "before_llm_setup": 665.71,
+          "before_security": 1255.22,
+          "after_security": 1419.84,
+          "before_emoji_route": 1420.83,
+          "before_triage": 1420.84,
+          "after_triage": 1438.23,
+          "safety_gate_done": 2787.39,
+          "after_triage_follow_ups": 2791.94,
+          "after_counseling_flow": 3871.7,
+          "moderation_done": 3871.75,
+          "before_medicine_qa_route": 4630.57,
+          "after_medicine_qa_route": 4630.84,
+          "concierge_resolve_intent_start": 8629.93,
+          "concierge_resolve_intent_end": 8630.15,
+          "concierge_build_payload_start": 8630.49,
+          "concierge_build_payload_end": 10965.3
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:15:16.129636",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1266.43,
+              "prompt_tokens": 406,
+              "completion_tokens": 42,
+              "cost_jpy": 0.0134,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:15:20.601839",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 1215.79,
+              "prompt_tokens": 9773,
+              "completion_tokens": 59,
+              "cost_jpy": 0.295,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 2482.2200000000003,
+          "llm_session_cost_jpy": 0.3084,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "bf86ac7b-00db-4e44-b099-5373c6265cd5",
+      "events": [
+        {
+          "ts": "2026-07-28T06:15:26.551059Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-28T06:15:26.551313Z",
+          "type": "received_message",
+          "text": "技術スタック教えて"
+        },
+        {
+          "ts": "2026-07-28T06:15:27.901603Z",
+          "type": "user_message",
+          "text": "技術スタック教えて"
+        },
+        {
+          "ts": "2026-07-28T06:15:29.127601Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-28T06:15:36.158727Z",
+          "type": "concierge_intent",
+          "value": "architecture"
+        },
+        {
+          "ts": "2026-07-28T06:15:39.645692Z",
+          "type": "pipeline_perf",
+          "total_ms": 13099.77,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-28T06:15:26.551059Z",
+      "session_id": "1785219324946514909919",
+      "user_message": "技術スタック教えて",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "architecture",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785219324946514909919",
+        "total_ms": 13099.77,
+        "breakdown": {
+          "post_start": 5.48,
+          "parsed_message": 5.88,
+          "session_db_read": 5.95,
+          "after_get_session_db": 332.02,
+          "before_llm_setup": 627.67,
+          "before_security": 1224.91,
+          "after_security": 1372.79,
+          "before_emoji_route": 1373.51,
+          "before_triage": 1373.52,
+          "after_triage": 2806.65,
+          "safety_gate_done": 3714.13,
+          "after_triage_follow_ups": 3729.33,
+          "after_counseling_flow": 5201.99,
+          "moderation_done": 5202.04,
+          "before_medicine_qa_route": 5517.0,
+          "after_medicine_qa_route": 5517.32,
+          "concierge_resolve_intent_start": 9612.56,
+          "concierge_resolve_intent_end": 9612.92,
+          "concierge_build_payload_start": 9613.35,
+          "concierge_build_payload_end": 12489.85
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-28T06:15:33.101297",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1029.63,
+              "prompt_tokens": 373,
+              "completion_tokens": 44,
+              "cost_jpy": 0.0125,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-28T06:15:38.446960",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.meta_architecture",
+              "latency_ms": 2019.52,
+              "prompt_tokens": 9821,
+              "completion_tokens": 223,
+              "cost_jpy": 0.3013,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 2,
+          "llm_total_latency_ms": 3049.15,
+          "llm_session_cost_jpy": 0.3138,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    }
+  ]
+}

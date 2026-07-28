@@ -1,0 +1,46 @@
+{
+  "webhook_request_stats": {
+    "count": 0,
+    "min": null,
+    "max": null,
+    "avg": null,
+    "median": null,
+    "p95": null
+  },
+  "webhook_status_counts": {},
+  "job_lock_events": [
+    {
+      "timestamp": "2026-07-28T05:04:50.928003Z",
+      "message": "[2026-07-28 05:04:50 +0000] [4] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-28T05:43:56.093044Z",
+      "message": "[2026-07-28 05:43:56 +0000] [4] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-28T05:44:09.841053Z",
+      "message": "[2026-07-28 05:44:09 +0000] [4] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-28T05:48:56.479664Z",
+      "message": "[2026-07-28 05:48:56 +0000] [4] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-28T06:05:11.046808Z",
+      "message": "[2026-07-28 06:05:11 +0000] [4] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-28T06:05:12.366922Z",
+      "message": "[2026-07-28 06:05:12 +0000] [4] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-07-28T06:05:20.724511Z",
+      "message": "[2026-07-28 06:05:20 +0000] [4] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-07-28T06:05:27.072339Z",
+      "message": "[2026-07-28 06:05:27 +0000] [4] [INFO] Waiting for application shutdown."
+    }
+  ],
+  "line_text_messages": []
+}

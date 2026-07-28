@@ -1,0 +1,31 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 0,
+    "by_status": {},
+    "by_path": {},
+    "slow_endpoints_ge_5s": {
+      "GET /": {
+        "count": 14,
+        "min": 0.006,
+        "max": 9.037,
+        "avg": 0.674,
+        "median": 0.011,
+        "p95": 0.2
+      },
+      "POST /": {
+        "count": 21,
+        "min": 11.993,
+        "max": 67.438,
+        "avg": 27.895,
+        "median": 17.81,
+        "p95": 66.651
+      }
+    },
+    "samples": []
+  },
+  "text_errors": {
+    "count": 0,
+    "top_patterns": [],
+    "samples": []
+  }
+}
