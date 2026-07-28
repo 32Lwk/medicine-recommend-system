@@ -7,7 +7,7 @@ from openai import OpenAI
 
 from src.core.i18n_prompts import append_language_instruction, normalize_lang
 from src.core.llm_client import chat_completion_create, chat_completion_stream, text_completion_adapter
-from src.services.sse_emit import emit_chat_delta, get_stream_sink, is_streaming_active, pseudo_stream_chat
+from src.services.sse_emit import emit_chat_delta, get_stream_sink, is_streaming_active, pseudo_stream_chat, reply_stream_sse_enabled
 
 
 def _with_lang(messages: List[Dict[str, str]], lang: str) -> List[Dict[str, str]]:
@@ -41,7 +41,7 @@ def concierge_chat(
     msgs = _with_lang(messages, normalize_lang(lang))
     sink = get_stream_sink()
     sid = session_id or (sink.session_id if sink else None)
-    use_stream = allow_stream and is_streaming_active(sid)
+    use_stream = allow_stream and is_streaming_active(sid) and reply_stream_sse_enabled()
 
     if use_stream and normalize_lang(lang) == "ja":
         text = chat_completion_stream(

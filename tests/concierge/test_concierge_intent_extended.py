@@ -7,6 +7,7 @@ from src.agents.concierge_agent import resolve_concierge_intent, should_concierg
 from src.services.concierge_intent import (
     classify_concierge_intent,
     is_excluded_service_app_about_request,
+    is_legal_crossdoc_comparison_question,
     probe_meta_concierge_intent,
     probe_service_app_about_request,
     resolve_pre_triage_concierge_intent,
@@ -216,3 +217,23 @@ def test_orchestrator_meta_app_about_dialect(mock_chat):
         triage_result=enriched,
         client=MagicMock(),
     ) == "app_about"
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        ("免責事項・利用規約（β版）とプライバシーの違いは？", True),
+        ("プライバシーポリシーと利用規約の違い", True),
+        ("個人情報の取り扱い", False),
+        ("免責事項を教えて", False),
+    ],
+)
+def test_is_legal_crossdoc_comparison_question(text, expected):
+    assert is_legal_crossdoc_comparison_question(text) is expected
+
+
+def test_probe_cross_legal_routes_doc_privacy():
+    assert (
+        probe_meta_concierge_intent("免責事項・利用規約（β版）とプライバシーの違いは？")
+        == "doc_privacy"
+    )

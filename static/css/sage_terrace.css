@@ -2107,6 +2107,13 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
   color: var(--ui-text);
 }
 
+.ui-bubble--status .ui-status-advice__text strong,
+.ui-bubble--qa .ui-status-advice__text strong,
+.ui-status-message--plain strong {
+  font-weight: 700;
+  color: var(--ui-text);
+}
+
 [data-ui-variant="sage"] .ui-bubble--qa .ui-status-advice__text {
   font-weight: 600;
   margin: 0 0 8px;
@@ -2119,6 +2126,33 @@ body[data-ui-variant="sage"][data-sage-color-theme="minimal-zen"] .ui-header--to
 
 .ui-status-advice__text:last-child {
   margin-bottom: 0;
+}
+
+.ui-status-info-btn-link {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 1em;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--ui-primary, #5b7c99);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  vertical-align: baseline;
+}
+
+.ui-status-info-btn-link:hover,
+.ui-status-info-btn-link:focus-visible {
+  color: var(--ui-primary-dark, #3d5a73);
+}
+
+.ui-status-advice__text--info-hint {
+  color: var(--ui-text-muted, #5a6570);
+  font-size: 0.92em;
 }
 
 .ui-bubble--status .ui-status-last-updated,

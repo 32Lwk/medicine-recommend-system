@@ -6,7 +6,7 @@ import logging
 import os
 import re
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -179,6 +179,7 @@ def retrieve_concierge_context(
     top_k: int = 5,
     use_cache: bool = True,
     intent: str = "",
+    uri_prefixes: Optional[Tuple[str, ...]] = None,
 ) -> Dict[str, Any]:
     """Concierge 技術 FAQ 用 retrieve（Local RAG のみ）。"""
     from src.services.local_rag_retrieve import retrieve_local_context
@@ -193,12 +194,16 @@ def retrieve_concierge_context(
         top_k=top_k,
         min_score=_min_kb_score(),
         intent=intent,
+        uri_prefixes=uri_prefixes,
     )
 
 
 _CONCIERGE_INTENT_RETRIEVAL_HINTS: Dict[str, str] = {
     "doc_changelog": "更新履歴 CHANGELOG AWS ステージング",
     "capabilities": "機能 できること 制限",
+    "doc_privacy": "プライバシー 個人情報 データ 削除",
+    "doc_terms": "利用規約 免責 禁止 試験運用",
+    "doc_operator": "問い合わせ 運営者 削除依頼 連絡先",
 }
 
 

@@ -60,7 +60,7 @@ async def handle_chat_post_async(session, client_info: ChatClientInfo, message: 
             log_pipeline_perf(sid=sid, extra=extra)
 
 
-def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, monitor, job_meta=None):
+def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, monitor, job_meta=None, *, inflight_reserved: bool = False):
     """
     チャットPOSTリクエストを処理する（Flask 等 sync ルート向け）。
 
@@ -82,12 +82,16 @@ def handle_chat_post(session, client_info: ChatClientInfo, message: str, sid, mo
     is_line_channel = channel == "line"
 
     reset_budget_check_cache()
-    if not try_begin_chat_job(sid):
+    if inflight_reserved:
+        if job_meta is not None:
+            job_meta["job_token"] = get_current_job_token()
+    elif not try_begin_chat_job(sid):
         logger.warning("Skipping duplicate chat POST sid=%s", sid)
         count = len(session.get("messages") or []) if session else 0
         return ({"status": "ok", "message_count": count, "duplicate_skip": True}, 200)
-    if job_meta is not None:
-        job_meta["job_token"] = get_current_job_token()
+    else:
+        if job_meta is not None:
+            job_meta["job_token"] = get_current_job_token()
     try:
         return run_chat_post_pipeline(session, client_info, message, sid, monitor)
     finally:

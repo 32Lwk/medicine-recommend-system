@@ -63,3 +63,16 @@ def test_structure_preserves_paragraph_breaks():
     text = "1文目です。\n\n2文目です。"
     message, _ = structure_concierge_meta_display("app_about", text)
     assert "\n\n" in message
+
+
+def test_structure_doc_privacy_keeps_paragraphs():
+    text = (
+        "プライバシーポリシーは、データの取得と利用目的を定めています。\n\n"
+        "利用規約・免責は、試験運用と免責を定めています。\n\n"
+        "詳細は画面右上の ℹ️ から各ドキュメントの全文をお読みいただけます。"
+    )
+    message, sections = structure_concierge_meta_display("doc_privacy", text)
+    assert sections == []
+    assert "データの取得と利用目的" in message
+    assert "試験運用と免責" in message
+    assert "ℹ️" in message

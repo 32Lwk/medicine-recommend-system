@@ -25,7 +25,11 @@ def use_sage_web_ui(session: Any, sid: str | None) -> bool:
 
 
 def should_skip_reco_progressive_sse(session: Any, sid: str | None) -> bool:
-    """Sage Web: 推奨 UI は diagnosis 一括返却のため cards/reco_detail 等の途中 SSE を省略。"""
+    """推奨 UI は diagnosis 一括返却のため cards/reco_detail 等の途中 SSE を省略。"""
+    from src.services.sse_emit import reply_stream_sse_enabled
+
+    if not reply_stream_sse_enabled():
+        return True
     return use_sage_web_ui(session, sid)
 
 

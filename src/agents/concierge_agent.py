@@ -496,6 +496,225 @@ def _doc_answer_is_insufficient(text: str, *, min_substance_chars: int = 50) -> 
     return len(without_hint) < 30
 
 
+_LEGAL_CROSSDOC_INFO_HINT = (
+    "詳細は画面右上のℹ️から各ドキュメントの全文をお読みいただけます。"
+)
+
+
+def _is_legal_crossdoc_info_hint_paragraph(para: str) -> bool:
+    p = (para or "").strip()
+    if not p:
+        return False
+    if p == _LEGAL_CROSSDOC_INFO_HINT:
+        return True
+    if p.startswith("詳細は画面右上"):
+        return True
+    if p.startswith("ℹ️"):
+        return True
+    return False
+
+
+def _normalize_legal_crossdoc_info_hint(text: str) -> str:
+    """
+    横断比較回答の ℹ️ 案内を末尾1文に統一する。
+    カード見出しにも ℹ️ があるため、本文中に ℹ️ を埋め込まない。
+    """
+    body = (text or "").strip()
+    if not body:
+        return _LEGAL_CROSSDOC_INFO_HINT
+
+    paras = [p.strip() for p in re.split(r"\n\s*\n", body) if p.strip()]
+    content: List[str] = []
+    for para in paras:
+        if _is_legal_crossdoc_info_hint_paragraph(para):
+            continue
+        cleaned = re.sub(r"ℹ️[^。]*。?", "", para).strip()
+        cleaned = cleaned.replace("ℹ️", "").strip()
+        cleaned = re.sub(r"\s{2,}", " ", cleaned)
+        if cleaned:
+            content.append(cleaned)
+
+    if not content:
+        return _LEGAL_CROSSDOC_INFO_HINT
+    return "\n\n".join([*content, _LEGAL_CROSSDOC_INFO_HINT])
+
+
+def _trim_legal_crossdoc_answer(
+    text: str,
+    *,
+    max_chars: int = 650,
+    user_text: str = "",
+) -> str:
+    """横断比較回答が長すぎる場合、段落単位で抑える。"""
+    normalized = _normalize_legal_crossdoc_info_hint(text)
+    if len(normalized) <= max_chars:
+        return normalized
+    paras = [p.strip() for p in re.split(r"\n\s*\n", normalized) if p.strip()]
+    hint = _LEGAL_CROSSDOC_INFO_HINT
+    content = [p for p in paras if p != hint]
+    kept: List[str] = []
+    total = 0
+    budget = max_chars - len(hint) - 4
+    for para in content[:3]:
+        if total + len(para) > budget:
+            break
+        kept.append(para)
+        total += len(para)
+    fallback = _legal_crossdoc_fallback_for(user_text) if user_text else ""
+    if not kept:
+        return _normalize_legal_crossdoc_info_hint(
+            fallback or hint
+        )
+    parts = [*kept, "", hint]
+    result = "\n\n".join(parts).strip()
+    if len(result) <= max_chars + 80:
+        return result
+    return _normalize_legal_crossdoc_info_hint(fallback or hint)
+
+
+def _retrieve_legal_crossdoc_rag(user_text: str) -> Dict[str, Any]:
+    """横断比較用 RAG — Q1 FAQ を優先し、public md 全文チャンクは除外。"""
+    from src.services.legal_crossdoc_retrieve import retrieve_legal_crossdoc_faq
+
+    return retrieve_legal_crossdoc_faq(
+        user_text,
+        "doc_privacy",
+        comparison=True,
+        max_chunks=1,
+    )
+
+
+def _build_legal_crossdoc_reference(user_text: str) -> str:
+    """プライバシー × 利用規約の横断比較用参照（RAG 横断 FAQ 優先 + 各 md 要点抜粋）。"""
+    from src.content.concierge_doc_fallback import extract_doc_bullet_excerpt
+    from src.services.bedrock_kb_retrieve import format_kb_context_block
+    from src.services.concierge_response_order import resolve_legal_crossdoc_topic_order
+
+    privacy_title, privacy_body = load_concierge_doc("doc_privacy")
+    terms_title, terms_body = load_concierge_doc("doc_terms")
+    privacy_snip = "\n".join(
+        f"・{b}" for b in extract_doc_bullet_excerpt(privacy_body, max_items=3)
+    )
+    terms_snip = "\n".join(
+        f"・{b}" for b in extract_doc_bullet_excerpt(terms_body, max_items=3)
+    )
+    doc_snips = {
+        "privacy": (privacy_title, privacy_snip or "（抜粋なし）"),
+        "terms": (terms_title, terms_snip or "（抜粋なし）"),
+    }
+    ordered_blocks: List[str] = []
+    for topic in resolve_legal_crossdoc_topic_order(user_text):
+        title, snip = doc_snips[topic.topic_id]
+        ordered_blocks.append(f"【{title} — 要点抜粋】\n{snip}")
+    reference_body = "\n\n".join(ordered_blocks)
+
+    result = _retrieve_legal_crossdoc_rag(user_text)
+    block = format_kb_context_block(
+        result,
+        heading="【法務横断 FAQ（比較の正本・条項創作禁止）】",
+    )
+    if block:
+        reference_body = f"{block.rstrip()}\n\n{reference_body}"
+    return reference_body
+
+
+def _legal_crossdoc_fallback_for(user_text: str) -> str:
+    from src.services.concierge_response_order import build_legal_crossdoc_fallback_body
+
+    return build_legal_crossdoc_fallback_body(
+        user_text,
+        info_hint=_LEGAL_CROSSDOC_INFO_HINT,
+    )
+
+
+def _generate_legal_crossdoc_answer_text(
+    client: OpenAI,
+    user_text: str,
+    *,
+    session_id: Optional[str] = None,
+    history: Optional[List[Dict[str, str]]] = None,
+) -> str:
+    """プライバシー × 利用規約・免責の横断比較（両公式 md を根拠）。"""
+    reference_body = _build_legal_crossdoc_reference(user_text)
+    hist = ""
+    if history:
+        lines = []
+        for m in history[-6:]:
+            role = m.get("type") or m.get("role") or "user"
+            content = (m.get("content") or "")[:200]
+            lines.append(f"{role}: {content}")
+        hist = "\n".join(lines)
+
+    from src.services.concierge_response_order import build_legal_crossdoc_requirements
+
+    requirements = build_legal_crossdoc_requirements(user_text)
+    prompt = f"""【参照（プライバシーポリシー + 利用規約・免責 — 両方が根拠）】
+{reference_body}
+
+【会話履歴（参考）】
+{hist or "（なし）"}
+
+【ユーザーの質問】
+{user_text}
+
+{requirements}
+"""
+    intent = "doc_privacy"
+    last_exc: Optional[Exception] = None
+    for attempt in range(2):
+        try:
+            resp = concierge_chat(
+                client,
+                "concierge_agent.legal_crossdoc",
+                [
+                    {
+                        "role": "system",
+                        "content": (
+                            "あなたは医薬品相談ツールの案内役です。"
+                            "比較質問には、箇条書きではなく短い段落で、"
+                            "やさしく丁寧に違いを説明してください。"
+                            "ユーザーが質問文で言及した順序どおりに説明し、"
+                            "慣習やテンプレートで話題の順序を入れ替えない。"
+                            "参照以外の情報は使わない。"
+                        ),
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                max_tokens=420,
+                temperature=0.2,
+                session_id=session_id,
+            )
+            text = (resp.choices[0].message.content or "").strip()
+            if text:
+                from src.services.concierge_output_sanitize import (
+                    apply_concierge_faithfulness_guard,
+                    sanitize_concierge_meta_output,
+                )
+
+                sanitized = apply_concierge_faithfulness_guard(
+                    sanitize_concierge_meta_output(text, intent=intent),
+                    intent=intent,
+                    user_text=user_text,
+                )
+                if sanitized and not _doc_answer_is_insufficient(sanitized):
+                    if "記載がありません" in sanitized and "利用規約" in user_text:
+                        continue
+                    return _trim_legal_crossdoc_answer(
+                        _normalize_legal_crossdoc_info_hint(sanitized),
+                        user_text=user_text,
+                    )
+        except Exception as exc:
+            last_exc = exc
+            logger.warning(
+                "Concierge legal crossdoc LLM failed, attempt=%s: %s",
+                attempt + 1,
+                exc,
+            )
+    if last_exc:
+        logger.warning("Concierge legal crossdoc LLM exhausted retries")
+    return _normalize_legal_crossdoc_info_hint(_legal_crossdoc_fallback_for(user_text))
+
+
 def generate_doc_answer_text(
     client: OpenAI,
     user_text: str,
@@ -505,9 +724,27 @@ def generate_doc_answer_text(
     history: Optional[List[Dict[str, str]]] = None,
 ) -> str:
     """公式 docs/*.md を参照し、Concierge LLM で正確に回答する。"""
+    from src.services.concierge_intent import is_legal_crossdoc_comparison_question
+
+    if is_legal_crossdoc_comparison_question(user_text):
+        return _generate_legal_crossdoc_answer_text(
+            client,
+            user_text,
+            session_id=session_id,
+            history=history,
+        )
+
     title, doc_body = load_concierge_doc(intent)
     reference_body = doc_body
-    if intent in ("doc_app_overview", "doc_changelog"):
+    if intent in ("doc_privacy", "doc_terms", "doc_operator"):
+        from src.services.legal_crossdoc_retrieve import augment_doc_reference_with_legal_faq
+
+        reference_body = augment_doc_reference_with_legal_faq(
+            user_text,
+            intent,
+            doc_body,
+        )
+    elif intent in ("doc_app_overview", "doc_changelog"):
         from src.services.bedrock_kb_retrieve import augment_reference_with_kb
 
         reference_body = augment_reference_with_kb(
@@ -535,9 +772,10 @@ def generate_doc_answer_text(
 - 法令遵守条項および目的・免責条項に基づき、本サービスの位置づけ（OTC参考案内・診断処方なし・β版）を説明する
 - 症状やお薬の相談を促す締めの文は付けない"""
         requirements = f"""【要件】
+- **正本**は上記「参照ドキュメント全文」。法務横断 FAQ が付いている場合は**補助**（要点の絞り込み）にのみ使う
+- FAQ と正本が矛盾する場合は**正本ドキュメントを優先**する
 - 上記ドキュメントに書かれた内容のみに基づいて回答する（推測・補完しない）
-- 回答は要点を5〜8項目の箇条書き（「・」1行1項目）にまとめる。全文の写し出しはしない
-- ユーザーの質問に直接関係する要点を優先する
+- ユーザーの質問に直接関係する要点を、短い段落または箇条書き（5〜8項目）でまとめる。全文の写し出しはしない
 - ドキュメントにない事項は「ドキュメントに記載がありません」と明記する
 - 連絡先・URL・禁止事項などはドキュメントの表記を変えず正確に伝える
 - 詳細は画面右上の ℹ️（情報）から各種ドキュメントの全文を確認できる旨を最後に1文で案内する
@@ -547,9 +785,11 @@ def generate_doc_answer_text(
         requirements = f"""{get_policy_snippet()}
 
 【要件】
+- **正本**は上記「参照ドキュメント全文」。法務横断 FAQ が付いている場合は**補助**にのみ使う
 - 上記ドキュメントに書かれた内容のみに基づいて回答する（推測・補完しない）
 - 運営者の氏名・所属・学年・資格など個人を特定しうる属性は、ユーザーが直接尋ねても回答に含めない
 - 「運営者は誰？」「大学はどこ？」などと聞かれた場合は、個人名や所属は開示せず、試験運用（β版）の個人開発であることと、ドキュメント記載の問い合わせ窓口（メール・不具合報告フォーム）を案内する
+- 削除依頼・不具合・商用ライセンス等は、FAQ 補助と正本に基づき適切な窓口を案内する
 - ドキュメントにない事項は「ドキュメントに記載がありません」と明記する
 - 連絡先・URL・メールアドレスはドキュメントの表記を変えず正確に伝える
 - 箇条書きまたは短い段落で分かりやすく（Markdown は使わずプレーンテキスト）
@@ -568,6 +808,9 @@ def generate_doc_answer_text(
 - 市販薬の候補選定はルールベースのみである点は、質問に関係する場合のみ簡潔に触れる
 - 最後に、症状やお薬の相談があれば具体的にお書きいただくよう1文で促す
 """
+    from src.services.concierge_response_order import append_mention_order_requirements
+
+    requirements = append_mention_order_requirements(requirements, user_text, intent=intent)
     prompt = f"""【参照ドキュメント名】
 {title}
 
@@ -594,6 +837,7 @@ def generate_doc_answer_text(
                         "content": (
                             "あなたは医薬品相談ツールの案内役です。"
                             "与えられた公式ドキュメント以外の情報で回答してはいけません。"
+                            "複数の論点がある場合は、質問文に現れた順序で説明してください。"
                         ),
                     },
                     {"role": "user", "content": prompt},
@@ -1747,14 +1991,16 @@ def _meta_requirements_for(user_text: str, intent: str, *, deep: bool = False) -
         is_multi_agent_concept_question,
         is_who_is_answering_question,
     )
+    from src.services.concierge_response_order import append_mention_order_requirements
 
     base = _META_INTENT_REQUIREMENTS[intent]
+    req = base
     if intent == "architecture" and deep:
         if not (
             is_who_is_answering_question(user_text)
             or is_agent_roster_question(user_text)
         ):
-            return (
+            req = (
                 base
                 + """
 
@@ -1767,10 +2013,10 @@ def _meta_requirements_for(user_text: str, intent: str, *, deep: bool = False) -
 - 医薬品の症状・用法・選び方には踏み込まない（必要なら一行で症状入力を促す）
 - 内部コードパスは出力しない"""
             )
-    if intent != "architecture":
-        return base
-    if is_who_is_answering_question(user_text):
-        return (
+    elif intent != "architecture":
+        req = base
+    elif is_who_is_answering_question(user_text):
+        req = (
             base
             + """
 
@@ -1779,8 +2025,8 @@ def _meta_requirements_for(user_text: str, intent: str, *, deep: bool = False) -
 - 会話履歴の【直前の返信担当】を第一文で明示する
 - 続けて、このチャットの返信文はAIが生成していること、市販薬候補選定はルールベースであることを短く述べる"""
         )
-    if is_agent_roster_question(user_text):
-        return (
+    elif is_agent_roster_question(user_text):
+        req = (
             base
             + """
 
@@ -1791,8 +2037,8 @@ def _meta_requirements_for(user_text: str, intent: str, *, deep: bool = False) -
 - 会話履歴を踏まえ、既出説明の繰り返しや長いフロー例は避ける
 - 市販薬がルールベースで選ばれることは、質問に関係するときだけ1文触れてよい"""
         )
-    if is_multi_agent_concept_question(user_text):
-        return (
+    elif is_multi_agent_concept_question(user_text):
+        req = (
             base
             + """
 
@@ -1801,13 +2047,15 @@ def _meta_requirements_for(user_text: str, intent: str, *, deep: bool = False) -
 - 担当宣言から答えを始めない（ユーザーが明示的に聞いていない限り）
 - 一般論とこのサービスでの例を、質問の範囲に合わせて簡潔に述べる"""
         )
-    return (
-        base
-        + """
+    else:
+        req = (
+            base
+            + """
 
 【今回の質問に限定】
 - 【ユーザーの質問】で明示されていない話題から答えを始めない（担当者の確認など）"""
-    )
+        )
+    return append_mention_order_requirements(req, user_text, intent=intent)
 
 
 def _invoke_meta_concierge_llm(
@@ -2035,7 +2283,12 @@ def _assemble_dynamic_concierge_payload(
     """
     from src.services.status_diagnosis_builder import build_notice_status
 
+    from src.services.concierge_intent import is_legal_crossdoc_comparison_question
+    from src.services.concierge_response_order import legal_crossdoc_card_title
+
     title = _META_CARD_TITLES.get(intent, "ご案内")
+    if is_legal_crossdoc_comparison_question(user_text):
+        title = legal_crossdoc_card_title(user_text)
     hints = _architecture_response_hints(
         user_text, intent, history, session_id=session_id
     )

@@ -17,6 +17,18 @@ from src.services.processing_status import append_advice_preview
 
 _stream_sink: ContextVar[Optional["StreamSink"]] = ContextVar("sse_stream_sink", default=None)
 
+
+def reply_stream_sse_enabled() -> bool:
+    """返信本文の逐次 SSE（delta / cards / qa 等）。既定 OFF — done のみクライアント描画。"""
+    import os
+
+    return os.getenv("REPLY_STREAM_SSE_ENABLED", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+
 _SENTINEL = object()
 _RING_TTL_SEC = 600.0
 _RING_MAX = 512
@@ -25,6 +37,7 @@ _lock = threading.Lock()
 _session_rings: Dict[str, List[Tuple[str, Dict[str, Any], str, float]]] = {}
 _active_sinks: Dict[str, "StreamSink"] = {}
 _stream_results: Dict[str, Tuple[Any, int, float]] = {}
+_stream_turn_messages: Dict[str, Tuple[str, float]] = {}
 
 
 class StreamSink:
@@ -94,6 +107,9 @@ def _purge_stale_rings() -> None:
         stale_res = [sid for sid, (_, _, ts) in _stream_results.items() if now - ts > _RING_TTL_SEC]
         for sid in stale_res:
             _stream_results.pop(sid, None)
+        stale_turn = [sid for sid, (_, ts) in _stream_turn_messages.items() if now - ts > _RING_TTL_SEC]
+        for sid in stale_turn:
+            _stream_turn_messages.pop(sid, None)
 
 
 def _append_session_ring(session_id: str, item: Tuple[str, Dict[str, Any], str]) -> None:
@@ -140,6 +156,25 @@ def set_stream_result(session_id: str, body: Any, status_code: int) -> None:
         _stream_results[session_id] = (body, status_code, time.time())
 
 
+def note_stream_turn_message(session_id: str, message: str) -> None:
+    """duplicate POST 回復と新規ターンの stale cache 破棄を区別する。"""
+    text = (message or "").strip()
+    if not session_id or not text:
+        return
+    _purge_stale_rings()
+    with _lock:
+        _stream_turn_messages[session_id] = (text, time.time())
+
+
+def get_stream_turn_message(session_id: str) -> Optional[str]:
+    _purge_stale_rings()
+    with _lock:
+        raw = _stream_turn_messages.get(session_id)
+    if not raw:
+        return None
+    return raw[0]
+
+
 def peek_stream_result(session_id: str) -> Optional[Tuple[Any, int]]:
     """SSE 切断後にワーカーが保存した結果を参照（消費しない）。"""
     _purge_stale_rings()
@@ -176,10 +211,8 @@ def activate_stream_sink(
     with _lock:
         existing = _active_sinks.get(session_id)
         if existing and not existing._closed:
-            if allow_reattach:
-                _stream_sink.set(existing)
-                return existing, True
-            existing.close()
+            _stream_sink.set(existing)
+            return existing, True
         sink = StreamSink(session_id)
         _active_sinks[session_id] = sink
         if session_id not in _session_rings:
@@ -213,6 +246,7 @@ def clear_session_stream_state(session_id: str) -> None:
         _active_sinks.pop(session_id, None)
         _session_rings.pop(session_id, None)
         _stream_results.pop(session_id, None)
+        _stream_turn_messages.pop(session_id, None)
 
 
 def is_streaming_active(session_id: Optional[str] = None) -> bool:
@@ -243,7 +277,7 @@ def emit_sse_event(
 
 def emit_advice_delta(chunk: str, session_id: Optional[str] = None) -> None:
     """医薬品推奨の個別アドバイス用ストリーム（推奨カード UI）"""
-    if not chunk:
+    if not chunk or not reply_stream_sse_enabled():
         return
     sid = session_id
     sink = get_stream_sink()
@@ -256,7 +290,7 @@ def emit_advice_delta(chunk: str, session_id: Optional[str] = None) -> None:
 
 def emit_chat_delta(chunk: str, session_id: Optional[str] = None) -> None:
     """カウンセリング・挨拶など通常チャット吹き出し用ストリーム"""
-    if not chunk:
+    if not chunk or not reply_stream_sse_enabled():
         return
     emit_sse_event("chat_delta", {"text": chunk}, session_id=session_id)
 
@@ -266,6 +300,8 @@ def emit_cards(
     *,
     session_id: Optional[str] = None,
 ) -> None:
+    if not reply_stream_sse_enabled():
+        return
     payload = []
     from src.services.medicine_image_urls import enrich_medicine_image_url
 
@@ -311,7 +347,7 @@ def emit_reco_detail(
     session_id: Optional[str] = None,
 ) -> None:
     """Usage sections / enriched detail after core recommendation done."""
-    if not detail:
+    if not detail or not reply_stream_sse_enabled():
         return
     emit_sse_event("reco_detail", detail, session_id=session_id)
 
@@ -337,6 +373,8 @@ def emit_explanations(
     session_id: Optional[str] = None,
 ) -> None:
     """カード先行後の推奨理由（第2 SSE 応答）"""
+    if not reply_stream_sse_enabled():
+        return
     items = []
     for i, (med, text) in enumerate(zip(medicines[:5], explanations[:5]), 1):
         if not (text or "").strip():
@@ -365,7 +403,7 @@ def pseudo_stream_advice(
     delay_sec: float = 0.006,
 ) -> None:
     """DeepL 翻訳後など、完成テキストを推奨アドバイス用に疑似ストリーム配信"""
-    if not text or not is_streaming_active(session_id):
+    if not text or not reply_stream_sse_enabled() or not is_streaming_active(session_id):
         return
     for i in range(0, len(text), chunk_size):
         emit_advice_delta(text[i : i + chunk_size], session_id)
@@ -392,7 +430,7 @@ def emit_qa_delta(
     section: str = "answer",
 ) -> None:
     """医薬品 Q&A: 回答本文などセクション単位のテキストストリーム"""
-    if not chunk or not qa_sse_preview_enabled():
+    if not chunk or not reply_stream_sse_enabled() or not qa_sse_preview_enabled():
         return
     emit_sse_event(
         "qa_delta",
@@ -408,7 +446,7 @@ def emit_qa_section(
     session_id: Optional[str] = None,
 ) -> None:
     """医薬品 Q&A: 構造化セクション（相互作用等）の HTML 追送"""
-    if not html or not section or not qa_sse_preview_enabled():
+    if not html or not section or not reply_stream_sse_enabled() or not qa_sse_preview_enabled():
         return
     emit_sse_event(
         "qa_section",
@@ -458,7 +496,7 @@ def pseudo_stream_chat(
     delay_sec: float = 0.006,
 ) -> None:
     """DeepL 翻訳後など、完成テキストを通常チャット吹き出し用に疑似ストリーム配信"""
-    if not text or not is_streaming_active(session_id):
+    if not text or not reply_stream_sse_enabled() or not is_streaming_active(session_id):
         return
     for i in range(0, len(text), chunk_size):
         emit_chat_delta(text[i : i + chunk_size], session_id)

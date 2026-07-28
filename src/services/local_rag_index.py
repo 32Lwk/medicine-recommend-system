@@ -67,7 +67,11 @@ _CONCIERGE_INTENT_POOLS: Dict[str, Tuple[str, ...]] = {
         "local/concierge/rag/author-mission-rag",
     ),
     "doc_consultation": ("local/public/医薬品相談先",),
-    "doc_operator": ("local/concierge/お問い合わせ", "local/public/運営者"),
+    "doc_operator": (
+        "local/concierge/お問い合わせ",
+        "local/public/運営者",
+        "local/concierge/rag/legal-crossdoc-rag",
+    ),
     # architecture: technical SSOT + ops + pipeline/dev（法務 doc は横断時のみ public 参照）
     "architecture": (
         "local/ops/",
@@ -276,6 +280,14 @@ def _should_subsection_chunk(path: Path) -> bool:
     )
 
 
+def _section_keywords_for_chunk(path: Path, doc_keywords: str, sec_kw: str) -> str:
+    """FAQ RAG md はセクション固有 keywords のみ（Q1 の keywords が全 chunk に漏れない）。"""
+    rel = str(path).replace("\\", "/")
+    if "/docs/concierge/rag/" in rel and rel.endswith("-rag.md"):
+        return sec_kw
+    return ", ".join(x for x in (doc_keywords, sec_kw) if x)
+
+
 def _chunk_markdown(
     path: Path,
     text: str,
@@ -286,7 +298,12 @@ def _chunk_markdown(
     subsection_split: bool = False,
 ) -> List[IndexedChunk]:
     product_name = str(meta.get("product_name") or "")
-    text, doc_keywords = _strip_rag_keywords(text)
+    rel = str(path).replace("\\", "/")
+    is_faq_rag = "/docs/concierge/rag/" in rel and rel.endswith("-rag.md")
+    if is_faq_rag:
+        doc_keywords = ""
+    else:
+        text, doc_keywords = _strip_rag_keywords(text)
     sections = list(_SECTION_RE.finditer(text))
     if subsection_split and sections:
         chunks: List[IndexedChunk] = []
@@ -300,7 +317,7 @@ def _chunk_markdown(
             subs = list(_SUBSECTION_RE.finditer(section_body))
             if len(subs) <= 1:
                 _, sec_kw = _strip_rag_keywords(section_body)
-                kw = ", ".join(x for x in (doc_keywords, sec_kw) if x)
+                kw = _section_keywords_for_chunk(path, doc_keywords, sec_kw)
                 indexed = _prepend_rag_index_text(section_body, section_title, kw)
                 chunks.append(
                     IndexedChunk(
@@ -322,7 +339,7 @@ def _chunk_markdown(
                 if not sub_body:
                     continue
                 _, sec_kw = _strip_rag_keywords(sub_body)
-                kw = ", ".join(x for x in (doc_keywords, sec_kw) if x)
+                kw = _section_keywords_for_chunk(path, doc_keywords, sec_kw)
                 full_section = f"{section_title} / {sub_title}"
                 indexed = _prepend_rag_index_text(sub_body, full_section, kw)
                 chunks.append(
@@ -359,7 +376,7 @@ def _chunk_markdown(
         if not body:
             continue
         _, sec_kw = _strip_rag_keywords(body)
-        kw = ", ".join(x for x in (doc_keywords, sec_kw) if x)
+        kw = _section_keywords_for_chunk(path, doc_keywords, sec_kw)
         indexed = _prepend_rag_index_text(body, section_title, kw)
         chunks.append(
             IndexedChunk(

@@ -16,7 +16,7 @@ from xml.sax.saxutils import escape
 
 import httpx
 import pytz
-from fastapi import Depends, FastAPI, Form, Request, Response
+from fastapi import Depends, FastAPI, Form, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -1144,25 +1144,27 @@ def post_test_root_chat(
 def api_chat_stream_result(
     request: Request,
     sid: str = Depends(get_sid),
+    submit_sid: str | None = Query(None, description="回復ポーリング用: 送信開始時 sid（cookie ずれ対策）"),
 ):
     """SSE 切断後にワーカーが保存した done ペイロード（ポーリング回復用）。"""
     from src.handlers.chat_stream import build_stream_done_payload
     from src.services.sse_emit import peek_stream_result
     from src.utils.request_safe_session import RequestSafeSession
 
-    if not sid:
+    effective_sid = (submit_sid or sid or "").strip()
+    if not effective_sid:
         return {"ready": False}
-    cached = peek_stream_result(sid)
+    cached = peek_stream_result(effective_sid)
     if not cached:
         return {"ready": False}
     body, status_code = cached
     safe_session = RequestSafeSession()
     from src.handlers.chat_stream import _prime_safe_session_for_chat
 
-    _prime_safe_session_for_chat(safe_session, sid, request)
+    _prime_safe_session_for_chat(safe_session, effective_sid, request)
     return {
         "ready": True,
-        "done": build_stream_done_payload(body, status_code, safe_session, sid),
+        "done": build_stream_done_payload(body, status_code, safe_session, effective_sid),
     }
 
 

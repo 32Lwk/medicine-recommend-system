@@ -275,9 +275,10 @@ def chat_completion_stream(
         if on_delta and text:
             on_delta(text)
         elif session_id and text:
-            from src.services.sse_emit import emit_advice_delta
+            from src.services.sse_emit import emit_advice_delta, reply_stream_sse_enabled
 
-            emit_advice_delta(text, session_id)
+            if reply_stream_sse_enabled():
+                emit_advice_delta(text, session_id)
         return text
 
     stream_kwargs = dict(kwargs)
@@ -304,9 +305,10 @@ def chat_completion_stream(
         if on_delta:
             on_delta(delta)
         elif session_id:
-            from src.services.sse_emit import emit_advice_delta
+            from src.services.sse_emit import emit_advice_delta, reply_stream_sse_enabled
 
-            emit_advice_delta(delta, session_id)
+            if reply_stream_sse_enabled():
+                emit_advice_delta(delta, session_id)
 
     text = "".join(parts)
     pt_est = max(1, sum(len(m.get("content", "")) for m in messages) // 4)
@@ -376,9 +378,10 @@ def responses_stream(
                 if on_delta:
                     on_delta(delta)
                 elif session_id:
-                    from src.services.sse_emit import emit_advice_delta
+                    from src.services.sse_emit import emit_advice_delta, reply_stream_sse_enabled
 
-                    emit_advice_delta(delta, session_id)
+                    if reply_stream_sse_enabled():
+                        emit_advice_delta(delta, session_id)
     except Exception as e:
         logger.warning("responses_stream fallback to batch: %s", e)
         return chat_completion_stream(

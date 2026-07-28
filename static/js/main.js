@@ -1521,10 +1521,18 @@
         return document.body && document.body.getAttribute('data-ui-variant') === 'sage';
     }
 
-    /** Sage 推奨バブル: 途中 SSE（cards/advice 等）を使わず done の diagnosis で一括描画 */
+    /** 返信本文の SSE 途中描画（chat/advice/qa delta 等）。既定 OFF — done のみ描画 */
+    function shouldStreamReplyPreview() {
+        return window.REPLY_STREAM_DISPLAY === true;
+    }
+
+    /** 推奨バブル: 途中 SSE（cards/advice 等）を使わず done の diagnosis で一括描画 */
     function shouldBulkRenderSageReco() {
         if (window.SAGE_RECO_BULK_RENDER === false) {
             return false;
+        }
+        if (!shouldStreamReplyPreview()) {
+            return true;
         }
         return isSageUi();
     }
@@ -1536,6 +1544,9 @@
         }
         if (window.SAGE_QA_BULK_RENDER === false) {
             return false;
+        }
+        if (!shouldStreamReplyPreview()) {
+            return true;
         }
         return true;
     }
@@ -6562,9 +6573,12 @@
     let chatSubmitGeneration = 0;
     const SUBMIT_DEBOUNCE_MS = 2500;
     const CHAT_SUBMIT_LOCK_PREFIX = 'mrcChatSubmitLock:';
+    const CHAT_STREAM_LOCK_PREFIX = 'mrcChatStreamLock:';
     const CHAT_TAB_ID = 'tab_' + Math.random().toString(36).slice(2);
     const CHAT_LOCK_TTL_MS = 5 * 60 * 1000;
     let activeSseAbortController = null;
+    /** 同一タブ内の submitStream 二重起動防止 */
+    let chatStreamFetchInFlight = false;
 
     function tryAcquireChatSubmitLock(sid) {
         const id = (sid || getSidFromCookie() || '').trim();
@@ -6595,6 +6609,46 @@
         }
         try {
             const key = CHAT_SUBMIT_LOCK_PREFIX + id;
+            const raw = localStorage.getItem(key);
+            if (!raw) {
+                return;
+            }
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.tab === CHAT_TAB_ID) {
+                localStorage.removeItem(key);
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    function tryAcquireChatStreamLock(sid) {
+        const id = (sid || getSidFromCookie() || '').trim();
+        if (!id) {
+            return true;
+        }
+        try {
+            const key = CHAT_STREAM_LOCK_PREFIX + id;
+            const now = Date.now();
+            const raw = localStorage.getItem(key);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && parsed.tab !== CHAT_TAB_ID && now - (parsed.at || 0) < CHAT_LOCK_TTL_MS) {
+                    return false;
+                }
+            }
+            localStorage.setItem(key, JSON.stringify({ at: now, tab: CHAT_TAB_ID }));
+            return true;
+        } catch (e) {
+            return true;
+        }
+    }
+
+    function releaseChatStreamLock(sid) {
+        const id = (sid || getSidFromCookie() || '').trim();
+        if (!id) {
+            return;
+        }
+        try {
+            const key = CHAT_STREAM_LOCK_PREFIX + id;
             const raw = localStorage.getItem(key);
             if (!raw) {
                 return;
@@ -9326,56 +9380,23 @@
     }
 
     function trySseReattachRecovery(generation, opts) {
-        if (!window.ChatSSE || !window.ChatSSE.submitStream) {
-            return false;
-        }
-        const lastEventId = sessionStorage.getItem('chatSseLastEventId');
-        const lastUser = (sessionStorage.getItem('lastUserMessage') || '').trim();
-        if (!lastEventId || !lastUser) {
-            return false;
-        }
-        let handled = false;
-        window.ChatSSE.submitStream({
-            url: mainAppPath('/api/chat/stream'),
-            message: lastUser,
-            withVersion: withVersion,
-            lastEventId: lastEventId,
-            onEvent: function (ev) {
-                if (generation !== chatSubmitGeneration) {
-                    return;
-                }
-                if (ev.event === 'done' && ev.data) {
-                    handled = true;
-                    if (unlockPostResponseUI(ev.data)) {
-                        deferredRecoveryActive = false;
-                        sessionStorage.removeItem('chatSseLastEventId');
-                        clearSlowRequestTimer();
-                    } else {
-                        scheduleDeferredSessionRecovery(generation, 0, opts);
-                    }
-                }
-                if (ev.event === 'error' && ev.data && ev.data.recoverable) {
-                    scheduleDeferredSessionRecovery(generation, 0, opts);
-                }
-            },
-            onDone: function () {
-                if (generation !== chatSubmitGeneration || handled || postResponseResolved) {
-                    return;
-                }
-                scheduleDeferredSessionRecovery(generation, 0, opts);
-            },
-            onError: function () {
-                if (generation !== chatSubmitGeneration || postResponseResolved) {
-                    return;
-                }
-                scheduleDeferredSessionRecovery(generation, 0, opts);
-            },
-        });
+        // 2 本目の POST /api/chat/stream は duplicate_skip の原因になるため、
+        // stream-result / sessions のポーリングのみで回復する。
+        scheduleDeferredSessionRecovery(generation, 0, Object.assign({ force: true }, opts || {}));
         return true;
     }
 
+    function streamResultRecoveryUrl() {
+        const recoverySid = resolveActiveSubmitSid();
+        const base = mainAppPath('/api/chat/stream-result');
+        if (recoverySid) {
+            return withVersion(base + '?submit_sid=' + encodeURIComponent(recoverySid));
+        }
+        return withVersion(base);
+    }
+
     function tryRecoverFromStreamResult(generation, token) {
-        return fetch(withVersion('/api/chat/stream-result'), {
+        return fetch(streamResultRecoveryUrl(), {
             credentials: 'include',
             headers: { 'Cache-Control': 'no-cache' },
         })
@@ -11472,7 +11493,7 @@
         return !!(donePayload && donePayload.duplicate_skip);
     }
 
-    /** 同一 Concierge 返信済みスキップ: user のみ確定し bot 再描画はしない */
+    /** duplicate_skip: 別接続が本処理中。user を確定し、完了までポーリングで待つ */
     function applyDuplicateSkipFromDone(donePayload, sessionData) {
         const sid = (sessionData && sessionData.session_id) || getSidFromCookie();
         let merged = sessionData && sessionData.messages
@@ -11492,17 +11513,28 @@
         }
         saveChatCache(sid, merged);
         syncOptimisticUserMessage(merged);
-        markPostResponseResolved();
-        if (window.ProcessingStatus && ProcessingStatus.stopProcessingPoll) {
-            ProcessingStatus.stopProcessingPoll();
-        }
         applySessionMessages(
             { session_id: sid, messages: merged },
             { preserveStatusCards: true, suppressTypingIndicator: true, forceRender: false }
         );
-        dismissTypingIndicator(merged, { force: true });
+        if (isChatResponseComplete(merged)) {
+            markPostResponseResolved();
+            if (window.ProcessingStatus && ProcessingStatus.stopProcessingPoll) {
+                ProcessingStatus.stopProcessingPoll();
+            }
+            dismissTypingIndicator(merged, { force: true });
+            restoreSubmitButton();
+            return true;
+        }
+        // 先頭ワーカーの完了を待つ（処理バブルは維持）
+        postResponseResolved = false;
+        processingBubbleLocked = true;
+        isSubmitting = false;
+        ensureProcessingBubbleVisible();
+        restartProcessingPollIfNeeded();
+        scheduleDeferredSessionRecovery(chatSubmitGeneration, 0, { force: true });
         restoreSubmitButton();
-        return true;
+        return false;
     }
 
     function ensureStreamingChatBubble() {
@@ -12622,8 +12654,27 @@ function appendQaDelta(text, section) {
             );
         }
 
+        if (chatStreamFetchInFlight) {
+            console.warn('chat stream already in flight — duplicate submit ignored');
+            return Promise.resolve();
+        }
+        const streamSid = getSidFromCookie();
+        if (!tryAcquireChatStreamLock(streamSid)) {
+            console.warn('chat stream held by another tab — polling for result');
+            chatStreamInProgress = false;
+            if (window.ProcessingStatus && ProcessingStatus.setProcessingPollSsePaused) {
+                ProcessingStatus.setProcessingPollSsePaused(false);
+            }
+            scheduleDeferredSessionRecovery(gen, 0);
+            return Promise.resolve();
+        }
         abortActiveChatStream();
         activeSseAbortController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        chatStreamFetchInFlight = true;
+        function releaseChatStreamFetchLock() {
+            chatStreamFetchInFlight = false;
+            releaseChatStreamLock(streamSid);
+        }
         return window.ChatSSE.submitStream({
             url: mainAppPath('/api/chat/stream'),
             message: message,
@@ -12642,13 +12693,14 @@ function appendQaDelta(text, section) {
                 if (ev.event === 'done') {
                     finalizeSsePost(ev.data || null);
                 }
-                if (ev.event === 'chat_delta' && ev.data && ev.data.text) {
+                if (shouldStreamReplyPreview() && ev.event === 'chat_delta' && ev.data && ev.data.text) {
                     revealStreamingChunk(function () {
                         appendChatDelta(ev.data.text);
                     });
                 }
                 if (
-                    !shouldBulkRenderSageQa()
+                    shouldStreamReplyPreview()
+                    && !shouldBulkRenderSageQa()
                     && ev.event === 'qa_delta'
                     && ev.data
                     && ev.data.text
@@ -12658,7 +12710,8 @@ function appendQaDelta(text, section) {
                     });
                 }
                 if (
-                    !shouldBulkRenderSageQa()
+                    shouldStreamReplyPreview()
+                    && !shouldBulkRenderSageQa()
                     && ev.event === 'qa_section'
                     && ev.data
                     && ev.data.html
@@ -12668,7 +12721,8 @@ function appendQaDelta(text, section) {
                     });
                 }
                 if (
-                    !shouldBulkRenderSageReco()
+                    shouldStreamReplyPreview()
+                    && !shouldBulkRenderSageReco()
                     && ev.event === 'reco_detail'
                     && ev.data
                     && window.RecommendationRenderer
@@ -12682,7 +12736,7 @@ function appendQaDelta(text, section) {
                         }
                     }
                 }
-                if (ev.event === 'cards' && ev.data && ev.data.medicines) {
+                if (shouldStreamReplyPreview() && ev.event === 'cards' && ev.data && ev.data.medicines) {
                     if (shouldBulkRenderSageReco()) {
                         return;
                     }
@@ -12692,7 +12746,7 @@ function appendQaDelta(text, section) {
                         renderStreamingMedicineCards(ev.data.medicines);
                     }
                 }
-                if (ev.event === 'advice_delta' && ev.data && ev.data.text) {
+                if (shouldStreamReplyPreview() && ev.event === 'advice_delta' && ev.data && ev.data.text) {
                     if (shouldBulkRenderSageReco() || recommendationSseBulkMode) {
                         return;
                     }
@@ -12700,7 +12754,7 @@ function appendQaDelta(text, section) {
                         appendAdviceDelta(ev.data.text);
                     });
                 }
-                if (ev.event === 'explanations' && ev.data && ev.data.items) {
+                if (shouldStreamReplyPreview() && ev.event === 'explanations' && ev.data && ev.data.items) {
                     if (shouldBulkRenderSageReco() || recommendationSseBulkMode) {
                         return;
                     }
@@ -12708,7 +12762,8 @@ function appendQaDelta(text, section) {
                 }
                 if (ev.event === 'bot_followup' && ev.data) {
                     if (
-                        ev.data.type === 'explanations_ready'
+                        shouldStreamReplyPreview()
+                        && ev.data.type === 'explanations_ready'
                         && !shouldBulkRenderSageReco()
                         && !shouldDeferSessionSync()
                     ) {
@@ -12758,6 +12813,7 @@ function appendQaDelta(text, section) {
                 }
             },
             onDone: function (meta) {
+                releaseChatStreamFetchLock();
                 if (gen !== chatSubmitGeneration) {
                     return;
                 }
@@ -12766,6 +12822,7 @@ function appendQaDelta(text, section) {
                 }
             },
             onError: function (err) {
+                releaseChatStreamFetchLock();
                 if (gen !== chatSubmitGeneration) {
                     return;
                 }

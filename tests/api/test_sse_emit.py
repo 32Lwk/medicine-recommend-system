@@ -1,4 +1,6 @@
 """SSE イベントバス"""
+import pytest
+
 from src.services.sse_emit import (
     StreamSink,
     activate_stream_sink,
@@ -13,6 +15,41 @@ from src.services.sse_emit import (
     pseudo_stream_chat,
     replay_session_events,
 )
+
+
+@pytest.fixture(autouse=True)
+def _enable_reply_stream_sse(monkeypatch):
+    monkeypatch.setattr("src.services.sse_emit.reply_stream_sse_enabled", lambda: True)
+
+
+def test_reply_stream_sse_enabled_env(monkeypatch):
+    import os
+
+    import src.services.sse_emit as mod
+
+    def real_reply_stream_sse_enabled():
+        return os.getenv("REPLY_STREAM_SSE_ENABLED", "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        )
+
+    monkeypatch.setattr(mod, "reply_stream_sse_enabled", real_reply_stream_sse_enabled)
+    monkeypatch.delenv("REPLY_STREAM_SSE_ENABLED", raising=False)
+    assert mod.reply_stream_sse_enabled() is False
+    monkeypatch.setenv("REPLY_STREAM_SSE_ENABLED", "true")
+    assert mod.reply_stream_sse_enabled() is True
+
+
+def test_emit_advice_delta_noop_when_reply_stream_disabled(monkeypatch):
+    monkeypatch.setattr("src.services.sse_emit.reply_stream_sse_enabled", lambda: False)
+    sink, _ = activate_stream_sink("noop-s")
+    try:
+        emit_advice_delta("hello", "noop-s")
+        assert sink.drain_nowait() == []
+    finally:
+        deactivate_stream_sink("noop-s")
 
 
 def test_stream_sink_emit_and_drain():
@@ -119,12 +156,12 @@ def test_emit_reco_detail_payload():
         deactivate_stream_sink("reco-s")
 
 
-def test_activate_new_message_replaces_active_sink():
+def test_activate_stream_sink_reattaches_while_active():
     first, reattach1 = activate_stream_sink("sess-new", allow_reattach=True)
     assert reattach1 is False
     first.emit("status", {"step_id": "triage"})
     second, reattach2 = activate_stream_sink("sess-new", allow_reattach=False)
-    assert reattach2 is False
-    assert second is not first
-    assert first._closed
+    assert reattach2 is True
+    assert second is first
+    assert not first._closed
     deactivate_stream_sink("sess-new")

@@ -334,6 +334,17 @@ def _rebalance_architecture_deep_display(
     return new_intro, demoted_sections
 
 
+_DOC_PLAIN_DISPLAY_INTENTS = frozenset(
+    {
+        "doc_privacy",
+        "doc_terms",
+        "doc_consultation",
+        "doc_app_overview",
+        "doc_changelog",
+    }
+)
+
+
 def structure_concierge_meta_display(
     intent: str,
     body_text: str,
@@ -345,6 +356,10 @@ def structure_concierge_meta_display(
     Web Sage / LINE 向けに読みやすく整形。
     Returns (message_with_paragraph_breaks, sections_for_sage_ui).
     """
+    plain = (body_text or "").strip()
+    if intent in _DOC_PLAIN_DISPLAY_INTENTS:
+        return plain, []
+
     paragraphs = split_dynamic_body_paragraphs(body_text)
     sections: List[Dict[str, Any]] = []
     all_bullets: List[str] = []

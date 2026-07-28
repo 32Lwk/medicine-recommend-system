@@ -29,7 +29,9 @@ from src.services.sse_emit import (
     bind_worker_stream_sink,
     deactivate_stream_sink,
     get_active_session_sink,
+    get_stream_turn_message,
     is_session_stream_active,
+    note_stream_turn_message,
     peek_stream_result,
     pop_stream_result,
     replay_session_events,
@@ -48,6 +50,15 @@ _STREAM_TIMEOUT_SEC = float(os.getenv("CHAT_STREAM_TIMEOUT_SEC", "120"))
 _QUEUE_WAIT_SEC = float(os.getenv("CHAT_STREAM_QUEUE_WAIT_SEC", "120"))
 _KEEPALIVE_SEC = float(os.getenv("CHAT_STREAM_KEEPALIVE_SEC", "10"))
 _ORPHAN_MAX_SEC = float(os.getenv("CHAT_STREAM_ORPHAN_MAX_SEC", "120"))
+_sid_stream_async_locks: Dict[str, asyncio.Lock] = {}
+
+
+def _sid_async_stream_lock(sid: str) -> asyncio.Lock:
+    lk = _sid_stream_async_locks.get(sid)
+    if lk is None:
+        lk = asyncio.Lock()
+        _sid_stream_async_locks[sid] = lk
+    return lk
 def _prime_safe_session_for_chat(safe_session: RequestSafeSession, sid: str, request: Any = None) -> None:
     from config.ui_config import UI_VARIANT_COOKIE, UI_VARIANT_QUERY, resolve_ui_variant
 
@@ -127,6 +138,11 @@ def _run_chat_post(
         worker_timing["started"] = True
         worker_timing["started_at"] = time.monotonic()
     bind_request_session_sid(safe_session, sid)
+    if worker_timing and worker_timing.get("job_token"):
+        from src.services.chat_inflight import bind_job_token
+
+        bind_job_token(worker_timing["job_token"])
+    inflight_reserved = bool(worker_timing and worker_timing.get("job_token"))
     try:
         bind_worker_stream_sink(sid)
         body, status_code = handle_chat_post(
@@ -136,6 +152,7 @@ def _run_chat_post(
             sid,
             monitor,
             job_meta=worker_timing,
+            inflight_reserved=inflight_reserved,
         )
         return body, status_code
     finally:
@@ -191,11 +208,14 @@ def _stream_elapsed_sec(
     return time.monotonic() - started_at, False
 
 
-def _yield_sink_events(sink: StreamSink) -> list[str]:
+def _yield_sink_events(sink: StreamSink) -> tuple[list[str], bool]:
     lines: list[str] = []
+    got_done = False
     for event, data, eid in sink.drain_nowait():
         lines.append(_sse_line(event, data, event_id=eid))
-    return lines
+        if event == "done":
+            got_done = True
+    return lines, got_done
 
 
 def _last_event_id_from_request(request: Request) -> Optional[str]:
@@ -281,8 +301,9 @@ def _build_done_lines(
     *,
     trace_id: Optional[str] = None,
     reattach: bool = False,
+    sink: Optional[StreamSink] = None,
 ) -> list[str]:
-    """done (+ 必要なら client_preview) の SSE 行リスト。"""
+    """done (+ 必要なら client_preview) の SSE 行リスト。sink 指定時は reattach クライアント向けにも emit。"""
     messages = _messages_for_sse_done(safe_session, sid, body)
     done = _build_sse_done_event(body, status_code, messages, sid=sid, trace_id=trace_id)
     payload = done.to_payload()
@@ -300,9 +321,13 @@ def _build_done_lines(
         }
         if done.risk_score is not None:
             preview_payload["risk_score"] = done.risk_score
+        if sink and not sink._closed:
+            sink.emit("client_preview", preview_payload, event_id="client_preview")
         lines.append(_sse_line("client_preview", preview_payload, event_id="client_preview"))
     if reattach:
         payload["reattach"] = True
+    if sink and not sink._closed:
+        sink.emit("done", payload, event_id="done")
     lines.append(_sse_line("done", payload, event_id="done"))
     return lines
 
@@ -330,14 +355,34 @@ async def stream_chat_events(
     sid: str,
     monitor: Any,
 ) -> AsyncIterator[str]:
+    last_event_id = _last_event_id_from_request(request)
+    if sid and not last_event_id:
+        async with _sid_async_stream_lock(sid):
+            async for line in _stream_chat_events_unlocked(
+                request, message, sid, monitor, last_event_id=last_event_id
+            ):
+                yield line
+    else:
+        async for line in _stream_chat_events_unlocked(
+            request, message, sid, monitor, last_event_id=last_event_id
+        ):
+            yield line
+
+
+async def _stream_chat_events_unlocked(
+    request: Request,
+    message: str,
+    sid: str,
+    monitor: Any,
+    *,
+    last_event_id: Optional[str],
+) -> AsyncIterator[str]:
     client_info = ChatClientInfo.from_starlette_request(request)
     from src.services.processing_status import (
         clear_processing_status,
         mark_processing_step,
         status_sse_payload_for_session,
     )
-
-    last_event_id = _last_event_id_from_request(request)
 
     if sid and last_event_id:
         for event, data, eid in replay_session_events(sid, last_event_id):
@@ -346,11 +391,23 @@ async def stream_chat_events(
     safe_session = RequestSafeSession()
     _prime_safe_session_for_chat(safe_session, sid, request)
 
-    # 新規ターン（Last-Event-ID なし）では前ターンの cached done を破棄する。
-    # 接続クライアント向けに set_stream_result だけ残ると、2通目以降がワーカー未起動で
-    # 古い done を返してハングする。
-    if sid and message.strip() and not last_event_id:
-        pop_stream_result(sid)
+    # 新規ターン開始時の stale cache 破棄は reserve 成功後（ワーカー所有者のみ）に行う。
+    # ここで pop すると reattach / stream-result 回復用の結果を duplicate POST が消してしまう。
+
+    turn_text = message.strip()
+    logger.info(
+        "SSE stream begin sid=%s inflight=%s active_sink=%s last_event_id=%s",
+        sid,
+        is_chat_job_in_flight(sid),
+        is_session_stream_active(sid),
+        last_event_id,
+    )
+    if sid and turn_text and not last_event_id:
+        if not is_chat_job_in_flight(sid):
+            turn_msg = get_stream_turn_message(sid)
+            pending_stale = peek_stream_result(sid)
+            if pending_stale and (not turn_msg or turn_msg != turn_text):
+                pop_stream_result(sid)
 
     cached_early = peek_stream_result(sid) if sid else None
     if cached_early and last_event_id:
@@ -387,27 +444,71 @@ async def stream_chat_events(
 
     sink: Optional[StreamSink] = None
     reattach = False
-    if sid:
-        sink, reattach = activate_stream_sink(sid, allow_reattach=bool(last_event_id))
-    elif not sid:
-        pass
-
-    if sid and not last_event_id:
-        mark_processing_step(sid, "validate")
-        yield _sse_line("status", status_sse_payload_for_session(sid), event_id="1")
-
     worker: Optional[asyncio.Future] = None
     owns_worker = False
     worker_timing: Dict[str, Any] = {"started": False, "started_at": None, "job_token": None}
+    early_done_lines: list[str] = []
+    replay_lines: list[str] = []
 
-    if reattach:
-        sink = get_active_session_sink(sid) or sink
-    else:
+    if sid:
+        active_sink = get_active_session_sink(sid)
+        if is_chat_job_in_flight(sid):
+            reattach = True
+            if active_sink and not active_sink._closed:
+                sink = active_sink
+        else:
+            sink, reattach = activate_stream_sink(sid)
+
+        if not reattach:
+            from src.services.chat_inflight import bind_job_token, reserve_chat_job
+
+            pending = peek_stream_result(sid)
+            if pending and not is_chat_job_in_flight(sid):
+                turn_msg = get_stream_turn_message(sid)
+                if turn_msg and turn_msg == turn_text:
+                    body, status_code = pop_stream_result(sid)
+                    if body is not None:
+                        early_done_lines = _build_done_lines(
+                            body, status_code, safe_session, sid, reattach=True
+                        )
+
+            if not early_done_lines:
+                stream_reserved_token = reserve_chat_job(sid)
+                if stream_reserved_token is None:
+                    logger.info("SSE stream reattach (chat job in flight) sid=%s", sid)
+                    reattach = True
+                    sink = get_active_session_sink(sid) or sink
+                else:
+                    logger.info("SSE stream reserved sid=%s token=%s", sid, stream_reserved_token[:8])
+                    pop_stream_result(sid)
+                    note_stream_turn_message(sid, turn_text)
+                    worker_timing["job_token"] = stream_reserved_token
+                    bind_job_token(stream_reserved_token)
+                    owns_worker = True
+                    loop = asyncio.get_running_loop()
+                    from src.services.chat_worker import get_chat_executor
+
+                    worker = loop.run_in_executor(
+                        get_chat_executor(),
+                        _run_chat_post,
+                        safe_session,
+                        client_info,
+                        message,
+                        sid,
+                        monitor,
+                        worker_timing,
+                    )
+        elif reattach:
+            sink = get_active_session_sink(sid) or sink
+
+        if reattach and not last_event_id:
+            for event, data, eid in replay_session_events(sid, None):
+                replay_lines.append(_sse_line(event, data, event_id=eid))
+    elif not sid:
         owns_worker = True
         loop = asyncio.get_running_loop()
         from src.services.chat_worker import get_chat_executor
 
-        # run_in_executor は await 可能な Future を返す（create_task 不可）
         worker = loop.run_in_executor(
             get_chat_executor(),
             _run_chat_post,
@@ -419,13 +520,41 @@ async def stream_chat_events(
             worker_timing,
         )
 
+    if early_done_lines:
+        for line in early_done_lines:
+            yield line
+        return
+
+    for line in replay_lines:
+        yield line
+
+    if sid and not last_event_id and not reattach:
+        mark_processing_step(sid, "validate")
+        yield _sse_line("status", status_sse_payload_for_session(sid), event_id="1")
+
     started_at = time.monotonic()
     last_keepalive = started_at
     try:
         while True:
+            if reattach and sid:
+                peeked = peek_stream_result(sid)
+                if peeked:
+                    turn_msg = get_stream_turn_message(sid)
+                    if turn_msg and turn_msg == turn_text:
+                        body, status_code = pop_stream_result(sid)
+                        if body is not None:
+                            for line in _build_done_lines(
+                                body, status_code, safe_session, sid, reattach=True
+                            ):
+                                yield line
+                            return
+
             if sink:
-                for line in _yield_sink_events(sink):
+                lines, got_done = _yield_sink_events(sink)
+                for line in lines:
                     yield line
+                if reattach and got_done:
+                    return
 
             now = time.monotonic()
             if now - last_keepalive >= _KEEPALIVE_SEC:
@@ -471,24 +600,57 @@ async def stream_chat_events(
                     )
                     break
             if reattach and sid and not is_session_stream_active(sid):
-                cached = pop_stream_result(sid)
-                if cached:
-                    body, status_code = cached
-                    for line in _build_done_lines(
-                        body, status_code, safe_session, sid, reattach=True
-                    ):
-                        yield line
-                return
+                turn_msg = get_stream_turn_message(sid)
+                if turn_msg and turn_msg == turn_text:
+                    cached = pop_stream_result(sid)
+                    if cached:
+                        body, status_code = cached
+                        for line in _build_done_lines(
+                            body, status_code, safe_session, sid, reattach=True
+                        ):
+                            yield line
+                        return
+                if is_chat_job_in_flight(sid):
+                    if time.monotonic() - started_at > _STREAM_TIMEOUT_SEC:
+                        yield _sse_line(
+                            "error",
+                            {
+                                "code": "stream_timeout",
+                                "message": "処理に時間がかかりすぎています。回答の取得を続けています…",
+                                "recoverable": True,
+                                "fallback_hint": "POST /",
+                            },
+                            event_id="error",
+                        )
+                        return
+                else:
+                    peeked = peek_stream_result(sid)
+                    if peeked and turn_msg and turn_msg == turn_text:
+                        body, status_code = pop_stream_result(sid)
+                        if body is not None:
+                            for line in _build_done_lines(
+                                body, status_code, safe_session, sid, reattach=True
+                            ):
+                                yield line
+                            return
+                    if time.monotonic() - started_at > _STREAM_TIMEOUT_SEC:
+                        logger.warning(
+                            "SSE reattach ended without result sid=%s",
+                            sid,
+                        )
+                        return
             await asyncio.sleep(0.02)
 
         if sink:
-            for line in _yield_sink_events(sink):
+            lines, _ = _yield_sink_events(sink)
+            for line in lines:
                 yield line
 
         if owns_worker and worker and worker.done():
             body, status_code = await worker
             if sid:
                 set_stream_result(sid, body, status_code)
+                note_stream_turn_message(sid, message.strip())
                 try:
                     persist_session_from_chat_state(sid, safe_session, request)
                 except Exception:
@@ -500,10 +662,9 @@ async def stream_chat_events(
                 safe_session,
                 sid,
                 trace_id=trace_id,
+                sink=sink,
             ):
                 yield line
-            if sid:
-                pop_stream_result(sid)
         elif owns_worker and worker and not worker.done():
             logger.warning("SSE stream ended before worker completed sid=%s", sid)
 
@@ -516,8 +677,6 @@ async def stream_chat_events(
         )
     finally:
         worker_still_running = owns_worker and worker is not None and not worker.done()
-        if worker_still_running and sid:
-            end_chat_job(sid)
         if sink and owns_worker:
             sink.close()
         if sid and owns_worker:

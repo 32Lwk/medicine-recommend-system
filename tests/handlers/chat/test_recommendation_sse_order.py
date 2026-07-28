@@ -55,7 +55,7 @@ def test_sage_web_skips_progressive_reco_sse():
 
     session = {"ui_variant": "sage"}
     assert should_skip_reco_progressive_sse(session, "web:s1") is True
-    assert should_skip_reco_progressive_sse(session, "line:U1") is False
+    assert should_skip_reco_progressive_sse(session, "line:U1") is True
 
 
 def test_legacy_web_keeps_progressive_reco_sse_pattern():

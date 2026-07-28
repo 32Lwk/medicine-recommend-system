@@ -1003,7 +1003,7 @@
         if (!wrapper) return;
 
         var previewEl = wrapper.querySelector('.processing-advice-preview');
-        if (localized.advice_preview) {
+        if (window.REPLY_STREAM_DISPLAY === true && localized.advice_preview) {
             if (!previewEl) {
                 previewEl = document.createElement('div');
                 previewEl.className = 'processing-advice-preview';

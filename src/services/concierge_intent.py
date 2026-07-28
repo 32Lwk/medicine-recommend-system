@@ -133,6 +133,27 @@ def is_legal_compliance_meta_question(text: str) -> bool:
     return bool(_LEGAL_COMPLIANCE_META_RE.search(t))
 
 
+_LEGAL_CROSSDOC_COMPARE_RE = re.compile(
+    r"(プライバシー|プラポリ|個人情報).{0,40}(利用規約|免責|規約)"
+    r"|(利用規約|免責|規約).{0,40}(プライバシー|プラポリ|個人情報)"
+    r"|(プライバシー|規約|免責|プラポリ).{0,24}(違い|どっち|比較|境界|役割|別)"
+    r"|(違い|どっち|比較).{0,24}(プライバシー|規約|免責|プラポリ)",
+    re.I,
+)
+
+
+def is_legal_crossdoc_comparison_question(text: str) -> bool:
+    """プライバシーポリシー × 利用規約・免責の横断比較質問。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    has_privacy = bool(re.search(r"プライバシー|プラポリ|個人情報", t, re.I))
+    has_terms = bool(re.search(r"利用規約|免責事項|免責|規約", t, re.I))
+    if has_privacy and has_terms:
+        return True
+    return bool(_LEGAL_CROSSDOC_COMPARE_RE.search(t))
+
+
 def _normalize_exact(text: str) -> str:
 
     t = (text or "").strip().lower()
@@ -466,6 +487,13 @@ _PRE_TRIAGE_META_INTENTS = frozenset({
 })
 
 _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
+    (
+        re.compile(
+            r"(プライバシー|プラポリ|個人情報).*(利用規約|免責|規約)"
+            r"|(利用規約|免責|規約).*(プライバシー|プラポリ|個人情報)"
+        ),
+        "doc_privacy",
+    ),
     (re.compile(r"薬機法|医薬品医療機器等法|景表法|景品表示法"), "doc_terms"),
     (re.compile(r"(法令|法的).{0,10}(問題|違反|遵守|適合|大丈夫)"), "doc_terms"),
     (re.compile(r"(この|本)(サービス|アプリ|ツール|チャット).{0,16}(違法|合法|問題ない)"), "doc_terms"),

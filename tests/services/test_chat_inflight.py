@@ -32,3 +32,19 @@ def test_should_orphan_persist_stale():
     assert should_orphan_persist(sid, orphan) is False
     assert should_orphan_persist(sid, new_token) is True
     end_chat_job(sid)
+
+
+def test_redis_unavailable_falls_back_to_local_inflight(monkeypatch):
+    """REDIS_URL あり・redis 未接続時もローカル inflight で reserve できること。"""
+    from src.services.chat_inflight import _begin_chat_job_token, reserve_chat_job
+
+    sid = "test-redis-unavailable-fallback"
+    end_chat_job(sid)
+    monkeypatch.setattr(
+        "src.services.chat_inflight._redis_client_available",
+        lambda: False,
+    )
+    token = reserve_chat_job(sid)
+    assert token
+    assert _begin_chat_job_token(sid) is None
+    end_chat_job(sid)

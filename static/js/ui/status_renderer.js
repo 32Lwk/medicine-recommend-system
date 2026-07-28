@@ -638,6 +638,56 @@
     return buildCompactFeedbackHtml(qKey);
   }
 
+  function formatInlineMarkdown(escaped) {
+    if (!escaped) return '';
+    return String(escaped).replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  }
+
+  function infoBtnLinkHtml() {
+    return (
+      '<button type="button" class="ui-status-info-btn-link" aria-label="情報（ℹ️）を開く">' +
+        'ℹ️' +
+      '</button>'
+    );
+  }
+
+  function formatInfoHintParagraph(trimmed) {
+    var m = String(trimmed || '').match(/^詳細は画面右上の\s*ℹ️\s*から(.+)$/);
+    if (!m) return '';
+    return (
+      '<p class="ui-status-advice__text ui-status-advice__text--info-hint">' +
+        esc('詳細は画面右上の') +
+        infoBtnLinkHtml() +
+        esc('から' + m[1]) +
+      '</p>'
+    );
+  }
+
+  function formatStatusAdviceParagraph(para) {
+    var trimmed = (para || '').trim();
+    if (!trimmed) return '';
+    var infoHint = formatInfoHintParagraph(trimmed);
+    if (infoHint) return infoHint;
+    return (
+      '<p class="ui-status-advice__text">' +
+        formatInlineMarkdown(esc(trimmed).replace(/\n/g, '<br>')) +
+      '</p>'
+    );
+  }
+
+  function bindStatusInfoBtnLinks(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    scope.querySelectorAll('.ui-status-info-btn-link:not([data-info-bound])').forEach(function (btn) {
+      btn.setAttribute('data-info-bound', '1');
+      btn.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        if (typeof global.openInfoModal === 'function') {
+          global.openInfoModal();
+        }
+      });
+    });
+  }
+
   function statusIntroHtml(diag, variant, render) {
     var title = cleanStatusText(diag.title || '');
     if (!title) return '';
@@ -658,7 +708,7 @@
     if (!message) return '';
     return (
       '<p class="ui-status-message ui-status-message--plain">' +
-        esc(message).replace(/\n/g, '<br>') +
+        formatInlineMarkdown(esc(message).replace(/\n/g, '<br>')) +
       '</p>'
     );
   }
@@ -678,11 +728,7 @@
         paras = [message];
       }
       paras.forEach(function (para) {
-        bodyParts.push(
-          '<p class="ui-status-advice__text">' +
-            esc(para.trim()).replace(/\n/g, '<br>') +
-          '</p>'
-        );
+        bodyParts.push(formatStatusAdviceParagraph(para.trim()));
       });
     }
     if (isChangelog && subtitle) {
@@ -861,6 +907,7 @@
       }
     });
     ensureStatusFeedbackVoice(messageDiv, diag || messageDiv.__messageDiagnosis);
+    bindStatusInfoBtnLinks(messageDiv);
   }
 
   function needsStatusChromeRefresh(messageDiv, diag) {

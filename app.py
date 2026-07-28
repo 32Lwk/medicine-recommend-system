@@ -4,7 +4,7 @@
 - 既定: FastAPI（`main:app`）を uvicorn で起動。
 本番は `./start.sh` → gunicorn `main:app`。
 環境変数 `ASGI_HOST`（既定 `0.0.0.0`）で待ち受けアドレスを変更可能。
-`OPEN_BROWSER=0` で起動時のブラウザ自動オープンを無効化（CI 等）。
+`OPEN_BROWSER=1` で起動時にブラウザを自動オープン（既定はオフ — 二重タブによる SSE 競合を避ける）。
 `OPEN_BROWSER_WAIT_SEC`（既定 120）で /health 応答待ちの上限秒数を変更可能。
 `APP_PYTHON_REEXEC=0` で .venv への自動切替を無効化。
 """
@@ -130,7 +130,7 @@ def _open_browser_url(url: str) -> bool:
 
 def _schedule_open_browser(port: int) -> None:
     """/health が応答してから既定ブラウザでローカル URL を開く（reload 子プロセスの起動待ち）。"""
-    if os.getenv('OPEN_BROWSER', '1').strip().lower() in ('0', 'false', 'no'):
+    if os.getenv('OPEN_BROWSER', '0').strip().lower() in ('0', 'false', 'no'):
         return
     url = f'http://127.0.0.1:{port}/'
     health_url = f'http://127.0.0.1:{port}/health'

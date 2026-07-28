@@ -58,7 +58,7 @@ def counseling_chat(
     session_id: Optional[str] = None,
 ) -> Any:
     from src.core.llm_client import chat_completion_stream, text_completion_adapter
-    from src.services.sse_emit import emit_chat_delta, get_stream_sink, is_streaming_active, pseudo_stream_chat
+    from src.services.sse_emit import emit_chat_delta, get_stream_sink, is_streaming_active, pseudo_stream_chat, reply_stream_sse_enabled
 
     kwargs: Dict[str, Any] = {
         "temperature": temperature,
@@ -70,7 +70,7 @@ def counseling_chat(
     msgs = _with_lang(messages, lang)
     sink = get_stream_sink()
     sid = session_id or (sink.session_id if sink else None)
-    use_stream = not response_format and is_streaming_active(sid)
+    use_stream = not response_format and is_streaming_active(sid) and reply_stream_sse_enabled()
 
     if use_stream and lang == "ja":
         text = chat_completion_stream(

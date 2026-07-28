@@ -359,6 +359,7 @@ def retrieve_local_context(
     category: str = "",
     intent: str = "",
     use_cache: bool = True,
+    uri_prefixes: Optional[Tuple[str, ...]] = None,
 ) -> Dict[str, object]:
     cleaned = (query or "").strip()
     if not cleaned:
@@ -462,7 +463,7 @@ def retrieve_local_context(
 
     # Concierge
     index = get_bm25_index("concierge")
-    pools = concierge_uri_prefixes(intent)
+    pools = uri_prefixes if uri_prefixes is not None else concierge_uri_prefixes(intent)
     uri_boosts: Dict[str, float] = {}
     if "企業向け" in cleaned or "企業" in cleaned or "会社向け" in cleaned or "B2B" in cleaned:
         pools = (
@@ -474,13 +475,26 @@ def retrieve_local_context(
         uri_boosts["local/public/会社"] = 6.0
         uri_boosts["local/concierge/rag/enterprise-overview-rag"] = 3.0
     if re.search(
-        r"規約.*プライバシー|プライバシー.*規約|法務.*横断|削除.*(?:依頼|請求)|データ削除|削除請求|商用ライセンス|人間.*案内",
+        r"規約.*プライバシー|プライバシー.*規約|免責.*プライバシー|プライバシー.*免責|"
+        r"法務.*横断|削除.*(?:依頼|請求)|データ削除|削除請求|商用ライセンス|人間.*案内",
         cleaned,
         re.I,
     ):
         uri_boosts["local/concierge/rag/legal-crossdoc-rag"] = 9.0
         uri_boosts["local/public/プライバシーポリシー.md"] = 0.5
         uri_boosts["local/public/免責事項・利用規約.md"] = 0.5
+    try:
+        from src.services.concierge_intent import is_legal_crossdoc_comparison_question
+
+        is_crossdoc_compare = is_legal_crossdoc_comparison_question(cleaned)
+    except ImportError:
+        is_crossdoc_compare = False
+    try:
+        from src.services.legal_crossdoc_retrieve import should_prioritize_legal_crossdoc_faq
+
+        prioritize_legal_faq = should_prioritize_legal_crossdoc_faq(cleaned, intent or "")
+    except ImportError:
+        prioritize_legal_faq = is_crossdoc_compare
     intent_key = (intent or "").strip().lower()
     if intent_key == "doc_changelog":
         uri_boosts["local/content/changelog-digest.json"] = 3.0
@@ -509,11 +523,13 @@ def retrieve_local_context(
                 uri_boosts.get("local/public/アプリ概要.md", 0.0), 8.0
             )
     elif intent_key == "doc_privacy":
-        uri_boosts["local/public/プライバシーポリシー.md"] = 7.0
-        uri_boosts["local/concierge/rag/legal-crossdoc-rag"] = 1.0
+        if not is_crossdoc_compare:
+            uri_boosts["local/public/プライバシーポリシー.md"] = 7.0
+            uri_boosts["local/concierge/rag/legal-crossdoc-rag"] = 1.0
     elif intent_key == "doc_terms":
-        uri_boosts["local/public/免責事項・利用規約.md"] = 7.0
-        uri_boosts["local/concierge/rag/legal-crossdoc-rag"] = 1.0
+        if not is_crossdoc_compare:
+            uri_boosts["local/public/免責事項・利用規約.md"] = 7.0
+            uri_boosts["local/concierge/rag/legal-crossdoc-rag"] = 1.0
     elif intent_key == "doc_consultation":
         uri_boosts["local/public/医薬品相談先.md"] = 3.0
     elif intent_key == "architecture":
@@ -574,6 +590,11 @@ def retrieve_local_context(
             uri_boosts[uri] = max(uri_boosts.get(uri, 0.0), boost)
     except ImportError:
         pass
+    if is_crossdoc_compare or prioritize_legal_faq:
+        uri_boosts["local/concierge/rag/legal-crossdoc-rag"] = 12.0
+        if intent_key in ("doc_privacy", "doc_terms", "doc_operator"):
+            uri_boosts["local/public/プライバシーポリシー.md"] = -6.0
+            uri_boosts["local/public/免責事項・利用規約.md"] = -6.0
     scored = index.search(
         cleaned,
         top_k=top_k * 3,
