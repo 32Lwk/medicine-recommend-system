@@ -180,43 +180,52 @@ def retrieve_concierge_context(
     use_cache: bool = True,
     intent: str = "",
 ) -> Dict[str, Any]:
-    """Concierge 技術 FAQ 用 retrieve（bedrock_kb / local）。"""
-    from config.aws_features import get_bedrock_kb_id, use_bedrock_kb_rag
+    """Concierge 技術 FAQ 用 retrieve（Local RAG のみ）。"""
+    from src.services.local_rag_retrieve import retrieve_local_context
 
     cleaned = (query or "").strip()
     if not cleaned:
         return _empty_result()
 
-    if not use_bedrock_kb_rag():
-        from src.services.local_rag_retrieve import retrieve_local_context
-
-        return retrieve_local_context(
-            cleaned,
-            namespace="concierge",
-            top_k=top_k,
-            min_score=_min_kb_score(),
-            intent=intent,
-        )
-
-    kb_id = get_bedrock_kb_id()
-    if not kb_id:
-        logger.warning("CONCIERGE_RAG_PROVIDER=bedrock_kb but BEDROCK_KB_ID is unset")
-        return _empty_result()
-
-    return retrieve_kb_context(
+    return retrieve_local_context(
         cleaned,
-        kb_id=kb_id,
-        cache_namespace="concierge",
+        namespace="concierge",
         top_k=top_k,
-        use_cache=use_cache,
+        min_score=_min_kb_score(),
+        intent=intent,
     )
 
 
 _CONCIERGE_INTENT_RETRIEVAL_HINTS: Dict[str, str] = {
-    "architecture": "インフラ デプロイ ECS CodePipeline Cloud Run",
     "doc_changelog": "更新履歴 CHANGELOG AWS ステージング",
     "capabilities": "機能 できること 制限",
 }
+
+
+def _architecture_retrieval_hint(user_text: str, *, deep: bool = False) -> str:
+    """architecture 向け topic 限定ヒント（汎用デプロイ語で ops doc に偏らないよう抑制）。"""
+    t = (user_text or "").strip()
+    if re.search(r"Local RAG|Bedrock KB|Knowledge Base|ナレッジベース|Managed KB", t, re.I):
+        return "Local RAG Bedrock KB AWS_BEDROCK_KB LOCAL_RAG ops Managed KB"
+    if re.search(r"デプロイ|CodePipeline|CodeBuild|ECS|ECR|インフラ|infra|反映", t, re.I):
+        return "CodePipeline CodeBuild ECS ECR デプロイ ops"
+    if re.search(r"AWS.*インフラ|インフラ.*構成|AWS_INFRA", t, re.I):
+        return "AWS_INFRA WAF CloudFront ALB ECS ops"
+    if re.search(r"データ|保存|PostgreSQL|Neon|プライバシー|個人情報|セキュリティ|チャット", t, re.I):
+        return "PostgreSQL Neon データ保存 セキュリティ プライバシー"
+    if re.search(r"ルールベース|LLM.*薬|薬.*LLM|スコアリング|PhysicalOrchestrator|なぜ.*選", t, re.I):
+        return "ルールベース スコアリング CSV PhysicalOrchestrator LLM hallucination"
+    if re.search(r"Chat Pipeline|IntentRouter|v2|マルチエージェント|TriageAgent", t, re.I):
+        return "Chat Pipeline v2 IntentRouter orchestrator TriageAgent"
+    if re.search(r"翻訳|Translate|DeepL|TTS|Polly", t, re.I):
+        return "DeepL Amazon Translate Polly Cloud Text-to-Speech"
+    if re.search(r"企業|会社|導入|enterprise|B2B", t, re.I):
+        return "企業向け 会社向け概要 enterprise"
+    if re.search(r"GCP|AWS|クロスクラウド|ステージング|本番|分けた理由", t, re.I):
+        return "GCP AWS クロスクラウド ステージング 本番 分離 理由"
+    if deep:
+        return "技術 選定 理由 trade-off SSOT"
+    return "architecture 技術 SSOT concierge technical"
 
 
 def build_concierge_retrieval_query(
@@ -231,12 +240,21 @@ def build_concierge_retrieval_query(
     if cleaned:
         parts.append(cleaned)
     intent_key = (intent or "").strip().lower()
-    hint = _CONCIERGE_INTENT_RETRIEVAL_HINTS.get(intent_key)
-    if hint:
-        parts.append(hint)
+    if intent_key == "architecture":
+        parts.append(_architecture_retrieval_hint(cleaned, deep=deep))
+    else:
+        hint = _CONCIERGE_INTENT_RETRIEVAL_HINTS.get(intent_key)
+        if hint:
+            parts.append(hint)
     if deep and intent_key == "architecture":
-        parts.append("技術 詳細 参照ドキュメント")
-    return " ".join(parts).strip()
+        parts.append("技術 詳細 参照ドキュメント 選定 理由 trade-off")
+    merged = " ".join(parts).strip()
+    try:
+        from src.services.concierge_tech_synonyms import expand_concierge_query
+
+        return expand_concierge_query(merged)
+    except ImportError:
+        return merged
 
 
 def _concierge_kb_top_k(intent: str, *, override: Optional[int] = None) -> int:
@@ -577,23 +595,47 @@ def augment_reference_with_kb(
     intent: str = "",
     deep: bool = False,
     top_k: Optional[int] = None,
+    conversation_history: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     """ローカル参照ブロックに Concierge KB チャンクを追記（Local / Bedrock 共通、障害時は base のみ）。"""
-    from config.aws_features import (
-        CONCIERGE_RAG_BEDROCK,
-        CONCIERGE_RAG_LOCAL,
-        get_concierge_rag_provider,
-    )
+    from config.aws_features import CONCIERGE_RAG_LOCAL, get_concierge_rag_provider
 
     provider = get_concierge_rag_provider()
-    if provider not in (CONCIERGE_RAG_LOCAL, CONCIERGE_RAG_BEDROCK):
+    if provider != CONCIERGE_RAG_LOCAL:
         return base_reference
 
     effective_top_k = _concierge_kb_top_k(intent, override=top_k)
     if effective_top_k <= 0:
         return base_reference
 
+    # 法務 direct intent は md 全文参照のみ（RAG スキップで高速化・条項取り違え防止）
+    intent_key = (intent or "").strip().lower()
+    if intent_key in (
+        "doc_privacy",
+        "doc_terms",
+        "doc_consultation",
+        "doc_operator",
+    ):
+        return base_reference
+
     retrieval_query = build_concierge_retrieval_query(query, intent, deep=deep)
+    if conversation_history:
+        try:
+            from src.services.concierge_rag_context import (
+                build_concierge_meta_contextual_query,
+                needs_concierge_meta_context_enrichment,
+            )
+
+            if needs_concierge_meta_context_enrichment(query, conversation_history):
+                enriched = build_concierge_meta_contextual_query(
+                    query,
+                    conversation_history,
+                    intent=intent,
+                )
+                if enriched:
+                    retrieval_query = enriched
+        except ImportError:
+            pass
     if not retrieval_query:
         return base_reference
 
@@ -602,11 +644,7 @@ def augment_reference_with_kb(
         top_k=effective_top_k,
         intent=intent,
     )
-    heading = (
-        "【Bedrock Knowledge Base 参照（補助）】"
-        if provider == CONCIERGE_RAG_BEDROCK
-        else "【ローカルナレッジ参照（補助）】"
-    )
+    heading = "【ローカルナレッジ参照（補助）】"
     block = format_kb_context_block(result, heading=heading)
     if not block:
         logger.info(

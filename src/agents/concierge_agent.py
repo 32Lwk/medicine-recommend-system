@@ -476,6 +476,26 @@ def _feedback_data(user_text: str, intent: str) -> Dict[str, Any]:
     }
 
 
+def _doc_answer_is_insufficient(text: str, *, min_substance_chars: int = 50) -> bool:
+    """ℹ️ 案内のみなど、実質内容が欠けた doc 回答を検出。"""
+    body = (text or "").strip()
+    if len(body) < min_substance_chars:
+        return True
+    without_hint = re.sub(
+        r"詳細は画面右上.*?ℹ️.*?確認(?:できます|いただけます)?。?",
+        "",
+        body,
+        flags=re.S,
+    ).strip()
+    without_hint = re.sub(
+        r"お体の不調やお薬のことでしたら.*?ください。?",
+        "",
+        without_hint,
+        flags=re.S,
+    ).strip()
+    return len(without_hint) < 30
+
+
 def generate_doc_answer_text(
     client: OpenAI,
     user_text: str,
@@ -486,8 +506,16 @@ def generate_doc_answer_text(
 ) -> str:
     """公式 docs/*.md を参照し、Concierge LLM で正確に回答する。"""
     title, doc_body = load_concierge_doc(intent)
-    # 公式ドキュメント（特に privacy/terms）は md のみを根拠とする。KB 補助は meta 系のみ。
     reference_body = doc_body
+    if intent in ("doc_app_overview", "doc_changelog"):
+        from src.services.bedrock_kb_retrieve import augment_reference_with_kb
+
+        reference_body = augment_reference_with_kb(
+            user_text,
+            doc_body,
+            intent=intent,
+            conversation_history=history,
+        )
     hist = ""
     if history:
         lines = []
@@ -554,29 +582,67 @@ def generate_doc_answer_text(
 
 {requirements}
 """
-    try:
-        resp = concierge_chat(
-            client,
-            f"concierge_agent.{intent}",
-            [
-                {
-                    "role": "system",
-                    "content": (
-                        "あなたは医薬品相談ツールの案内役です。"
-                        "与えられた公式ドキュメント以外の情報で回答してはいけません。"
-                    ),
-                },
-                {"role": "user", "content": prompt},
-            ],
-            max_tokens=550,
-            temperature=0.2,
-            session_id=session_id,
-        )
-        text = (resp.choices[0].message.content or "").strip()
-        if text:
-            return text
-    except Exception as exc:
-        logger.warning("Concierge doc answer LLM failed (%s): %s", intent, exc)
+    last_exc: Optional[Exception] = None
+    for attempt in range(2):
+        try:
+            resp = concierge_chat(
+                client,
+                f"concierge_agent.{intent}",
+                [
+                    {
+                        "role": "system",
+                        "content": (
+                            "あなたは医薬品相談ツールの案内役です。"
+                            "与えられた公式ドキュメント以外の情報で回答してはいけません。"
+                        ),
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                max_tokens=550,
+                temperature=0.2,
+                session_id=session_id,
+            )
+            text = (resp.choices[0].message.content or "").strip()
+            if text:
+                from src.services.concierge_output_sanitize import (
+                    apply_concierge_faithfulness_guard,
+                    sanitize_concierge_meta_output,
+                )
+
+                sanitized = apply_concierge_faithfulness_guard(
+                    sanitize_concierge_meta_output(text, intent=intent),
+                    intent=intent,
+                    user_text=user_text,
+                )
+                light = apply_concierge_faithfulness_guard(
+                    text.strip(),
+                    intent=intent,
+                    user_text=user_text,
+                )
+                if sanitized and not _doc_answer_is_insufficient(sanitized):
+                    return sanitized
+                if light and not _doc_answer_is_insufficient(light):
+                    return light
+                logger.warning(
+                    "Concierge doc answer too thin (%s), attempt=%s",
+                    intent,
+                    attempt + 1,
+                )
+        except Exception as exc:
+            last_exc = exc
+            logger.warning(
+                "Concierge doc answer LLM failed (%s), attempt=%s: %s",
+                intent,
+                attempt + 1,
+                exc,
+            )
+    if last_exc:
+        logger.warning("Concierge doc answer LLM exhausted retries (%s)", intent)
+    from src.content.concierge_doc_fallback import build_doc_excerpt_answer
+
+    excerpt = build_doc_excerpt_answer(title, doc_body, user_text=user_text)
+    if excerpt and len(excerpt.strip()) >= 40:
+        return excerpt
     return (
         f"「{title}」についてのご質問ありがとうございます。"
         "現在詳細を取得できませんでした。画面右上の ℹ️ から各種ドキュメントをご確認ください。"
@@ -757,6 +823,11 @@ def generate_changelog_intro_text(
 - 内部コード名（doc_changelog 等）やファイルパスは使わない
 - 利用者が「最近何が変わったか」わかるトーンにする
 """
+    if re.search(r"AWS|ステージング|Bedrock|CloudFront|CodePipeline|インフラ", user_text, re.I):
+        prompt += (
+            "\n- ユーザーは AWS・ステージング・インフラ関連の変更を聞いている。"
+            "参照内の該当する更新に触れ、AWS やステージング等の語を1回以上含める\n"
+        )
     try:
         resp = concierge_chat(
             client,
@@ -886,6 +957,7 @@ def build_changelog_payload(
             feedback_data=fb,
             intent="doc_changelog",
         ),
+        "content_plain": plain_body,
         "content_format": "status_card",
         "line_flex": build_dynamic_concierge_line_flex(
             title=changelog_doc_title(),
@@ -1760,7 +1832,7 @@ def _invoke_meta_concierge_llm(
     from src.services.bedrock_kb_retrieve import augment_reference_with_kb
 
     reference = augment_reference_with_kb(
-        user_text, reference, intent=intent, deep=deep
+        user_text, reference, intent=intent, deep=deep, conversation_history=history
     )
     prompt = f"""{get_policy_snippet()}
 
@@ -2012,6 +2084,7 @@ def _assemble_dynamic_concierge_payload(
                 deep=deep,
                 user_text=user_text,
             ),
+            "content_plain": plain,
             "content_format": "status_card",
             "line_flex": build_dynamic_concierge_line_flex(
                 title=title,
@@ -2050,6 +2123,7 @@ def _assemble_dynamic_concierge_payload(
     )
     return {
         "content": static_html,
+        "content_plain": plain_message,
         "content_format": "status_card",
         "line_flex": line_flex,
         "concierge_intent": intent,

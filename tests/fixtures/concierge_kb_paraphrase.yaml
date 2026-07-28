@@ -1,0 +1,77 @@
+# Concierge KB retrieve eval — 言い換え
+
+scenarios:
+  - id: paraphrase-deploy-flow
+    query: "本番反映はどうやってる？"
+    intent: architecture
+    expected_source_prefix: "ops/"
+    min_score: 0.4
+
+  - id: paraphrase-infra-casual
+    query: "サーバーどこで動いてるの"
+    intent: architecture
+    expected_source_prefix: "concierge/"
+    min_score: 0.4
+
+  - id: paraphrase-cross-cloud
+    query: "Google と Amazon の環境の違い"
+    intent: architecture
+    expected_source_prefix: "concierge/"
+    min_score: 0.4
+
+  - id: paraphrase-rag-local
+    query: "ナレッジベース ローカル検索"
+    intent: architecture
+    expected_source_prefix: "ops/"
+    min_score: 0.4
+
+  - id: paraphrase-line-host
+    query: "LINE ボット どのクラウド"
+    intent: architecture
+    expected_source_prefix: "concierge/"
+    min_score: 0.4
+
+  - id: paraphrase-data-where
+    query: "チャット履歴 保存先"
+    intent: architecture
+    expected_source_prefix: "concierge/"
+    min_score: 0.4
+    must_contain_any:
+      - "PostgreSQL"
+      - "Neon"
+
+  - id: paraphrase-capabilities-casual
+    query: "何ができるアプリ？"
+    intent: capabilities
+    expected_source_prefix: "content/concierge_knowledge"
+    min_score: 0.4
+
+  - id: paraphrase-changelog-casual
+    query: "最近なにか変わった？"
+    intent: doc_changelog
+    expected_source_prefix: "content/changelog-digest"
+    min_score: 0.4
+
+  - id: paraphrase-github-mirror
+    query: "GitLab ミラー 正本"
+    intent: architecture
+    expected_source_prefix: "ops/GITLAB"
+    min_score: 0.4
+
+  - id: paraphrase-health-check
+    query: "今デプロイされてる版 確認方法"
+    intent: architecture
+    expected_source_prefix: "concierge/"
+    min_score: 0.4
+
+  - id: paraphrase-multi-agent
+    query: "エージェント 分担 教えて"
+    intent: architecture
+    expected_source_prefix: "concierge/"
+    min_score: 0.4
+
+  - id: paraphrase-images-cdn
+    query: "OTC 画像 どこから配信"
+    intent: architecture
+    expected_source_prefix: "concierge/"
+    min_score: 0.4

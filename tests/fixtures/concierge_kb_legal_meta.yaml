@@ -1,0 +1,91 @@
+# Concierge KB retrieve eval — 法務・横断
+
+scenarios:
+  - id: legal-privacy-data
+    query: "個人情報の取り扱い"
+    intent: doc_privacy
+    expected_source_prefix: "public/プライバシー"
+    min_score: 0.4
+    must_not_top: "content/CHANGELOG"
+
+  - id: legal-terms-disclaimer
+    query: "免責事項 利用規約"
+    intent: doc_terms
+    expected_source_prefix: "public/免責"
+    min_score: 0.4
+
+  - id: legal-consultation-pmda
+    query: "医薬品相談窓口"
+    intent: doc_consultation
+    expected_source_prefix: "public/医薬品相談先"
+    min_score: 0.4
+
+  - id: cross-data-privacy-tech
+    query: "チャットデータはどこに保存？プライバシー的には"
+    intent: architecture
+    expected_source_prefix: "concierge/technical/04"
+    min_score: 0.4
+
+  - id: cross-beta-terms
+    query: "β版 試験運用 利用条件"
+    intent: doc_terms
+    expected_source_prefix: "public/"
+    min_score: 0.4
+
+  - id: legal-privacy-retention
+    query: "データ保存期間 プライバシー"
+    intent: doc_privacy
+    expected_source_prefix: "public/プライバシー"
+    min_score: 0.4
+
+  - id: operator-contact
+    query: "お問い合わせ 連絡先"
+    intent: doc_operator
+    expected_source_prefix: "concierge/お問い合わせ"
+    min_score: 0.4
+
+  - id: cross-security-overview
+    query: "セキュリティ データ保護 概要"
+    intent: architecture
+    expected_source_prefix: "concierge/technical/04"
+    min_score: 0.4
+
+  - id: legal-terms-medical
+    query: "医療行為 診断 免責"
+    intent: doc_terms
+    expected_source_prefix: "public/免責"
+    min_score: 0.4
+    must_contain_any:
+      - "診断"
+      - "医療"
+
+  - id: cross-mission-algorithm
+    query: "作成目的とルールベース推奨"
+    intent: doc_app_overview
+    expected_source_prefix: "concierge/technical/11"
+    min_score: 0.4
+
+  - id: legal-crossdoc-boundary
+    query: "プライバシーポリシーと利用規約の違い"
+    intent: doc_privacy
+    expected_source_prefix: "concierge/rag/legal-crossdoc"
+    min_score: 0.35
+    must_contain_any:
+      - "プライバシー"
+      - "規約"
+
+  - id: legal-crossdoc-deletion
+    query: "データ削除を依頼したい"
+    intent: doc_privacy
+    expected_source_prefix: "concierge/rag/legal-crossdoc"
+    min_score: 0.35
+
+  - id: enterprise-b2b-rag
+    query: "B2B 導入 メリット"
+    intent: architecture
+    expected_source_prefix: "concierge/rag/enterprise-overview"
+    min_score: 0.35
+    must_contain_any:
+      - "企業"
+      - "B2B"
+      - "導入"

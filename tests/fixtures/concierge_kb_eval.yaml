@@ -51,7 +51,7 @@ scenarios:
   - id: changelog-md
     query: "CHANGELOG 更新"
     intent: doc_changelog
-    expected_source_prefix: "content/CHANGELOG"
+    expected_source_prefix: "content/changelog-digest"
     min_score: 0.5
 
   - id: infra-aws

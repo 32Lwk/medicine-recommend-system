@@ -1,0 +1,196 @@
+{
+  "timestamp": "2026-07-28T11:07:09.394348+00:00",
+  "provider": "local_rag",
+  "summary": {
+    "total_queries": 30,
+    "p50_ms": 82.55,
+    "p95_ms": 501.99,
+    "max_ms": 653.24,
+    "p95_target_ms": 800.0,
+    "p95_within_target": true,
+    "by_namespace": {
+      "medicine": {
+        "count": 20,
+        "p95_ms": 138.04,
+        "max_ms": 252.27
+      },
+      "concierge": {
+        "count": 10,
+        "p95_ms": 653.24,
+        "max_ms": 653.24
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "interaction-loxoprofen-warfarin",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 138.04,
+      "route": "deterministic"
+    },
+    {
+      "id": "interaction-ibuprofen-aspirin",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 73.94,
+      "route": "deterministic"
+    },
+    {
+      "id": "interaction-acetaminophen-alcohol",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 2.14,
+      "route": "deterministic"
+    },
+    {
+      "id": "interaction-dextromethorphan-ssri",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 61.59,
+      "route": "deterministic"
+    },
+    {
+      "id": "interaction-caffeine-ephedrine",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 42.59,
+      "route": "deterministic"
+    },
+    {
+      "id": "usage-after-meal",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 252.27,
+      "route": "deterministic"
+    },
+    {
+      "id": "usage-dose-interval",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 1.52,
+      "route": "deterministic"
+    },
+    {
+      "id": "usage-how-many-times",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 79.81,
+      "route": null
+    },
+    {
+      "id": "usage-empty-stomach",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 121.99,
+      "route": null
+    },
+    {
+      "id": "usage-water-amount",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 71.96,
+      "route": null
+    },
+    {
+      "id": "sideeffect-loxoprofen-sleepiness",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 1.58,
+      "route": "deterministic"
+    },
+    {
+      "id": "sideeffect-chlorpheniramine-drowsy",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 1.16,
+      "route": "deterministic"
+    },
+    {
+      "id": "sideeffect-ibuprofen-stomach",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 1.18,
+      "route": "deterministic"
+    },
+    {
+      "id": "doping-pseudoephedrine",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 1.21,
+      "route": "deterministic"
+    },
+    {
+      "id": "doping-competition-category",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 85.29,
+      "route": "deterministic"
+    },
+    {
+      "id": "doping-prohibited-substance",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 123.25,
+      "route": null
+    },
+    {
+      "id": "age-under-15",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 1.6,
+      "route": "deterministic"
+    },
+    {
+      "id": "age-restriction-product",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 42.88,
+      "route": "deterministic"
+    },
+    {
+      "id": "age-child-cold",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 1.12,
+      "route": "deterministic"
+    },
+    {
+      "id": "age-elderly-nsaid",
+      "namespace": "medicine",
+      "kb_retrieve_ms": 1.08,
+      "route": "deterministic"
+    },
+    {
+      "id": "changelog-recent-aws",
+      "namespace": "concierge",
+      "kb_retrieve_ms": 214.58
+    },
+    {
+      "id": "changelog-phase-q4",
+      "namespace": "concierge",
+      "kb_retrieve_ms": 425.73
+    },
+    {
+      "id": "architecture-codepipeline",
+      "namespace": "concierge",
+      "kb_retrieve_ms": 265.88
+    },
+    {
+      "id": "architecture-ecs",
+      "namespace": "concierge",
+      "kb_retrieve_ms": 116.13
+    },
+    {
+      "id": "architecture-bedrock-kb",
+      "namespace": "concierge",
+      "kb_retrieve_ms": 358.19
+    },
+    {
+      "id": "capabilities-overview",
+      "namespace": "concierge",
+      "kb_retrieve_ms": 501.99
+    },
+    {
+      "id": "cloud-run-gcp",
+      "namespace": "concierge",
+      "kb_retrieve_ms": 252.28
+    },
+    {
+      "id": "changelog-md",
+      "namespace": "concierge",
+      "kb_retrieve_ms": 232.33
+    },
+    {
+      "id": "infra-aws",
+      "namespace": "concierge",
+      "kb_retrieve_ms": 231.86
+    },
+    {
+      "id": "public-overview",
+      "namespace": "concierge",
+      "kb_retrieve_ms": 653.24
+    }
+  ]
+}

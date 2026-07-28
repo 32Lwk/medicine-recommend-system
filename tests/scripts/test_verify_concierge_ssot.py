@@ -15,6 +15,11 @@ REQUIRED = (
     "05-chat-pipeline-v2-flags.md",
     "06-line-gcp-path.md",
     "07-observability-ops.md",
+    "08-technical-decisions.md",
+    "09-glossary.md",
+    "10-agent-routing-rationale.md",
+    "11-app-mission-and-status.md",
+    "12-technical-faq-rag.md",
     "README.md",
 )
 

@@ -81,6 +81,11 @@ RAG_RETRIEVE_CASES = [
 ]
 
 
+@pytest.fixture(autouse=True)
+def _force_local_concierge_rag(monkeypatch):
+    monkeypatch.setenv("CONCIERGE_RAG_PROVIDER", "local")
+
+
 @pytest.mark.parametrize("case", RAG_RETRIEVE_CASES, ids=lambda c: c.id)
 def test_local_rag_retrieve_hits_relevant_docs(case: RagRetrieveCase):
     result = retrieve_concierge_context(

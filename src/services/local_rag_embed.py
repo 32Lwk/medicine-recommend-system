@@ -36,10 +36,17 @@ def _load_npz(namespace: str) -> Optional[Tuple[np.ndarray, Tuple[str, ...]]]:
         return None
     try:
         data = np.load(path, allow_pickle=False)
+    except ValueError:
+        # 旧形式（uris dtype=object）との互換
+        data = np.load(path, allow_pickle=True)
+    try:
         vectors = np.asarray(data["vectors"], dtype=np.float32)
         uris = tuple(str(u) for u in data["uris"].tolist())
         return _normalize_rows(vectors), uris
-    except (OSError, KeyError, ValueError) as exc:
+    except (KeyError, TypeError) as exc:
+        logger.warning("Failed to parse local RAG npz %s: %s", path, exc)
+        return None
+    except (OSError,) as exc:
         logger.warning("Failed to load local RAG npz %s: %s", path, exc)
         return None
 

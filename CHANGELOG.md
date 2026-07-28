@@ -1,6 +1,64 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月28日**（返信遅延改善 v3 — SSE/Redis/LLM dedup/フロント）
+**最終更新日: 2026年7月28日**（Concierge Meta KB L3 安定化・Local RAG 固定・enterprise/legal FAQ）
+
+---
+
+## 2026-07-28 — Concierge Meta KB 拡張・L3 ライブ品質・Local RAG 固定
+
+### 概要
+
+Amazon Q 型 **Meta KB**（技術 FAQ + アプリ概要 + 作成意図 + 企業/B2B + 法務横断）を RAG 最適化 FAQ として拡充し、**L3 ライブ LLM eval**（ルール tier / judge tier / 多ターン E2E）で口語・省略・文脈 follow-up を検証。**Concierge 向け Bedrock KB はコード上 Local RAG 固定**（`CONCIERGE_RAG_PROVIDER=bedrock_kb` も local に正規化）。
+
+### ドキュメント（SSOT / RAG FAQ）
+
+| 種別 | 追加・更新 |
+|------|-----------|
+| 技術 SSOT | `08-technical-decisions.md`〜`13-meta-kb-unified-index.md`、`research/` |
+| RAG FAQ | `docs/concierge/rag/` — technical-infra/pipeline/security/decisions、app-overview、author-mission、**enterprise-overview**（15 問）、**legal-crossdoc**（13 問） |
+| 運用 | `docs/ops/CONCIERGE_TECH_FAQ_MAINTENANCE.md` |
+| 索引 | `docs/concierge/technical/README.md` — Meta KB 統合索引・RAG 方針 |
+
+### バックエンド
+
+| 項目 | 内容 |
+|------|------|
+| Concierge retrieve | **Local RAG のみ**（`retrieve_concierge_context` / `use_bedrock_kb_rag()`） |
+| 文脈 retrieve | `concierge_rag_context.py` — follow-up・指示語の contextual query 合成 |
+| doc 回答安定化 | `concierge_doc_fallback.py` — 薄い LLM 応答検出 + md excerpt フォールバック；`doc_app_overview` / `doc_changelog` に RAG 補助 |
+| intent / sanitize | 将来/展望・病院/医療行為 probe 拡張；指示語 clarifying（「それについて」） |
+| 法務 pool | `doc_privacy` / `doc_terms` に `legal-crossdoc-rag` を追加（横断時 boost） |
+| 企業 pool | enterprise クエリで `enterprise-overview-rag` + public 企業資料を優先 |
+
+### Eval（L1〜L3）
+
+| Tier | スクリプト | 結果（2026-07-28 実行） |
+|------|-----------|------------------------|
+| L1 contract | `concierge-technical-faq-contract.sh` | **87/87** |
+| L1 retrieve | `eval_concierge_kb.py --all-fixtures` | **63/63 (100%)** |
+| L1 intent / quality / boundary | 各 eval スクリプト | **25/25, 30/30, 5/5** |
+| L3a rule live | `eval_concierge_technical_quality_live.py` + `concierge_live_casual.yaml` | **35/35 + 24/24 (100%)** |
+| L3d dialogue E2E | `eval_concierge_dialogue_e2e.py`（scripted + GPT ユーザー役 3/8） | **8/8 (100%)** judge 有効 |
+| L3 judge tier | `--tier rule \| judge-failures \| judge-pass` | `concierge_live_judge.py` 共有モジュール |
+
+```bash
+# L1 + 任意 L3 一括
+./scripts/run_concierge_comprehensive_eval.sh
+RUN_LIVE_QUALITY=1 RUN_LIVE_JUDGE=1 ./scripts/run_concierge_comprehensive_eval.sh
+
+# 多ターン E2E のみ
+.venv/bin/python scripts/eval_concierge_dialogue_e2e.py --judge
+```
+
+- ログ: `log/analysis/concierge_*_20260728*.json`
+- 正本: [`docs/ops/CONCIERGE_TECH_FAQ_MAINTENANCE.md`](docs/ops/CONCIERGE_TECH_FAQ_MAINTENANCE.md)、[`docs/concierge/technical/13-meta-kb-unified-index.md`](docs/concierge/technical/13-meta-kb-unified-index.md)
+
+### 索引再ビルド
+
+```bash
+.venv/bin/python scripts/build_local_rag_index.py --namespace concierge --full
+# → 623 chunks / 51 vectors（`build/local_rag/concierge_index.npz`、gitignore・デプロイ時 BM25 は docs 同梱から lazy 構築）
+```
 
 ---
 

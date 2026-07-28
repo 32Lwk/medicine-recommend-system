@@ -39,11 +39,18 @@ echo "==> Medicine local RAG eval (min ${MED_MIN}%, interaction 5/5, mode both)"
   --min-interaction-pass 5 \
   --output "$MED_OUT"
 
-echo "==> Concierge local RAG eval (min ${CON_MIN}%)"
+echo "==> Concierge local RAG eval (min ${CON_MIN}%, all fixtures)"
 "$PY" "${ROOT}/scripts/eval_concierge_kb.py" \
   --provider local \
+  --all-fixtures \
   --min-pass-pct "$CON_MIN" \
   --output "$CON_OUT"
+
+echo "==> Concierge Meta KB L1 eval (intent / quality / boundary / LINE)"
+"$PY" "${ROOT}/scripts/eval_concierge_intent_routing.py" --min-pass-pct 92
+"$PY" "${ROOT}/scripts/eval_concierge_technical_quality.py" --min-pass-pct 90
+"$PY" "${ROOT}/scripts/eval_concierge_boundary.py" --min-pass-pct 100
+"$PY" "${ROOT}/scripts/eval_concierge_line_smoke.py" --min-pass-pct 100
 
 if [[ "${RUN_LOCAL_RAG_BENCHMARK:-0}" == "1" ]]; then
   echo "==> retrieve latency benchmark"

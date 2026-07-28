@@ -1,0 +1,54 @@
+# Concierge KB retrieve eval — 多ターン follow-up
+
+scenarios:
+  - id: ctx-followup-deep-infra
+    query: "もっと詳しく デプロイ"
+    intent: architecture
+    expected_source_prefix: "ops/"
+    min_score: 0.4
+
+  - id: ctx-followup-changelog-aws
+    query: "AWS 関連の変更 詳しく"
+    intent: doc_changelog
+    expected_source_prefix: "content/changelog-digest"
+    min_score: 0.4
+
+  - id: ctx-followup-capabilities
+    query: "他にできることは？"
+    intent: capabilities
+    expected_source_prefix: "content/concierge_knowledge"
+    min_score: 0.4
+
+  - id: ctx-followup-mission
+    query: "開発背景 もう少し"
+    intent: doc_app_overview
+    expected_source_prefix: "public/アプリ概要"
+    min_score: 0.4
+
+  - id: ctx-followup-glossary-sse
+    query: "SSE 詳しく ストリーミング"
+    intent: architecture
+    expected_source_prefix: "concierge/technical/09"
+    min_score: 0.4
+
+  - id: ctx-followup-privacy-detail
+    query: "個人情報 もっと詳しく"
+    intent: doc_privacy
+    expected_source_prefix: "public/プライバシー"
+    min_score: 0.4
+
+  - id: ctx-followup-enterprise
+    query: "企業向け もう少し詳しく"
+    intent: architecture
+    expected_source_prefix: "public/企業"
+    min_score: 0.4
+
+  - id: ctx-followup-agents
+    query: "マルチエージェント 詳細"
+    intent: architecture
+    expected_source_prefix: "concierge/technical/"
+    min_score: 0.4
+    must_contain_any:
+      - "TriageAgent"
+      - "PhysicalOrchestrator"
+      - "IntentRouter"

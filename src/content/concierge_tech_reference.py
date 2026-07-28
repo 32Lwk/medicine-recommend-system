@@ -13,6 +13,17 @@ from config.concierge_rag_sources import CONCIERGE_DEV_DOCS, CONCIERGE_OPS_DOCS
 
 _OPS_DOCS = CONCIERGE_OPS_DOCS + CONCIERGE_DEV_DOCS
 
+# Meta KB SSOT（08〜11）— クエリ関連度ソートで優先
+_META_SSOT_FILES: Tuple[str, ...] = (
+    "08-technical-decisions.md",
+    "09-glossary.md",
+    "10-agent-routing-rationale.md",
+    "11-app-mission-and-status.md",
+    "12-technical-faq-rag.md",
+)
+
+_QUERY_TOKEN_RE = re.compile(r"[\w一-龥ぁ-んァ-ヶ]{2,}")
+
 # 運用事実が必要な質問（クラウド比較・デプロイ・RAG 等）— deep でなくても ops を渡す
 _OPS_GROUNDED_RE = re.compile(
     r"aws|gcp|cloud\s*run|ecs|fargate|codepipeline|codebuild|bedrock|"
@@ -56,6 +67,60 @@ def _load_technical_documents() -> Tuple[Tuple[str, str], ...]:
         if body:
             docs.append((Path(rel).name, body))
     return tuple(docs)
+
+
+def _doc_matches_uri_hint(name: str, uri: str) -> bool:
+    """SSOT URI ヒントがファイル名と一致するか（00-disclosure 等の番号付き SSOT 対応）。"""
+    stem = name.replace(".md", "")
+    tail = uri.rstrip("/").split("/")[-1].replace(".md", "")
+    if tail in stem or stem.startswith(tail + "-") or stem.endswith("-" + tail):
+        return True
+    if tail.isdigit() and stem.startswith(tail + "-"):
+        return True
+    return False
+
+
+def _score_doc_relevance(name: str, body: str, user_text: str) -> float:
+    """ユーザー質問との簡易関連度（クエリ一致 SSOT / ops を優先）。"""
+    score = 0.0
+    query = (user_text or "").strip().lower()
+    if not query:
+        return score
+    name_l = name.lower()
+    body_l = body.lower()
+    for token in _QUERY_TOKEN_RE.findall(query):
+        tl = token.lower()
+        if tl in name_l:
+            score += 3.0
+        if tl in body_l:
+            score += 0.5
+    try:
+        from src.services.concierge_tech_synonyms import ssot_uri_boosts_for_query
+
+        for uri, boost in ssot_uri_boosts_for_query(user_text, "architecture").items():
+            if _doc_matches_uri_hint(name, uri):
+                score += boost
+        if re.search(r"github|gitlab|正本|ミラー", query, re.I):
+            if "08" in name or "12" in name or "GITLAB" in name:
+                score += 4.0
+    except Exception:
+        pass
+    if score >= 2.0 and name in _META_SSOT_FILES:
+        score += 0.5
+    return score
+
+
+def _sort_docs_by_query(
+    docs: List[Tuple[str, str]],
+    user_text: str,
+) -> List[Tuple[str, str]]:
+    if not (user_text or "").strip():
+        return docs
+    return sorted(
+        docs,
+        key=lambda pair: _score_doc_relevance(pair[0], pair[1], user_text),
+        reverse=True,
+    )
 
 
 def wants_technical_deep_dive(
@@ -102,6 +167,7 @@ def format_concierge_technical_reference_block(
     *,
     max_total_chars: int = 18_000,
     include_ops_docs: bool = True,
+    user_text: str = "",
 ) -> str:
     """
     LLM プロンプト用の技術ドキュメント参照ブロック。
@@ -110,6 +176,7 @@ def format_concierge_technical_reference_block(
     docs = list(_load_technical_documents())
     if not include_ops_docs:
         docs = [(name, body) for name, body in docs if not name.startswith("AWS_")]
+    docs = _sort_docs_by_query(docs, user_text)
 
     lines = [
         "【技術ドキュメント参照（docs/concierge/technical/ 等・唯一の根拠）】",
@@ -121,11 +188,32 @@ def format_concierge_technical_reference_block(
         "事実は利用者向けの言葉で（例: Amazon Translate を利用、而非 env 名の列挙）。",
         "",
     ]
+    scored = [
+        (name, body, _score_doc_relevance(name, body, user_text))
+        for name, body in docs
+    ]
+    pin_threshold = 4.0
+    pinned = [(n, b) for n, b, s in scored if s >= pin_threshold]
+    rest = [(n, b) for n, b, s in scored if s < pin_threshold]
+    ordered = pinned + rest
+
     used = sum(len(x) for x in lines)
-    for name, body in docs:
-        block = f"### {name}\n{body.strip()}\n"
+    per_doc_cap = 8_000 if len(pinned) > 2 else 12_000
+    for name, body in ordered:
+        text = body.strip()
+        if len(text) > per_doc_cap and (name, body) not in [(n, b) for n, b in pinned]:
+            text = text[:per_doc_cap] + "\n…（続き省略）"
+        block = f"### {name}\n{text}\n"
         if used + len(block) > max_total_chars:
-            lines.append(f"…（以降のドキュメントは省略: {name} 他）")
+            remaining = max_total_chars - used - 80
+            if remaining > 300 and (name, body) in [(n, b) for n, b in pinned]:
+                lines.append(f"### {name}\n{text[:remaining]}\n…（続き省略）\n")
+                used += remaining
+            elif remaining > 300 and not pinned:
+                lines.append(f"### {name}\n{text[:remaining]}\n…（続き省略）\n")
+                used += remaining
+            else:
+                lines.append(f"…（以降のドキュメントは省略: {name} 他）")
             break
         lines.append(block)
         used += len(block)
@@ -149,6 +237,7 @@ def augment_architecture_reference(
     tech = format_concierge_technical_reference_block(
         max_total_chars=24_000 if (deep or wants_ops_grounding(user_text)) else 16_000,
         include_ops_docs=include_ops,
+        user_text=user_text,
     )
     parts = [base_reference.rstrip(), tech]
     if deep or include_ops:

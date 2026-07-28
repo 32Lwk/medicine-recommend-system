@@ -1,0 +1,289 @@
+{
+  "timestamp": "2026-07-28T11:35:07.346181+00:00",
+  "phase": "phase4_concierge",
+  "provider": "local",
+  "kb_id": "2CNAGQ2V4P",
+  "search_mode": "managed",
+  "region": "ap-northeast-1",
+  "fixtures": [
+    "tests/fixtures/concierge_kb_legal_meta.yaml"
+  ],
+  "summary": {
+    "total": 13,
+    "pass_all": 12,
+    "pass_all_pct": 92.3,
+    "score_pass": 13,
+    "score_pass_pct": 100.0
+  },
+  "results": [
+    {
+      "id": "legal-privacy-data",
+      "intent": "doc_privacy",
+      "query": "個人情報の取り扱い",
+      "retrieval_query": "個人情報の取り扱い",
+      "min_score": 0.4,
+      "expected_source_prefix": "public/プライバシー",
+      "chunk_count": 5,
+      "top_score": 0.6182,
+      "source_uris": [
+        "local/public/プライバシーポリシー.md",
+        "local/concierge/rag/legal-crossdoc-rag.md"
+      ],
+      "kb_retrieve_ms": 2166.04,
+      "score_pass": true,
+      "prefix_pass": true,
+      "content_pass": true,
+      "not_top_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "legal-terms-disclaimer",
+      "intent": "doc_terms",
+      "query": "免責事項 利用規約",
+      "retrieval_query": "免責事項 利用規約 免責事項 利用規約",
+      "min_score": 0.4,
+      "expected_source_prefix": "public/免責",
+      "chunk_count": 5,
+      "top_score": 0.7624,
+      "source_uris": [
+        "local/public/免責事項・利用規約.md",
+        "local/concierge/rag/legal-crossdoc-rag.md"
+      ],
+      "kb_retrieve_ms": 214.62,
+      "score_pass": true,
+      "prefix_pass": true,
+      "content_pass": true,
+      "not_top_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "legal-consultation-pmda",
+      "intent": "doc_consultation",
+      "query": "医薬品相談窓口",
+      "retrieval_query": "医薬品相談窓口 医薬品相談先 PMDA 厚労省",
+      "min_score": 0.4,
+      "expected_source_prefix": "public/医薬品相談先",
+      "chunk_count": 1,
+      "top_score": 0.8083,
+      "source_uris": [
+        "local/public/医薬品相談先.md"
+      ],
+      "kb_retrieve_ms": 250.52,
+      "score_pass": true,
+      "prefix_pass": true,
+      "content_pass": true,
+      "not_top_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "cross-data-privacy-tech",
+      "intent": "architecture",
+      "query": "チャットデータはどこに保存？プライバシー的には",
+      "retrieval_query": "チャットデータはどこに保存？プライバシー的には PostgreSQL Neon データ保存 セキュリティ プライバシー プライバシーポリシー 個人情報",
+      "min_score": 0.4,
+      "expected_source_prefix": "concierge/technical/04",
+      "chunk_count": 5,
+      "top_score": 0.7785,
+      "source_uris": [
+        "local/concierge/technical/04-data-security.md"
+      ],
+      "kb_retrieve_ms": 266.5,
+      "score_pass": true,
+      "prefix_pass": true,
+      "content_pass": true,
+      "not_top_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "cross-beta-terms",
+      "intent": "doc_terms",
+      "query": "β版 試験運用 利用条件",
+      "retrieval_query": "β版 試験運用 利用条件",
+      "min_score": 0.4,
+      "expected_source_prefix": "public/",
+      "chunk_count": 5,
+      "top_score": 0.5857,
+      "source_uris": [
+        "local/public/免責事項・利用規約.md",
+        "local/concierge/rag/legal-crossdoc-rag.md"
+      ],
+      "kb_retrieve_ms": 352.49,
+      "score_pass": true,
+      "prefix_pass": true,
+      "content_pass": true,
+      "not_top_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "legal-privacy-retention",
+      "intent": "doc_privacy",
+      "query": "データ保存期間 プライバシー",
+      "retrieval_query": "データ保存期間 プライバシー プライバシーポリシー 個人情報",
+      "min_score": 0.4,
+      "expected_source_prefix": "public/プライバシー",
+      "chunk_count": 5,
+      "top_score": 0.6919,
+      "source_uris": [
+        "local/concierge/rag/legal-crossdoc-rag.md"
+      ],
+      "kb_retrieve_ms": 250.38,
+      "score_pass": true,
+      "prefix_pass": false,
+      "content_pass": true,
+      "not_top_pass": true,
+      "pass": false,
+      "provider": "local_rag"
+    },
+    {
+      "id": "operator-contact",
+      "intent": "doc_operator",
+      "query": "お問い合わせ 連絡先",
+      "retrieval_query": "お問い合わせ 連絡先",
+      "min_score": 0.4,
+      "expected_source_prefix": "concierge/お問い合わせ",
+      "chunk_count": 5,
+      "top_score": 0.6076,
+      "source_uris": [
+        "local/public/運営者情報.md",
+        "local/concierge/お問い合わせ・試験運用.md"
+      ],
+      "kb_retrieve_ms": 216.25,
+      "score_pass": true,
+      "prefix_pass": true,
+      "content_pass": true,
+      "not_top_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "cross-security-overview",
+      "intent": "architecture",
+      "query": "セキュリティ データ保護 概要",
+      "retrieval_query": "セキュリティ データ保護 概要 PostgreSQL Neon データ保存 セキュリティ プライバシー プライバシーポリシー 個人情報",
+      "min_score": 0.4,
+      "expected_source_prefix": "concierge/technical/04",
+      "chunk_count": 5,
+      "top_score": 0.7544,
+      "source_uris": [
+        "local/concierge/technical/04-data-security.md"
+      ],
+      "kb_retrieve_ms": 218.95,
+      "score_pass": true,
+      "prefix_pass": true,
+      "content_pass": true,
+      "not_top_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "legal-terms-medical",
+      "intent": "doc_terms",
+      "query": "医療行為 診断 免責",
+      "retrieval_query": "医療行為 診断 免責 免責事項 利用規約",
+      "min_score": 0.4,
+      "expected_source_prefix": "public/免責",
+      "chunk_count": 5,
+      "top_score": 0.7298,
+      "source_uris": [
+        "local/concierge/rag/legal-crossdoc-rag.md",
+        "local/public/免責事項・利用規約.md"
+      ],
+      "kb_retrieve_ms": 267.02,
+      "score_pass": true,
+      "prefix_pass": true,
+      "content_pass": true,
+      "not_top_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "cross-mission-algorithm",
+      "intent": "doc_app_overview",
+      "query": "作成目的とルールベース推奨",
+      "retrieval_query": "作成目的とルールベース推奨 rule_based スコアリング CSV",
+      "min_score": 0.4,
+      "expected_source_prefix": "concierge/technical/11",
+      "chunk_count": 5,
+      "top_score": 0.94,
+      "source_uris": [
+        "local/public/アプリ概要.md",
+        "local/concierge/technical/11-app-mission-and-status.md"
+      ],
+      "kb_retrieve_ms": 274.27,
+      "score_pass": true,
+      "prefix_pass": true,
+      "content_pass": true,
+      "not_top_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "legal-crossdoc-boundary",
+      "intent": "doc_privacy",
+      "query": "プライバシーポリシーと利用規約の違い",
+      "retrieval_query": "プライバシーポリシーと利用規約の違い プライバシーポリシー 個人情報 免責事項 利用規約",
+      "min_score": 0.35,
+      "expected_source_prefix": "concierge/rag/legal-crossdoc",
+      "chunk_count": 5,
+      "top_score": 0.7626,
+      "source_uris": [
+        "local/concierge/rag/legal-crossdoc-rag.md"
+      ],
+      "kb_retrieve_ms": 286.46,
+      "score_pass": true,
+      "prefix_pass": true,
+      "content_pass": true,
+      "not_top_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "legal-crossdoc-deletion",
+      "intent": "doc_privacy",
+      "query": "データ削除を依頼したい",
+      "retrieval_query": "データ削除を依頼したい",
+      "min_score": 0.35,
+      "expected_source_prefix": "concierge/rag/legal-crossdoc",
+      "chunk_count": 5,
+      "top_score": 0.5638,
+      "source_uris": [
+        "local/public/プライバシーポリシー.md",
+        "local/concierge/rag/legal-crossdoc-rag.md"
+      ],
+      "kb_retrieve_ms": 254.7,
+      "score_pass": true,
+      "prefix_pass": true,
+      "content_pass": true,
+      "not_top_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    },
+    {
+      "id": "enterprise-b2b-rag",
+      "intent": "architecture",
+      "query": "B2B 導入 メリット",
+      "retrieval_query": "B2B 導入 メリット 企業向け 会社向け概要 enterprise",
+      "min_score": 0.35,
+      "expected_source_prefix": "concierge/rag/enterprise-overview",
+      "chunk_count": 5,
+      "top_score": 0.92,
+      "source_uris": [
+        "local/public/企業向け簡略版概要資料.md",
+        "local/public/会社向け概要書類.md",
+        "local/concierge/rag/enterprise-overview-rag.md"
+      ],
+      "kb_retrieve_ms": 648.37,
+      "score_pass": true,
+      "prefix_pass": true,
+      "content_pass": true,
+      "not_top_pass": true,
+      "pass": true,
+      "provider": "local_rag"
+    }
+  ]
+}

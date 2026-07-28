@@ -61,3 +61,28 @@ def test_structure_architecture_deep_topic_sections():
     assert "AWS ステージング" in titles
     assert "デプロイ・CI/CD" in titles
     assert "概要です。" in message
+
+
+def test_faithfulness_softens_legal_certainty():
+    from src.services.concierge_output_sanitize import apply_concierge_faithfulness_guard
+
+    raw = "薬機法上問題ないと断言できます。合法です。"
+    out = apply_concierge_faithfulness_guard(raw, intent="doc_terms")
+    assert "問題ない" not in out
+    assert "合法" not in out
+
+
+def test_faithfulness_strips_operator_pii():
+    from src.services.concierge_output_sanitize import apply_concierge_faithfulness_guard
+
+    raw = "氏名：山田太郎。大学：○○大学 工学部 3年です。"
+    out = apply_concierge_faithfulness_guard(raw, intent="doc_operator")
+    assert "山田" not in out
+
+
+def test_faithfulness_strips_secret_leak():
+    from src.services.concierge_output_sanitize import apply_concierge_faithfulness_guard
+
+    raw = "キーは sk-abcdefghijklmnopqrstuvwxyz1234567890 です。"
+    out = apply_concierge_faithfulness_guard(raw, intent="architecture")
+    assert "sk-" not in out

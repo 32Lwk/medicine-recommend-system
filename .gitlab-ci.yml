@@ -36,7 +36,7 @@ local-rag-retrieve-eval:
     LOCAL_RAG_MIN_CONCIERGE_PCT: "90"
   script:
     - python scripts/build_medicine_kb_documents.py
-    - chmod +x scripts/run_local_rag_eval.sh
+    - chmod +x scripts/run_local_rag_eval.sh scripts/concierge-technical-faq-contract.sh
     - RUN_LOCAL_RAG_BENCHMARK=1 bash scripts/run_local_rag_eval.sh
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -44,16 +44,42 @@ local-rag-retrieve-eval:
         - src/services/local_rag*.py
         - src/services/local_rag_*.py
         - src/services/bedrock_kb_retrieve.py
+        - src/services/concierge_intent.py
+        - src/services/concierge_output_sanitize.py
+        - src/services/concierge_tech_synonyms.py
+        - src/content/concierge_tech_reference.py
+        - src/agents/concierge_agent.py
         - config/local_rag_config.py
+        - docs/concierge/**/*
+        - docs/public/**/*
         - data/**/*
         - scripts/build_medicine_kb_documents.py
         - scripts/build_local_rag_index.py
-        - scripts/eval_medicine_kb.py
-        - scripts/eval_concierge_kb.py
+        - scripts/eval_concierge_*.py
         - scripts/run_local_rag_eval.sh
+        - scripts/concierge-technical-faq-contract.sh
         - scripts/eval_local_rag_e2e.py
+        - tests/fixtures/concierge_*.yaml
         - tests/fixtures/medicine_kb_eval.yaml
-        - tests/fixtures/concierge_kb_eval.yaml
         - tests/fixtures/local_rag_e2e.yaml
         - tests/services/test_local_rag_router.py
+        - tests/concierge/**/*
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+concierge-meta-kb-contract:
+  extends: .chat-pipeline-v2-test
+  script:
+    - chmod +x scripts/concierge-technical-faq-contract.sh
+    - bash scripts/concierge-technical-faq-contract.sh
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - src/services/concierge_intent.py
+        - src/services/concierge_output_sanitize.py
+        - src/content/concierge_tech_reference.py
+        - src/agents/concierge_agent.py
+        - docs/concierge/**/*
+        - tests/fixtures/concierge_*.yaml
+        - scripts/eval_concierge_*.py
+        - scripts/concierge-technical-faq-contract.sh
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

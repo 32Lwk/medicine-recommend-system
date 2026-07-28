@@ -50,6 +50,14 @@ _kb_pip() {
 echo "==> [1/4] Refresh changelog digest"
 _kb_python "$ROOT/scripts/write_changelog_digest.py"
 
+echo "==> [1b/4] Build local RAG embed index (concierge + medicine)"
+if _kb_python -c "import os; raise SystemExit(0 if os.environ.get('OPENAI_API_KEY') else 1)" 2>/dev/null; then
+  _kb_python "$ROOT/scripts/build_local_rag_index.py" --namespace all \
+    || echo "WARN: local RAG embed index build failed (BM25 remains active)"
+else
+  echo "    OPENAI_API_KEY unset — skip embed index (BM25 + router only)"
+fi
+
 echo "==> [2/4] Sync Concierge KB sources"
 bash "$ROOT/scripts/sync-concierge-kb-to-s3.sh"
 

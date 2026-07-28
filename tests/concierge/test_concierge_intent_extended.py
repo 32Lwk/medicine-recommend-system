@@ -179,6 +179,14 @@ def test_probe_skips_medicine_consultation():
     assert probe_meta_concierge_intent("頭が痛い") is None
 
 
+def test_build_ambiguous_meta_clarification():
+    from src.services.concierge_intent import build_ambiguous_meta_clarification
+
+    assert build_ambiguous_meta_clarification("技術？") is not None
+    assert build_ambiguous_meta_clarification("それについて教えて") is not None
+    assert build_ambiguous_meta_clarification("頭が痛い") is None
+
+
 def test_resolve_pre_triage_includes_greeting_and_meta():
     assert resolve_pre_triage_concierge_intent("こんにちは") == "greeting"
     assert resolve_pre_triage_concierge_intent("あなたについて") == "app_about"

@@ -112,6 +112,12 @@ def test_is_aws_staging_site_from_public_url(monkeypatch):
     assert aws_features.is_aws_staging_site()
 
 
+def test_concierge_bedrock_env_normalized_to_local(monkeypatch):
+    monkeypatch.setenv("CONCIERGE_RAG_PROVIDER", "bedrock_kb")
+    assert aws_features.get_concierge_rag_provider() == "local"
+    assert not aws_features.use_bedrock_kb_rag()
+
+
 def test_concierge_technical_reference_on_aws_staging(monkeypatch):
     monkeypatch.setenv("APP_ENV", "production")
     monkeypatch.setenv("PUBLIC_SITE_URL", "https://aws.medicine.yutok.dev")

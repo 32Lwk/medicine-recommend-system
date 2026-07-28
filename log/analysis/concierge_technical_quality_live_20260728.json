@@ -1,0 +1,220 @@
+{
+  "eval": "concierge_technical_quality_live",
+  "fixture": "tests/fixtures/concierge_technical_quality_live.yaml",
+  "timestamp": "2026-07-28T11:31:28.682530+00:00",
+  "total": 10,
+  "passed": 8,
+  "pass_pct": 80.0,
+  "min_pass_pct": 85.0,
+  "tier": "judge-pass",
+  "judge_enabled": true,
+  "latency_ms_p95": 4119.8,
+  "latency_ms_avg": 2541.1,
+  "go": false,
+  "results": [
+    {
+      "id": "live-git-remote",
+      "message": "GitLabとGitHubの違いは？このプロジェクトではどっちが正本？",
+      "intent": "architecture",
+      "pass": true,
+      "rule_pass": true,
+      "judge_recovered": false,
+      "failures": [],
+      "latency_ms": 4119.8,
+      "llm_used": true,
+      "judge": {
+        "on_topic": 1.0,
+        "grounded": 1.0,
+        "user_focus": 1.0,
+        "context_aware": 1.0,
+        "pass": true,
+        "reason": "質問に対して具体的に答え、プロジェクトの状況を明確に説明しているため。"
+      },
+      "answer_preview": "GitLab と GitHub はどちらもソースコードを管理して共同作業するためのサービスですが、このプロジェクトでは役割が分かれています。現在は GitHub が正本で、日常の push や CI・デプロイは GitHub 側を使います。GitLab はバックアップ用のミラーとして残してあり、GitHub に問題が起きたときの退避先です。\n\n必要なら、このプロジェクトでの「日常の push の流れ」も短く説明できます。"
+    },
+    {
+      "id": "live-cross-cloud",
+      "message": "GCP本番とAWSステージング、ざっくり何が違う？",
+      "intent": "architecture",
+      "pass": false,
+      "rule_pass": true,
+      "judge_recovered": false,
+      "failures": [
+        "judge: 回答は質問に対して具体的な違いを示しているが、GCPとAWSの機能に関する情報が多すぎて、ユーザーの意図に対する直接的な回答が不足している。"
+      ],
+      "latency_ms": 3316.0,
+      "llm_used": true,
+      "judge": {
+        "on_topic": 0.8,
+        "grounded": 0.7,
+        "user_focus": 0.9,
+        "context_aware": 0.5,
+        "pass": false,
+        "reason": "回答は質問に対して具体的な違いを示しているが、GCPとAWSの機能に関する情報が多すぎて、ユーザーの意図に対する直接的な回答が不足している。"
+      },
+      "answer_preview": "ざっくり言うと、GCP本番は利用者向けの本番環境で、安定性を優先して動いています。AWSステージングは公開されている試験用環境で、AWSの機能を使った動作確認をしやすい構成です。\n\n具体的には、GCP本番は DeepL と Google Cloud Text-to-Speech、Local RAG が基本で、AWS専用の機能は使いません。AWSステージングは Amazon Translate、Amazon Polly、必要に応じて Bedrock のナレッジ検索やキャッシュなどを試せます。医薬品画像のCDNは共通なので、見た目の画像URLは同じです。\n\n市販薬の候補選定自体は、どちらでもルールベースで行われます。"
+    },
+    {
+      "id": "live-codepipeline",
+      "message": "デプロイってどう流れてるの？CodePipeline",
+      "intent": "architecture",
+      "pass": true,
+      "rule_pass": true,
+      "judge_recovered": false,
+      "failures": [],
+      "latency_ms": 2731.9,
+      "llm_used": true,
+      "judge": {
+        "on_topic": 1.0,
+        "grounded": 1.0,
+        "user_focus": 1.0,
+        "context_aware": 1.0,
+        "pass": true,
+        "reason": "回答はユーザーの質問に直接関連し、具体的なプロセスを説明しているため、全ての基準を満たしている。"
+      },
+      "answer_preview": "GitHub の main ブランチに push すると、AWS 側では CodePipeline「medicine-recommend-main」が動き、CodeBuild「medicine-recommend-build」で Docker イメージを作って ECR に push し、そのあと ECS Express のサービスを新しい版に切り替えます。 \nデプロイ後は CodeBuild の後処理で、まず /health で新しいコミットの反映を確認し、必要なときだけ static アセットやナレッジの同期も行います。 \n最後に、翻訳・読み上げ・CloudFront の配信などが動くかを簡単な確認でチェックします。 \nもしよければ次に、「反映確認はどこを見るのか」か「失敗時はどう切り分けるのか」を続けて説明できます。"
+    },
+    {
+      "id": "live-rule-based",
+      "message": "市販薬のおすすめ機能はAI？それともルールベース？",
+      "intent": "architecture",
+      "pass": false,
+      "rule_pass": true,
+      "judge_recovered": false,
+      "failures": [
+        "judge: ユーザーの質問に対して直接的な回答がなく、関連性が低い内容になっているため。"
+      ],
+      "latency_ms": 1495.3,
+      "llm_used": true,
+      "judge": {
+        "on_topic": 0.0,
+        "grounded": 0.0,
+        "user_focus": 0.0,
+        "context_aware": 0.0,
+        "pass": false,
+        "reason": "ユーザーの質問に対して直接的な回答がなく、関連性が低い内容になっているため。"
+      },
+      "answer_preview": "市販薬の候補選定は、AIが自由に決めるのではなく、ルールベースで行っています。 \nAIは主に、質問の意図を整理したり、説明をわかりやすくしたりする役割です。 \nそのため、市販薬名そのものをAIが創作しておすすめする仕組みではありません。"
+    },
+    {
+      "id": "live-data-storage",
+      "message": "会話内容ってどこに保存されてるの？",
+      "intent": "architecture",
+      "pass": true,
+      "rule_pass": true,
+      "judge_recovered": false,
+      "failures": [],
+      "latency_ms": 1920.9,
+      "llm_used": true,
+      "judge": {
+        "on_topic": 1.0,
+        "grounded": 1.0,
+        "user_focus": 1.0,
+        "context_aware": 1.0,
+        "pass": true,
+        "reason": "質問に対して具体的かつ正確に答えており、関連情報も提供しているため。"
+      },
+      "answer_preview": "会話内容は、セッション単位で PostgreSQL に保存されています。 \n本番では Neon、AWS ステージングでは別の PostgreSQL に分かれていて、データは環境ごとに共有しません。\n\n保存されるのは、相談内容を続けて案内するためのメッセージ履歴や、推奨に必要な症状・属性情報です。詳細な取扱いはプライバシーポリシーをご確認ください。"
+    },
+    {
+      "id": "live-r2-cdn",
+      "message": "医薬品画像のCDNはどこ？",
+      "intent": "architecture",
+      "pass": true,
+      "rule_pass": true,
+      "judge_recovered": false,
+      "failures": [],
+      "latency_ms": 1530.0,
+      "llm_used": true,
+      "judge": {
+        "on_topic": 1.0,
+        "grounded": 1.0,
+        "user_focus": 1.0,
+        "context_aware": 1.0,
+        "pass": true,
+        "reason": "質問に対して具体的な情報を提供し、ユーザーの意図に沿った回答をしているため。"
+      },
+      "answer_preview": "医薬品画像のCDNは https://images.yutok.dev/otc/ です。 \nクラウドをまたいで同じ画像URLを使うようになっています。\n\n必要なら、どの画面でその画像が使われるかも案内できます。"
+    },
+    {
+      "id": "live-bedrock-kb",
+      "message": "Bedrock KBって何のため？今動いてる？",
+      "intent": "architecture",
+      "pass": true,
+      "rule_pass": true,
+      "judge_recovered": false,
+      "failures": [],
+      "latency_ms": 3147.9,
+      "llm_used": true,
+      "judge": {
+        "on_topic": 0.9,
+        "grounded": 0.8,
+        "user_focus": 0.9,
+        "context_aware": 0.7,
+        "pass": true,
+        "reason": "ユーザーの質問に対して具体的にBedrock KBの目的と現状を説明しており、関連情報も提供しているため。"
+      },
+      "answer_preview": "Bedrock KB は、技術 FAQ と市販薬まわりの説明を検索して、回答の根拠を補うためのものです。今の構成では、Concierge 用と市販薬説明用の2つがあり、公開ドキュメントの案内や医薬品のQ&A層で使われます。\n\n今は動いています。AWS ステージングでは Bedrock Managed Knowledge Base を使える状態で、推奨の順位づけそのものは変えず、説明やQ&Aの補強に使っています。GCP 本番は Bedrock KB へ切り替えず、別の検索方式を維持しています。\n\nもし知りたいのが「今この画面で使われているか」なら、質問の種類によって使う経路が分かれます。技術・案内系なら検索補強、市販薬の相談ならルールベースの候補選定が中心です。"
+    },
+    {
+      "id": "live-multi-agent",
+      "message": "マルチエージェントって具体的に誰が何担当？",
+      "intent": "architecture",
+      "pass": true,
+      "rule_pass": true,
+      "judge_recovered": false,
+      "failures": [],
+      "latency_ms": 2082.0,
+      "llm_used": true,
+      "judge": {
+        "on_topic": 0.8,
+        "grounded": 0.7,
+        "user_focus": 0.9,
+        "context_aware": 0.6,
+        "pass": true,
+        "reason": "回答はユーザーの質問に対して具体的な情報を提供しており、関連するエージェントの役割を明確に説明しているため。"
+      },
+      "answer_preview": "いまは私が返しています。返信文はAIが生成していて、市販薬候補の選定自体はルールベースで行われます。\n\nこのサービスでは、入力内容に応じて担当が分かれます。症状や市販薬の相談は PhysicalOrchestrator、挨拶やアプリ説明は ConciergeAgent、市販薬の購入後の質問は AskAgent、店舗や遺失物は StoreInquiryAgent、気持ちの相談は CounselingManager、緊急性が高い内容は EmergencyRouter、推奨理由の説明は ExplanationAgent が担当します。"
+    },
+    {
+      "id": "live-sse",
+      "message": "SSEってこのアプリでは何に使ってる？",
+      "intent": "architecture",
+      "pass": true,
+      "rule_pass": true,
+      "judge_recovered": false,
+      "failures": [],
+      "latency_ms": 1802.1,
+      "llm_used": true,
+      "judge": {
+        "on_topic": 1.0,
+        "grounded": 1.0,
+        "user_focus": 1.0,
+        "context_aware": 1.0,
+        "pass": true,
+        "reason": "回答はユーザーの質問に直接関連し、具体的な用途を説明しているため。"
+      },
+      "answer_preview": "このアプリでは、SSEはチャットの回答を少しずつ順番に表示するために使っています。長い案内や市販薬の候補説明を、待たせずに途中から見せられるのが用途です。画像やカードの内容を含む応答でも、まとめて返すより自然に表示できます。"
+    },
+    {
+      "id": "live-local-rag-why",
+      "message": "なぜ Bedrock KB じゃなく Local RAG を使うの？",
+      "intent": "architecture",
+      "pass": true,
+      "rule_pass": true,
+      "judge_recovered": false,
+      "failures": [],
+      "latency_ms": 3264.9,
+      "llm_used": true,
+      "judge": {
+        "on_topic": 1.0,
+        "grounded": 1.0,
+        "user_focus": 1.0,
+        "context_aware": 1.0,
+        "pass": true,
+        "reason": "質問に対して具体的かつ明確に答えており、情報も正確で関連性が高い。"
+      },
+      "answer_preview": "Bedrock KB ではなく Local RAG を使うのは、GCP 本番と AWS ステージングで同じ仕組みを使えて、コストと運用を抑えやすいからです。Local RAG はリポジトリ内の文書を BM25 と埋め込みの両方で検索するので、固有名詞に強く、言い換えにも比較的強い案内ができます。\n\n一方で Bedrock KB は AWS 専用なので GCP 本番では使えませんし、Managed KB の運用や再取り込みの扱いも必要になります。Local RAG ならコーパスを Git で管理でき、推奨のスコアリング本体は変えずに、説明やQ&Aだけを安定して出せます。\n\n要するに、両環境でそろえて動かせること、低コストであること、そして案内の再現性を保ちやすいことが主な理由です。"
+    }
+  ]
+}

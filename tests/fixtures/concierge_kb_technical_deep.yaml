@@ -1,0 +1,79 @@
+# Concierge KB retrieve eval — 技術選定・深い Why
+
+scenarios:
+  - id: deep-why-local-rag
+    query: "なぜ Bedrock KB じゃなく Local RAG を使うの？"
+    intent: architecture
+    expected_source_prefix: "concierge/technical/08"
+    min_score: 0.4
+    must_contain_any:
+      - "Local RAG"
+      - "OpenSearch"
+
+  - id: deep-why-rule-based
+    query: "なぜ LLM で薬を選ばないの？"
+    intent: architecture
+    expected_source_prefix: "concierge/"
+    min_score: 0.4
+    must_contain_any:
+      - "ルールベース"
+      - "rule"
+      - "スコアリング"
+
+  - id: deep-why-cross-cloud
+    query: "GCP 本番と AWS ステージングを分けた理由"
+    intent: architecture
+    expected_source_prefix: "concierge/technical/08"
+    min_score: 0.4
+
+  - id: deep-sse-meaning
+    query: "SSE とは何？このアプリでは"
+    intent: architecture
+    expected_source_prefix: "concierge/technical/09"
+    min_score: 0.4
+
+  - id: deep-intent-router
+    query: "IntentRouter の役割"
+    intent: architecture
+    expected_source_prefix: "concierge/"
+    min_score: 0.4
+    must_contain_any:
+      - "IntentRouter"
+
+  - id: deep-why-r2
+    query: "画像 CDN に R2 を使う理由"
+    intent: architecture
+    expected_source_prefix: "concierge/technical/08"
+    min_score: 0.4
+    must_contain_any:
+      - "R2"
+
+  - id: deep-github-canonical
+    query: "GitHub と GitLab どっちが正本？"
+    intent: architecture
+    expected_source_prefix: "ops/GITLAB"
+    min_score: 0.4
+
+  - id: deep-neon-why
+    query: "データベース Neon を使う理由"
+    intent: architecture
+    expected_source_prefix: "concierge/"
+    min_score: 0.4
+    must_contain_any:
+      - "Neon"
+      - "PostgreSQL"
+
+  - id: deep-translate-split
+    query: "GCP と AWS で翻訳サービスが違う理由"
+    intent: architecture
+    expected_source_prefix: "concierge/technical/01"
+    min_score: 0.4
+
+  - id: deep-pipeline-v2
+    query: "Chat Pipeline v2 を採用している理由"
+    intent: architecture
+    expected_source_prefix: "concierge/technical/02"
+    min_score: 0.4
+    must_contain_any:
+      - "Chat Pipeline"
+      - "IntentRouter"

@@ -56,16 +56,18 @@ def use_aws_translate() -> bool:
 
 
 def get_concierge_rag_provider() -> str:
+    """Concierge Meta KB は Local RAG 固定（Bedrock KB は非推奨・local に正規化）。"""
     p = _env("CONCIERGE_RAG_PROVIDER", CONCIERGE_RAG_LOCAL).lower()
     if p in (CONCIERGE_RAG_BEDROCK, "bedrock", "kb"):
-        return CONCIERGE_RAG_BEDROCK
+        return CONCIERGE_RAG_LOCAL
     if p in (CONCIERGE_RAG_NONE, "off", "false", "0", "disabled"):
         return CONCIERGE_RAG_NONE
     return CONCIERGE_RAG_LOCAL
 
 
 def use_bedrock_kb_rag() -> bool:
-    return get_concierge_rag_provider() == CONCIERGE_RAG_BEDROCK
+    """Concierge 向け Bedrock KB は利用しない（常に False）。"""
+    return False
 
 
 def get_medicine_rag_provider() -> str:

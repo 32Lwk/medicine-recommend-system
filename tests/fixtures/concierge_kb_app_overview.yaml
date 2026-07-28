@@ -1,0 +1,71 @@
+# Concierge KB retrieve eval — アプリ概要・作成意図
+
+scenarios:
+  - id: app-mission-why-built
+    query: "なぜこのアプリを作ったの？"
+    intent: doc_app_overview
+    expected_source_prefix: "concierge/technical/11"
+    min_score: 0.4
+    must_contain_any:
+      - "セルフメディケーション"
+      - "なぜ"
+
+  - id: app-mission-beta-status
+    query: "今 β版 なの？誰向け？"
+    intent: doc_app_overview
+    expected_source_prefix: "concierge/technical/11"
+    min_score: 0.4
+    must_contain_any:
+      - "β"
+      - "試験"
+
+  - id: app-capabilities-otc
+    query: "市販薬の相談できる？"
+    intent: capabilities
+    expected_source_prefix: "content/concierge_knowledge"
+    min_score: 0.4
+
+  - id: app-about-identity
+    query: "あなたは誰？何のツール？"
+    intent: app_about
+    expected_source_prefix: "content/concierge_knowledge"
+    min_score: 0.4
+
+  - id: app-overview-features
+    query: "主な特徴を教えて"
+    intent: doc_app_overview
+    expected_source_prefix: "public/アプリ概要"
+    min_score: 0.4
+
+  - id: app-enterprise-overview
+    query: "企業向け概要"
+    intent: architecture
+    expected_source_prefix: "public/"
+    min_score: 0.4
+
+  - id: app-not-hospital
+    query: "病院ですか？"
+    intent: doc_app_overview
+    expected_source_prefix: "public/アプリ概要"
+    min_score: 0.4
+    must_contain_any:
+      - "医療機関"
+      - "診断"
+
+  - id: app-multilingual
+    query: "対応言語は？"
+    intent: capabilities
+    expected_source_prefix: "content/concierge_knowledge"
+    min_score: 0.4
+
+  - id: app-future-vision
+    query: "将来の展望"
+    intent: doc_app_overview
+    expected_source_prefix: "public/アプリ概要"
+    min_score: 0.4
+
+  - id: app-mission-ssot
+    query: "作成意図と現状"
+    intent: doc_app_overview
+    expected_source_prefix: "concierge/technical/11"
+    min_score: 0.4

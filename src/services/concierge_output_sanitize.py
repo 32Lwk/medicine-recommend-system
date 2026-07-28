@@ -31,6 +31,25 @@ _SYMPTOM_BOUNDARY_LINE = (
     "症状やお薬の選び方については、具体的な症状を入力していただければ別途ご案内します。"
 )
 
+# faithfulness: 法務断言・運営者 PII 漏洩の検出・緩和
+_LEGAL_CERTAINTY_RE = re.compile(
+    r"(問題ない|合法|違法ではない|違反しない|大丈夫です|安心してください)"
+)
+_LEGAL_CERTAINTY_REPLACEMENT = (
+    "本サービスの位置づけ（OTC参考案内・診断処方なし・β版）については"
+    "利用規約・免責事項の記載に基づきご説明します"
+)
+_OPERATOR_PII_RE = re.compile(
+    r"(?:氏名|名前)[:：]?\s*[\u4e00-\u9fff]{2,4}|"
+    r"(?:大学|学部|学年)[:：]?\s*[\u4e00-\u9fff\w\s]{2,20}|"
+    r"(?:生年月日|住所)[:：]"
+)
+_SECRET_LEAK_RE = re.compile(
+    r"\b(?:sk-[a-zA-Z0-9]{20,}|"
+    r"AKIA[0-9A-Z]{16}|"
+    r"postgresql://[^\s]+)\b"
+)
+
 
 def _replace_env_assignments(text: str) -> str:
     return _ENV_ASSIGNMENT_RE.sub("", text)
@@ -98,7 +117,33 @@ def sanitize_concierge_meta_output(
         result = _strip_internal_paths(result)
 
     result = _collapse_whitespace(result)
-    return strip_concierge_prompt_leakage(result)
+    result = strip_concierge_prompt_leakage(result)
+    return apply_concierge_faithfulness_guard(result, intent=intent)
+
+
+def apply_concierge_faithfulness_guard(
+    text: str,
+    *,
+    intent: str = "",
+    user_text: str = "",
+) -> str:
+    """sanitize 後段: 法務断言・PII・シークレット漏洩を緩和。"""
+    result = (text or "").strip()
+    if not result:
+        return result
+
+    if _SECRET_LEAK_RE.search(result):
+        result = _SECRET_LEAK_RE.sub("[削除済み]", result)
+
+    intent_key = (intent or "").strip().lower()
+    if intent_key in ("doc_terms", "doc_privacy"):
+        while _LEGAL_CERTAINTY_RE.search(result):
+            result = _LEGAL_CERTAINTY_RE.sub(_LEGAL_CERTAINTY_REPLACEMENT, result, count=1)
+    if intent_key == "doc_operator":
+        result = _OPERATOR_PII_RE.sub("", result)
+        result = _collapse_whitespace(result)
+
+    return result
 
 
 _SYMPTOM_HINT_RE = re.compile(

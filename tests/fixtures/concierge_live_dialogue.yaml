@@ -1,0 +1,111 @@
+# Concierge 多ターン会話 E2E — scripted + LLM ユーザー simulation 混在
+# eval_concierge_dialogue_e2e.py で実行
+
+forbidden_patterns:
+  - "TRANSLATION_PROVIDER"
+  - "CONCIERGE_RAG_PROVIDER"
+  - "OPENAI_API_KEY"
+  - "環境変数を参照"
+  - "案内できません"
+
+dialogues:
+  - id: dlg-infra-deep-dive
+    description: インフラ概要 → 深掘り follow-up
+    mode: scripted
+    goal: GCP/AWS の役割分担とデプロイ経路を理解する
+    turns:
+      - user: "インフラざっくり教えて"
+        expect_intent: architecture
+        min_chars: 40
+        must_contain_any: ["GCP", "AWS", "Cloud Run", "ECS"]
+      - user: "デプロイの流れも知りたい"
+        expect_intent: architecture
+        must_contain_any: ["CodePipeline", "CodeBuild", "ECR", "デプロイ"]
+      - user: "もうちょい詳しく"
+        expect_intent: architecture
+        must_contain_any: ["GCP", "AWS", "ECS", "CodePipeline"]
+
+  - id: dlg-app-mission-context
+    description: アプリ目的 → 背景深掘り
+    mode: scripted
+    goal: 作成意図と β 版の位置づけを理解する
+    turns:
+      - user: "このアプリ何のため？"
+        expect_intent: doc_app_overview
+        must_contain_any: ["セルフメディケーション", "市販薬", "β", "試験"]
+      - user: "開発背景もう少し"
+        expect_intent: doc_app_overview
+        must_contain_any: ["ドラッグストア", "作成", "セルフメディケーション", "現場"]
+      - user: "将来はどうなる？"
+        expect_intent: doc_app_overview
+        must_contain_any: ["将来", "展望", "β", "改善"]
+
+  - id: dlg-rag-topic-switch
+    description: Local RAG → 別トピックへ自然遷移
+    mode: scripted
+    goal: 文脈を保ちつつトピック切替に対応できるか
+    turns:
+      - user: "Local RAG って何？"
+        expect_intent: architecture
+        must_contain_any: ["Local RAG", "BM25", "検索", "Bedrock"]
+      - user: "じゃあ GitHub と GitLab は？"
+        expect_intent: architecture
+        must_contain_any: ["GitHub", "GitLab", "正本", "ミラー"]
+      - user: "さっきの RAG の話、もう少し"
+        expect_intent: architecture
+        must_contain_any: ["Local RAG", "BM25", "ナレッジ", "検索"]
+
+  - id: dlg-privacy-cross
+    description: 技術 → プライバシー follow-up
+    mode: scripted
+    goal: 直前が技術でもプライバシー質問に正しく切替
+    turns:
+      - user: "データ保存どこ？"
+        expect_intent: architecture
+        must_contain_any: ["PostgreSQL", "Neon", "保存"]
+      - user: "個人情報の取り扱いは？"
+        expect_intent: doc_privacy
+        must_contain_any: ["個人情報", "プライバシー", "利用目的"]
+
+  - id: dlg-legal-boundary
+    description: 医療行為の位置づけ確認
+    mode: scripted
+    goal: 法務断言せず参考案内の位置づけを説明
+    turns:
+      - user: "病院ですか？"
+        expect_intent: doc_app_overview
+        must_contain_any: ["医療機関", "診断", "参考", "市販薬"]
+      - user: "医療行為に当たる？"
+        expect_intent: doc_terms
+        must_not_contain: ["問題ない", "合法"]
+        must_contain_any: ["診断", "処方", "参考", "免責"]
+
+  - id: dlg-gpt-infra-explore
+    description: LLM がユーザー役 — インフラを自然に深掘り
+    mode: gpt_user
+    goal: 非エンジニアがインフラとデプロイについて段階的に理解する
+    max_turns: 4
+    seed_user: "このサービスのサーバー構成、素人にもわかるように教えて"
+    opening_expect:
+      expect_intent: architecture
+      min_chars: 35
+
+  - id: dlg-gpt-app-curiosity
+    description: LLM がユーザー役 — アプリの背景を会話で掘る
+    mode: gpt_user
+    goal: なぜ作ったか・誰向けか・β版の意味を会話で確認する
+    max_turns: 4
+    seed_user: "なんでこんなアプリ作ったの？個人的に気になって"
+    opening_expect:
+      expect_intent: doc_app_overview
+      min_chars: 30
+
+  - id: dlg-gpt-mixed-meta
+    description: LLM がユーザー役 — 技術とアプリ概要を混在
+    mode: gpt_user
+    goal: 技術質問とアプリ概要を行き来しても文脈を維持する
+    max_turns: 5
+    seed_user: "市販薬の相談ツールって書いてあるけど、AIなの？ルールなの？"
+    opening_expect:
+      expect_intent: architecture
+      min_chars: 30

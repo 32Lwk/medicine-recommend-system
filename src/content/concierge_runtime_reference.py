@@ -17,7 +17,7 @@ def wants_runtime_reference(user_text: str) -> bool:
     return bool(_RUNTIME_QUESTION_RE.search((user_text or "").strip()))
 
 
-def format_public_runtime_reference_block() -> str:
+def format_public_runtime_reference_block(*, user_text: str = "") -> str:
     """
     プロセス内の公開情報のみ（/health 相当）。
     環境変数名・Secrets は列挙しない。
@@ -28,7 +28,6 @@ def format_public_runtime_reference_block() -> str:
         get_translation_provider,
         get_tts_provider,
         is_aws_staging_site,
-        use_bedrock_kb_rag,
     )
 
     lines = [
@@ -55,8 +54,7 @@ def format_public_runtime_reference_block() -> str:
             lines.append("- 読み上げ: Google Cloud Text-to-Speech を利用")
         else:
             lines.append("- 読み上げ: Web Speech API（ブラウザ）")
-        if use_bedrock_kb_rag():
-            lines.append("- Concierge ナレッジ検索: Bedrock KB 設定済み")
+        lines.append("- Concierge ナレッジ検索: Local RAG（BM25 + 埋め込み）")
         cdn = get_static_cdn_base_url()
         if cdn:
             lines.append(f"- static アセット CDN: {cdn}")
@@ -78,6 +76,14 @@ def format_public_runtime_reference_block() -> str:
     if img:
         lines.append(f"- 医薬品画像 CDN: {img.rstrip('/')}/")
 
+    ut = (user_text or "").strip()
+    if re.search(r"/health/aws|health\s*/\s*aws", ut, re.I):
+        lines.append(
+            "- GET /health/aws — 翻訳・TTS・KB 等の利用有無（Secrets や env 変数名は含まない）"
+        )
+    if re.search(r"\b/health\b|ヘルス", ut, re.I):
+        lines.append("- GET /health — 稼働状態と git_commit（短縮）")
+
     repo = os.getenv("GIT_REPO_URL") or "https://github.com/32Lwk/medicine-recommend-system"
     if repo.strip():
         lines.append(f"- ソース公開: {repo.strip().rstrip('/')}")
@@ -93,7 +99,7 @@ def augment_with_runtime_reference(
 ) -> str:
     if not deep and not wants_runtime_reference(user_text):
         return base
-    block = format_public_runtime_reference_block()
+    block = format_public_runtime_reference_block(user_text=user_text)
     if not block:
         return base
     return f"{base.rstrip()}\n\n{block}"

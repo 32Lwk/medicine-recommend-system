@@ -1,0 +1,185 @@
+# Concierge 回答品質 contract eval — SSOT 参照・intent・深掘り（LLM 生成本文は対象外）
+
+scenarios:
+  # 技術 deep (10)
+  - id: qual-arch-cross-cloud
+    message: "GCP と AWS の構成の違いを詳しく教えて"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "GCP 本番"
+      - "AWS ステージング"
+
+  - id: qual-arch-local-rag
+    message: "Local RAG はどう動く？"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "BM25"
+      - "LOCAL_RAG"
+
+  - id: qual-arch-intent-router
+    message: "IntentRouter の役割は？"
+    expected_intent: architecture
+    reference_must_contain:
+      - "IntentRouter"
+
+  - id: qual-arch-sse
+    message: "SSE とは？"
+    expected_intent: architecture
+    reference_must_contain:
+      - "Server-Sent Events"
+
+  - id: qual-arch-neon
+    message: "Neon とは何に使ってる？"
+    expected_intent: architecture
+    reference_must_contain:
+      - "PostgreSQL"
+
+  - id: qual-arch-rule-based
+    message: "ルールベースで薬はどう選ぶ？"
+    expected_intent: architecture
+    reference_must_contain:
+      - "ルールベース"
+
+  - id: qual-arch-translate
+    message: "AWS では翻訳は何を使ってる？"
+    expected_intent: architecture
+    expect_deep_dive: true
+    reference_must_contain:
+      - "Amazon Translate"
+
+  - id: qual-arch-security
+    message: "データ保存とセキュリティ"
+    expected_intent: architecture
+    reference_must_contain:
+      - "04-data-security"
+
+  - id: qual-arch-decisions
+    message: "Local RAG を選んだ技術的理由は？"
+    expected_intent: architecture
+    reference_must_contain:
+      - "08-technical-decisions"
+
+  - id: qual-arch-agents
+    message: "マルチエージェント構成を教えて"
+    expected_intent: architecture
+    reference_must_contain:
+      - "TriageAgent"
+
+  # capabilities / app (5)
+  - id: qual-cap-otc
+    message: "OTCってなに？"
+    expected_intent: capabilities
+    skip_reference: true
+
+  - id: qual-capabilities
+    message: "何ができる？"
+    expected_intent: capabilities
+    skip_reference: true
+
+  - id: qual-app-about
+    message: "あなたについて教えて"
+    expected_intent: app_about
+    skip_reference: true
+
+  - id: qual-mission-why
+    message: "なぜ作ったの？"
+    expected_intent: doc_app_overview
+    expect_deep_dive: false
+    reference_must_contain:
+      - "11-app-mission"
+
+  - id: qual-mission-beta
+    message: "β版の現状は？"
+    expected_intent: doc_app_overview
+    reference_must_contain:
+      - "β"
+
+  # 法務 intent (8) — reference は doc path 存在確認
+  - id: qual-legal-privacy
+    message: "プライバシーポリシーは？"
+    expected_intent: doc_privacy
+    skip_reference: true
+    doc_intent: doc_privacy
+
+  - id: qual-legal-terms
+    message: "利用規約"
+    expected_intent: doc_terms
+    skip_reference: true
+    doc_intent: doc_terms
+
+  - id: qual-legal-yakki
+    message: "薬機法大丈夫？"
+    expected_intent: doc_terms
+    skip_reference: true
+    doc_intent: doc_terms
+
+  - id: qual-legal-consultation
+    message: "相談窓口 #7119"
+    expected_intent: doc_consultation
+    skip_reference: true
+    doc_intent: doc_consultation
+
+  - id: qual-legal-operator
+    message: "お問い合わせ"
+    expected_intent: doc_operator
+    skip_reference: true
+    doc_intent: doc_operator
+
+  - id: qual-legal-disclaimer
+    message: "免責事項"
+    expected_intent: doc_terms
+    skip_reference: true
+
+  - id: qual-legal-cross-privacy
+    message: "チャットデータ プライバシー"
+    expected_intent: doc_privacy
+    skip_reference: true
+
+  - id: qual-legal-app-overview
+    message: "アプリの概要"
+    expected_intent: doc_app_overview
+    skip_reference: true
+
+  # Medicine 境界 (5)
+  - id: qual-boundary-headache
+    message: "頭痛がします"
+    expected_intent: null
+    skip_reference: true
+
+  - id: qual-boundary-cold
+    message: "風邪薬教えて"
+    expected_intent: null
+    skip_reference: true
+
+  - id: qual-boundary-fever
+    message: "熱がある"
+    expected_intent: null
+    skip_reference: true
+
+  - id: qual-boundary-dosing
+    message: "1日何錠飲めばいい？"
+    expected_intent: null
+    skip_reference: true
+
+  - id: qual-boundary-interaction
+    message: "この薬と併用していい？"
+    expected_intent: null
+    skip_reference: true
+
+  # changelog (2)
+  - id: qual-changelog-recent
+    message: "最近の更新"
+    expected_intent: doc_changelog
+    skip_reference: true
+
+  - id: qual-changelog-release
+    message: "リリース履歴"
+    expected_intent: doc_changelog
+    skip_reference: true
+
+reference_forbidden_patterns:
+  - "OPENAI_API_KEY"
+  - "CONCIERGE_RAG_PROVIDER"
+  - "os.environ"

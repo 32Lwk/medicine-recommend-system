@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -174,6 +175,60 @@ def _hybrid_rerank(
         if fallback_bm25_only_on_embed_error():
             return bm25_scored
         return []
+
+
+def _inject_pinned_uri_chunks(
+    scored: List[Tuple[float, IndexedChunk]],
+    *,
+    index: Any,
+    query: str,
+    uri_boosts: Dict[str, float],
+    min_boost: float = 6.0,
+) -> List[Tuple[float, IndexedChunk]]:
+    """高 boost URI の代表 chunk を source_uris に必ず含める（BM25 top_k 漏れ防止）。"""
+    if not uri_boosts:
+        return scored
+    pin_prefixes = [
+        uri_prefix
+        for uri_prefix, boost in uri_boosts.items()
+        if boost >= min_boost and not uri_prefix.endswith("/")
+    ]
+    if not pin_prefixes:
+        return scored
+
+    def _is_pinned(chunk: IndexedChunk) -> bool:
+        return any(chunk.virtual_uri.startswith(p) for p in pin_prefixes)
+
+    promoted: List[Tuple[float, IndexedChunk]] = []
+    rest: List[Tuple[float, IndexedChunk]] = []
+    seen_promoted: set[str] = set()
+    for score, chunk in scored:
+        if _is_pinned(chunk) and chunk.virtual_uri not in seen_promoted:
+            promoted.append((max(score, 0.94), chunk))
+            seen_promoted.add(chunk.virtual_uri)
+        else:
+            rest.append((score, chunk))
+
+    existing = seen_promoted | {chunk.virtual_uri for _, chunk in rest}
+    pinned: List[Tuple[float, IndexedChunk]] = []
+    for uri_prefix, boost in sorted(uri_boosts.items(), key=lambda x: -x[1]):
+        if boost < min_boost or uri_prefix.endswith("/"):
+            continue
+        matched_uris = sorted(
+            {c.virtual_uri for c in index.chunks if c.virtual_uri.startswith(uri_prefix)}
+        )
+        for virtual_uri in matched_uris:
+            if virtual_uri in existing:
+                continue
+            chunk = index.best_chunk_for_uri(virtual_uri, query)
+            if chunk is None:
+                continue
+            pinned.append((min(0.95, 0.85 + boost * 0.01), chunk))
+            existing.add(virtual_uri)
+
+    pinned.sort(key=lambda x: x[0], reverse=True)
+    promoted.sort(key=lambda x: x[0], reverse=True)
+    return pinned + promoted + rest
 
 
 def _format_result(
@@ -408,14 +463,117 @@ def retrieve_local_context(
     # Concierge
     index = get_bm25_index("concierge")
     pools = concierge_uri_prefixes(intent)
-    if "企業向け" in cleaned or ("企業" in cleaned and "概要" in cleaned):
-        pools = ("local/public/",)
     uri_boosts: Dict[str, float] = {}
+    if "企業向け" in cleaned or "企業" in cleaned or "会社向け" in cleaned or "B2B" in cleaned:
+        pools = (
+            "local/public/",
+            "local/concierge/rag/enterprise-overview-rag",
+            "local/concierge/technical/12",
+        )
+        uri_boosts["local/public/企業"] = 7.0
+        uri_boosts["local/public/会社"] = 6.0
+        uri_boosts["local/concierge/rag/enterprise-overview-rag"] = 3.0
+    if re.search(
+        r"規約.*プライバシー|プライバシー.*規約|法務.*横断|削除.*(?:依頼|請求)|データ削除|削除請求|商用ライセンス|人間.*案内",
+        cleaned,
+        re.I,
+    ):
+        uri_boosts["local/concierge/rag/legal-crossdoc-rag"] = 9.0
+        uri_boosts["local/public/プライバシーポリシー.md"] = 0.5
+        uri_boosts["local/public/免責事項・利用規約.md"] = 0.5
     intent_key = (intent or "").strip().lower()
-    if intent_key == "doc_changelog" and "最近" in cleaned:
+    if intent_key == "doc_changelog":
         uri_boosts["local/content/changelog-digest.json"] = 3.0
-    if intent_key == "capabilities":
-        uri_boosts["local/content/concierge_knowledge.ja.json"] = 2.5
+    elif intent_key == "capabilities":
+        uri_boosts["local/content/concierge_knowledge.ja.json"] = 6.0
+        uri_boosts["local/public/アプリ概要.md"] = 3.0
+        uri_boosts["local/concierge/rag/"] = -1.5
+    elif intent_key == "app_about":
+        uri_boosts["local/content/concierge_knowledge.ja.json"] = 6.0
+        uri_boosts["local/public/アプリ概要.md"] = 4.0
+    elif intent_key == "doc_app_overview":
+        uri_boosts["local/public/アプリ概要.md"] = 6.0
+        uri_boosts["local/concierge/technical/11-app-mission-and-status.md"] = 4.5
+        uri_boosts["local/concierge/rag/author-mission-rag.md"] = 2.0
+        uri_boosts["local/concierge/rag/app-overview-rag.md"] = 1.0
+        if re.search(r"なぜ|作った|作成意図|開発背景|きっかけ|mission|アルゴリズム|作成目的|ルールベース", cleaned, re.I):
+            uri_boosts["local/concierge/technical/11-app-mission-and-status.md"] = 8.0
+            uri_boosts["local/public/アプリ概要.md"] = max(
+                uri_boosts.get("local/public/アプリ概要.md", 0.0), 4.0
+            )
+        if re.search(r"病院|医療機関|診断|クリニック|処方", cleaned, re.I):
+            uri_boosts["local/public/アプリ概要.md"] = 10.0
+            uri_boosts["local/concierge/rag/app-overview-rag.md"] = -2.0
+        if re.search(r"開発背景|背景|もう少し|将来|展望|特徴", cleaned, re.I):
+            uri_boosts["local/public/アプリ概要.md"] = max(
+                uri_boosts.get("local/public/アプリ概要.md", 0.0), 8.0
+            )
+    elif intent_key == "doc_privacy":
+        uri_boosts["local/public/プライバシーポリシー.md"] = 7.0
+        uri_boosts["local/concierge/rag/legal-crossdoc-rag"] = 1.0
+    elif intent_key == "doc_terms":
+        uri_boosts["local/public/免責事項・利用規約.md"] = 7.0
+        uri_boosts["local/concierge/rag/legal-crossdoc-rag"] = 1.0
+    elif intent_key == "doc_consultation":
+        uri_boosts["local/public/医薬品相談先.md"] = 3.0
+    elif intent_key == "architecture":
+        uri_boosts["local/concierge/technical/12-technical-faq-rag.md"] = 1.5
+        if re.search(
+            r"デプロイ|CodePipeline|CodeBuild|ECS|ECR|インフラ|\binfra\b|反映|"
+            r"GITLAB|GitHub.*正本|正本.*GitHub|ミラー|Knowledge Base|ナレッジベース",
+            cleaned,
+            re.I,
+        ):
+            uri_boosts["local/ops/"] = 4.0
+            uri_boosts["local/concierge/rag/technical-infra-rag"] = -1.5
+        if re.search(r"AWS.*インフラ|インフラ.*構成|\binfra\b", cleaned, re.I):
+            uri_boosts["local/ops/AWS_INFRA"] = 8.0
+        if re.search(r"サーバー.*どこ|どこ.*動|ホスト|クラウド.*どこ", cleaned, re.I):
+            uri_boosts["local/concierge/technical/01"] = 8.0
+            uri_boosts["local/concierge/technical/06"] = 4.0
+        if re.search(r"なぜ|理由|選定", cleaned, re.I) and re.search(
+            r"Local RAG|Bedrock KB|Knowledge Base", cleaned, re.I
+        ):
+            uri_boosts["local/concierge/technical/08"] = 10.0
+            uri_boosts["local/concierge/rag/technical-decisions-rag"] = -2.0
+        elif re.search(r"Bedrock.*Knowledge|Bedrock KB|Knowledge Base|ナレッジベース", cleaned, re.I):
+            uri_boosts["local/ops/AWS_BEDROCK_KB"] = 8.0
+            uri_boosts["local/ops/LOCAL_RAG"] = 6.0
+        elif re.search(r"データ|保存|プライバシー|ルールベース|LLM.*薬|薬.*LLM", cleaned, re.I):
+            uri_boosts["local/ops/"] = -2.0
+        if re.search(r"GitHub|GitLab|正本|ミラー", cleaned, re.I):
+            uri_boosts["local/ops/GITLAB"] = 10.0
+            uri_boosts["local/concierge/technical/08"] = max(
+                uri_boosts.get("local/concierge/technical/08", 0.0), 4.0
+            )
+        if re.search(r"health|/health|デプロイ.*確認|版.*確認|確認方法", cleaned, re.I):
+            uri_boosts["local/concierge/technical/07"] = 8.0
+        if re.search(r"マルチエージェント|IntentRouter|TriageAgent|エージェント.*分担", cleaned, re.I):
+            uri_boosts["local/concierge/technical/10"] = 8.0
+            uri_boosts["local/concierge/rag/technical-pipeline-rag"] = -1.0
+        if re.search(r"Chat Pipeline|Pipeline v2", cleaned, re.I):
+            uri_boosts["local/dev/CHAT_PIPELINE_V2"] = 6.0
+            uri_boosts["local/concierge/technical/02"] = 4.0
+        if re.search(r"クロスクラウド|GCP.*AWS.*分け|ステージング.*理由|分けた理由|Google.*Amazon", cleaned, re.I):
+            uri_boosts["local/concierge/technical/08"] = max(
+                uri_boosts.get("local/concierge/technical/08", 0.0), 6.0
+            )
+        if re.search(r"ローカル.*RAG|Local RAG|ローカル検索", cleaned, re.I):
+            uri_boosts["local/ops/LOCAL_RAG"] = 8.0
+            uri_boosts["local/concierge/technical/12"] = 4.0
+        if re.search(r"\bSSE\b|Server[\s-]?Sent|ストリーミング", cleaned, re.I):
+            uri_boosts["local/concierge/technical/09"] = 8.0
+        if re.search(r"開発背景|作成.*意図|なぜ.*作", cleaned, re.I):
+            uri_boosts["local/concierge/technical/08"] = max(
+                uri_boosts.get("local/concierge/technical/08", 0.0), 5.0
+            )
+    try:
+        from src.services.concierge_tech_synonyms import ssot_uri_boosts_for_query
+
+        for uri, boost in ssot_uri_boosts_for_query(cleaned, intent_key).items():
+            uri_boosts[uri] = max(uri_boosts.get(uri, 0.0), boost)
+    except ImportError:
+        pass
     scored = index.search(
         cleaned,
         top_k=top_k * 3,
@@ -426,6 +584,13 @@ def retrieve_local_context(
     if pools and not scored:
         scored = index.search(cleaned, top_k=top_k * 3, min_score=min_score * 0.8)
     scored = _hybrid_rerank(scored, cleaned, "concierge")
+    if uri_boosts:
+        scored = _inject_pinned_uri_chunks(
+            scored,
+            index=index,
+            query=cleaned,
+            uri_boosts=uri_boosts,
+        )
     return _format_result(
         scored,
         top_k=top_k,

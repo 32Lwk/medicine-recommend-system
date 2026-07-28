@@ -2,9 +2,9 @@
 """Concierge Managed KB retrieve 評価。
 
 Usage:
-  AWS_PROFILE=admin .venv/bin/python scripts/eval_concierge_kb.py
-  AWS_PROFILE=admin .venv/bin/python scripts/eval_concierge_kb.py \
-    --output log/analysis/concierge_kb_baseline_20260724.json
+  .venv/bin/python scripts/eval_concierge_kb.py --provider local
+  .venv/bin/python scripts/eval_concierge_kb.py --provider local --all-fixtures
+  .venv/bin/python scripts/eval_concierge_kb.py --fixture tests/fixtures/concierge_kb_paraphrase.yaml
 """
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Sequence
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -23,6 +23,15 @@ try:
     import yaml
 except ImportError:
     yaml = None  # type: ignore
+
+CONCIERGE_KB_FIXTURES: tuple[str, ...] = (
+    "tests/fixtures/concierge_kb_eval.yaml",
+    "tests/fixtures/concierge_kb_paraphrase.yaml",
+    "tests/fixtures/concierge_kb_technical_deep.yaml",
+    "tests/fixtures/concierge_kb_context.yaml",
+    "tests/fixtures/concierge_kb_app_overview.yaml",
+    "tests/fixtures/concierge_kb_legal_meta.yaml",
+)
 
 
 def _load_fixture(path: Path) -> Dict[str, Any]:
@@ -36,6 +45,14 @@ def _uri_matches_prefix(uri: str, prefix: str) -> bool:
         return False
     needle = prefix.strip("/")
     return needle in uri.replace("\\", "/")
+
+
+def _chunk_texts_match(result: Dict[str, Any], tokens: Sequence[str]) -> bool:
+    if not tokens:
+        return True
+    combined = "\n".join(result.get("chunks") or [])
+    combined_l = combined.lower()
+    return any(t.lower() in combined_l for t in tokens)
 
 
 def _evaluate_scenario(
@@ -56,6 +73,8 @@ def _evaluate_scenario(
     intent = str(scenario.get("intent") or "").strip()
     min_score = float(scenario.get("min_score") or 0.5)
     expected_prefix = str(scenario.get("expected_source_prefix") or "")
+    must_contain_any = [str(x) for x in (scenario.get("must_contain_any") or [])]
+    must_not_top = str(scenario.get("must_not_top") or "")
 
     retrieval_query = build_concierge_retrieval_query(user_query, intent)
     top_k = _concierge_kb_top_k(intent)
@@ -98,7 +117,13 @@ def _evaluate_scenario(
     source_uris: List[str] = list(result.get("source_uris") or [])
     prefix_hit = any(_uri_matches_prefix(u, expected_prefix) for u in source_uris)
     score_pass = top_score >= min_score
+    content_pass = _chunk_texts_match(result, must_contain_any)
+    top_uri = source_uris[0] if source_uris else ""
+    not_top_pass = not (
+        must_not_top and _uri_matches_prefix(top_uri, must_not_top)
+    )
     pass_all = score_pass and (prefix_hit if expected_prefix else True)
+    pass_all = pass_all and content_pass and not_top_pass
 
     return {
         "id": scenario.get("id"),
@@ -113,9 +138,18 @@ def _evaluate_scenario(
         "kb_retrieve_ms": result.get("kb_retrieve_ms"),
         "score_pass": score_pass,
         "prefix_pass": prefix_hit,
+        "content_pass": content_pass,
+        "not_top_pass": not_top_pass,
         "pass": pass_all,
         "provider": result.get("provider"),
     }
+
+
+def _resolve_fixtures(args: argparse.Namespace) -> List[Path]:
+    if args.all_fixtures:
+        return [ROOT / rel for rel in CONCIERGE_KB_FIXTURES]
+    paths = args.fixture or [ROOT / "tests/fixtures/concierge_kb_eval.yaml"]
+    return [p if p.is_absolute() else ROOT / p for p in paths]
 
 
 def main() -> int:
@@ -123,7 +157,14 @@ def main() -> int:
     parser.add_argument(
         "--fixture",
         type=Path,
-        default=ROOT / "tests/fixtures/concierge_kb_eval.yaml",
+        action="append",
+        default=None,
+        help="Fixture YAML (repeatable)",
+    )
+    parser.add_argument(
+        "--all-fixtures",
+        action="store_true",
+        help="Run all Concierge KB eval fixture files",
     )
     parser.add_argument("--output", type=Path, default=None)
     parser.add_argument("--phase", default="phase4_concierge")
@@ -131,7 +172,7 @@ def main() -> int:
         "--min-pass-pct",
         type=float,
         default=0.0,
-        help="Fail if pass_all_pct below this (CI uses 80)",
+        help="Fail if pass_all_pct below this (CI uses 90)",
     )
     parser.add_argument(
         "--provider",
@@ -141,17 +182,25 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    fixture = _load_fixture(args.fixture)
-    kb_id = str(fixture.get("kb_id") or "2CNAGQ2V4P")
-    search_mode = str(fixture.get("search_mode") or "managed")
-    scenarios = fixture.get("scenarios") or []
+    fixture_paths = _resolve_fixtures(args)
+    kb_id = "2CNAGQ2V4P"
+    search_mode = "managed"
+    rows: List[Dict[str, Any]] = []
+    fixture_labels: List[str] = []
 
-    rows = [
-        _evaluate_scenario(
-            sc, kb_id=kb_id, search_mode=search_mode, provider=args.provider
+    for fixture_path in fixture_paths:
+        fixture = _load_fixture(fixture_path)
+        kb_id = str(fixture.get("kb_id") or kb_id)
+        search_mode = str(fixture.get("search_mode") or search_mode)
+        scenarios = fixture.get("scenarios") or []
+        fixture_labels.append(str(fixture_path.relative_to(ROOT)))
+        rows.extend(
+            _evaluate_scenario(
+                sc, kb_id=kb_id, search_mode=search_mode, provider=args.provider
+            )
+            for sc in scenarios
         )
-        for sc in scenarios
-    ]
+
     passed = sum(1 for r in rows if r.get("pass"))
     total = len(rows)
     score_only = sum(1 for r in rows if r.get("score_pass"))
@@ -162,8 +211,8 @@ def main() -> int:
         "provider": args.provider,
         "kb_id": kb_id,
         "search_mode": search_mode,
-        "region": str(fixture.get("region") or "ap-northeast-1"),
-        "fixture": str(args.fixture.relative_to(ROOT)),
+        "region": "ap-northeast-1",
+        "fixtures": fixture_labels,
         "summary": {
             "total": total,
             "pass_all": passed,
@@ -183,6 +232,7 @@ def main() -> int:
     out_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     print(json.dumps(report["summary"], ensure_ascii=False, indent=2))
+    print(f"Fixtures: {', '.join(fixture_labels)}")
     print(f"Wrote {out_path}")
     for r in rows:
         mark = "OK" if r.get("pass") else "NG"

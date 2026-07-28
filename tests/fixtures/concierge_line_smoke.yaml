@@ -1,0 +1,29 @@
+# Concierge LINE smoke — contract（HTTP/LLM なし）
+
+scenarios:
+  - id: line-architecture-probe
+    message: "GCP と AWS の違いは？"
+    session_id: "line:U1234567890abcdef"
+    expected_intent: architecture
+    expect_line_channel: true
+
+  - id: line-capabilities-probe
+    message: "何ができる？"
+    session_id: "line:U1234567890abcdef"
+    expected_intent: capabilities
+    expect_follow_up_hint: true
+
+  - id: line-legal-privacy
+    message: "プラポリは？"
+    session_id: "line:U1234567890abcdef"
+    expected_intent: doc_privacy
+
+  - id: line-mission-overview
+    message: "なぜ作ったの？"
+    session_id: "line:U1234567890abcdef"
+    expected_intent: doc_app_overview
+
+  - id: line-medicine-boundary
+    message: "風邪薬教えて"
+    session_id: "line:U1234567890abcdef"
+    expected_intent: null

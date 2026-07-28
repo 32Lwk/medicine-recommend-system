@@ -1,0 +1,106 @@
+# Concierge intent routing eval — probe + Medicine QA 境界
+
+scenarios:
+  # 技術 (8)
+  - id: route-arch-sage
+    query: "Sage Terrace とは？"
+    expected_intent: architecture
+
+  - id: route-arch-local-rag
+    query: "Local RAG の仕組み"
+    expected_intent: architecture
+
+  - id: route-arch-data
+    query: "データはどこに保存される？"
+    expected_intent: architecture
+
+  - id: route-cap-otc
+    query: "OTCってなに？"
+    expected_intent: capabilities
+
+  - id: route-cap-what-can
+    query: "何ができる？"
+    expected_intent: capabilities
+
+  - id: route-arch-who-answers
+    query: "誰が回答したの？"
+    expected_intent: architecture
+
+  - id: route-arch-changelog
+    query: "最近の更新内容を教えて"
+    expected_intent: doc_changelog
+
+  - id: route-arch-line
+    query: "LINE はどこで動いてる？"
+    expected_intent: architecture
+
+  # 法務 (7)
+  - id: route-legal-privacy
+    query: "プラポリは？"
+    expected_intent: doc_privacy
+
+  - id: route-legal-terms
+    query: "利用規約は？"
+    expected_intent: doc_terms
+
+  - id: route-legal-yakki
+    query: "薬機法上問題ないの？"
+    expected_intent: doc_terms
+
+  - id: route-legal-consultation
+    query: "医薬品相談窓口は？"
+    expected_intent: doc_consultation
+
+  - id: route-legal-operator
+    query: "お問い合わせ先"
+    expected_intent: doc_operator
+
+  - id: route-legal-disclaimer
+    query: "免責事項について"
+    expected_intent: doc_terms
+
+  - id: route-legal-privacy-en
+    query: "privacy policy"
+    expected_intent: doc_privacy
+
+  # アプリ / 作成意図 (5)
+  - id: route-app-about
+    query: "あなたについて教えて"
+    expected_intent: app_about
+
+  - id: route-mission-why
+    query: "なぜこのアプリを作った？"
+    expected_intent: doc_app_overview
+
+  - id: route-mission-beta
+    query: "現状 β版 どうなってる？"
+    expected_intent: doc_app_overview
+
+  - id: route-mission-background
+    query: "開発背景を教えて"
+    expected_intent: doc_app_overview
+
+  - id: route-app-overview
+    query: "アプリの概要"
+    expected_intent: doc_app_overview
+
+  # Medicine QA 境界 — probe None (5)
+  - id: boundary-symptom-headache
+    query: "頭が痛い"
+    expected_intent: null
+
+  - id: boundary-medicine-cold
+    query: "風邪薬を教えて"
+    expected_intent: null
+
+  - id: boundary-medicine-nsaid
+    query: "イブプロフェンとロキソプロフェンどっち？"
+    expected_intent: null
+
+  - id: boundary-symptom-fever
+    query: "38度の熱がある"
+    expected_intent: null
+
+  - id: boundary-store-hint
+    query: "近くのドラッグストア"
+    expected_intent: null

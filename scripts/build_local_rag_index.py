@@ -112,7 +112,10 @@ def build_namespace(namespace: str, *, full: bool = False) -> Tuple[int, int]:
     npz_path = OUTPUT_DIR / f"{namespace}_index.npz"
     uri_to_vec: Dict[str, np.ndarray] = {}
     if npz_path.is_file() and not full:
-        old = np.load(npz_path, allow_pickle=False)
+        try:
+            old = np.load(npz_path, allow_pickle=False)
+        except ValueError:
+            old = np.load(npz_path, allow_pickle=True)
         for uri, vec in zip(old["uris"].tolist(), old["vectors"]):
             uri_to_vec[str(uri)] = np.asarray(vec, dtype=np.float32)
 
@@ -129,7 +132,10 @@ def build_namespace(namespace: str, *, full: bool = False) -> Tuple[int, int]:
     uris = sorted(uri_to_vec.keys())
     vectors = np.stack([uri_to_vec[u] for u in uris], axis=0)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(npz_path, vectors=vectors, uris=np.asarray(uris, dtype=object))
+    max_uri_len = max((len(u) for u in uris), default=64)
+    max_uri_len = min(max(max_uri_len, 64), 512)
+    uris_arr = np.array(uris, dtype=f"U{max_uri_len}")
+    np.savez_compressed(npz_path, vectors=vectors, uris=uris_arr)
     manifest["entries"] = entries
     _save_manifest(manifest)
     print(f"Wrote {npz_path} ({vectors.shape[0]} vectors, dim={vectors.shape[1]})")

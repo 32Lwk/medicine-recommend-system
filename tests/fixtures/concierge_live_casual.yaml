@@ -1,0 +1,148 @@
+# Concierge 口語・日常表現 — ライブ LLM 品質 eval
+# キーワード固定ではなく must_contain_any を緩め、--tier judge-failures で救済可能
+
+forbidden_patterns:
+  - "TRANSLATION_PROVIDER"
+  - "TTS_PROVIDER="
+  - "CONCIERGE_RAG_PROVIDER"
+  - "DATABASE_URL"
+  - "OPENAI_API_KEY"
+  - "環境変数を参照"
+  - "docs/concierge/technical/"
+  - "案内できません"
+
+scenarios:
+  - id: casual-git-casual
+    message: "githubとgitlab、どっちが本番の正本なの？"
+    intent: architecture
+    min_chars: 35
+    must_contain_any: ["GitHub", "正本", "ミラー", "origin"]
+
+  - id: casual-deploy-vague
+    message: "デプロイってどういう流れ？ざっくりでいいよ"
+    intent: architecture
+    must_contain_any: ["CodePipeline", "CodeBuild", "ECR", "ECS", "デプロイ"]
+
+  - id: casual-cloud-diff
+    message: "gcpとaws、ここでは何が違うの"
+    intent: architecture
+    must_contain_any: ["GCP", "Cloud Run", "AWS", "ECS", "ステージング"]
+
+  - id: casual-medicine-ai
+    message: "おすすめ薬、AIが勝手に決めてる？"
+    intent: architecture
+    must_contain_any: ["ルールベース", "LLM", "スコア", "CSV"]
+
+  - id: casual-data-where
+    message: "チャットの内容、どこに残るの？"
+    intent: architecture
+    must_contain_any: ["PostgreSQL", "Neon", "保存", "データ"]
+
+  - id: casual-rag-why
+    message: "なんでbedrock kb使わないの？"
+    intent: architecture
+    must_contain_any: ["Local RAG", "BM25", "Bedrock", "選定", "理由"]
+
+  - id: casual-app-who
+    message: "君は何者？病院じゃないよね"
+    intent: app_about
+    must_contain_any: ["市販薬", "参考", "医療機関", "OTC", "ツール"]
+
+  - id: casual-app-beta-casual
+    message: "まだ試験版？誰が使えるの"
+    intent: doc_app_overview
+    must_contain_any: ["β", "ベータ", "試験", "限定", "運用"]
+
+  - id: casual-app-why-casual
+    message: "なんでこんなアプリ作ったわけ？"
+    intent: doc_app_overview
+    must_contain_any: ["セルフメディケーション", "作成", "ドラッグストア", "β"]
+
+  - id: casual-capabilities-short
+    message: "何ができるアプリ？"
+    intent: capabilities
+    must_contain_any: ["市販薬", "症状", "相談", "参考"]
+
+  - id: casual-lang-casual
+    message: "英語とか使える？"
+    intent: capabilities
+    must_contain_any: ["日本語", "英語", "多言語", "翻訳"]
+
+  - id: casual-enterprise-casual
+    message: "会社向けの話、聞きたい"
+    intent: architecture
+    must_contain_any: ["企業", "B2B", "導入", "β"]
+
+  - id: casual-privacy-casual
+    message: "個人情報どう扱ってる？"
+    intent: doc_privacy
+    must_contain_any: ["個人情報", "プライバシー", "利用目的", "保存"]
+
+  - id: casual-terms-casual
+    message: "これって医療行為にあたる？"
+    intent: doc_terms
+    must_not_contain: ["問題ない", "合法", "違法ではない"]
+    must_contain_any: ["診断", "処方", "参考", "免責", "医療機関"]
+
+  - id: casual-changelog-casual
+    message: "最近 aws 周りで何か変わった？"
+    intent: doc_changelog
+    must_contain_any: ["更新", "AWS", "CHANGELOG", "2026"]
+
+  - id: casual-followup-that
+    message: "それもうちょい詳しく"
+    intent: architecture
+    history:
+      - type: user
+        content: "インフラの話聞きたい"
+      - type: bot
+        content: "GCP本番とAWSステージング…"
+        concierge_intent: architecture
+    must_contain_any: ["GCP", "AWS", "Cloud Run", "ECS", "デプロイ"]
+
+  - id: casual-followup-mission-casual
+    message: "背景もっと教えて"
+    intent: doc_app_overview
+    history:
+      - type: user
+        content: "このアプリ作った理由は？"
+      - type: bot
+        content: "セルフメディケーション…"
+        concierge_intent: doc_app_overview
+    must_contain_any: ["セルフメディケーション", "ドラッグストア", "β", "作成", "現場"]
+
+  - id: casual-ambiguous-clarify
+    message: "それについて"
+    intent: null
+    expect_clarification: true
+    skip_answer: true
+
+  - id: casual-medicine-route
+    message: "イブプロフェン、胃に効く？"
+    expect_route: medicine_qa
+    skip_answer: true
+
+  - id: casual-neon-casual
+    message: "neonって何に使ってるの"
+    intent: architecture
+    must_contain_any: ["PostgreSQL", "Neon", "データ", "保存"]
+
+  - id: casual-line-casual
+    message: "line bot どこで動いてる？"
+    intent: architecture
+    must_contain_any: ["LINE", "GCP", "Cloud Run"]
+
+  - id: casual-sse-casual
+    message: "sse って何のために使ってる"
+    intent: architecture
+    must_contain_any: ["SSE", "ストリーム", "Server-Sent", "段階"]
+
+  - id: casual-author-casual
+    message: "開発のきっかけ、現場の話とかある？"
+    intent: doc_app_overview
+    must_contain_any: ["ドラッグストア", "きっかけ", "セルフメディケーション", "現場"]
+
+  - id: casual-future-casual
+    message: "この先どうなる予定？"
+    intent: doc_app_overview
+    must_contain_any: ["将来", "展望", "β", "改善", "試験"]

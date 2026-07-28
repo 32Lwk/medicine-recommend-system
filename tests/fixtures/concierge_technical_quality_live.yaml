@@ -1,0 +1,226 @@
+# Concierge 技術 Meta KB — ライブ LLM 品質 eval（OPENAI_API_KEY 必須）
+# ルールベース判定 + 任意 LLM judge（--judge で有効）
+
+forbidden_patterns:
+  - "TRANSLATION_PROVIDER"
+  - "TTS_PROVIDER="
+  - "CONCIERGE_RAG_PROVIDER"
+  - "DATABASE_URL"
+  - "OPENAI_API_KEY"
+  - "環境変数を参照"
+  - "docs/concierge/technical/"
+  - "案内できません"
+
+scenarios:
+  # --- 技術 architecture（15） ---
+  - id: live-git-remote
+    message: "GitLabとGitHubの違いは？このプロジェクトではどっちが正本？"
+    intent: architecture
+    min_chars: 40
+    must_contain_any: ["GitHub", "github.com", "正本", "ミラー", "origin"]
+    must_not_contain: ["GitLabが正本", "GitLab が正本"]
+
+  - id: live-cross-cloud
+    message: "GCP本番とAWSステージング、ざっくり何が違う？"
+    intent: architecture
+    must_contain_any: ["GCP", "Cloud Run", "AWS", "ECS", "ステージング"]
+
+  - id: live-codepipeline
+    message: "デプロイってどう流れてるの？CodePipeline"
+    intent: architecture
+    must_contain_any: ["CodePipeline", "CodeBuild", "ECR", "ECS", "デプロイ"]
+
+  - id: live-rule-based
+    message: "市販薬のおすすめ機能はAI？それともルールベース？"
+    intent: architecture
+    must_contain_any: ["ルールベース", "rule", "LLM", "スコア"]
+
+  - id: live-data-storage
+    message: "会話内容ってどこに保存されてるの？"
+    intent: architecture
+    must_contain_any: ["PostgreSQL", "Neon", "保存", "データ"]
+
+  - id: live-r2-cdn
+    message: "医薬品画像のCDNはどこ？"
+    intent: architecture
+    must_contain_any: ["R2", "images.yutok", "CDN", "Cloudflare"]
+
+  - id: live-bedrock-kb
+    message: "Bedrock KBって何のため？今動いてる？"
+    intent: architecture
+    must_contain_any: ["Bedrock", "ナレッジ", "KB", "ingestion", "RAG", "Local"]
+
+  - id: live-multi-agent
+    message: "マルチエージェントって具体的に誰が何担当？"
+    intent: architecture
+    must_contain_any: ["TriageAgent", "Concierge", "Physical", "マルチ", "担当"]
+
+  - id: live-sse
+    message: "SSEってこのアプリでは何に使ってる？"
+    intent: architecture
+    must_contain_any: ["SSE", "Server-Sent", "ストリーム", "段階", "配信"]
+
+  - id: live-local-rag-why
+    message: "なぜ Bedrock KB じゃなく Local RAG を使うの？"
+    intent: architecture
+    must_contain_any: ["Local RAG", "BM25", "OpenSearch", "Bedrock", "選定", "理由"]
+
+  - id: live-translate-aws
+    message: "AWS では翻訳は何を使ってる？"
+    intent: architecture
+    must_contain_any: ["Translate", "Amazon", "翻訳", "DeepL"]
+
+  - id: live-neon
+    message: "Neon とは何に使ってる？"
+    intent: architecture
+    must_contain_any: ["PostgreSQL", "Neon", "データ", "保存"]
+
+  - id: live-line-cloud
+    message: "LINE ボットはどのクラウドで動いてる？"
+    intent: architecture
+    must_contain_any: ["LINE", "GCP", "Cloud Run"]
+
+  - id: live-intent-router
+    message: "IntentRouter の役割は？"
+    intent: architecture
+    must_contain_any: ["IntentRouter", "振り分け", "ルーティング", "Pipeline"]
+
+  - id: live-security-overview
+    message: "データ保存とセキュリティの概要"
+    intent: architecture
+    must_contain_any: ["保存", "セキュリティ", "PostgreSQL", "プライバシー"]
+
+  # --- follow-up / 文脈（5） ---
+  - id: live-followup-infra-deep
+    message: "もうちょい詳しく"
+    intent: architecture
+    history:
+      - type: user
+        content: "インフラ構成教えて"
+      - type: bot
+        content: "GCP本番とAWSステージング…"
+        concierge_intent: architecture
+    must_contain_any: ["GCP", "AWS", "Cloud Run", "ECS", "CodePipeline", "デプロイ"]
+
+  - id: live-followup-rag
+    message: "それについてもう少し"
+    intent: architecture
+    history:
+      - type: user
+        content: "Local RAG って何？"
+      - type: bot
+        content: "ローカル検索…"
+        concierge_intent: architecture
+    must_contain_any: ["Local RAG", "BM25", "Bedrock", "ナレッジ", "検索"]
+
+  - id: live-followup-mission
+    message: "開発背景もう少し"
+    intent: doc_app_overview
+    history:
+      - type: user
+        content: "なぜこのアプリを作ったの？"
+      - type: bot
+        content: "セルフメディケーション…"
+        concierge_intent: doc_app_overview
+    must_contain_any: ["セルフメディケーション", "ドラッグストア", "β", "試験", "作成"]
+
+  - id: live-followup-enterprise
+    message: "企業向けもう少し詳しく"
+    intent: architecture
+    history:
+      - type: user
+        content: "企業向け概要"
+      - type: bot
+        content: "B2B向け…"
+        concierge_intent: architecture
+    must_contain_any: ["企業", "B2B", "導入", "β", "試験"]
+
+  - id: live-followup-privacy-cross
+    message: "個人情報もっと詳しく"
+    intent: doc_privacy
+    history:
+      - type: user
+        content: "データはどこに保存？"
+      - type: bot
+        content: "PostgreSQL…"
+        concierge_intent: architecture
+    must_contain_any: ["個人情報", "プライバシー", "保存", "利用目的"]
+
+  # --- app / capabilities（8） ---
+  - id: live-app-why-built
+    message: "なぜこのアプリを作ったの？"
+    intent: doc_app_overview
+    must_contain_any: ["セルフメディケーション", "なぜ", "作成", "β", "試験"]
+
+  - id: live-app-not-hospital
+    message: "病院ですか？"
+    intent: doc_app_overview
+    must_contain_any: ["医療機関", "診断", "参考", "市販薬", "OTC"]
+
+  - id: live-app-capabilities
+    message: "何ができる？"
+    intent: capabilities
+    must_contain_any: ["市販薬", "症状", "相談", "参考"]
+
+  - id: live-app-about
+    message: "あなたは誰？何のツール？"
+    intent: app_about
+    must_contain_any: ["市販薬", "相談", "ツール", "AI", "参考"]
+
+  - id: live-app-multilingual
+    message: "対応言語は？"
+    intent: capabilities
+    must_contain_any: ["日本語", "英語", "多言語", "翻訳"]
+
+  - id: live-app-beta
+    message: "今 β版 なの？誰向け？"
+    intent: doc_app_overview
+    must_contain_any: ["β", "ベータ", "試験", "運用"]
+
+  - id: live-app-future
+    message: "将来の展望"
+    intent: doc_app_overview
+    must_contain_any: ["将来", "展望", "β", "改善", "試験"]
+
+  - id: live-enterprise-overview
+    message: "企業向け概要"
+    intent: architecture
+    must_contain_any: ["企業", "B2B", "導入", "β", "OTC", "試験"]
+
+  # --- changelog / legal / boundary（7） ---
+  - id: live-changelog-aws
+    message: "最近AWS周りで何か変わった？"
+    intent: doc_changelog
+    must_contain_any: ["更新", "AWS", "改善", "CHANGELOG", "2026"]
+
+  - id: live-legal-privacy-snippet
+    message: "個人情報の取り扱いを教えて"
+    intent: doc_privacy
+    must_contain_any: ["個人情報", "プライバシー", "利用目的", "保存"]
+
+  - id: live-legal-terms-medical
+    message: "医療行為に当たりますか？"
+    intent: doc_terms
+    must_not_contain: ["問題ない", "合法", "違法ではない"]
+    must_contain_any: ["診断", "処方", "参考", "免責", "医療機関"]
+
+  - id: live-consultation-pmda
+    message: "医薬品の相談窓口は？"
+    intent: doc_consultation
+    must_contain_any: ["PMDA", "7119", "相談", "厚労省"]
+
+  - id: live-author-mission
+    message: "開発のきっかけは何？"
+    intent: doc_app_overview
+    must_contain_any: ["ドラッグストア", "きっかけ", "セルフメディケーション", "現場"]
+
+  - id: live-routing-medicine-not-arch
+    message: "ロキソニン眠くなる？"
+    expect_route: medicine_qa
+    skip_answer: true
+
+  - id: live-ambiguous-clarify
+    message: "それについて教えて"
+    intent: null
+    expect_clarification: true
+    skip_answer: true

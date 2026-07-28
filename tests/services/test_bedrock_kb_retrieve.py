@@ -22,81 +22,29 @@ def test_retrieve_local_when_bedrock_disabled():
     assert result["chunk_count"] >= 0
 
 
-def test_retrieve_calls_bedrock_managed(monkeypatch):
+def test_retrieve_local_when_bedrock_env_set(monkeypatch):
+    """CONCIERGE_RAG_PROVIDER=bedrock_kb でも Concierge は Local RAG 固定。"""
+    monkeypatch.setenv("CONCIERGE_RAG_PROVIDER", "bedrock_kb")
+    monkeypatch.setenv("BEDROCK_KB_ID", "KB123")
+
+    from src.services.bedrock_kb_retrieve import retrieve_concierge_context
+
+    result = retrieve_concierge_context("Cloud Run とは")
+    assert result["provider"] == "local_rag"
+    assert result["chunk_count"] >= 0
+
+
+def test_retrieve_bedrock_env_never_calls_boto3(monkeypatch):
     monkeypatch.setenv("CONCIERGE_RAG_PROVIDER", "bedrock_kb")
     monkeypatch.setenv("BEDROCK_KB_ID", "KB123")
     monkeypatch.setenv("BEDROCK_KB_SEARCH_MODE", "managed")
 
-    mock_client = MagicMock()
-    mock_client.retrieve.return_value = {
-        "retrievalResults": [
-            {
-                "content": {"text": "chunk one"},
-                "location": {"s3Location": {"uri": "s3://bucket/doc.md"}},
-                "score": 0.9,
-            }
-        ]
-    }
     mock_boto3 = MagicMock()
-    mock_boto3.client.return_value = mock_client
     with patch.dict(sys.modules, {"boto3": mock_boto3}):
         from src.services.bedrock_kb_retrieve import retrieve_concierge_context
 
-        result = retrieve_concierge_context("architecture", top_k=3, use_cache=False)
-    assert result["chunk_count"] == 1
-    assert result["chunks"][0] == "chunk one"
-    assert "s3://bucket/doc.md" in result["source_uris"]
-    cfg = mock_client.retrieve.call_args.kwargs["retrievalConfiguration"]
-    assert "managedSearchConfiguration" in cfg
-    assert cfg["managedSearchConfiguration"]["numberOfResults"] == 3
-
-
-def test_retrieve_vector_mode_for_legacy_kb(monkeypatch):
-    monkeypatch.setenv("CONCIERGE_RAG_PROVIDER", "bedrock_kb")
-    monkeypatch.setenv("BEDROCK_KB_ID", "KB123")
-    monkeypatch.setenv("BEDROCK_KB_SEARCH_MODE", "vector")
-
-    mock_client = MagicMock()
-    mock_client.retrieve.return_value = {"retrievalResults": []}
-    mock_boto3 = MagicMock()
-    mock_boto3.client.return_value = mock_client
-    with patch.dict(sys.modules, {"boto3": mock_boto3}):
-        from src.services.bedrock_kb_retrieve import retrieve_concierge_context
-
-        retrieve_concierge_context("architecture", use_cache=False)
-    cfg = mock_client.retrieve.call_args.kwargs["retrievalConfiguration"]
-    assert "vectorSearchConfiguration" in cfg
-
-
-def test_retrieve_filters_low_score_chunks(monkeypatch):
-    monkeypatch.setenv("CONCIERGE_RAG_PROVIDER", "bedrock_kb")
-    monkeypatch.setenv("BEDROCK_KB_ID", "KB123")
-    monkeypatch.setenv("BEDROCK_KB_MIN_SCORE", "0.5")
-
-    mock_client = MagicMock()
-    mock_client.retrieve.return_value = {
-        "retrievalResults": [
-            {
-                "content": {"text": "keep me"},
-                "location": {"s3Location": {"uri": "s3://bucket/good.md"}},
-                "score": 0.82,
-            },
-            {
-                "content": {"text": "drop me"},
-                "location": {"s3Location": {"uri": "s3://bucket/bad.md"}},
-                "score": 0.21,
-            },
-        ]
-    }
-    mock_boto3 = MagicMock()
-    mock_boto3.client.return_value = mock_client
-    with patch.dict(sys.modules, {"boto3": mock_boto3}):
-        from src.services.bedrock_kb_retrieve import retrieve_concierge_context
-
-        result = retrieve_concierge_context("architecture", use_cache=False)
-    assert result["chunk_count"] == 1
-    assert result["chunks"] == ["keep me"]
-    assert result["dropped_low_score"] == 1
+        retrieve_concierge_context("architecture", top_k=3, use_cache=False)
+    mock_boto3.client.assert_not_called()
 
 
 def test_medicine_retrieve_builds_query_with_product_names(monkeypatch):
@@ -297,6 +245,21 @@ def test_augment_reference_empty_local_returns_base(monkeypatch):
     assert out == "LOCAL ONLY"
 
 
+def test_augment_reference_skips_rag_for_legal_direct_intent(monkeypatch):
+    monkeypatch.delenv("CONCIERGE_RAG_PROVIDER", raising=False)
+
+    with patch(
+        "src.services.bedrock_kb_retrieve.retrieve_concierge_context",
+    ) as mock_retrieve:
+        from src.services.bedrock_kb_retrieve import augment_reference_with_kb
+
+        out = augment_reference_with_kb(
+            "プラポリ", "LEGAL DOC", intent="doc_privacy"
+        )
+    assert out == "LEGAL DOC"
+    mock_retrieve.assert_not_called()
+
+
 def test_augment_reference_kb_off_returns_base(monkeypatch):
     monkeypatch.setenv("CONCIERGE_RAG_PROVIDER", "none")
 
@@ -306,7 +269,7 @@ def test_augment_reference_kb_off_returns_base(monkeypatch):
     assert out == "LOCAL SSOT"
 
 
-def test_augment_reference_appends_kb_block(monkeypatch):
+def test_augment_reference_appends_local_block(monkeypatch):
     monkeypatch.setenv("CONCIERGE_RAG_PROVIDER", "bedrock_kb")
     monkeypatch.setenv("BEDROCK_KB_ID", "CONKB")
 
@@ -314,7 +277,8 @@ def test_augment_reference_appends_kb_block(monkeypatch):
         "src.services.bedrock_kb_retrieve.retrieve_concierge_context",
         return_value={
             "chunks": ["ECS Express Gateway デプロイ"],
-            "source_uris": ["s3://bucket/ops/AWS_INFRA.md"],
+            "source_uris": ["docs/concierge/technical/01-cross-cloud-architecture.md"],
+            "provider": "local_rag",
         },
     ):
         from src.services.bedrock_kb_retrieve import augment_reference_with_kb
@@ -323,7 +287,7 @@ def test_augment_reference_appends_kb_block(monkeypatch):
             "CodePipeline デプロイ", "LOCAL SSOT", intent="architecture"
         )
     assert "LOCAL SSOT" in out
-    assert "Bedrock Knowledge Base" in out
+    assert "ローカルナレッジ参照" in out
     assert "ECS Express Gateway" in out
 
 

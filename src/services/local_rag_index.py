@@ -44,12 +44,31 @@ _QUERY_KEYWORDS: Tuple[str, ...] = (
     "相互作用",
 )
 _SECTION_RE = re.compile(r"^##\s+(.+)$", re.MULTILINE)
+_SUBSECTION_RE = re.compile(r"^###\s+(.+)$", re.MULTILINE)
+_RAG_KEYWORDS_RE = re.compile(r"<!--\s*rag-keywords:\s*(.+?)\s*-->", re.I | re.DOTALL)
+_CONCIERGE_RAG_CHUNK_PATHS = ("docs/concierge/technical/", "docs/concierge/rag/", "docs/public/")
 
 _CONCIERGE_INTENT_POOLS: Dict[str, Tuple[str, ...]] = {
-    "capabilities": ("local/concierge/", "local/content/concierge_knowledge"),
+    "capabilities": ("local/concierge/", "local/content/concierge_knowledge", "local/public/アプリ概要"),
     "app_about": ("local/concierge/", "local/public/", "local/content/concierge_knowledge"),
-    "doc_changelog": ("local/content/",),
-    # architecture: technical SSOT + ops + pipeline/dev 説明を広く拾う
+    "doc_changelog": ("local/content/changelog-digest.json",),
+    "doc_privacy": (
+        "local/public/プライバシー",
+        "local/concierge/rag/legal-crossdoc-rag",
+    ),
+    "doc_terms": (
+        "local/public/免責",
+        "local/concierge/rag/legal-crossdoc-rag",
+    ),
+    "doc_app_overview": (
+        "local/public/アプリ概要",
+        "local/concierge/technical/11",
+        "local/concierge/rag/app-overview-rag",
+        "local/concierge/rag/author-mission-rag",
+    ),
+    "doc_consultation": ("local/public/医薬品相談先",),
+    "doc_operator": ("local/concierge/お問い合わせ", "local/public/運営者"),
+    # architecture: technical SSOT + ops + pipeline/dev（法務 doc は横断時のみ public 参照）
     "architecture": (
         "local/ops/",
         "local/concierge/",
@@ -58,6 +77,20 @@ _CONCIERGE_INTENT_POOLS: Dict[str, Tuple[str, ...]] = {
         "local/content/concierge_knowledge",
     ),
 }
+
+# docs/public/*.md の RAG doc_type（retrieve boost / pool フィルタ用）
+_PUBLIC_DOC_TYPE_BY_NAME: Dict[str, str] = {
+    "プライバシーポリシー.md": "legal_privacy",
+    "免責事項・利用規約.md": "legal_terms",
+    "アプリ概要.md": "overview",
+    "医薬品相談先.md": "consultation",
+    "運営者情報.md": "operator",
+    "会社向け概要書類.md": "enterprise",
+    "企業向け簡略版概要資料.md": "enterprise",
+}
+
+# Concierge 技術 FAQ RAG index から除外（digest + SSOT 直接注入で代替）
+_CONCIERGE_RAG_EXCLUDED_CONTENT: Tuple[str, ...] = ("CHANGELOG.md",)
 
 
 @dataclass(frozen=True)
@@ -213,27 +246,111 @@ def _read_metadata(path: Path) -> Dict[str, object]:
         return {}
 
 
+def _strip_rag_keywords(text: str) -> Tuple[str, str]:
+    match = _RAG_KEYWORDS_RE.search(text)
+    if not match:
+        return text, ""
+    keywords = match.group(1).strip()
+    cleaned = _RAG_KEYWORDS_RE.sub("", text).strip()
+    return cleaned, keywords
+
+
+def _prepend_rag_index_text(body: str, section: str, keywords: str) -> str:
+    parts: List[str] = []
+    if section:
+        parts.append(f"[section: {section}]")
+    if keywords:
+        parts.append(f"[keywords: {keywords}]")
+    if parts:
+        parts.append("")
+    parts.append(body.strip())
+    return "\n".join(parts).strip()
+
+
+def _should_subsection_chunk(path: Path) -> bool:
+    rel = str(path).replace("\\", "/")
+    return (
+        "docs/concierge/technical/" in rel
+        or "docs/concierge/rag/" in rel
+        or "docs/public/" in rel
+    )
+
+
 def _chunk_markdown(
     path: Path,
     text: str,
     virtual_uri: str,
     doc_type: str,
     meta: Dict[str, object],
+    *,
+    subsection_split: bool = False,
 ) -> List[IndexedChunk]:
     product_name = str(meta.get("product_name") or "")
+    text, doc_keywords = _strip_rag_keywords(text)
     sections = list(_SECTION_RE.finditer(text))
+    if subsection_split and sections:
+        chunks: List[IndexedChunk] = []
+        for idx, match in enumerate(sections):
+            start = match.start()
+            end = sections[idx + 1].start() if idx + 1 < len(sections) else len(text)
+            section_title = match.group(1).strip()
+            section_body = text[start:end].strip()
+            if not section_body:
+                continue
+            subs = list(_SUBSECTION_RE.finditer(section_body))
+            if len(subs) <= 1:
+                _, sec_kw = _strip_rag_keywords(section_body)
+                kw = ", ".join(x for x in (doc_keywords, sec_kw) if x)
+                indexed = _prepend_rag_index_text(section_body, section_title, kw)
+                chunks.append(
+                    IndexedChunk(
+                        chunk_id=f"{virtual_uri}#{idx}",
+                        virtual_uri=virtual_uri,
+                        text=indexed,
+                        path=str(path),
+                        doc_type=doc_type,
+                        section=section_title,
+                        product_name=product_name,
+                    )
+                )
+                continue
+            for sub_idx, sub in enumerate(subs):
+                sub_start = sub.start()
+                sub_end = subs[sub_idx + 1].start() if sub_idx + 1 < len(subs) else len(section_body)
+                sub_title = sub.group(1).strip()
+                sub_body = section_body[sub_start:sub_end].strip()
+                if not sub_body:
+                    continue
+                _, sec_kw = _strip_rag_keywords(sub_body)
+                kw = ", ".join(x for x in (doc_keywords, sec_kw) if x)
+                full_section = f"{section_title} / {sub_title}"
+                indexed = _prepend_rag_index_text(sub_body, full_section, kw)
+                chunks.append(
+                    IndexedChunk(
+                        chunk_id=f"{virtual_uri}#{idx}-{sub_idx}",
+                        virtual_uri=virtual_uri,
+                        text=indexed,
+                        path=str(path),
+                        doc_type=doc_type,
+                        section=full_section,
+                        product_name=product_name,
+                    )
+                )
+        if chunks:
+            return chunks
     if doc_type in ("interaction", "side_effect", "topic", "doping") or len(sections) <= 1:
+        indexed = _prepend_rag_index_text(text.strip(), "", doc_keywords)
         return [
             IndexedChunk(
                 chunk_id=f"{virtual_uri}#0",
                 virtual_uri=virtual_uri,
-                text=text.strip(),
+                text=indexed,
                 path=str(path),
                 doc_type=doc_type,
                 product_name=product_name,
             )
         ]
-    chunks: List[IndexedChunk] = []
+    chunks = []
     for idx, match in enumerate(sections):
         start = match.start()
         end = sections[idx + 1].start() if idx + 1 < len(sections) else len(text)
@@ -241,11 +358,14 @@ def _chunk_markdown(
         body = text[start:end].strip()
         if not body:
             continue
+        _, sec_kw = _strip_rag_keywords(body)
+        kw = ", ".join(x for x in (doc_keywords, sec_kw) if x)
+        indexed = _prepend_rag_index_text(body, section_title, kw)
         chunks.append(
             IndexedChunk(
                 chunk_id=f"{virtual_uri}#{idx}",
                 virtual_uri=virtual_uri,
-                text=body,
+                text=indexed,
                 path=str(path),
                 doc_type=doc_type,
                 section=section_title,
@@ -253,11 +373,12 @@ def _chunk_markdown(
             )
         )
     if not chunks and text.strip():
+        indexed = _prepend_rag_index_text(text.strip(), "", doc_keywords)
         chunks.append(
             IndexedChunk(
                 chunk_id=f"{virtual_uri}#0",
                 virtual_uri=virtual_uri,
-                text=text.strip(),
+                text=indexed,
                 path=str(path),
                 doc_type=doc_type,
                 product_name=product_name,
@@ -319,6 +440,8 @@ def _concierge_docs_raw() -> List[Tuple[Path, str, str]]:
             if not path.is_file() or path.suffix.lower() not in {".md", ".json", ".txt"}:
                 continue
             rel = path.relative_to(base).as_posix()
+            if prefix == "concierge" and rel.startswith("technical/research/"):
+                continue
             docs.append((path, f"local/{prefix}/{rel}", prefix))
     for rel in CONCIERGE_OPS_DOCS:
         path = ROOT / rel
@@ -329,7 +452,6 @@ def _concierge_docs_raw() -> List[Tuple[Path, str, str]]:
         if path.is_file():
             docs.append((path, f"local/dev/{path.name}", "dev"))
     for rel, uri in (
-        ("CHANGELOG.md", "local/content/CHANGELOG.md"),
         ("static/changelog-digest.json", "local/content/changelog-digest.json"),
         ("src/content/concierge_knowledge.ja.json", "local/content/concierge_knowledge.ja.json"),
     ):
@@ -339,9 +461,17 @@ def _concierge_docs_raw() -> List[Tuple[Path, str, str]]:
     return docs
 
 
+def _concierge_chunk_doc_type(prefix: str, path: Path) -> str:
+    if prefix == "public":
+        return _PUBLIC_DOC_TYPE_BY_NAME.get(path.name, "public")
+    return prefix
+
+
 def _build_concierge_chunks() -> List[IndexedChunk]:
     out: List[IndexedChunk] = []
     for path, virtual_uri, doc_type in _concierge_docs_raw():
+        if path.name in _CONCIERGE_RAG_EXCLUDED_CONTENT:
+            continue
         text = _read_text(path)
         if path.suffix == ".json" and text:
             try:
@@ -350,9 +480,94 @@ def _build_concierge_chunks() -> List[IndexedChunk]:
                 pass
         if not text.strip():
             continue
-        out.extend(
-            _chunk_markdown(path, text, virtual_uri, doc_type, {})
+        chunk_type = _concierge_chunk_doc_type(doc_type, path)
+        if path.name == "changelog-digest.json":
+            chunk_type = "changelog_digest"
+        elif path.name == "concierge_knowledge.ja.json":
+            chunk_type = "capabilities"
+        chunks = _chunk_markdown(
+            path,
+            text,
+            virtual_uri,
+            chunk_type,
+            {},
+            subsection_split=_should_subsection_chunk(path),
         )
+        if (
+            "12-technical-faq-rag" in str(path)
+            or "technical-security-rag" in str(path)
+            or "author-mission-rag" in str(path)
+        ):
+            chunks = [
+                IndexedChunk(
+                    chunk_id=c.chunk_id,
+                    virtual_uri=c.virtual_uri,
+                    text=c.text,
+                    path=c.path,
+                    doc_type="technical_faq",
+                    section=c.section,
+                    product_name=c.product_name,
+                    score_hint=max(c.score_hint, 1.5),
+                )
+                for c in chunks
+            ]
+        elif "app-overview-rag" in str(path):
+            chunks = [
+                IndexedChunk(
+                    chunk_id=c.chunk_id,
+                    virtual_uri=c.virtual_uri,
+                    text=c.text,
+                    path=c.path,
+                    doc_type="app_overview_faq",
+                    section=c.section,
+                    product_name=c.product_name,
+                    score_hint=max(c.score_hint, 1.5),
+                )
+                for c in chunks
+            ]
+        elif "enterprise-overview-rag" in str(path):
+            chunks = [
+                IndexedChunk(
+                    chunk_id=c.chunk_id,
+                    virtual_uri=c.virtual_uri,
+                    text=c.text,
+                    path=c.path,
+                    doc_type="enterprise_faq",
+                    section=c.section,
+                    product_name=c.product_name,
+                    score_hint=max(c.score_hint, 1.5),
+                )
+                for c in chunks
+            ]
+        elif "legal-crossdoc-rag" in str(path):
+            chunks = [
+                IndexedChunk(
+                    chunk_id=c.chunk_id,
+                    virtual_uri=c.virtual_uri,
+                    text=c.text,
+                    path=c.path,
+                    doc_type="legal_crossdoc_faq",
+                    section=c.section,
+                    product_name=c.product_name,
+                    score_hint=max(c.score_hint, 1.5),
+                )
+                for c in chunks
+            ]
+        if path.name == "changelog-digest.json":
+            chunks = [
+                IndexedChunk(
+                    chunk_id=c.chunk_id,
+                    virtual_uri=c.virtual_uri,
+                    text=c.text,
+                    path=c.path,
+                    doc_type=c.doc_type,
+                    section=c.section,
+                    product_name=c.product_name,
+                    score_hint=2.0,
+                )
+                for c in chunks
+            ]
+        out.extend(chunks)
     return out
 
 

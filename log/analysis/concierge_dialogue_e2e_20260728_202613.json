@@ -1,0 +1,537 @@
+{
+  "eval": "concierge_dialogue_e2e",
+  "fixture": "tests/fixtures/concierge_live_dialogue.yaml",
+  "timestamp": "2026-07-28T11:30:44.569323+00:00",
+  "total_dialogues": 8,
+  "passed_dialogues": 8,
+  "pass_pct": 100.0,
+  "min_pass_pct": 80.0,
+  "judge_enabled": true,
+  "go": true,
+  "results": [
+    {
+      "id": "dlg-infra-deep-dive",
+      "mode": "scripted",
+      "pass": true,
+      "turns": [
+        {
+          "turn": 1,
+          "user": "インフラざっくり教えて",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 4759.8,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "回答はユーザーの質問に対して具体的かつ関連性の高い情報を提供しており、明確にインフラの役割分担を説明している。"
+          },
+          "answer_preview": "ざっくり言うと、本番は GCP の Cloud Run で medicine.yutok.dev、ステージングは AWS の ECS Express で aws.medicine.yutok.dev が動いています。翻訳と読み上げは環境で分かれていて、本番は DeepL と Google Cloud Text-to-Speech、AWS ステージングは Amazon Translate と Amazon Polly です。医薬品画像は Cloudflare R2 の共通 CDN、静的アセットは AWS 側で CloudFront 配信です。市販薬の候補選定はルールベースで行っていて、LLM が"
+        },
+        {
+          "turn": 2,
+          "user": "デプロイの流れも知りたい",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2864.7,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的なデプロイの流れを詳細に説明しており、関連情報も含まれているため。"
+          },
+          "answer_preview": "デプロイは、GitHub の main ブランチに push すると自動で進みます。AWS ステージングでは、CodeStar Connection を経由して CodePipeline が動き、CodeBuild で Docker イメージを作成して ECR に push し、そのあと ECS Express に新しい版を反映します。\n\n反映後は、公開されている health 確認で新しい commit が応答しているかを見て、必要に応じて静的アセットや知識ベースの同期、動作確認も続けて行います。AWS 側は翻訳や読み上げの確認も含めて自動でチェックされる流れです。\n\n本番の GCP 側は別"
+        },
+        {
+          "turn": 3,
+          "user": "もうちょい詳しく",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2321.2,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 0.9,
+            "grounded": 0.8,
+            "user_focus": 0.9,
+            "context_aware": 0.8,
+            "pass": true,
+            "reason": "ユーザーの要求に対して具体的なデプロイの流れを詳細に説明しており、関連情報も提供しているため。"
+          },
+          "answer_preview": "もう少し具体的に言うと、GitHub の main に push された変更が起点になって、AWS ステージングでは CodeStar Connection 経由で CodePipeline「medicine-recommend-main」が動きます。そこから CodeBuild「medicine-recommend-build」で Docker イメージを作って ECR に送信し、そのあと ECS Express のサービスを新しい版に差し替えます。\n\n反映後は、公開されている health 応答で新しい commit が見えているかを確認し、必要があれば静的アセットの同期や知識ベースの同期"
+        }
+      ]
+    },
+    {
+      "id": "dlg-app-mission-context",
+      "mode": "scripted",
+      "pass": true,
+      "turns": [
+        {
+          "turn": 1,
+          "user": "このアプリ何のため？",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 1741.5,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "ユーザーの質問に対して明確にアプリの目的を説明し、症状に基づく追加情報を求めているため。"
+          },
+          "answer_preview": "症状に合わせて市販薬の候補をチャットで案内するためのツールです。診断や処方は行わず、候補選びはルールベースで行います。\n\n必要なら、いまの症状を教えてください。"
+        },
+        {
+          "turn": 2,
+          "user": "開発背景もう少し",
+          "intent": "doc_app_overview",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2834.9,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的な開発背景を詳しく説明しており、情報も信頼できる内容であるため。"
+          },
+          "answer_preview": "・少子高齢化、訪日外国人の増加、ECサイトの普及により、セルフメディケーションの需要が高まっているとされています。  \n・一方で、言語の壁や人材不足のため、利用者が適切な医薬品を選べず、安全性が懸念されていることが背景です。  \n・開発者自身のドラッグストア勤務経験から、高齢者の聴力・理解力の差や外国人との言語障壁を実感したことが、構想のきっかけです。  \n・その経験を踏まえ、薬学的知識とLLMを融合した**チャット型医薬品相談ツール**として本システムが考えられました。  \n・本β版は、こうした課題の解決に向けた**実証研究・検証**を目的とした限定的運用です。  \n・利用目的は、AIを用い"
+        },
+        {
+          "turn": 3,
+          "user": "将来はどうなる？",
+          "intent": "doc_app_overview",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2273.4,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 0.9,
+            "grounded": 0.8,
+            "user_focus": 0.9,
+            "context_aware": 0.8,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的な将来の展望を示し、関連情報を提供しているため。"
+          },
+          "answer_preview": "・薬局・医療機関・自治体などとの連携強化を検討しています。  \n・地域医療のデジタル支援基盤としての活用を検討しています。  \n・EC サイト連携や LINE 連携などの拡張も視野に入れています。  \n・将来的な目標は、「誰もがどこでも安心して薬を選ぶ一助となる社会」の実現です。  \n・将来的な想定利用者として、一般消費者、訪日外国人、忙しくて薬局に行けない人、過疎地域の住民、高齢者、EC・オンライン薬局で購入を検討する利用者が挙げられています。  \n・一般消費者向けの正式公開は検討段階であり、本β版は評価・検証を目的とした非公開試験です。  \n・それ以外の将来計画の詳細は、ドキュメントに記載"
+        }
+      ]
+    },
+    {
+      "id": "dlg-rag-topic-switch",
+      "mode": "scripted",
+      "pass": true,
+      "turns": [
+        {
+          "turn": 1,
+          "user": "Local RAG って何？",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2444.8,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "回答はユーザーの質問に直接答えており、具体的な情報に基づいているため、全ての基準を満たしています。"
+          },
+          "answer_preview": "Local RAG は、リポジトリ内の公開ドキュメントを使って検索する仕組みで、キーワード一致の検索と意味の近い検索を組み合わせて答えの根拠を探します。Concierge 向けの技術 FAQ と、市販薬の案内向けの説明・Q&A で同じ基盤を使います。\n\n従来の外部の管理型ナレッジ検索ではなく、公開ドキュメントから引くので、GCP 本番と AWS ステージングで同じ実装を使えるのが特徴です。市販薬の候補選びそのものは別のルールベースで行い、Local RAG は主に説明や質問応答を支えます。\n\n必要なら次に、「Bedrock KB との違い」か「どういうときに使われるか」を短く説明できます。"
+        },
+        {
+          "turn": 2,
+          "user": "じゃあ GitHub と GitLab は？",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2382.0,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 0.8,
+            "grounded": 0.9,
+            "user_focus": 0.9,
+            "context_aware": 0.7,
+            "pass": true,
+            "reason": "回答はユーザーの質問に直接関連しており、具体的な情報を提供しているが、文脈の一部が不足している。"
+          },
+          "answer_preview": "GitHub が正本で、GitLab はバックアップ用のミラーです。日常の更新やデプロイは GitHub の main を基準に行い、GitLab には同じ内容を同期しておく運用です。\n\nつまり、普段見るべき中心は GitHub、GitLab は障害時の備えとして使う位置づけです。"
+        },
+        {
+          "turn": 3,
+          "user": "さっきの RAG の話、もう少し",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2269.5,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 0.8,
+            "grounded": 0.7,
+            "user_focus": 0.9,
+            "context_aware": 0.8,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的にLocal RAGの説明を行い、関連情報を提供しているため。"
+          },
+          "answer_preview": "Local RAG は、リポジトリ内の公開ドキュメントから答えの根拠を探す仕組みで、キーワード一致と意味の近さを組み合わせて検索します。市販薬の候補選びそのものは別のルールベースで行い、Local RAG は主に説明や質問応答を支えます。\n\nこの仕組みの利点は、公開ドキュメントを正本にできるので、GCP 本番と AWS ステージングで同じ考え方を使いやすいことです。もし必要なら次に、「Bedrock KB との違い」か「どういう質問で使われるか」をもう少しだけ具体的に説明できます。\n\n症状やお薬の選び方については、具体的な症状を入力していただければ別途ご案内します。"
+        }
+      ]
+    },
+    {
+      "id": "dlg-privacy-cross",
+      "mode": "scripted",
+      "pass": true,
+      "turns": [
+        {
+          "turn": 1,
+          "user": "データ保存どこ？",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 1463.3,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的かつ正確に回答しており、関連情報も提供しているため。"
+          },
+          "answer_preview": "チャットの内容は PostgreSQL に保存されます。本番は Neon、ローカルは Docker の PostgreSQL です。\n\n症状や年齢などの属性情報も、推奨の安全性と提案品質のためにセッション内で保持されます。\n\nGCP 本番と AWS ステージングのデータは別で、混在しません。"
+        },
+        {
+          "turn": 2,
+          "user": "個人情報の取り扱いは？",
+          "intent": "doc_privacy",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 3230.7,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 0.9,
+            "grounded": 0.8,
+            "user_focus": 0.9,
+            "context_aware": 0.8,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的かつ詳細に回答しており、プライバシーに関する情報を適切に提供しているため。"
+          },
+          "answer_preview": "・本アプリ「チャット型医薬品相談ツール」は、試験運用（βテスト）段階において、テスターから得られた情報を適切に取り扱い、個人情報保護法および関連法令を遵守します。 \n・収集する場合がある情報は、症状、年齢層、性別、アレルギー、併用薬などのユーザー入力情報、利用履歴・アクセスログ・利用日時・エラー情報等、LINE 連携利用時の情報、アンケートやフィードバックフォームへの回答内容です。 \n・氏名・住所・電話番号など、個人を直接特定できる情報は、原則として収集しません。 \n・収集した情報は、本アプリの精度向上・不具合修正・機能改善、LINE 等での継続相談時の参照、Web ブラウザへの引き継ぎ、テス"
+        }
+      ]
+    },
+    {
+      "id": "dlg-legal-boundary",
+      "mode": "scripted",
+      "pass": true,
+      "turns": [
+        {
+          "turn": 1,
+          "user": "病院ですか？",
+          "intent": "doc_app_overview",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2359.6,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "質問に対して明確にアプリの目的と性質を説明しており、ユーザーの意図に沿った情報を提供しているため。"
+          },
+          "answer_preview": "・いいえ、本アプリは病院ではありません。 \n・本アプリは、研究開発中の**β版（試験運用版）**として運用されている**チャット型医薬品相談ツール**です。 \n・利用目的は、一般用医薬品（OTC薬）の提案や受診の目安を示し、セルフメディケーションの参考情報を提供することです。 \n・**本アプリは医師・薬剤師の診断や指導を代替するものではなく、利用者の安全な判断を補助する情報提供ツールです。** \n・対象は、薬剤師・登録販売者などの医薬専門職、医療・行政・研究機関に所属する関係者、企業担当者などに限定されています。 \n・一般消費者向けの正式公開は検討段階であり、本β版は評価・検証を目的とした非公"
+        },
+        {
+          "turn": 2,
+          "user": "医療行為に当たる？",
+          "intent": "doc_terms",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2302.6,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 0.9,
+            "grounded": 0.8,
+            "user_focus": 0.9,
+            "context_aware": 0.7,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的に回答し、関連情報を提供しているが、法的判断に関する明確な結論が不足しているため、若干の改善が必要。"
+          },
+          "answer_preview": "・本アプリは「一般用医薬品を症状に基づいて参考提示するシステム」であり、「正式な医療サービスではありません」と記載されています。  \n・また、「医師・薬剤師・登録販売者など専門家の判断を代替するものではありません」とされています。  \n・したがって、このドキュメント上では、本アプリは医療行為そのものとして定義されていません。  \n・一方で、「医療行為に当たるか」という法的・医学的な判断の結論は、ドキュメントに記載がありません。  \n・本アプリは試験運用（β版）であり、「表示内容の正確性・安全性・安定性について保証できません」とされています。  \n・不具合や問い合わせは、不具合報告フォーム：ht"
+        }
+      ]
+    },
+    {
+      "id": "dlg-gpt-infra-explore",
+      "mode": "gpt_user",
+      "pass": true,
+      "turns": [
+        {
+          "turn": 1,
+          "user": "このサービスのサーバー構成、素人にもわかるように教えて",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2257.3,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 0.8,
+            "grounded": 0.7,
+            "user_focus": 0.9,
+            "context_aware": 0.6,
+            "pass": true,
+            "reason": "回答はユーザーの質問に対して具体的なサーバー構成を説明しており、ユーザーの意図に沿った内容であるため。"
+          },
+          "answer_preview": "このサービスは、ブラウザやLINEからの質問をまず振り分けて、内容に合う担当へ回す作りです。たとえば、症状に関する相談は市販薬候補をルールベースで絞る担当へ、雑談や案内は別の案内担当へ進みます。\n\nサーバーは本番と試験用で分かれていて、本番はGCP、試験用はAWSで動いています。読み上げや翻訳も環境ごとに使うサービスを分けていて、画像は共通のCDNから配信しています。\n\n必要なら次に、「本番と試験用で何が違うのか」だけをさらにかみ砕いて説明できます。"
+        },
+        {
+          "turn": 2,
+          "user": "本番と試験用って、具体的には何が違うの？",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2133.1,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的かつ明確に本番と試験用の違いを説明しており、情報も信頼できるものであるため。"
+          },
+          "answer_preview": "本番は GCP 本番環境で、medicine.yutok.dev が動いています。翻訳は DeepL、読み上げは Google Cloud Text-to-Speech、データ保存は本番用の PostgreSQL を使います。\n\n試験用は AWS ステージング環境で、aws.medicine.yutok.dev が動いています。こちらは Amazon Translate と Amazon Polly を使い、別の PostgreSQL とログ基盤で、本番とは分けて試験します。\n\n医薬品画像はどちらも共通の画像 CDN から配信されます。つまり、土台は同じアプリでも、本番は安定重視、試験用は A"
+        },
+        {
+          "turn": 3,
+          "user": "/B テストや新機能の検証をするために使われているってことですね。",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 1727.6,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 0.9,
+            "grounded": 0.8,
+            "user_focus": 0.9,
+            "context_aware": 0.8,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的に答えており、関連情報も提供しているため、全体的に高い評価ができる。"
+          },
+          "answer_preview": "はい、その理解で近いです。AWS の試験用環境は、新機能の動作確認やクラウド機能の試験、公開前の検証に使うための場所です。\n\n本番とは別の環境なので、試験の影響が本番に出ないように分けています。"
+        },
+        {
+          "turn": 4,
+          "user": "なるほど、試験用環境は新しいことを試すための場所なんですね。",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 1772.7,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 0.9,
+            "grounded": 0.8,
+            "user_focus": 0.9,
+            "context_aware": 0.8,
+            "pass": true,
+            "reason": "ユーザーの理解を深めるための具体的な説明があり、質問に対して適切に答えている。"
+          },
+          "answer_preview": "はい、その理解で大丈夫です。\n\nこのツールでは、本番に影響を出さないように、試験用環境で新しい機能や表示の確認をしてから反映する考え方になっています。\n\n必要なら次に、「本番と試験用でどこが分かれているか」だけを、さらに短くまとめます。"
+        }
+      ]
+    },
+    {
+      "id": "dlg-gpt-app-curiosity",
+      "mode": "gpt_user",
+      "pass": true,
+      "turns": [
+        {
+          "turn": 1,
+          "user": "なんでこんなアプリ作ったの？個人的に気になって",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2160.5,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的にアプリの目的と機能を説明しており、情報も明確で関連性が高い。"
+          },
+          "answer_preview": "個人的には、症状に合いそうな市販薬をチャットで迷わず選べるようにしたかったのが大きいです。 \n「何を買えばいいかわからない」「調べても情報が散らばっていて不安」という場面で、まず候補を整理して案内するためのツールとして作られています。\n\nそれと、推奨はルールベースで行っていて、薬名を雰囲気で作ったりせず、できるだけ安全に案内する作りにしています。 \n必要なら次に、「どういう場面を想定しているのか」ももう少し短く説明できます。"
+        },
+        {
+          "turn": 2,
+          "user": "なるほど、安心して選べるようにしたかったんですね。じゃあ、これって誰に向けて作ったアプリなんですか？",
+          "intent": "app_about",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 1921.4,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的にアプリの対象者を説明し、意図を明確にしているため。"
+          },
+          "answer_preview": "主に、薬剤師さんや登録販売者さん、企業・行政の担当者など、医薬品の案内に関わる人たち向けの試験運用として作られています。 \nそのうえで、症状に合いそうな市販薬をチャットで整理して案内したい一般の利用場面も想定しています。 \nつまり、病院で診察や処方をするためのものではなく、市販薬選びを助けるためのチャット型の案内ツールです。"
+        },
+        {
+          "turn": 3,
+          "user": "そうなんですね、じゃあβ版っていうのはどういう意味なんですか？",
+          "intent": "doc_app_overview",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2338.2,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 0.9,
+            "grounded": 0.8,
+            "user_focus": 0.9,
+            "context_aware": 0.8,
+            "pass": true,
+            "reason": "質問に対して具体的かつ詳細に答えており、ユーザーの意図を理解している。"
+          },
+          "answer_preview": "・β版（試験運用版）として運用されている段階で、研究開発中の限定公開です。  \n・本β版の目的は、AIを用いた医薬品相談のUI/UXや独自選定アルゴリズムの有効性について、専門家の皆様からフィードバックをいただくことです。  \n・運用は**非営利・学術目的**で、対象は薬剤師・登録販売者、医療・行政・研究機関の関係者、企業担当者などに限定されています。  \n・一般消費者向けの正式公開は検討段階で、**一般公開ではありません**。  \n・このβ版は、実証研究・検証を目的とした**限定的運用**です。  \n・ドキュメントに記載がありませんが、β版の具体的な公開期間や終了条件については明記されていま"
+        },
+        {
+          "turn": 4,
+          "user": "そうなんですね、じゃあフィードバックをもらうために今の段階で使ってもらってるってことですか？",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2008.6,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "ユーザーの質問に対して明確に答え、関連情報を提供しているため。"
+          },
+          "answer_preview": "はい、その理解で近いです。今の段階では、実際の使い勝手や案内の分かりやすさを見ながら、フィードバックを集めるために使ってもらっています。\n\nあわせて、症状に合いそうな市販薬の案内はルールに基づいて行い、雰囲気だけで薬名を決めることはありません。\n\n必要なら次に、「どんな人からのフィードバックを想定しているか」も短く説明できます。"
+        }
+      ]
+    },
+    {
+      "id": "dlg-gpt-mixed-meta",
+      "mode": "gpt_user",
+      "pass": true,
+      "turns": [
+        {
+          "turn": 1,
+          "user": "市販薬の相談ツールって書いてあるけど、AIなの？ルールなの？",
+          "intent": "capabilities",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 1689.1,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "回答はユーザーの質問に直接答えており、具体的な情報に基づいているため、全ての基準を満たしています。"
+          },
+          "answer_preview": "はい、AIを使ったチャット型の市販薬相談ツールですが、候補の選び方はルールベースです。症状、年齢、持病、服薬状況などの条件に沿って、市販薬の候補を安全に絞り込みます。\n\n診断や処方は行わず、必要に応じて受診の目安や注意点をお伝えします。"
+        },
+        {
+          "turn": 2,
+          "user": "それって、どのくらいの情報を入力すればいいの？",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 1892.0,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的かつ明確に答えており、必要な情報を適切に提供しているため。"
+          },
+          "answer_preview": "まずは、今いちばん気になっている症状を1つか2つ、できるだけ普段の言葉で入れてください。あわせて、年齢、持病、今使っている市販薬や処方薬があれば教えてください。\n\nたとえば「鼻水とくしゃみが3日続いている」「のどが痛い」「胃がムカムカする」のようで大丈夫です。情報がそろうほど候補を絞りやすいですが、細かく全部書かなくても案内できます。"
+        },
+        {
+          "turn": 3,
+          "user": "じゃあ、例えば「風邪っぽい感じが続いてる」っていうだけでも大丈夫なの？",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 1972.9,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的に答え、必要な情報を提供しているため。"
+          },
+          "answer_preview": "はい、大丈夫です。まずはその一言からでも始められます。\n\nそのあとで、いつから続いているか、ほかにある症状、年齢、持病、今使っている市販薬や処方薬があれば、わかる範囲で足してもらえると、市販薬の候補をルールベースで絞りやすくなります。"
+        },
+        {
+          "turn": 4,
+          "user": "じゃあ、もしその後に他の症状も出てきたら、追加で教えてもいいの？",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 1811.2,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的に答え、文脈を維持しつつ、必要な情報を提供しているため。"
+          },
+          "answer_preview": "はい、もちろんです。あとから「実は熱もある」「咳が増えた」など、気づいた症状が出てきたら、その都度追加で教えてください。\n\n情報が増えると、市販薬の候補をルールベースでより安全に絞りやすくなります。"
+        },
+        {
+          "turn": 5,
+          "user": "じゃあ、症状が変わったときは、どんなふうに教えればいいかな？",
+          "intent": "architecture",
+          "pass": true,
+          "failures": [],
+          "latency_ms": 2339.0,
+          "llm_used": true,
+          "judge": {
+            "on_topic": 1.0,
+            "grounded": 1.0,
+            "user_focus": 1.0,
+            "context_aware": 1.0,
+            "pass": true,
+            "reason": "ユーザーの質問に対して具体的かつ明確に答えており、文脈を維持しつつ、必要な情報を提供しているため。"
+          },
+          "answer_preview": "変わったところだけを、前回からの差分で教えてもらえるとわかりやすいです。たとえば「熱が出た」「咳が増えた」「痛みの場所が移った」「食欲が落ちた」のように、増えた症状や強くなった症状を書いてください。\n\nあわせて、いつから変わったかも入れてもらえると、市販薬の候補をルールベースでより絞りやすくなります。\n\n必要なら、そのまま送れる短い書き方の例も出せます。"
+        }
+      ]
+    }
+  ]
+}

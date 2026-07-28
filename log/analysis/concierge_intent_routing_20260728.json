@@ -1,0 +1,187 @@
+{
+  "eval": "concierge_intent_routing",
+  "fixture": "tests/fixtures/concierge_intent_routing.yaml",
+  "timestamp": "2026-07-28T11:14:06.910413+00:00",
+  "total": 25,
+  "passed": 25,
+  "pass_pct": 100.0,
+  "min_pass_pct": 92.0,
+  "go": true,
+  "results": [
+    {
+      "id": "route-arch-sage",
+      "query": "Sage Terrace とは？",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true
+    },
+    {
+      "id": "route-arch-local-rag",
+      "query": "Local RAG の仕組み",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true
+    },
+    {
+      "id": "route-arch-data",
+      "query": "データはどこに保存される？",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true
+    },
+    {
+      "id": "route-cap-otc",
+      "query": "OTCってなに？",
+      "expected_intent": "capabilities",
+      "actual_intent": "capabilities",
+      "pass": true
+    },
+    {
+      "id": "route-cap-what-can",
+      "query": "何ができる？",
+      "expected_intent": "capabilities",
+      "actual_intent": "capabilities",
+      "pass": true
+    },
+    {
+      "id": "route-arch-who-answers",
+      "query": "誰が回答したの？",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true
+    },
+    {
+      "id": "route-arch-changelog",
+      "query": "最近の更新内容を教えて",
+      "expected_intent": "doc_changelog",
+      "actual_intent": "doc_changelog",
+      "pass": true
+    },
+    {
+      "id": "route-arch-line",
+      "query": "LINE はどこで動いてる？",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true
+    },
+    {
+      "id": "route-legal-privacy",
+      "query": "プラポリは？",
+      "expected_intent": "doc_privacy",
+      "actual_intent": "doc_privacy",
+      "pass": true
+    },
+    {
+      "id": "route-legal-terms",
+      "query": "利用規約は？",
+      "expected_intent": "doc_terms",
+      "actual_intent": "doc_terms",
+      "pass": true
+    },
+    {
+      "id": "route-legal-yakki",
+      "query": "薬機法上問題ないの？",
+      "expected_intent": "doc_terms",
+      "actual_intent": "doc_terms",
+      "pass": true
+    },
+    {
+      "id": "route-legal-consultation",
+      "query": "医薬品相談窓口は？",
+      "expected_intent": "doc_consultation",
+      "actual_intent": "doc_consultation",
+      "pass": true
+    },
+    {
+      "id": "route-legal-operator",
+      "query": "お問い合わせ先",
+      "expected_intent": "doc_operator",
+      "actual_intent": "doc_operator",
+      "pass": true
+    },
+    {
+      "id": "route-legal-disclaimer",
+      "query": "免責事項について",
+      "expected_intent": "doc_terms",
+      "actual_intent": "doc_terms",
+      "pass": true
+    },
+    {
+      "id": "route-legal-privacy-en",
+      "query": "privacy policy",
+      "expected_intent": "doc_privacy",
+      "actual_intent": "doc_privacy",
+      "pass": true
+    },
+    {
+      "id": "route-app-about",
+      "query": "あなたについて教えて",
+      "expected_intent": "app_about",
+      "actual_intent": "app_about",
+      "pass": true
+    },
+    {
+      "id": "route-mission-why",
+      "query": "なぜこのアプリを作った？",
+      "expected_intent": "doc_app_overview",
+      "actual_intent": "doc_app_overview",
+      "pass": true
+    },
+    {
+      "id": "route-mission-beta",
+      "query": "現状 β版 どうなってる？",
+      "expected_intent": "doc_app_overview",
+      "actual_intent": "doc_app_overview",
+      "pass": true
+    },
+    {
+      "id": "route-mission-background",
+      "query": "開発背景を教えて",
+      "expected_intent": "doc_app_overview",
+      "actual_intent": "doc_app_overview",
+      "pass": true
+    },
+    {
+      "id": "route-app-overview",
+      "query": "アプリの概要",
+      "expected_intent": "doc_app_overview",
+      "actual_intent": "doc_app_overview",
+      "pass": true
+    },
+    {
+      "id": "boundary-symptom-headache",
+      "query": "頭が痛い",
+      "expected_intent": null,
+      "actual_intent": null,
+      "pass": true
+    },
+    {
+      "id": "boundary-medicine-cold",
+      "query": "風邪薬を教えて",
+      "expected_intent": null,
+      "actual_intent": null,
+      "pass": true
+    },
+    {
+      "id": "boundary-medicine-nsaid",
+      "query": "イブプロフェンとロキソプロフェンどっち？",
+      "expected_intent": null,
+      "actual_intent": null,
+      "pass": true
+    },
+    {
+      "id": "boundary-symptom-fever",
+      "query": "38度の熱がある",
+      "expected_intent": null,
+      "actual_intent": null,
+      "pass": true
+    },
+    {
+      "id": "boundary-store-hint",
+      "query": "近くのドラッグストア",
+      "expected_intent": null,
+      "actual_intent": null,
+      "pass": true
+    }
+  ]
+}

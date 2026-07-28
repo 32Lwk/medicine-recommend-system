@@ -472,6 +472,7 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"プラポリ|プライバシー|個人情報|privacy", re.I), "doc_privacy"),
     (re.compile(r"利用規約|免責|禁止事項"), "doc_terms"),
     (re.compile(r"(あなた|あんた)(について|は誰|って何|は何|のこと)"), "app_about"),
+    (re.compile(r"(この|本)(アプリ|ツール|ボット|チャット|サービス)(について|を教えて|の説明)"), "app_about"),
     (re.compile(r"自己紹介"), "app_about"),
     (re.compile(r"(この|本)(ツール|アプリ|ボット|チャット|サービス).{0,16}(誰|だれ).{0,8}(作|開発)"), "app_about"),
     (re.compile(r"(誰|だれ).{0,12}(作|開発|作った|作って).{0,8}(の|か)"), "app_about"),
@@ -486,6 +487,7 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"what changed|recent(ly)?.*(update|change|release|app)", re.I), "doc_changelog"),
     (re.compile(r"(マルチエージェント|薬はどうやって|選び方の仕組み|内部構成)"), "architecture"),
     (re.compile(r"(技術スタック|技術構成|開発環境|使ってる技術|tech\s*stack|デプロイ|インフラ)"), "architecture"),
+    (re.compile(r"Local\s*RAG|ローカル\s*RAG|local\s*rag|ナレッジベース|Knowledge\s*Base", re.I), "architecture"),
     (re.compile(r"(FastAPI|Cloud\s*Run|PostgreSQL|Gunicorn|Neon|Sage\s*Terrace)"), "architecture"),
     (re.compile(r"(ECS|ECR|CodePipeline|CodeBuild|CloudFront|Bedrock|Translate|Polly|ElastiCache|Personalize)", re.I), "architecture"),
     (re.compile(r"(AWS|GCP|クロスクラウド|cross[\s-]?cloud|Cloudflare|R2)", re.I), "architecture"),
@@ -513,7 +515,13 @@ _META_PROBE_RULES: list[tuple[re.Pattern[str], ConciergeIntent]] = [
     (re.compile(r"開示ポリシー|公開情報の開示", re.I), "architecture"),
     (re.compile(r"RECO_[A-Z0-9_]+|CHAT_PIPELINE_V2", re.I), "architecture"),
     (re.compile(r"(PMDA|厚労省|#7119|相談先|相談窓口)"), "doc_consultation"),
-    (re.compile(r"(アプリの概要|開発背景|β版|ベータ版)"), "doc_app_overview"),
+    (re.compile(r"(なぜ|どうして).{0,16}(作|開発|つく|創)"), "doc_app_overview"),
+    (re.compile(r"(作成|開発).{0,8}(意図|理由|目的|きっかけ|背景|動機)"), "doc_app_overview"),
+    (re.compile(r"(現状|いま|現在).{0,12}(β|ベータ|試験|運用|段階|どうな)"), "doc_app_overview"),
+    (re.compile(r"(アプリの概要|開発背景|β版|ベータ版|セルフメディケーション.{0,8}(目指|実現))"), "doc_app_overview"),
+    (re.compile(r"(将来|展望|この先|今後).{0,12}(どう|なに|何|ある)"), "doc_app_overview"),
+    (re.compile(r"^(病院|クリニック)(ですか|？|\?)?"), "doc_app_overview"),
+    (re.compile(r"医療行為.{0,8}(当た|該当)"), "doc_terms"),
     (re.compile(r"プリンシプルオブプログラミング|オブジェクト指向とは|デザインパターンとは"), "redirect"),
     (re.compile(r"(プログラミング|アルゴリズム|データ構造).{0,8}(とは|って何)"), "redirect"),
 ]
@@ -583,6 +591,33 @@ _DOC_CHANGELOG_PROBE_EXCLUDE_RE = re.compile(
 def is_excluded_doc_changelog_probe(text: str) -> bool:
     """他製品・ユーザー自身・OS 更新など本アプリ CHANGELOG 以外。"""
     return bool(_DOC_CHANGELOG_PROBE_EXCLUDE_RE.search((text or "").strip()))
+
+
+_AMBIGUOUS_META_TOPIC_RE = re.compile(
+    r"^(?:技術|法務|概要|アプリ|プライバシー|規約|インフラ|更新)[？?]?$"
+)
+# 指示語のみでトピックが不明な follow-up（文脈なし単発）
+_ANAPHORA_ONLY_CLARIFY_RE = re.compile(
+    r"^(?:それ|この|その|あれ|これ|そこ|ここ)"
+    r"(?:について|に)?"
+    r"(?:教えて|詳しく|知りたい|説明|もっと|続き)?[？?]?$",
+    re.I,
+)
+
+
+def build_ambiguous_meta_clarification(user_text: str) -> Optional[str]:
+    """probe が None の短文メタ質問向け clarifying 返答（1文）。"""
+    text = (user_text or "").strip()
+    if not text or len(text) > 24:
+        return None
+    if probe_meta_concierge_intent(text) or _is_medicine_consultation(text):
+        return None
+    if _AMBIGUOUS_META_TOPIC_RE.match(text) or _ANAPHORA_ONLY_CLARIFY_RE.match(text):
+        return (
+            "ご質問の内容をもう少し具体的にお書きください。"
+            "例:「インフラ構成を教えて」「プライバシーポリシーは？」「何ができる？」"
+        )
+    return None
 
 
 def probe_session_admin_intent(user_text: str) -> Optional[str]:

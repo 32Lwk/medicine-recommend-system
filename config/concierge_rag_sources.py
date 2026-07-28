@@ -15,7 +15,6 @@ CONCIERGE_OPS_DOCS: Tuple[str, ...] = (
     "docs/ops/GCP_RAG_MIGRATION_ADR.md",
     "docs/ops/CLOUD_RUN_LLM_ENV.md",
     "docs/ops/CAPACITY_PLANNING.md",
-    "docs/ops/PMDA_DATA_IMPORT.md",
     "docs/ops/AWS_LOG_ANALYSIS.md",
     "docs/ops/GITLAB_TEMPORARY_MIGRATION.md",
 )
