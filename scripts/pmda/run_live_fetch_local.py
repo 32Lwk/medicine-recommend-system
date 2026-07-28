@@ -7,7 +7,7 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -78,6 +78,8 @@ def run_local_fetch(
     ignore_daily_limit: bool = True,
     ignore_session_gap: bool = True,
     fast_backfill: bool = False,
+    shard_id: Optional[int] = None,
+    shard_count: Optional[int] = None,
 ) -> Dict[str, Any]:
     import importlib
     import scripts.pmda.http_client as http_client_mod
@@ -118,14 +120,62 @@ def run_local_fetch(
         "raw_saved": 0,
         "fast_backfill": fast_backfill,
         "sync": sync_info,
+        "shard_id": shard_id,
+        "shard_count": shard_count,
     }
+
+    use_shard = shard_id is not None and shard_count is not None
+
+    def _pending_count() -> int:
+        if use_shard:
+            from scripts.pmda.ingredient_parallel import shard_stats
+
+            return shard_stats(shard_id, shard_count)["pending"]
+        return queue_stats("interactions")["pending"]
+
+    def _pop_batch() -> List[str]:
+        if use_shard:
+            from scripts.pmda.ingredient_parallel import pop_shard_batch
+
+            return pop_shard_batch(shard_id, shard_count, max_items=1)
+        return pop_queue_batch("interactions", max_items=1)
+
+    def _restore_pending(items: List[str]) -> None:
+        if not items:
+            return
+        if use_shard:
+            from scripts.pmda.ingredient_parallel import load_shard, save_shard
+
+            data = load_shard(shard_id, shard_count)
+            pending = list(data.get("pending") or [])
+            for item in items:
+                if item not in pending:
+                    pending.insert(0, item)
+            data["pending"] = pending
+            save_shard(data)
+        else:
+            restore_queue_pending("interactions", items)
+            restore_queue_pending("side_effects", items)
+
+    def _apply_result(result: Dict[str, Any]) -> None:
+        ingredient = result["ingredient"]
+        status = result["status"]
+        if use_shard:
+            from scripts.pmda.ingredient_parallel import mark_shard_done, mark_shard_failed
+
+            if status == "done":
+                mark_shard_done(shard_id, shard_count, [ingredient])
+            elif status == "failed":
+                mark_shard_failed(shard_id, shard_count, ingredient, result.get("reason") or "failed")
+        else:
+            update_queues_for_ingredient(result)
 
     try:
         with session:
-            while queue_stats("interactions")["pending"] > 0:
+            while _pending_count() > 0:
                 if session.stats.aborted:
                     break
-                batch = pop_queue_batch("interactions", max_items=1)
+                batch = _pop_batch()
                 if not batch:
                     break
                 ingredient = batch[0]
@@ -133,11 +183,10 @@ def run_local_fetch(
 
                 result = process_ingredient(session, ingredient, partners)
                 if result["status"] == "aborted":
-                    restore_queue_pending("interactions", pending_restore)
-                    restore_queue_pending("side_effects", pending_restore)
+                    _restore_pending(pending_restore)
                     break
 
-                update_queues_for_ingredient(result)
+                _apply_result(result)
                 pending_restore.clear()
                 run_stats["processed"] += 1
 
@@ -183,11 +232,7 @@ def run_local_fetch(
 
     elapsed = round(time.time() - started, 1)
     final = {
-        "ok": (
-            not session.stats.aborted
-            and queue_stats("interactions")["pending"] == 0
-            and run_stats["processed"] > 0
-        ),
+        "ok": (not session.stats.aborted and _pending_count() == 0),
         "elapsed_sec": elapsed,
         "pmda_rows": _count_pmda_rows(),
         "queue_interactions": queue_stats("interactions"),

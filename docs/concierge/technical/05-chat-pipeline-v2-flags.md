@@ -25,7 +25,7 @@ env 未設定 = ON（pytest 実行中のみ OFF）。明示 `false` でロール
 `config/aws_features.py` 参照:
 
 - 翻訳: Amazon Translate（AWS）/ DeepL（GCP 本番既定）
-- TTS: Amazon Polly（AWS）/ Web Speech（GCP 本番既定）
+- TTS: Amazon Polly（AWS）/ Google Cloud Text-to-Speech（GCP 本番・dev 既定）/ Web Speech（ローカル開発既定）
 - Concierge RAG: Bedrock KB（ingestion は Support 待ちの場合あり）
 - 画像 CDN: `images.yutok.dev`（GCP も cloudbuild で同 URL 可）
 

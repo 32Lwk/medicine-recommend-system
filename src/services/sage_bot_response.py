@@ -94,7 +94,12 @@ def build_crisis_bot(
 ) -> dict[str, Any]:
     from src.services.status_diagnosis_builder import build_crisis_status
 
-    sage_diag = build_crisis_status(message, resources=resources, title=title).to_client_dict()
+    sage_diag = build_crisis_status(
+        message,
+        resources=resources,
+        title=title,
+        emergency_message=emergency_message,
+    ).to_client_dict()
     return build_bot_response(
         session,
         sid,

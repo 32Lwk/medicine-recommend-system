@@ -16,6 +16,7 @@ gevent==24.2.1
 pytz==2024.1
 pyahocorasick>=2.0.0
 boto3>=1.35.0
+google-cloud-texttospeech>=2.16.0
 redis>=5.0.0
 pytest==8.3.3
 PyYAML>=6.0.1

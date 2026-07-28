@@ -1620,6 +1620,7 @@ def _meta_reference_block(intent: str) -> str:
                     "api_description",
                     "sse_description",
                     "rule_based_description",
+                    "tts_description",
                 )
                 detail_lines = [details[k] for k in ordered_keys if details.get(k)]
                 if detail_lines:
@@ -1644,7 +1645,15 @@ def _meta_reference_block(intent: str) -> str:
                 lines.append("- 医薬品画像: Cloudflare R2（images.yutok.dev/otc/）— GCP/AWS 共通 CDN")
                 lines.append("- セッションキャッシュ: ElastiCache Serverless")
                 lines.append("- 推奨ランキング補助: Amazon Personalize（イベント蓄積中、campaign はデータ待ち）")
-                lines.append("- 本番 GCP（medicine.yutok.dev）は Cloud Run + DeepL + Web Speech API のまま変更なし")
+                lines.append("- 本番 GCP（medicine.yutok.dev）は Cloud Run + DeepL + Google Cloud Text-to-Speech（POST /api/tts）")
+            else:
+                lines.append("")
+                lines.append("【GCP 本番・dev（参照）】")
+                lines.append("- URL: medicine.yutok.dev（本番）/ medicine-recommend-dev（dev）")
+                lines.append("- ホスティング: Google Cloud Run（asia-northeast1）")
+                lines.append("- 翻訳: DeepL")
+                lines.append("- 読み上げ: Google Cloud Text-to-Speech（POST /api/tts）")
+                lines.append("- 医薬品画像: Cloudflare R2（images.yutok.dev/otc/）")
         except Exception:
             pass
     else:

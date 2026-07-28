@@ -1,4 +1,4 @@
-"""Amazon Polly 向け SSML 生成（TTS_PROVIDER=polly / AWS 環境）。"""
+"""読み上げ用 SSML 生成（Polly / Google Cloud Text-to-Speech 共通）。"""
 from __future__ import annotations
 
 import html

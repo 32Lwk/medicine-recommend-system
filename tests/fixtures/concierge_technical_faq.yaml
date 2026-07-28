@@ -37,12 +37,12 @@ scenarios:
       - "DeepL"
 
   - id: polly-tts
-    message: "読み上げ機能 Polly について"
+    message: "GCP と AWS の読み上げ機能の違いを詳しく教えて"
     expected_intent: architecture
     expect_deep_dive: true
     reference_must_contain:
       - "Polly"
-      - "Web Speech"
+      - "Cloud Text-to-Speech"
 
   - id: bedrock-kb-status
     message: "Bedrock ナレッジベースの状態を教えて"

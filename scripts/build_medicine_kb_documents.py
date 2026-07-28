@@ -136,45 +136,10 @@ def write_doc_pair(base_path: Path, md_body: str, metadata: Dict[str, Any]) -> N
     )
 
 
-def _load_ingredient_synonyms() -> Dict[str, List[str]]:
-    """Optional data/ingredient_synonyms.json — {name: [syn, ...]} or {name: {synonyms: [...]}}."""
-    path = DATA_DIR / "ingredient_synonyms.json"
-    if not path.is_file():
-        return {}
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
-    if not isinstance(raw, dict):
-        return {}
+def _lookup_synonyms(names: List[str]) -> str:
+    from src.services.ingredient_synonym_registry import lookup_synonyms_for_names
 
-    out: Dict[str, List[str]] = {}
-    for key, val in raw.items():
-        canonical = _normalize(str(key))
-        if not canonical:
-            continue
-        syns: List[str] = []
-        if isinstance(val, list):
-            syns = [_normalize(str(s)) for s in val if s]
-        elif isinstance(val, dict):
-            raw_syns = val.get("synonyms") or []
-            if isinstance(raw_syns, list):
-                syns = [_normalize(str(s)) for s in raw_syns if s]
-        if syns:
-            out[canonical] = [s for s in syns if s and s != canonical]
-    return out
-
-
-def _lookup_synonyms(names: List[str], synonym_map: Dict[str, List[str]]) -> str:
-    seen: set[str] = set()
-    collected: List[str] = []
-    for name in names:
-        key = _normalize(name)
-        for syn in synonym_map.get(key, []):
-            if syn and syn not in seen:
-                seen.add(syn)
-                collected.append(syn)
-    return ",".join(collected)
+    return lookup_synonyms_for_names(names)
 
 
 def build_products(out_root: Path) -> int:
@@ -232,6 +197,18 @@ def build_products(out_root: Path) -> int:
             (doping and "禁止" in doping)
             or (competition and competition not in ("—", ""))
         )
+        from src.services.ingredient_synonym_registry import (
+            brand_hints_for_product,
+            lookup_synonyms_for_names,
+            split_ingredient_field,
+        )
+
+        ingredient_parts = split_ingredient_field(ingredients)
+        synonym_blob = lookup_synonyms_for_names(
+            [product_name, *ingredient_parts, *brand_hints_for_product(product_name)]
+        )
+        if synonym_blob:
+            md = f"{md}\n\n## 検索用同義語\n\n{synonym_blob}\n"
         meta: Dict[str, Any] = {
             "domain": "medicine",
             "doc_type": "product",
@@ -242,12 +219,14 @@ def build_products(out_root: Path) -> int:
             "has_age_restriction": has_age,
             "has_doping_info": has_doping,
         }
+        if synonym_blob:
+            meta["synonyms"] = synonym_blob[:200]
         write_doc_pair(out_root / "products" / slug, md, meta)
         count += 1
     return count
 
 
-def build_interactions(out_root: Path, synonym_map: Dict[str, List[str]]) -> int:
+def build_interactions(out_root: Path, _synonym_map: Dict[str, List[str]] | None = None) -> int:
     used: Dict[str, int] = {}
     count = 0
     with (DATA_DIR / "medicine_interactions.csv").open(encoding="utf-8", newline="") as f:
@@ -281,15 +260,16 @@ def build_interactions(out_root: Path, synonym_map: Dict[str, List[str]]) -> int
                 "ingredient_b": b[:40],
                 "risk_level": level[:10],
             }
-            synonyms = _lookup_synonyms([a, b], synonym_map)
+            synonyms = _lookup_synonyms([a, b])
             if synonyms:
+                md = f"{md}\n\n## 検索用同義語\n\n{synonyms}\n"
                 meta["synonyms"] = synonyms
             write_doc_pair(out_root / "interactions" / slug, md, meta)
             count += 1
     return count
 
 
-def build_side_effects(out_root: Path, synonym_map: Dict[str, List[str]]) -> int:
+def build_side_effects(out_root: Path, _synonym_map: Dict[str, List[str]] | None = None) -> int:
     used: Dict[str, int] = {}
     count = 0
     with (DATA_DIR / "medicine_side_effects.csv").open(encoding="utf-8", newline="") as f:
@@ -317,8 +297,9 @@ def build_side_effects(out_root: Path, synonym_map: Dict[str, List[str]]) -> int
                 "ingredient": ingredient[:40],
                 "side_effect_level": level[:10],
             }
-            synonyms = _lookup_synonyms([ingredient], synonym_map)
+            synonyms = _lookup_synonyms([ingredient])
             if synonyms:
+                md = f"{md}\n\n## 検索用同義語\n\n{synonyms}\n"
                 meta["synonyms"] = synonyms
             write_doc_pair(out_root / "side_effects" / slug, md, meta)
             count += 1
@@ -573,12 +554,10 @@ def main() -> int:
     if args.clean and args.output.exists():
         shutil.rmtree(args.output)
 
-    synonym_map = _load_ingredient_synonyms()
-
     stats = {
         "products": build_products(args.output),
-        "interactions": build_interactions(args.output, synonym_map),
-        "side_effects": build_side_effects(args.output, synonym_map),
+        "interactions": build_interactions(args.output, {}),
+        "side_effects": build_side_effects(args.output, {}),
         "kanpo": build_kanpo(args.output),
         "efficacy": build_efficacy(args.output),
         "topics": build_topics(args.output),

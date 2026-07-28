@@ -1,6 +1,6 @@
 # AWS 機能ロールアウト（env ゲート）
 
-GCP 本番 `medicine.yutok.dev` は **env 未設定 = 現状維持**（DeepL / OpenAI / Web Speech）。  
+GCP 本番 `medicine.yutok.dev` と dev `medicine-recommend-dev` は **Cloud Build 経由で `TTS_PROVIDER=google`**（DeepL / Cloud Text-to-Speech）。  
 AWS ステージング `aws.medicine.yutok.dev` の ECS タスク定義のみで以下を設定する。
 
 正本: [config/aws_features.py](../../config/aws_features.py)
@@ -15,7 +15,7 @@ AWS ステージング `aws.medicine.yutok.dev` の ECS タスク定義のみで
 | `BEDROCK_KB_ID` | 未設定 | Concierge Managed KB `2CNAGQ2V4P` |
 | `BEDROCK_MEDICINE_KB_ID` | 未設定 | 医薬品 Managed KB `30BCEJCJHA` |
 | `BEDROCK_KB_SEARCH_MODE` | `managed` | 旧 Customer-managed のみ `vector` |
-| `TTS_PROVIDER` | `webspeech` | `polly`（Phase 2b） |
+| `TTS_PROVIDER` | `google`（cloudbuild.yaml） | `polly`（Phase 2b） |
 | `COMPREHEND_MEDICAL_ENABLED` | false | `true`（Phase 3） |
 | `MEDICINE_IMAGE_CDN_BASE` | （任意）共通可 | `https://images.yutok.dev/otc/`（**GCP 本番も cloudbuild.yaml で設定**） |
 | `STATIC_CDN_BASE_URL` | 未設定 | CloudFront URL（Phase 1） |
@@ -69,6 +69,19 @@ Concierge の技術参照や UI の `data-env` 表示を dev 向けに揃える:
 ```
 
 AWS 単体: `APP_ENV=development ./scripts/update-aws-express-env.sh`
+
+## GCP Cloud Text-to-Speech（本番・dev）
+
+Cloud Run サービスアカウントに **Cloud Text-to-Speech User**（`roles/cloudtts.user`）を付与する。
+
+```bash
+# 例: 本番サービスアカウント
+gcloud projects add-iam-policy-binding medicine-recommend \
+  --member="serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
+  --role="roles/cloudtts.user"
+```
+
+`cloudbuild.yaml` の deploy ステップで `TTS_PROVIDER=google` を設定済み。API 障害時は `TTS_PROVIDER=webspeech` に戻して redeploy（ブラウザ Web Speech にフォールバック）。
 
 ## Admin IAM
 

@@ -13492,3 +13492,36 @@
 {"timestamp": "2026-07-28T15:40:57.933889", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-28T15:40:57.950893", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-28T15:40:57.951894", "event_type": "input_validation", "user_id": "unknown", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "今何時？"}}
+{"timestamp": "2026-07-28T15:44:10.080522", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:44:10.080522", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "やあ"}}
+{"timestamp": "2026-07-28T15:44:32.831854", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:44:32.832853", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉か沸いた"}}
+{"timestamp": "2026-07-28T15:44:36.608651", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:44:36.625661", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:44:36.625661", "event_type": "input_validation", "user_id": "unknown", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉か沸いた"}}
+{"timestamp": "2026-07-28T16:32:51.448586", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T16:32:51.449582", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "本番環境とaws環境とgcp環境ってなに？"}}
+{"timestamp": "2026-07-28T16:33:20.874398", "original_length": 18, "sanitized_length": 18, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T16:33:20.874398", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 18, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "本番とAWSステージングの役割の違い"}}
+{"timestamp": "2026-07-28T16:34:09.654531", "original_length": 19, "sanitized_length": 19, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T16:34:09.655530", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 19, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "本番とAWSステージングで何が違うのか"}}
+{"timestamp": "2026-07-28T16:34:36.976558", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T16:34:36.977558", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "デプロイの流れの違い"}}
+{"timestamp": "2026-07-28T16:34:57.910748", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T16:34:57.911753", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "確認方法の違い"}}
+{"timestamp": "2026-07-28T16:35:02.900199", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T16:35:02.909988", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T16:35:02.910987", "event_type": "input_validation", "user_id": "unknown", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "確認方法の違い"}}
+{"timestamp": "2026-07-28T16:41:34.413346", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T16:41:34.414346", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "やあ"}}
+{"timestamp": "2026-07-28T16:42:37.822529", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T16:42:38.075673", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "やあ"}}
+{"timestamp": "2026-07-28T16:43:58.645739", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T16:43:58.645739", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "死にたい"}}
+{"timestamp": "2026-07-28T16:43:58.658251", "event_type": "crisis_keyword_detection", "user_id": "ユーザー1", "session_id": "1785224586975514697004", "input_text": "死にたい", "detected_keywords": ["死にたい"], "severity": "critical", "action_taken": "crisis_resources_provided", "is_safe": false, "risk_score": 100}
+{"timestamp": "2026-07-28T16:44:22.071253", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T16:44:22.072254", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "死にたい"}}
+{"timestamp": "2026-07-28T16:44:22.074255", "event_type": "crisis_keyword_detection", "user_id": "ユーザー2", "session_id": "1785224654310471828305", "input_text": "死にたい", "detected_keywords": ["死にたい"], "severity": "critical", "action_taken": "crisis_resources_provided", "is_safe": false, "risk_score": 100}
+{"timestamp": "2026-07-28T16:57:25.246123", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T16:57:25.247127", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "死にたい"}}
+{"timestamp": "2026-07-28T16:57:25.253131", "event_type": "crisis_keyword_detection", "user_id": "ユーザー2", "session_id": "1785224654310471828305", "input_text": "死にたい", "detected_keywords": ["死にたい"], "severity": "critical", "action_taken": "crisis_resources_provided", "is_safe": false, "risk_score": 100}

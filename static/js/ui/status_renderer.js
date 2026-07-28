@@ -17,7 +17,7 @@
   }
 
   /** DOM 再描画スキップ時も chrome 更新を検知する（フィードバック 🔊・余白・リストドット） */
-  var SAGE_STATUS_CHROME_VERSION = '9';
+  var SAGE_STATUS_CHROME_VERSION = '10';
 
   var CHANGELOG_DEV_INTRO_RE = /PMDA|正本|品質フィルタ|quality_filter|ingestion job|data\/pmda|CHANGELOG|doc_changelog|build-meta|CodeBuild|Bedrock ingestion|§\d|reparse_from_raw|live fetch|開発者向け|developer.?facing|画面の[「『]?最近の更新|反映精度|見やすい表示に整え|案内の流れも、より安心/i;
 
@@ -693,18 +693,129 @@
     return bodyParts.join('');
   }
 
+  function crisisString(key, fallback) {
+    var val = t(key);
+    return (val && val !== key) ? val : fallback;
+  }
+
+  function crisisPhoneHref(phone) {
+    var digits = String(phone || '').replace(/\D/g, '');
+    return digits ? 'tel:' + digits : '';
+  }
+
+  function crisisResourcesHtml(diag) {
+    if (!diag || diag.kind !== 'crisis_support') return '';
+    var resources = diag.crisis_resources || [];
+    if (!resources.length) return '';
+    var lineLabel = crisisString('crisisLineConsult', 'LINEで相談する');
+    var webLabel = crisisString('crisisWebsite', 'ウェブサイトを開く');
+    var qrLabel = crisisString('crisisLineQr', 'LINE QRコードを表示');
+    var phoneAria = crisisString('crisisPhoneAria', '電話相談');
+    var html = (
+      '<div class="ui-crisis-panel">' +
+        '<p class="ui-crisis-panel__lead">' + esc(crisisString('crisisResourcesIntro', '相談先')) + '</p>' +
+        '<ul class="ui-crisis-panel__list">'
+    );
+    resources.forEach(function (resource) {
+      resource = resource || {};
+      html += '<li class="ui-crisis-resource">';
+      if (resource.name) {
+        html += '<div class="ui-crisis-resource__name">' + esc(resource.name) + '</div>';
+      }
+      if (resource.organization) {
+        html += '<div class="ui-crisis-resource__org">' + esc(resource.organization) + '</div>';
+      }
+      var actions = [];
+      if (resource.phone) {
+        var tel = crisisPhoneHref(resource.phone);
+        if (tel) {
+          actions.push(
+            '<a class="ui-crisis-resource__chip ui-crisis-resource__chip--phone" href="' + esc(tel) +
+            '" aria-label="' + esc(phoneAria) + '">' +
+            '<span class="ui-crisis-resource__chip-icon" aria-hidden="true">📞</span>' +
+            '<span class="ui-crisis-resource__chip-text">' + esc(resource.phone) + '</span></a>'
+          );
+        } else {
+          actions.push(
+            '<span class="ui-crisis-resource__chip ui-crisis-resource__chip--phone">' +
+            '<span class="ui-crisis-resource__chip-icon" aria-hidden="true">📞</span>' +
+            '<span class="ui-crisis-resource__chip-text">' + esc(resource.phone) + '</span></span>'
+          );
+        }
+      }
+      if (resource.line) {
+        actions.push(
+          '<a class="ui-crisis-resource__chip ui-crisis-resource__chip--line" href="' + esc(resource.line) +
+          '" target="_blank" rel="noopener noreferrer">' +
+          '<span class="ui-crisis-resource__chip-icon" aria-hidden="true">💬</span>' +
+          '<span class="ui-crisis-resource__chip-text">' + esc(lineLabel) + '</span></a>'
+        );
+      }
+      if (resource.website) {
+        actions.push(
+          '<a class="ui-crisis-resource__chip ui-crisis-resource__chip--web" href="' + esc(resource.website) +
+          '" target="_blank" rel="noopener noreferrer">' +
+          '<span class="ui-crisis-resource__chip-icon" aria-hidden="true">🌐</span>' +
+          '<span class="ui-crisis-resource__chip-text">' + esc(webLabel) + '</span></a>'
+        );
+      }
+      if (actions.length) {
+        html += '<div class="ui-crisis-resource__actions">' + actions.join('') + '</div>';
+      }
+      if (resource.hours) {
+        html += '<div class="ui-crisis-resource__hours">⏰ ' + esc(resource.hours) + '</div>';
+      }
+      if (resource.description) {
+        html += '<p class="ui-crisis-resource__desc">' + esc(resource.description) + '</p>';
+      }
+      if (resource.line_qr) {
+        html += (
+          '<details class="ui-crisis-resource__qr">' +
+            '<summary>' + esc(qrLabel) + '</summary>' +
+            '<img src="' + esc(resource.line_qr) + '" alt="LINE QRコード" class="ui-crisis-resource__qr-img" loading="lazy" decoding="async">' +
+          '</details>'
+        );
+      }
+      html += '</li>';
+    });
+    html += '</ul>';
+    var emergency = diag.emergency_message || '';
+    if (emergency) {
+      html += '<p class="ui-crisis-panel__emergency" role="note">' + esc(emergency) + '</p>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function buildCrisisStatusBlockHtml(diag) {
+    var variant = diag.variant || 'security';
+    var render = diag.render || 'sage_status';
+    return (
+      '<div class="ui-status-block ui-status-block--pro ui-status-block--crisis ui-status-block--' + esc(variant) + '">' +
+        statusIntroHtml(diag, variant, render) +
+        statusAdviceHtml(diag) +
+        crisisResourcesHtml(diag) +
+      '</div>'
+    );
+  }
+
   function buildStatusBlockHtml(diag) {
     if (!diag) return '';
     if (isCompactLayout(diag)) {
       return buildCompactStatusBlockHtml(diag);
     }
+    if (diag.kind === 'crisis_support' && diag.crisis_resources && diag.crisis_resources.length) {
+      return buildCrisisStatusBlockHtml(diag);
+    }
     var variant = diag.variant || 'notice';
     var render = diag.render || 'sage_status';
+    var crisisHtml = crisisResourcesHtml(diag);
+    var sectionsBlock = crisisHtml || sectionsHtml(diag.sections, variant, diag.kind);
     return (
       '<div class="ui-status-block ui-status-block--pro ui-status-block--' + esc(variant) + '">' +
         statusIntroHtml(diag, variant, render) +
         statusAdviceHtml(diag) +
-        sectionsHtml(diag.sections, variant, diag.kind) +
+        sectionsBlock +
         hintsHtml(diag.hints, variant, diag) +
         actionsHtml(diag.actions, diag) +
         feedbackHtml(diag) +

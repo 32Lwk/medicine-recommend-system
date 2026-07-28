@@ -8,17 +8,10 @@ from typing import List, Optional, Tuple
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _TECH_DIR = _REPO_ROOT / "docs" / "concierge" / "technical"
-_OPS_DOCS = (
-    "docs/ops/AWS_FEATURES_ROLLOUT.md",
-    "docs/ops/AWS_INFRA.md",
-    "docs/ops/AWS_CODEPIPELINE.md",
-    "docs/ops/CLOUDFLARE_R2_IMAGES.md",
-    "docs/ops/AWS_BEDROCK_KB.md",
-    "docs/ops/AWS_STAGING_CHECKLIST.md",
-    "docs/ops/LOCAL_RAG.md",
-    "docs/ops/GCP_RAG_MIGRATION_ADR.md",
-    "docs/ops/CLOUD_RUN_LLM_ENV.md",
-)
+
+from config.concierge_rag_sources import CONCIERGE_DEV_DOCS, CONCIERGE_OPS_DOCS
+
+_OPS_DOCS = CONCIERGE_OPS_DOCS + CONCIERGE_DEV_DOCS
 
 # 運用事実が必要な質問（クラウド比較・デプロイ・RAG 等）— deep でなくても ops を渡す
 _OPS_GROUNDED_RE = re.compile(
@@ -33,7 +26,7 @@ _OPS_GROUNDED_RE = re.compile(
 _DEEP_DIVE_RE = re.compile(
     r"詳しく|もっと|深く|具体的|技術的|アーキテクチャ|インフラ|構成|デプロイ|"
     r"クロスクラウド|cross[\s-]?cloud|CodePipeline|CodeBuild|ECS|Bedrock|"
-    r"CloudFront|Cloud\s*Run|Neon|Translate|Polly|R2|"
+    r"CloudFront|Cloud\s*Run|Neon|Translate|Polly|Text-to-Speech|Cloud Text|R2|"
     r"AWS|GCP|ステージング|staging|"
     r"どうやって(動|構築|デプロイ)|仕組みを(教|説)|運用(構成|方法)",
     re.I,

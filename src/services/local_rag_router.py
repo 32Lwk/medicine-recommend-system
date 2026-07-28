@@ -39,6 +39,16 @@ _INGREDIENT_SYNONYMS: Dict[str, str] = {
     "カロナール": "アセトアミノフェン",
 }
 
+
+def _ingredient_synonym_map() -> Dict[str, str]:
+    from src.services.ingredient_synonym_registry import alias_to_canonical
+
+    merged = dict(_INGREDIENT_SYNONYMS)
+    for alias, canonical in alias_to_canonical().items():
+        if len(alias) >= 2:
+            merged.setdefault(alias, canonical)
+    return merged
+
 _CLASS_SLUGS = {
     "ssri": "ssri",
     "snri": "snri",
@@ -275,7 +285,7 @@ def _extract_ingredients_from_text(
     if re.search(r"ビール|酒|お酒", cleaned):
         if "アルコール" not in found:
             found.append("アルコール")
-    for synonym, canonical in _INGREDIENT_SYNONYMS.items():
+    for synonym, canonical in _ingredient_synonym_map().items():
         if synonym in cleaned:
             canon = _canonical_ingredient(canonical)
             if canon and canon not in found:

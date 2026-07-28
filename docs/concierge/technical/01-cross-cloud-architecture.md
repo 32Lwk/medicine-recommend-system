@@ -10,12 +10,13 @@
 
 | 環境 | URL | ホスティング | 主な AI/翻訳/TTS |
 |------|-----|-------------|------------------|
-| **GCP 本番** | medicine.yutok.dev | Google Cloud Run | OpenAI（生成）/ DeepL（翻訳）/ Web Speech API（TTS） |
+| **GCP 本番** | medicine.yutok.dev | Google Cloud Run | OpenAI（生成）/ DeepL（翻訳）/ Google Cloud Text-to-Speech（TTS） |
+| **GCP dev** | medicine-recommend-dev（Cloud Run） | Google Cloud Run | 本番と同様（`TTS_PROVIDER=google`） |
 | **AWS ステージング** | aws.medicine.yutok.dev | ECS Express Gateway + ALB + WAF | OpenAI（生成）/ Amazon Translate / Amazon Polly |
 | **LINE** | LINE Messaging API | GCP Cloud Run 上（本番と同一アプリ） | 上記 GCP 本番と同じ |
 | **画像 CDN** | images.yutok.dev/otc/ | **Cloudflare R2**（GCP/AWS 共通） | — |
 
-**原則**: GCP 本番は AWS 専用機能（Translate / Polly / Bedrock KB 等）を **有効にしない**（DeepL / Web Speech / ローカル参照のまま）。AWS ステージングのみ Translate / Polly / Bedrock KB / Redis / Personalize を利用。
+**原則**: GCP 本番・dev は AWS 専用機能（Translate / Polly / Bedrock KB 等）を **有効にしない**（DeepL / Cloud Text-to-Speech / ローカル参照）。AWS ステージングのみ Translate / Polly / Bedrock KB / Redis / Personalize を利用。
 
 ## リクエストの流れ（Web チャット）
 

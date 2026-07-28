@@ -1374,10 +1374,129 @@ body[data-ui-variant="sage"].onboarding-open[data-onboarding-interaction="3"] #s
 }
 
 /* Special message cards — enhanced */
-[data-ui-variant="sage"] .crisis-support-card {
-  background: #fdf4f0;
-  border-left: 4px solid var(--ui-accent);
-  padding: 16px;
+/* Crisis support — integrated Sage panel (no nested legacy card) */
+[data-ui-variant="sage"] .ui-status-block--crisis .ui-status-advice__text:last-child {
+  margin-bottom: 0;
+}
+
+[data-ui-variant="sage"] .ui-crisis-panel {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--ui-accent) 25%, var(--ui-border));
+}
+
+[data-ui-variant="sage"] .ui-crisis-panel__lead {
+  margin: 0 0 10px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ui-primary-dark);
+}
+
+[data-ui-variant="sage"] .ui-crisis-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+[data-ui-variant="sage"] .ui-crisis-resource {
+  background: var(--ui-surface-elevated, #fff);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--ui-radius-md);
+  padding: 12px 14px;
+}
+
+[data-ui-variant="sage"] .ui-crisis-resource__name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ui-text-primary, #1a2e28);
+  line-height: 1.35;
+}
+
+[data-ui-variant="sage"] .ui-crisis-resource__org {
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  color: var(--ui-text-muted, #5f736c);
+  line-height: 1.4;
+}
+
+[data-ui-variant="sage"] .ui-crisis-resource__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+[data-ui-variant="sage"] .ui-crisis-resource__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-primary-soft);
+  color: var(--ui-primary-dark);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1.2;
+}
+
+[data-ui-variant="sage"] a.ui-crisis-resource__chip:hover {
+  background: color-mix(in srgb, var(--ui-primary-soft) 70%, #fff);
+}
+
+[data-ui-variant="sage"] .ui-crisis-resource__chip--phone {
+  border-color: color-mix(in srgb, var(--ui-accent) 35%, var(--ui-border));
+}
+
+[data-ui-variant="sage"] .ui-crisis-resource__hours {
+  margin-top: 8px;
+  font-size: 0.8125rem;
+  color: var(--ui-text-muted, #5f736c);
+}
+
+[data-ui-variant="sage"] .ui-crisis-resource__desc {
+  margin: 8px 0 0;
+  font-size: 0.8125rem;
+  color: var(--ui-text-secondary, #3d524b);
+  line-height: 1.5;
+}
+
+[data-ui-variant="sage"] .ui-crisis-resource__qr {
+  margin-top: 8px;
+}
+
+[data-ui-variant="sage"] .ui-crisis-resource__qr summary {
+  cursor: pointer;
+  font-size: 0.8125rem;
+  color: var(--ui-primary-dark);
+  font-weight: 600;
+}
+
+[data-ui-variant="sage"] .ui-crisis-resource__qr-img {
+  display: block;
+  width: 112px;
+  height: 112px;
+  margin-top: 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+}
+
+[data-ui-variant="sage"] .ui-crisis-panel__emergency {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--ui-radius-md);
+  background: color-mix(in srgb, var(--ui-accent) 12%, #fff);
+  border: 1px solid color-mix(in srgb, var(--ui-accent) 35%, var(--ui-border));
+  color: var(--ui-primary-dark);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
 }
 
 [data-ui-variant="sage"] .emergency-response-modern {

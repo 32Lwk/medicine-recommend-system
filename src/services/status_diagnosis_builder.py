@@ -168,14 +168,23 @@ def build_crisis_status(
     *,
     resources: list[dict[str, Any]] | None = None,
     title: str = "相談窓口のご案内",
+    emergency_message: str = "",
 ) -> StatusDiagnosisV1:
-    sections = []
+    sections: list[StatusSection] = []
+    normalized: list[dict[str, Any]] = []
     if resources:
-        items = [
-            f"{r.get('name', '')}: {r.get('contact', r.get('phone', ''))}".strip(": ")
-            for r in resources
-            if r.get("name") or r.get("contact") or r.get("phone")
-        ]
+        items = []
+        for r in resources:
+            if not isinstance(r, dict):
+                continue
+            entry = {k: v for k, v in r.items() if v is not None and str(v).strip()}
+            if not entry:
+                continue
+            normalized.append(entry)
+            name = str(entry.get("name") or "").strip()
+            contact = str(entry.get("contact") or entry.get("phone") or "").strip()
+            if name or contact:
+                items.append(f"{name}: {contact}".strip(": "))
         if items:
             sections.append(StatusSection(title="相談先", items=items))
     return StatusDiagnosisV1(
@@ -184,6 +193,8 @@ def build_crisis_status(
         title=title,
         message=message,
         sections=sections,
+        crisis_resources=normalized,
+        emergency_message=(emergency_message or "").strip(),
         show_feedback=False,
         kind="crisis_support",
     )

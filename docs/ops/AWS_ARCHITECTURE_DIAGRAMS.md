@@ -410,7 +410,7 @@ flowchart TB
 | 機能 | GCP 本番 | AWS ステージング |
 |------|---------|-----------------|
 | 翻訳 | DeepL | Amazon Translate |
-| TTS | Web Speech API | Amazon Polly |
+| TTS | Google Cloud Text-to-Speech | Amazon Polly |
 | Concierge RAG | ローカル JSON | Bedrock KB `2CNAGQ2V4P` |
 | Medicine RAG | ローカル | Bedrock KB `30BCEJCJHA` |
 | 静的 JS/CSS | アプリ同梱 | CloudFront CDN |
@@ -591,7 +591,7 @@ flowchart TB
     CR["Cloud Run<br/>medicine.yutok.dev"]
     LINE["LINE Webhook"]
     DEEPL["DeepL"]
-    WS["Web Speech API"]
+    WS["Cloud Text-to-Speech"]
     NEON_G["Neon PostgreSQL"]
   end
 

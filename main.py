@@ -845,10 +845,10 @@ async def api_smoke_aws_translate():
 
 @app.post("/api/tts")
 async def api_tts(request: Request):
-    """Amazon Polly TTS（TTS_PROVIDER=polly 時のみ。AWS ステージング向け）。"""
-    from config.aws_features import use_polly_tts
+    """サーバー側 TTS（TTS_PROVIDER=polly|google 時。AWS/GCP 向け）。"""
+    from config.aws_features import use_server_tts
 
-    if not use_polly_tts():
+    if not use_server_tts():
         return JSONResponse({"error": "not_available"}, status_code=404)
     try:
         body = await request.json()
@@ -860,9 +860,9 @@ async def api_tts(request: Request):
         return JSONResponse({"error": "text_required"}, status_code=400)
     if len(text) > 3000:
         text = text[:3000]
-    from src.services.polly_tts import polly_credentials_available, synthesize_speech_mp3
+    from src.services.tts_service import server_tts_credentials_available, synthesize_speech_mp3
 
-    if not polly_credentials_available():
+    if not server_tts_credentials_available():
         return JSONResponse(
             {"error": "no_credentials", "fallback": "webspeech"},
             status_code=503,
@@ -870,7 +870,7 @@ async def api_tts(request: Request):
     try:
         audio = synthesize_speech_mp3(text, lang)
     except Exception as exc:
-        logger.exception("Polly TTS failed")
+        logger.exception("Server TTS failed")
         return JSONResponse({"error": "synthesis_failed", "detail": str(exc)[:200]}, status_code=502)
     return StarletteResponse(content=audio, media_type="audio/mpeg")
 

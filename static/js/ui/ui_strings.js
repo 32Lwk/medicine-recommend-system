@@ -132,7 +132,12 @@
       statusBadgeInfo: '案内',
       statusBadgeImportant: '重要',
       statusBadgeCaution: '注意',
-      statusBadgeNote: '補足'
+      statusBadgeNote: '補足',
+      crisisResourcesIntro: '相談先',
+      crisisLineConsult: 'LINEで相談する',
+      crisisWebsite: 'ウェブサイトを開く',
+      crisisLineQr: 'LINE QRコードを表示',
+      crisisPhoneAria: '電話相談'
     },
     en: {
       recoIntro: 'Recommended medicines',
@@ -260,7 +265,12 @@
       statusBadgeInfo: 'Info',
       statusBadgeImportant: 'Important',
       statusBadgeCaution: 'Caution',
-      statusBadgeNote: 'Note'
+      statusBadgeNote: 'Note',
+      crisisResourcesIntro: 'Support resources',
+      crisisLineConsult: 'Chat on LINE',
+      crisisWebsite: 'Open website',
+      crisisLineQr: 'Show LINE QR code',
+      crisisPhoneAria: 'Phone support'
     },
     ko: {
       recoIntro: '추천 의약품',
@@ -386,7 +396,12 @@
       statusBadgeInfo: '안내',
       statusBadgeImportant: '중요',
       statusBadgeCaution: '주의',
-      statusBadgeNote: '참고'
+      statusBadgeNote: '참고',
+      crisisResourcesIntro: '상담처',
+      crisisLineConsult: 'LINE으로 상담하기',
+      crisisWebsite: '웹사이트 열기',
+      crisisLineQr: 'LINE QR 코드 보기',
+      crisisPhoneAria: '전화 상담'
     },
     zh: {
       recoIntro: '推荐药品',
@@ -512,7 +527,12 @@
       statusBadgeInfo: '说明',
       statusBadgeImportant: '重要',
       statusBadgeCaution: '注意',
-      statusBadgeNote: '补充'
+      statusBadgeNote: '补充',
+      crisisResourcesIntro: '咨询资源',
+      crisisLineConsult: '通过 LINE 咨询',
+      crisisWebsite: '打开网站',
+      crisisLineQr: '显示 LINE 二维码',
+      crisisPhoneAria: '电话咨询'
     }
   };
 

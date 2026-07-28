@@ -38,6 +38,8 @@ class StatusDiagnosisV1(BaseModel):
     feedback_context: dict[str, Any] | None = None
     kind: str | None = None
     i18n: dict[str, dict[str, Any]] | None = None
+    crisis_resources: list[dict[str, Any]] = Field(default_factory=list)
+    emergency_message: str = ""
 
     def to_client_dict(self) -> dict[str, Any]:
         return self.model_dump(mode="json", exclude_none=True)

@@ -60,7 +60,8 @@
 | **Bedrock Agents** | ConciergeOrchestrator をエージェント化。ツール呼び出し（セッション管理、推奨 API、店舗在庫）を AWS 側でオーケストレーション |
 | **Amazon Comprehend Medical** | ユーザー症状テキストからエンティティ抽出（症状・薬剤・用量）。トリアージ前処理やログ分析の構造化 |
 | **Amazon Translate** | DeepL の代替/併用。Flex Message 多言語化（`translate_flex_fields`）、i18n パイプライン |
-| **Amazon Polly** | アクセシビリティ向け。推奨結果の音声読み上げ（Web / LINE リッチメニュー連携） |
+| **Google Cloud Text-to-Speech** | GCP 本番・dev。推奨結果の音声読み上げ（POST /api/tts → MP3 再生） |
+| **Amazon Polly** | AWS ステージング。同上（Web / LINE リッチメニュー連携） |
 | **Amazon Textract** | ユーザーが送るお薬手帳・包装写真の OCR → 成分照合（`ingredient_dictionary.json` と突合） |
 | **SageMaker** | 推奨スコアリングの ML 化。ルールベース CSV スコアを学習モデルで補強（A/B テスト用エンドポイント） |
 

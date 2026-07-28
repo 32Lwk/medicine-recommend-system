@@ -63,9 +63,20 @@ def test_build_medicine_type_unrecognized_status():
 def test_build_crisis_status():
     diag = build_crisis_status(
         "相談窓口をご案内します。",
-        resources=[{"name": "いのちの電話", "contact": "0120-783-556"}],
+        resources=[
+            {
+                "name": "いのちの電話",
+                "contact": "0120-783-556",
+                "organization": "一般社団法人 日本いのちの電話連盟",
+                "website": "https://www.inochinodenwa.org/",
+            }
+        ],
+        emergency_message="緊急の場合は、すぐに119番（救急）または110番（警察）に連絡してください。",
     )
     assert diag.variant == "security"
+    assert diag.crisis_resources
+    assert diag.crisis_resources[0]["name"] == "いのちの電話"
+    assert diag.emergency_message.startswith("緊急")
     assert diag.sections
 
 

@@ -28,11 +28,37 @@ fi
 echo "==> Sync concierge docs -> s3://${BUCKET}/concierge/"
 aws s3 sync "$(to_win_path "$ROOT/docs/concierge")" "s3://${BUCKET}/concierge/" --delete --region "$AWS_REGION"
 aws s3 sync "$(to_win_path "$ROOT/docs/public")" "s3://${BUCKET}/public/" --delete --region "$AWS_REGION"
-for rel in docs/ops/AWS_FEATURES_ROLLOUT.md docs/ops/AWS_INFRA.md docs/ops/AWS_CODEPIPELINE.md docs/ops/CLOUDFLARE_R2_IMAGES.md docs/ops/AWS_BEDROCK_KB.md; do
-  if [[ -f "$ROOT/$rel" ]]; then
-    aws s3 cp "$(to_win_path "$ROOT/$rel")" "s3://${BUCKET}/ops/$(basename "$rel")" --region "$AWS_REGION"
-  fi
-done
+echo "==> Sync ops/dev SSOT docs (config/concierge_rag_sources.py)"
+PY="${ROOT}/.venv/bin/python"
+if [[ ! -x "$PY" ]]; then
+  PY=python3
+fi
+"$PY" - <<'PY' "$ROOT" "$BUCKET" "$AWS_REGION"
+import subprocess
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+bucket = sys.argv[2]
+region = sys.argv[3]
+sys.path.insert(0, str(root))
+from config.concierge_rag_sources import CONCIERGE_DEV_DOCS, CONCIERGE_OPS_DOCS
+
+def cp(rel: str, prefix: str) -> None:
+    path = root / rel
+    if not path.is_file():
+        return
+    dest = f"s3://{bucket}/{prefix}/{path.name}"
+    subprocess.run(
+        ["aws", "s3", "cp", str(path), dest, "--region", region],
+        check=True,
+    )
+
+for rel in CONCIERGE_OPS_DOCS:
+    cp(rel, "ops")
+for rel in CONCIERGE_DEV_DOCS:
+    cp(rel, "dev")
+PY
 aws s3 cp "$(to_win_path "$ROOT/CHANGELOG.md")" "s3://${BUCKET}/content/CHANGELOG.md" --region "$AWS_REGION"
 echo "==> Refresh changelog digest (static/changelog-digest.json)"
 python3 "$ROOT/scripts/write_changelog_digest.py"

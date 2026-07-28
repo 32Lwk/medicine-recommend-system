@@ -71,6 +71,7 @@
 ## ロールバック
 
 - AWS 機能のみ OFF: ECS タスク定義で Translate/Polly/Bedrock KB を **レガシー設定（DeepL / Web Speech / ローカル参照）** に戻して redeploy
+- GCP TTS ロールバック: Cloud Run env で `TTS_PROVIDER=webspeech` に戻す（ブラウザ Web Speech にフォールバック）
 - Chat Pipeline v2: 通常は env 変更不要。緊急時のみ v2 フラグを明示 OFF（運用ドキュメント参照）
 
 ## 医薬品相談としての境界

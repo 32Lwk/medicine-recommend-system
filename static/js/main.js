@@ -14856,18 +14856,23 @@ function appendQaDelta(text, section) {
     let currentUtterance = null;
     let voiceReadSpeed = parseFloat(localStorage.getItem('voiceReadSpeed')) || 1.0;
     let voiceReadProgress = 0;
-    let pollyAudio = null;
+    let serverTtsAudio = null;
 
-    function stopPollyAudio() {
-        if (pollyAudio) {
+    function stopServerTtsAudio() {
+        if (serverTtsAudio) {
             try {
-                pollyAudio.pause();
+                serverTtsAudio.pause();
             } catch (e) { /* ignore */ }
-            if (pollyAudio.src && pollyAudio.src.indexOf('blob:') === 0) {
-                try { URL.revokeObjectURL(pollyAudio.src); } catch (e2) { /* ignore */ }
+            if (serverTtsAudio.src && serverTtsAudio.src.indexOf('blob:') === 0) {
+                try { URL.revokeObjectURL(serverTtsAudio.src); } catch (e2) { /* ignore */ }
             }
-            pollyAudio = null;
+            serverTtsAudio = null;
         }
+    }
+
+    function isServerTtsProvider() {
+        const provider = window.__TTS_PROVIDER__;
+        return provider === 'polly' || provider === 'google';
     }
 
     function speakViaWebSpeech(text) {
@@ -14887,7 +14892,7 @@ function appendQaDelta(text, section) {
         }
 
         speechSynthesis.cancel();
-        stopPollyAudio();
+        stopServerTtsAudio();
         updateVoiceReadButtonState(true);
         showVoiceReadProgress();
         isReading = true;
@@ -14965,7 +14970,7 @@ function appendQaDelta(text, section) {
         }
     }
 
-    function speakViaPolly(text, lang) {
+    function speakViaServerTts(text, lang) {
         const basePath = window.APP_BASE_PATH || '';
         updateVoiceReadButtonState(true);
         showVoiceReadProgress();
@@ -14983,30 +14988,30 @@ function appendQaDelta(text, section) {
                 return res.blob();
             })
             .then(function (blob) {
-                stopPollyAudio();
-                pollyAudio = new Audio(URL.createObjectURL(blob));
-                pollyAudio.onplay = function () {
+                stopServerTtsAudio();
+                serverTtsAudio = new Audio(URL.createObjectURL(blob));
+                serverTtsAudio.onplay = function () {
                     isReading = true;
                     updateVoiceReadButtonState(true);
                 };
-                pollyAudio.onended = function () {
-                    stopPollyAudio();
+                serverTtsAudio.onended = function () {
+                    stopServerTtsAudio();
                     updateVoiceReadButtonState(false);
                     hideVoiceReadProgress();
                     isReading = false;
                     voiceReadProgress = 0;
                 };
-                pollyAudio.onerror = function () {
-                    stopPollyAudio();
+                serverTtsAudio.onerror = function () {
+                    stopServerTtsAudio();
                     updateVoiceReadButtonState(false);
                     hideVoiceReadProgress();
                     isReading = false;
                     speakViaWebSpeech(text);
                 };
-                return pollyAudio.play();
+                return serverTtsAudio.play();
             })
             .catch(function (err) {
-                console.warn('Polly TTS unavailable, falling back to Web Speech:', err);
+                console.warn('Server TTS unavailable, falling back to Web Speech:', err);
                 speakViaWebSpeech(text);
             });
     }
@@ -15015,7 +15020,7 @@ function appendQaDelta(text, section) {
     function toggleVoiceRead(fromButton) {
         if (isReading) {
             speechSynthesis.cancel();
-            stopPollyAudio();
+            stopServerTtsAudio();
             updateVoiceReadButtonState(false);
             hideVoiceReadProgress();
             isReading = false;
@@ -15109,10 +15114,10 @@ function appendQaDelta(text, section) {
         }
 
         speechSynthesis.cancel();
-        stopPollyAudio();
+        stopServerTtsAudio();
 
-        if (window.__TTS_PROVIDER__ === 'polly') {
-            speakViaPolly(text, (typeof currentLanguage !== 'undefined' && currentLanguage) || 'ja');
+        if (isServerTtsProvider()) {
+            speakViaServerTts(text, (typeof currentLanguage !== 'undefined' && currentLanguage) || 'ja');
             return;
         }
 
@@ -15172,7 +15177,7 @@ function appendQaDelta(text, section) {
         // 読み上げ中の場合は再開
         if (isReading) {
             speechSynthesis.cancel();
-            stopPollyAudio();
+            stopServerTtsAudio();
             setTimeout(function () {
                 speakFullRecommendation();
             }, 100);

@@ -51,6 +51,10 @@ def format_public_runtime_reference_block() -> str:
             lines.append("- 翻訳: DeepL（レガシー設定）")
         if get_tts_provider() == "polly":
             lines.append("- 読み上げ: Amazon Polly を利用")
+        elif get_tts_provider() == "google":
+            lines.append("- 読み上げ: Google Cloud Text-to-Speech を利用")
+        else:
+            lines.append("- 読み上げ: Web Speech API（ブラウザ）")
         if use_bedrock_kb_rag():
             lines.append("- Concierge ナレッジ検索: Bedrock KB 設定済み")
         cdn = get_static_cdn_base_url()
@@ -65,6 +69,8 @@ def format_public_runtime_reference_block() -> str:
             lines.append("- 翻訳: DeepL を利用")
         if get_tts_provider() == "polly":
             lines.append("- 読み上げ: Amazon Polly を利用")
+        elif get_tts_provider() == "google":
+            lines.append("- 読み上げ: Google Cloud Text-to-Speech を利用（POST /api/tts）")
         else:
             lines.append("- 読み上げ: Web Speech API（ブラウザ）")
 

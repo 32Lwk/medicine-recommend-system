@@ -164,6 +164,19 @@ def _save_bot_exchange(
     return len(session["messages"])
 
 
+def _dev_crisis_status_preview():
+    from src.core.crisis_detection import get_crisis_support_resources
+    from src.services.status_diagnosis_builder import build_crisis_status
+
+    data = get_crisis_support_resources("ja")
+    return build_crisis_status(
+        "【開発プレビュー】" + data["message"],
+        resources=data.get("resources"),
+        title=data.get("title", "相談窓口のご案内"),
+        emergency_message=data.get("emergency_message", ""),
+    )
+
+
 def _dev_sage_bot_response(session: Any, sid: Optional[str], sage_diag: Any) -> dict[str, Any]:
     from src.services.recommendation_diagnosis_builder import SAGE_RECO_MARKER
     from src.services.status_diagnosis_builder import SAGE_QA_MARKER, SAGE_STATUS_MARKER
@@ -283,10 +296,7 @@ def _dev_sage_preview_builders() -> Dict[str, Callable[[], Any]]:
             title="緊急のお知らせ",
             hints=["迷ったら119番", "意識がない・呼吸困難はただちに救急要請"],
         ),
-        "sage_security": lambda: build_crisis_status(
-            "【開発プレビュー】つらい気持ちを一人で抱え込まないでください。",
-            resources=[{"name": "いのちの電話", "contact": "0120-783-556"}],
-        ),
+        "sage_security": lambda: _dev_crisis_status_preview(),
         "sage_counseling": lambda: build_counseling_status(
             "【開発プレビュー】お気持ち、よくわかります。もう少し詳しく教えていただけますか。",
             title="カウンセリング",

@@ -305,6 +305,8 @@ def _build_medicine_chunks() -> List[IndexedChunk]:
 
 
 def _concierge_docs_raw() -> List[Tuple[Path, str, str]]:
+    from config.concierge_rag_sources import CONCIERGE_DEV_DOCS, CONCIERGE_OPS_DOCS
+
     docs: List[Tuple[Path, str, str]] = []
     mappings: List[Tuple[Path, str]] = [
         (ROOT / "docs" / "concierge", "concierge"),
@@ -318,28 +320,14 @@ def _concierge_docs_raw() -> List[Tuple[Path, str, str]]:
                 continue
             rel = path.relative_to(base).as_posix()
             docs.append((path, f"local/{prefix}/{rel}", prefix))
-    for rel in (
-        "docs/ops/AWS_FEATURES_ROLLOUT.md",
-        "docs/ops/AWS_INFRA.md",
-        "docs/ops/AWS_CODEPIPELINE.md",
-        "docs/ops/CLOUDFLARE_R2_IMAGES.md",
-        "docs/ops/AWS_BEDROCK_KB.md",
-        "docs/ops/AWS_STAGING_CHECKLIST.md",
-        "docs/ops/LOCAL_RAG.md",
-        "docs/ops/GCP_RAG_MIGRATION_ADR.md",
-        "docs/ops/CLOUD_RUN_LLM_ENV.md",
-        "docs/ops/CAPACITY_PLANNING.md",
-        "docs/dev/CHAT_PIPELINE_V2.md",
-        "docs/dev/MEDICINE_QA_ROUTING.md",
-        "docs/dev/MEDICINE_BRAND_RESOLVE.md",
-    ):
+    for rel in CONCIERGE_OPS_DOCS:
         path = ROOT / rel
         if path.is_file():
-            # docs/dev は virtual URI を local/dev/ に分離（architecture pool から参照）
-            if rel.startswith("docs/dev/"):
-                docs.append((path, f"local/dev/{path.name}", "dev"))
-            else:
-                docs.append((path, f"local/ops/{path.name}", "ops"))
+            docs.append((path, f"local/ops/{path.name}", "ops"))
+    for rel in CONCIERGE_DEV_DOCS:
+        path = ROOT / rel
+        if path.is_file():
+            docs.append((path, f"local/dev/{path.name}", "dev"))
     for rel, uri in (
         ("CHANGELOG.md", "local/content/CHANGELOG.md"),
         ("static/changelog-digest.json", "local/content/changelog-digest.json"),

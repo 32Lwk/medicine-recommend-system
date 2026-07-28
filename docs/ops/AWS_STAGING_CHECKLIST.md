@@ -159,7 +159,7 @@ buildspec に KB sync / ingestion / eval フック追加。CodeBuild env は Ste
 |------|------|
 | `/health` | 変化なし |
 | 翻訳 | DeepL（Translate ログなし） |
-| TTS | Web Speech API |
+| TTS | Google Cloud Text-to-Speech（POST /api/tts） |
 | Concierge | ローカル KB / md のみ |
 | LINE Webhook | 既存挙動 |
 

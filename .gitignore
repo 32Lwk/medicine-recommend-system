@@ -58,6 +58,7 @@ user_interface_state.xcuserstate
 # 必ず !log/** より後に置くこと（gitignore は後勝ち）
 log/app.log
 log/analysis/2026-07-02_p4a-dispatch-final_server.err.log
+log/raw/downloaded-logs-20260728-20260728-20260728-062153.json
 
 # PowerShell scripts (local use only)
 git-sync.ps1

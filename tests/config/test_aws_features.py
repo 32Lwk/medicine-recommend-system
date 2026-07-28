@@ -95,7 +95,16 @@ def test_aws_staging_flags(monkeypatch):
     monkeypatch.setenv("MEDICINE_IMAGE_CDN_BASE", "https://images.yutok.dev/otc")
     assert aws_features.use_aws_translate()
     assert aws_features.use_polly_tts()
+    assert not aws_features.use_google_tts()
+    assert aws_features.use_server_tts()
     assert aws_features.get_medicine_image_cdn_base() == "https://images.yutok.dev/otc/"
+
+
+def test_gcp_google_tts_flags(monkeypatch):
+    monkeypatch.setenv("TTS_PROVIDER", "google")
+    assert aws_features.use_google_tts()
+    assert aws_features.use_server_tts()
+    assert not aws_features.use_polly_tts()
 
 
 def test_is_aws_staging_site_from_public_url(monkeypatch):

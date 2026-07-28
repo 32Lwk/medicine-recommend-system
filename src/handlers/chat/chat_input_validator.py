@@ -265,6 +265,7 @@ def validate_and_block_input(session, client, user_message, sid):
                 crisis_resources["message"],
                 resources=crisis_resources.get("resources"),
                 title=crisis_resources.get("title", "相談窓口のご案内"),
+                emergency_message=crisis_resources.get("emergency_message", ""),
             )
             bot_response = build_bot_response(
                 session,

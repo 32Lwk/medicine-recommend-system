@@ -34,19 +34,16 @@ _CONCEPT_EXPANSIONS: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     (r"\bsnri\b", ("SNRI",)),
 )
 
-# ブランド略称 → canonical（CSV 製品名 prefix でも補完）
-_BRAND_SHORTHANDS: Dict[str, str] = {
-    "イブ": "イブ",
-    "ロキソニン": "ロキソニン",
-    "ロキソ": "ロキソニン",
-    "ワルファリン": "ワーファリン",
-    "カロナール": "カロナール",
-    "タイレノール": "タイレノール",
-    "バファリン": "バファリン",
-    "アレグラ": "アレグラ",
-    "パブロン": "パブロン",
-    "ルル": "ルル",
-}
+# ブランド略称 → canonical（ingredient_synonym_registry + レガシー補完）
+def _brand_shorthands() -> Dict[str, str]:
+    from src.services.ingredient_synonym_registry import brand_query_shorthands
+
+    shorthands = dict(brand_query_shorthands())
+    shorthands.setdefault("アレグラ", "アレグラ")
+    return shorthands
+
+
+_BRAND_SHORTHANDS: Dict[str, str] = _brand_shorthands()
 
 _CATEGORY_PATTERNS: Dict[str, Tuple[str, ...]] = {
     "interaction": (
@@ -499,5 +496,7 @@ def tokenize_for_search(text: str, *, extra_terms: Sequence[str] = ()) -> List[s
 
 
 def retrieval_query_enrichment(query: str) -> str:
-    """retrieve 用に概念語を付加（embedding/BM25 両方）。"""
-    return expand_concepts(query)
+    """retrieve 用 — 口語概念展開 + 成分/ブランド同義語付加。"""
+    from src.services.ingredient_synonym_registry import expand_query_with_aliases
+
+    return expand_query_with_aliases(expand_concepts(query))

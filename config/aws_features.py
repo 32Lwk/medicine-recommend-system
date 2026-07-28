@@ -1,7 +1,7 @@
 """
 AWS / Cloudflare 機能フラグ（環境変数）
 
-GCP 本番（Cloud Run）では原則未設定 = レガシー挙動（DeepL / Web Speech / ローカル Concierge KB）。
+GCP 本番（Cloud Run）では **DeepL / Google Cloud Text-to-Speech**（`TTS_PROVIDER=google`、cloudbuild.yaml で設定）。  
 AWS ステージング（ECS）のタスク定義でのみ AWS 向け値を設定する。
 
 詳細: docs/ops/AWS_FEATURES_ROLLOUT.md
@@ -26,6 +26,7 @@ BEDROCK_KB_SEARCH_VECTOR = "vector"
 
 TTS_PROVIDER_WEBSPEECH = "webspeech"
 TTS_PROVIDER_POLLY = "polly"
+TTS_PROVIDER_GOOGLE = "google"
 
 
 def _env(name: str, default: str = "") -> str:
@@ -84,11 +85,21 @@ def get_tts_provider() -> str:
     p = _env("TTS_PROVIDER", TTS_PROVIDER_WEBSPEECH).lower()
     if p == TTS_PROVIDER_POLLY:
         return TTS_PROVIDER_POLLY
+    if p in (TTS_PROVIDER_GOOGLE, "cloud_tts", "gcp", "google_tts"):
+        return TTS_PROVIDER_GOOGLE
     return TTS_PROVIDER_WEBSPEECH
 
 
 def use_polly_tts() -> bool:
     return get_tts_provider() == TTS_PROVIDER_POLLY
+
+
+def use_google_tts() -> bool:
+    return get_tts_provider() == TTS_PROVIDER_GOOGLE
+
+
+def use_server_tts() -> bool:
+    return get_tts_provider() in (TTS_PROVIDER_POLLY, TTS_PROVIDER_GOOGLE)
 
 
 def is_comprehend_medical_enabled() -> bool:

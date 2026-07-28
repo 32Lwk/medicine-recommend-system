@@ -25,5 +25,5 @@
 |--|-----------------|------------------|
 | URL | medicine.yutok.dev | aws.medicine.yutok.dev |
 | 翻訳 | DeepL | Amazon Translate |
-| TTS | Web Speech API | Amazon Polly |
+| TTS | Google Cloud Text-to-Speech（POST /api/tts） | Amazon Polly |
 | ホスティング | Cloud Run | ECS Express |
