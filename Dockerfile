@@ -1,5 +1,7 @@
-# CodeBuild / AWS: Docker Hub 429 回避のため Public ECR ミラーを使用
-FROM public.ecr.aws/docker/library/python:3.11-slim AS build-meta
+# ベースイメージ: 既定は AWS Public ECR（Docker Hub 429 回避）。
+# GCP Cloud Build は --build-arg PYTHON_BASE=mirror.gcr.io/library/python:3.11-slim を渡す。
+ARG PYTHON_BASE=public.ecr.aws/docker/library/python:3.11-slim
+FROM ${PYTHON_BASE} AS build-meta
 
 WORKDIR /src
 ARG GIT_COMMIT=
@@ -21,7 +23,8 @@ RUN COMMIT="${GIT_COMMIT:-${COMMIT_SHA}}" \
  && if [ -n "$COMMIT" ]; then echo '{}' > static/build-meta.json; fi \
  && GIT_COMMIT="$COMMIT" python3 scripts/write_build_meta.py
 
-FROM public.ecr.aws/docker/library/python:3.11-slim
+ARG PYTHON_BASE=public.ecr.aws/docker/library/python:3.11-slim
+FROM ${PYTHON_BASE}
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=off

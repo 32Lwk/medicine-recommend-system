@@ -60,6 +60,13 @@ RUN_LIVE_QUALITY=1 RUN_LIVE_JUDGE=1 ./scripts/run_concierge_comprehensive_eval.s
 # → 623 chunks / 51 vectors（`build/local_rag/concierge_index.npz`、gitignore・デプロイ時 BM25 は docs 同梱から lazy 構築）
 ```
 
+### デプロイ修正（Cloud Build）
+
+| 項目 | 内容 |
+|------|------|
+| 原因 | GCP Cloud Build が `public.ecr.aws/.../python:3.11-slim` pull で `toomanyrequests: Rate exceeded` |
+| 対応 | `Dockerfile` に `ARG PYTHON_BASE` を追加。`cloudbuild.yaml` から `mirror.gcr.io/library/python:3.11-slim` を指定（AWS CodeBuild は Dockerfile 既定の Public ECR のまま） |
+
 ---
 
 ## 2026-07-28 — 返信遅延改善計画 v3（SSE・Upstash・LLM 最適化・session 混線修正）

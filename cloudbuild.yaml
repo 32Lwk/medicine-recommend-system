@@ -14,6 +14,7 @@ substitutions:
   _AR_REPOSITORY: cloud-run-source-deploy
   _AR_HOSTNAME: asia-northeast1-docker.pkg.dev
   _CACHE_TAG: cache
+  _PYTHON_BASE: mirror.gcr.io/library/python:3.11-slim
   # dev トリガーは _SERVICE_NAME=medicine-recommend-dev で上書き（CPU=1 のまま）
 
 steps:
@@ -36,6 +37,7 @@ steps:
         docker build \
           --cache-from "$${CACHE_IMAGE}" \
           --build-arg BUILDKIT_INLINE_CACHE=1 \
+          --build-arg "PYTHON_BASE=${_PYTHON_BASE}" \
           --build-arg "GIT_COMMIT=${COMMIT_SHA}" \
           --build-arg "COMMIT_SHA=${COMMIT_SHA}" \
           --build-arg "GIT_COMMIT_DATE=$${COMMIT_DATE}" \
