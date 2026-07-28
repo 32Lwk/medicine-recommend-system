@@ -66,6 +66,7 @@ RUN_LIVE_QUALITY=1 RUN_LIVE_JUDGE=1 ./scripts/run_concierge_comprehensive_eval.s
 |------|------|
 | 原因 | GCP Cloud Build が `public.ecr.aws/.../python:3.11-slim` pull で `toomanyrequests: Rate exceeded` |
 | 対応 | `Dockerfile` に `ARG PYTHON_BASE` を追加。`cloudbuild.yaml` から `mirror.gcr.io/library/python:3.11-slim` を指定（AWS CodeBuild は Dockerfile 既定の Public ECR のまま） |
+| 追加修正 | `build_medicine_kb_documents.py` が `src.services.ingredient_synonym_registry` を参照するため、Dockerfile で `COPY src/` を KB ビルド RUN の前に移動 |
 
 ---
 

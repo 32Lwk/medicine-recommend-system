@@ -35,16 +35,16 @@ WORKDIR /app
 COPY requirements-prod.txt .
 RUN pip install --no-cache-dir -r requirements-prod.txt
 
-# Local RAG コーパス — data/ 変更時のみ再実行（src/ 変更ではレイヤキャッシュを維持）
+# Local RAG コーパス — data/ または ingredient_synonym_registry 変更時に再実行
 COPY scripts/build_medicine_kb_documents.py scripts/
 COPY data/ data/
+COPY src/ src/
 RUN python3 scripts/build_medicine_kb_documents.py
 
 # 本番に必要なファイルのみコピー（docs の発表資料等は除外してイメージを軽量化）
 COPY start.sh main.py ./
 COPY config/ config/
 COPY legacy/ legacy/
-COPY src/ src/
 COPY templates/ templates/
 COPY static/ static/
 COPY --from=build-meta /src/static/build-meta.json static/build-meta.json
