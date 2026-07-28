@@ -13463,3 +13463,32 @@
 {"timestamp": "2026-07-28T15:21:35.036893", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-28T15:23:20.301051", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-28T15:23:20.302049", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-28T15:27:14.903055", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:27:14.903055", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-28T15:29:02.969693", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:29:02.970697", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-28T15:30:06.058526", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:30:06.059528", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-28T15:33:08.133022", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:33:08.133022", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-28T15:36:31.190643", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:36:31.190643", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-28T15:38:15.947906", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:38:15.947906", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-28T15:38:18.712183", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:38:18.713687", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛い"}}
+{"timestamp": "2026-07-28T15:38:21.887777", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:38:46.421802", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:38:46.421802", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
+{"timestamp": "2026-07-28T15:38:49.406237", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:38:49.406237", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛い"}}
+{"timestamp": "2026-07-28T15:38:52.663154", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:40:25.242669", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:40:25.243669", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "yaa"}}
+{"timestamp": "2026-07-28T15:40:41.013279", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:40:41.014279", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちはなんＮ"}}
+{"timestamp": "2026-07-28T15:40:52.026332", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:40:52.027332", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "今何時？"}}
+{"timestamp": "2026-07-28T15:40:57.933889", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:40:57.950893", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-28T15:40:57.951894", "event_type": "input_validation", "user_id": "unknown", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "今何時？"}}

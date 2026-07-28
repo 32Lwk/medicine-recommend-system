@@ -12501,7 +12501,6 @@ function appendQaDelta(text, section) {
         resetRecommendationSseBulkState();
         let sseDoneHandled = false;
         scheduleSlowRequestButton();
-        const lastEventId = sessionStorage.getItem('chatSseLastEventId') || null;
 
         function finalizeSsePost(donePayload) {
             if (gen !== chatSubmitGeneration || sseDoneHandled) {
@@ -12629,7 +12628,6 @@ function appendQaDelta(text, section) {
             url: mainAppPath('/api/chat/stream'),
             message: message,
             withVersion: withVersion,
-            lastEventId: lastEventId,
             signal: activeSseAbortController ? activeSseAbortController.signal : undefined,
             onEvent: function (ev) {
                 if (ev.id) {

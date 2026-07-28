@@ -346,8 +346,14 @@ async def stream_chat_events(
     safe_session = RequestSafeSession()
     _prime_safe_session_for_chat(safe_session, sid, request)
 
+    # 新規ターン（Last-Event-ID なし）では前ターンの cached done を破棄する。
+    # 接続クライアント向けに set_stream_result だけ残ると、2通目以降がワーカー未起動で
+    # 古い done を返してハングする。
+    if sid and message.strip() and not last_event_id:
+        pop_stream_result(sid)
+
     cached_early = peek_stream_result(sid) if sid else None
-    if cached_early:
+    if cached_early and last_event_id:
         body, status_code = pop_stream_result(sid)
         if body is not None:
             for line in _build_done_lines(body, status_code, safe_session, sid, reattach=True):
@@ -496,6 +502,8 @@ async def stream_chat_events(
                 trace_id=trace_id,
             ):
                 yield line
+            if sid:
+                pop_stream_result(sid)
         elif owns_worker and worker and not worker.done():
             logger.warning("SSE stream ended before worker completed sid=%s", sid)
 

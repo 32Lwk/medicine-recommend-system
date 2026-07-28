@@ -180,6 +180,36 @@ def test_peek_stream_result_does_not_consume():
     assert peek_stream_result("sid-peek") is None
 
 
+def test_second_stream_post_does_not_return_stale_cached_done():
+    """2通目以降の POST が前ターンの stream_result キャッシュで短絡されないこと。"""
+    from starlette.testclient import TestClient
+    from src.services.sse_emit import peek_stream_result, set_stream_result
+    import main
+
+    sid = "sid-two-turn-cache"
+    seen_messages = []
+
+    def fake_handle_chat_post(session, client_info, message, sid_arg, monitor, job_meta=None):
+        seen_messages.append(message)
+        return {"status": "ok", "message_count": len(seen_messages) * 2}, 200
+
+    with patch("src.handlers.chat_stream.handle_chat_post", side_effect=fake_handle_chat_post):
+        with patch("src.handlers.chat_stream.persist_session_from_chat_state"):
+            with TestClient(main.app) as client:
+                client.cookies.set("sid", sid)
+                set_stream_result(sid, {"status": "ok", "message_count": 2}, 200)
+
+                response = client.post(
+                    "/api/chat/stream",
+                    data={"message": "頭が痛い"},
+                    headers={"Accept": "text/event-stream"},
+                )
+                assert response.status_code == 200
+                assert "event: status" in response.text
+                assert seen_messages == ["頭が痛い"]
+                assert peek_stream_result(sid) is None
+
+
 def test_run_chat_post_uses_sync_handler_not_nested_asyncio():
     """GUNICORN_WORKERS=1 でも SSE ワーカーが同一 ThreadPool でデッドロックしないこと。"""
     from src.handlers.chat_stream import _run_chat_post
