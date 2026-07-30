@@ -23,17 +23,17 @@ $Prefix = "MedicineRecommend-AWS-Staging"
 $Events = @(
     @{
         Name = "$Prefix-0731-Resume"
-        At = "2026-07-31T12:15:00"
+        At = "2026-07-31T16:15:00"
         Action = "resume"
-        Label = "7/31 mentoring resume (13:00-15:00)"
-        Description = "Resume ECS before 7/31 mentoring"
+        Label = "7/31 mentoring resume (17:00-17:30)"
+        Description = "Resume ECS before 7/31 mentoring (17:00 start)"
     },
     @{
         Name = "$Prefix-0731-Stop"
-        At = "2026-07-31T15:30:00"
+        At = "2026-07-31T18:00:00"
         Action = "stop"
         Label = "7/31 mentoring stop"
-        Description = "Stop ECS after 7/31 mentoring"
+        Description = "Stop ECS after 7/31 mentoring (17:30 end)"
     },
     @{
         Name = "$Prefix-0802-Resume"
