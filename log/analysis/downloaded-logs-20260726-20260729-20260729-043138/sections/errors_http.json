@@ -1,0 +1,1057 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 60,
+    "by_status": {
+      "404": 46,
+      "405": 10,
+      "422": 2,
+      "429": 2
+    },
+    "by_path": {
+      "GET /robots.txt (404)": 22,
+      "HEAD / (405)": 9,
+      "GET /apple-touch-icon-precomposed.png (404)": 5,
+      "GET /apple-touch-icon.png (404)": 5,
+      "GET /.env (404)": 2,
+      "POST /api/chat/stream (422)": 2,
+      "GET /%5C (404)": 2,
+      "GET /%5C%5C%5C (404)": 2,
+      "GET /api/sessions (429)": 1,
+      "HEAD /health (405)": 1,
+      "PATCH /api/sessions/activity (429)": 1,
+      "GET /static/js/ui/'%20+%20esc(url)%20+%20' (404)": 1,
+      "GET /static/js/$%7BcommitUrl%7D (404)": 1,
+      "GET /wp-content/plugins/hellopress/wp_filemanager.php (404)": 1,
+      "GET /apple-touch-icon-152x152-precomposed.png (404)": 1,
+      "GET /apple-touch-icon-152x152.png (404)": 1,
+      "GET /apple-touch-icon-120x120-precomposed.png (404)": 1,
+      "GET /apple-touch-icon-120x120.png (404)": 1,
+      "GET /favicon.png (404)": 1
+    },
+    "slow_endpoints_ge_5s": {
+      "GET /about/faq": {
+        "count": 3,
+        "min": 0.856,
+        "max": 10.748,
+        "avg": 7.112,
+        "median": 9.733,
+        "p95": 10.748
+      },
+      "GET /robots.txt": {
+        "count": 24,
+        "min": 0.0,
+        "max": 24.874,
+        "avg": 9.151,
+        "median": 6.874,
+        "p95": 20.178
+      },
+      "GET /health": {
+        "count": 3,
+        "min": 0.003,
+        "max": 13.86,
+        "avg": 4.622,
+        "median": 0.003,
+        "p95": 13.86
+      },
+      "GET /": {
+        "count": 67,
+        "min": 0.0,
+        "max": 26.204,
+        "avg": 3.929,
+        "median": 0.425,
+        "p95": 18.711
+      },
+      "GET /static/css/sage_terrace.css": {
+        "count": 45,
+        "min": 0.003,
+        "max": 17.026,
+        "avg": 0.63,
+        "median": 0.028,
+        "p95": 2.306
+      },
+      "GET /static/js/easter-eggs.js": {
+        "count": 38,
+        "min": 0.005,
+        "max": 15.424,
+        "avg": 1.074,
+        "median": 0.044,
+        "p95": 4.566
+      },
+      "GET /static/js/processing_status.js": {
+        "count": 40,
+        "min": 0.003,
+        "max": 16.307,
+        "avg": 0.855,
+        "median": 0.034,
+        "p95": 0.371
+      },
+      "GET /static/js/ui/medicine_mapper.js": {
+        "count": 39,
+        "min": 0.002,
+        "max": 15.384,
+        "avg": 0.565,
+        "median": 0.04,
+        "p95": 0.387
+      },
+      "GET /static/js/ui/ui_strings.js": {
+        "count": 39,
+        "min": 0.002,
+        "max": 15.414,
+        "avg": 0.579,
+        "median": 0.045,
+        "p95": 0.369
+      },
+      "GET /static/js/chat_sse.js": {
+        "count": 39,
+        "min": 0.002,
+        "max": 15.386,
+        "avg": 0.955,
+        "median": 0.052,
+        "p95": 4.584
+      },
+      "GET /static/js/ui/medicine_card.js": {
+        "count": 39,
+        "min": 0.004,
+        "max": 15.407,
+        "avg": 0.627,
+        "median": 0.033,
+        "p95": 2.26
+      },
+      "GET /static/js/ui/safety_rail.js": {
+        "count": 38,
+        "min": 0.004,
+        "max": 15.27,
+        "avg": 0.97,
+        "median": 0.048,
+        "p95": 4.391
+      },
+      "GET /static/js/sage_shell.js": {
+        "count": 39,
+        "min": 0.004,
+        "max": 15.421,
+        "avg": 0.944,
+        "median": 0.048,
+        "p95": 4.461
+      },
+      "GET /static/js/ui/tts_builder.js": {
+        "count": 39,
+        "min": 0.004,
+        "max": 15.424,
+        "avg": 1.009,
+        "median": 0.058,
+        "p95": 4.474
+      },
+      "GET /static/js/ui/recommendation_renderer.js": {
+        "count": 39,
+        "min": 0.003,
+        "max": 15.386,
+        "avg": 0.569,
+        "median": 0.048,
+        "p95": 0.462
+      },
+      "GET /static/js/ui/status_renderer.js": {
+        "count": 39,
+        "min": 0.003,
+        "max": 15.386,
+        "avg": 0.951,
+        "median": 0.054,
+        "p95": 4.564
+      },
+      "GET /static/js/main.js": {
+        "count": 40,
+        "min": 0.013,
+        "max": 17.341,
+        "avg": 1.005,
+        "median": 0.054,
+        "p95": 4.592
+      },
+      "GET /api/sessions": {
+        "count": 3133,
+        "min": 0.0,
+        "max": 26.226,
+        "avg": 0.611,
+        "median": 0.379,
+        "p95": 0.893
+      },
+      "PATCH /api/sessions/activity": {
+        "count": 854,
+        "min": 0.0,
+        "max": 16.335,
+        "avg": 0.644,
+        "median": 0.41,
+        "p95": 1.066
+      },
+      "GET /apple-touch-icon-precomposed.png": {
+        "count": 5,
+        "min": 0.005,
+        "max": 15.703,
+        "avg": 3.224,
+        "median": 0.033,
+        "p95": 15.703
+      },
+      "GET /apple-touch-icon.png": {
+        "count": 5,
+        "min": 0.005,
+        "max": 15.704,
+        "avg": 3.32,
+        "median": 0.364,
+        "p95": 15.704
+      },
+      "POST /new_session": {
+        "count": 16,
+        "min": 1.351,
+        "max": 16.42,
+        "avg": 2.926,
+        "median": 1.618,
+        "p95": 3.503
+      },
+      "GET /about/usage": {
+        "count": 2,
+        "min": 0.413,
+        "max": 10.014,
+        "avg": 5.213,
+        "median": 5.213,
+        "p95": 10.014
+      },
+      "GET /.env": {
+        "count": 2,
+        "min": 4.882,
+        "max": 18.408,
+        "avg": 11.645,
+        "median": 11.645,
+        "p95": 18.408
+      },
+      "GET /favicon.ico": {
+        "count": 12,
+        "min": 0.004,
+        "max": 16.31,
+        "avg": 1.524,
+        "median": 0.124,
+        "p95": 0.779
+      },
+      "POST /api/chat/stream": {
+        "count": 28,
+        "min": 0.006,
+        "max": 301.0,
+        "avg": 99.382,
+        "median": 61.609,
+        "p95": 184.297
+      },
+      "GET /api/processing-status": {
+        "count": 3543,
+        "min": 0.003,
+        "max": 37.742,
+        "avg": 0.755,
+        "median": 0.389,
+        "p95": 1.047
+      },
+      "GET /api/chat/stream-result": {
+        "count": 146,
+        "min": 0.003,
+        "max": 15.097,
+        "avg": 0.188,
+        "median": 0.017,
+        "p95": 0.249
+      },
+      "GET /%5C": {
+        "count": 2,
+        "min": 19.52,
+        "max": 20.417,
+        "avg": 19.969,
+        "median": 19.969,
+        "p95": 20.417
+      },
+      "GET /%5C%5C%5C": {
+        "count": 2,
+        "min": 19.685,
+        "max": 19.688,
+        "avg": 19.687,
+        "median": 19.687,
+        "p95": 19.688
+      },
+      "GET /about/info": {
+        "count": 1,
+        "min": 16.4,
+        "max": 16.4,
+        "avg": 16.4,
+        "median": 16.4,
+        "p95": 16.4
+      },
+      "GET /wp-content/plugins/hellopress/wp_filemanager.php": {
+        "count": 2,
+        "min": 0.0,
+        "max": 10.189,
+        "avg": 5.095,
+        "median": 5.095,
+        "p95": 10.189
+      }
+    },
+    "samples": [
+      {
+        "timestamp": "2026-07-26T06:09:47.534473Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 20.178234775,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00066-q4c",
+        "commit_sha": "7ea6bb17ae0a47134a97d286c798960d13cbb092"
+      },
+      {
+        "timestamp": "2026-07-26T09:48:17.813543Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.012541543,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00067-j5z",
+        "commit_sha": "f2ea59b1b0f5f114e53d86278962d0733a10a943"
+      },
+      {
+        "timestamp": "2026-07-26T09:48:18.143983Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.44752035,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00067-j5z",
+        "commit_sha": "f2ea59b1b0f5f114e53d86278962d0733a10a943"
+      },
+      {
+        "timestamp": "2026-07-26T11:28:26.180236Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 18.130761111,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00067-j5z",
+        "commit_sha": "f2ea59b1b0f5f114e53d86278962d0733a10a943"
+      },
+      {
+        "timestamp": "2026-07-26T11:28:40.572204Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 3.860740692,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00067-j5z",
+        "commit_sha": "f2ea59b1b0f5f114e53d86278962d0733a10a943"
+      },
+      {
+        "timestamp": "2026-07-26T12:51:34.143691Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 16.691167143,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00067-j5z",
+        "commit_sha": "f2ea59b1b0f5f114e53d86278962d0733a10a943"
+      },
+      {
+        "timestamp": "2026-07-26T17:28:29.170112Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.392250866,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00068-xbz",
+        "commit_sha": "0fd859356c7f02bd434603273752a86f10f663df"
+      },
+      {
+        "timestamp": "2026-07-26T18:32:22.758913Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.033072462,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00068-xbz",
+        "commit_sha": "0fd859356c7f02bd434603273752a86f10f663df"
+      },
+      {
+        "timestamp": "2026-07-26T18:32:49.260353Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 3.400644093,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00068-xbz",
+        "commit_sha": "0fd859356c7f02bd434603273752a86f10f663df"
+      },
+      {
+        "timestamp": "2026-07-26T18:37:34.401314Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.028309967,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00068-xbz",
+        "commit_sha": "0fd859356c7f02bd434603273752a86f10f663df"
+      },
+      {
+        "timestamp": "2026-07-27T03:01:57.227577Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/.env",
+        "latency_s": 4.881730244,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00068-xbz",
+        "commit_sha": "0fd859356c7f02bd434603273752a86f10f663df"
+      },
+      {
+        "timestamp": "2026-07-27T07:25:22.713004Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.863741999,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00068-xbz",
+        "commit_sha": "0fd859356c7f02bd434603273752a86f10f663df"
+      },
+      {
+        "timestamp": "2026-07-27T07:26:45.247627Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.005411438,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00068-xbz",
+        "commit_sha": "0fd859356c7f02bd434603273752a86f10f663df"
+      },
+      {
+        "timestamp": "2026-07-27T09:13:07.786550Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/api/sessions",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00068-xbz",
+        "commit_sha": "0fd859356c7f02bd434603273752a86f10f663df"
+      },
+      {
+        "timestamp": "2026-07-27T09:37:50.997159Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.04612692,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00069-vgr",
+        "commit_sha": "0fd859356c7f02bd434603273752a86f10f663df"
+      },
+      {
+        "timestamp": "2026-07-27T10:15:51.283922Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.007654801,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00069-vgr",
+        "commit_sha": "0fd859356c7f02bd434603273752a86f10f663df"
+      },
+      {
+        "timestamp": "2026-07-27T10:26:20.553677Z",
+        "status": 422,
+        "method": "POST",
+        "path": "/api/chat/stream",
+        "latency_s": 0.006032842,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00071-7rl",
+        "commit_sha": "6d34e9c99d306002639c4b570185e3efadcb71fc"
+      },
+      {
+        "timestamp": "2026-07-27T10:39:18.134813Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.004165926,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00071-7rl",
+        "commit_sha": "6d34e9c99d306002639c4b570185e3efadcb71fc"
+      },
+      {
+        "timestamp": "2026-07-27T11:08:57.039641Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 4.149517474,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00075-9rg",
+        "commit_sha": "516cf5dee6500efcc2ad91e8aeee7b995d56ad6a"
+      },
+      {
+        "timestamp": "2026-07-27T11:09:01.804126Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 10.22206899,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00075-9rg",
+        "commit_sha": "516cf5dee6500efcc2ad91e8aeee7b995d56ad6a"
+      },
+      {
+        "timestamp": "2026-07-27T11:37:27.122873Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/health",
+        "latency_s": 0.015349989,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00080-ncv",
+        "commit_sha": "7e3325d1412135a2a97bf1ab2cd021328f780c5e"
+      },
+      {
+        "timestamp": "2026-07-27T11:39:53.507851Z",
+        "status": 422,
+        "method": "POST",
+        "path": "/api/chat/stream",
+        "latency_s": 0.006439208,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00082-h4k",
+        "commit_sha": "7e3325d1412135a2a97bf1ab2cd021328f780c5e"
+      },
+      {
+        "timestamp": "2026-07-27T11:46:07.703767Z",
+        "status": 429,
+        "method": "PATCH",
+        "path": "/api/sessions/activity",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00082-h4k",
+        "commit_sha": "7e3325d1412135a2a97bf1ab2cd021328f780c5e"
+      },
+      {
+        "timestamp": "2026-07-27T11:57:16.741212Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.002819151,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T11:57:17.868410Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.00261213,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T11:57:18.615443Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.004539179,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T11:57:19.368091Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.00299788,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T11:57:20.126061Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.010428309,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T11:57:20.801543Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.002713399,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T13:40:36.082089Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 24.874203627,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T13:40:38.576841Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/%5C",
+        "latency_s": 20.417147581,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T13:40:41.410774Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/%5C%5C%5C",
+        "latency_s": 19.687833342,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T13:40:41.411077Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/%5C%5C%5C",
+        "latency_s": 19.68519049,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T13:40:41.575583Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/%5C",
+        "latency_s": 19.520022597,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T13:41:30.209356Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/static/js/ui/'%20+%20esc(url)%20+%20'",
+        "latency_s": 0.006895306,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T13:41:30.768466Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/static/js/$%7BcommitUrl%7D",
+        "latency_s": 0.005788954,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T16:01:15.300492Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wp-content/plugins/hellopress/wp_filemanager.php",
+        "latency_s": 10.189303181,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-27T19:52:01.514424Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 16.724943594,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-28T01:39:28.701433Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 16.256259349,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-28T02:19:37.869196Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-152x152-precomposed.png",
+        "latency_s": 0.090048637,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-28T02:19:38.243148Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-152x152.png",
+        "latency_s": 0.006199091,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-28T02:19:38.428406Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.032813425,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-28T02:19:38.685498Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.081971388,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00084-gwp",
+        "commit_sha": "cec79d9d29696335448f1f51ad1f88f030f1e26a"
+      },
+      {
+        "timestamp": "2026-07-28T03:25:47.870596Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.365402105,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00085-dvm",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T03:25:47.872674Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.363608665,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00085-dvm",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T03:25:47.950526Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-120x120-precomposed.png",
+        "latency_s": 0.298299264,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00085-dvm",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T03:25:48.446842Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-120x120.png",
+        "latency_s": 0.00498959,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00085-dvm",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T03:25:48.605342Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.00483866,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00085-dvm",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T03:25:48.796458Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.00456417,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00085-dvm",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T04:05:09.259474Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 15.702950581,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00085-dvm",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T04:05:09.260960Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 15.703558411,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00085-dvm",
+        "commit_sha": "91ead571c99716a801a0539b9adde8831ae70fa2"
+      },
+      {
+        "timestamp": "2026-07-28T06:38:13.643972Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/favicon.png",
+        "latency_s": 0.011306349,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00087-fsw",
+        "commit_sha": "d24f4f73d096eeccfe3408923d2a3d4352afb280"
+      },
+      {
+        "timestamp": "2026-07-28T09:04:27.527786Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 18.85548836,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00088-6rw",
+        "commit_sha": "38603e295f59fc9f00fcddc4494c6c991b1926b9"
+      },
+      {
+        "timestamp": "2026-07-28T10:44:12.243452Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 18.517485869,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00088-6rw",
+        "commit_sha": "38603e295f59fc9f00fcddc4494c6c991b1926b9"
+      },
+      {
+        "timestamp": "2026-07-28T10:44:27.894008Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 3.373430491,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00088-6rw",
+        "commit_sha": "38603e295f59fc9f00fcddc4494c6c991b1926b9"
+      },
+      {
+        "timestamp": "2026-07-28T10:44:31.654082Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.102496219,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00088-6rw",
+        "commit_sha": "38603e295f59fc9f00fcddc4494c6c991b1926b9"
+      },
+      {
+        "timestamp": "2026-07-28T14:02:59.622659Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 16.264009431,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00088-6rw",
+        "commit_sha": "38603e295f59fc9f00fcddc4494c6c991b1926b9"
+      },
+      {
+        "timestamp": "2026-07-28T14:22:27.581124Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 9.597643051,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00088-6rw",
+        "commit_sha": "38603e295f59fc9f00fcddc4494c6c991b1926b9"
+      },
+      {
+        "timestamp": "2026-07-28T23:13:22.141155Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 17.109170704,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00089-gc6",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-29T03:27:34.521847Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/.env",
+        "latency_s": 18.40836911,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00089-gc6",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 23,
+    "top_patterns": [
+      {
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/r",
+        "count": 15
+      },
+      {
+        "message": "Uncaught signal: 6, pid=2, tid=2, fault_addr=0.",
+        "count": 2
+      },
+      {
+        "message": "Uncaught signal: 6, pid=3, tid=3, fault_addr=0.",
+        "count": 2
+      },
+      {
+        "message": "Uncaught signal: 6, pid=4, tid=4, fault_addr=0.",
+        "count": 2
+      },
+      {
+        "message": "Uncaught signal: 6, pid=5, tid=5, fault_addr=0.",
+        "count": 2
+      }
+    ],
+    "samples": [
+      {
+        "timestamp": "2026-07-26T05:22:56.756865784Z",
+        "severity": "ERROR",
+        "message": "Uncaught signal: 6, pid=2, tid=2, fault_addr=0.",
+        "revision": "medicine-recommend-00066-q4c"
+      },
+      {
+        "timestamp": "2026-07-26T05:22:57.456765567Z",
+        "severity": "ERROR",
+        "message": "Uncaught signal: 6, pid=3, tid=3, fault_addr=0.",
+        "revision": "medicine-recommend-00066-q4c"
+      },
+      {
+        "timestamp": "2026-07-26T05:27:58.056860260Z",
+        "severity": "ERROR",
+        "message": "Uncaught signal: 6, pid=4, tid=4, fault_addr=0.",
+        "revision": "medicine-recommend-00066-q4c"
+      },
+      {
+        "timestamp": "2026-07-26T05:28:02.756681171Z",
+        "severity": "ERROR",
+        "message": "Uncaught signal: 6, pid=5, tid=5, fault_addr=0.",
+        "revision": "medicine-recommend-00066-q4c"
+      },
+      {
+        "timestamp": "2026-07-26T07:56:17.505982162Z",
+        "severity": "ERROR",
+        "message": "Uncaught signal: 6, pid=2, tid=2, fault_addr=0.",
+        "revision": "medicine-recommend-00067-j5z"
+      },
+      {
+        "timestamp": "2026-07-26T07:56:17.606013040Z",
+        "severity": "ERROR",
+        "message": "Uncaught signal: 6, pid=3, tid=3, fault_addr=0.",
+        "revision": "medicine-recommend-00067-j5z"
+      },
+      {
+        "timestamp": "2026-07-26T08:01:19.105949268Z",
+        "severity": "ERROR",
+        "message": "Uncaught signal: 6, pid=4, tid=4, fault_addr=0.",
+        "revision": "medicine-recommend-00067-j5z"
+      },
+      {
+        "timestamp": "2026-07-26T08:01:24.606187619Z",
+        "severity": "ERROR",
+        "message": "Uncaught signal: 6, pid=5, tid=5, fault_addr=0.",
+        "revision": "medicine-recommend-00067-j5z"
+      },
+      {
+        "timestamp": "2026-07-26T17:17:15.183461Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00068-xbz"
+      },
+      {
+        "timestamp": "2026-07-26T20:39:15.499119Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00068-xbz"
+      },
+      {
+        "timestamp": "2026-07-26T23:56:46.095802Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00068-xbz"
+      },
+      {
+        "timestamp": "2026-07-27T03:12:15.439586Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00068-xbz"
+      },
+      {
+        "timestamp": "2026-07-27T06:39:45.189423Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00068-xbz"
+      },
+      {
+        "timestamp": "2026-07-27T08:23:54.728852Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00068-xbz"
+      },
+      {
+        "timestamp": "2026-07-27T09:00:20.950760Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00068-xbz"
+      },
+      {
+        "timestamp": "2026-07-27T09:13:38.231685Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00068-xbz"
+      },
+      {
+        "timestamp": "2026-07-27T09:14:13.090578Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00068-xbz"
+      },
+      {
+        "timestamp": "2026-07-27T09:36:33.835743Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00069-vgr"
+      },
+      {
+        "timestamp": "2026-07-27T09:43:32.885129Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00069-vgr"
+      },
+      {
+        "timestamp": "2026-07-27T09:49:01.898900Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00069-vgr"
+      },
+      {
+        "timestamp": "2026-07-27T09:54:22.920483Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00069-vgr"
+      },
+      {
+        "timestamp": "2026-07-27T10:13:15.992587Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00069-vgr"
+      },
+      {
+        "timestamp": "2026-07-27T10:37:46.137631Z",
+        "severity": "ERROR",
+        "message": "Memory limit of 512 MiB exceeded with 512 MiB used. Consider increasing the memory limit, see https://cloud.google.com/run/docs/configuring/memory-limits",
+        "revision": "medicine-recommend-00071-7rl"
+      }
+    ]
+  }
+}

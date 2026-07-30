@@ -1,0 +1,36 @@
+{
+  "source_path": "/Users/yuto/medicine recomended/log/raw/downloaded-logs-20260728-20260729-20260729-043016.json",
+  "source_name": "downloaded-logs-20260728-20260729-20260729-043016.json",
+  "entry_count": 36987,
+  "time_range": {
+    "start": "2026-07-28T06:21:23.658098Z",
+    "end": "2026-07-29T04:30:15.458798Z"
+  },
+  "services": {
+    "medicine-recommend-dev": 36987
+  },
+  "primary_service": "medicine-recommend-dev",
+  "revisions": {
+    "medicine-recommend-dev-00228-dsp": 32001,
+    "medicine-recommend-dev-00227-tjx": 2101,
+    "medicine-recommend-dev-00225-2b2": 1011,
+    "medicine-recommend-dev-00226-k9c": 933,
+    "medicine-recommend-dev-00222-v5z": 718,
+    "medicine-recommend-dev-00223-rfw": 210
+  },
+  "commit_shas": {
+    "e909a8cea744d22cd96b3b995046ca352bf9266a": 31999,
+    "0cd0970d7bdfba85f0b7bc813674946687cccba8": 2100,
+    "e7c34dd4141a9116bcf0810be7668c065b2d74cf": 1009,
+    "38603e295f59fc9f00fcddc4494c6c991b1926b9": 931,
+    "d24f4f73d096eeccfe3408923d2a3d4352afb280": 718,
+    "a774afd08c2f6cfcb3887581f0c557d89f9397c4": 208
+  },
+  "severity_counts": {
+    "DEFAULT": 34823,
+    "INFO": 1889,
+    "NOTICE": 6,
+    "WARNING": 10,
+    "ERROR": 259
+  }
+}

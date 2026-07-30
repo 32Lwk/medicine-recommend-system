@@ -1,0 +1,71 @@
+{
+  "revision_timeline": [
+    {
+      "timestamp": "2026-07-28T06:21:23.658098Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00222-v5z",
+      "commit_sha": "d24f4f73d096eeccfe3408923d2a3d4352afb280"
+    },
+    {
+      "timestamp": "2026-07-28T06:28:23.013065Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00223-rfw",
+      "commit_sha": "a774afd08c2f6cfcb3887581f0c557d89f9397c4"
+    },
+    {
+      "timestamp": "2026-07-28T06:28:38.436331Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00223-rfw",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-07-28T06:31:01.747150Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00225-2b2",
+      "commit_sha": "e7c34dd4141a9116bcf0810be7668c065b2d74cf"
+    },
+    {
+      "timestamp": "2026-07-28T06:31:16.412951Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00225-2b2",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-07-28T06:47:17.692539Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00226-k9c",
+      "commit_sha": "38603e295f59fc9f00fcddc4494c6c991b1926b9"
+    },
+    {
+      "timestamp": "2026-07-28T06:47:32.514848Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00226-k9c",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-07-28T11:50:34.542996Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00227-tjx",
+      "commit_sha": "0cd0970d7bdfba85f0b7bc813674946687cccba8"
+    },
+    {
+      "timestamp": "2026-07-28T11:50:48.130529Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00227-tjx",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-07-28T15:50:49.195333Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00228-dsp",
+      "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+    },
+    {
+      "timestamp": "2026-07-28T15:51:04.283044Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00228-dsp",
+      "commit_sha": null
+    }
+  ],
+  "revision_count": 11
+}

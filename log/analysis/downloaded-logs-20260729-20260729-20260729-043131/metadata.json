@@ -1,0 +1,23 @@
+{
+  "source_path": "/Users/yuto/medicine recomended/log/raw/downloaded-logs-20260729-20260729-20260729-043131.json",
+  "source_name": "downloaded-logs-20260729-20260729-20260729-043131.json",
+  "entry_count": 9,
+  "time_range": {
+    "start": "2026-07-29T04:29:46.051066Z",
+    "end": "2026-07-29T04:31:15.748912Z"
+  },
+  "services": {
+    "medicine-recommend-dev": 9
+  },
+  "primary_service": "medicine-recommend-dev",
+  "revisions": {
+    "medicine-recommend-dev-00228-dsp": 9
+  },
+  "commit_shas": {
+    "e909a8cea744d22cd96b3b995046ca352bf9266a": 9
+  },
+  "severity_counts": {
+    "DEFAULT": 5,
+    "INFO": 4
+  }
+}

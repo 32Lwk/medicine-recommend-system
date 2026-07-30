@@ -10,6 +10,7 @@
 
 | 図 | 内容 | 用途 |
 |----|------|------|
+| **[`medicine-recommend-aws-staging-complete.drawio`](../medicine-recommend-aws-staging-complete.drawio)** | **マルチページ統合版（13 シート）** — 目次 + 全体構成 + 分解図 + LINE + データ | **推奨：最初に開くファイル** |
 | [`aws-integrated-architecture.drawio`](../diagrams/aws-integrated-architecture.drawio) | **統合全体像** — 左: User+External / 中央: AWS Runtime / 右: CI/CD | 全体俯瞰 |
 | [`aws-user-request-flow.drawio`](../diagrams/aws-user-request-flow.drawio) | ユーザーリクエストのみ（Browser → WAF → ALB → ECS） | ランタイム理解 |
 | [`aws-cicd-flow.drawio`](../diagrams/aws-cicd-flow.drawio) | CI/CD のみ（GitHub → Pipeline → ECR → ECS + S3 sync） | デプロイ理解 |
@@ -19,13 +20,43 @@
 | [`aws-multi-agent-architecture.drawio`](../diagrams/aws-multi-agent-architecture.drawio) | マルチエージェント会話パイプライン | アプリ内部 |
 | [`aws-agent-detail-architecture.drawio`](../diagrams/aws-agent-detail-architecture.drawio) | エージェント詳細 | アプリ内部 |
 
-再生成: `python scripts/generate_aws_integrated_diagram.py`
+再生成:
+
+```bash
+# マルチページ統合版（13 シート — 推奨）
+python scripts/generate_aws_staging_complete_diagram.py
+
+# 単体分解図（docs/diagrams/ 配下 6 ファイル）
+python scripts/generate_aws_integrated_diagram.py
+
+# 01 全体構成のみ（A3 1 ページ詳細版）
+python scripts/generate_aws_staging_diagram.py
+```
+
+### マルチページ統合版（13 シート）の構成
+
+| シート | 内容 |
+|--------|------|
+| 00 目次 | 全シートの説明一覧 |
+| 01 全体構成 | AWS ステージング全コンポーネント（ユーザー / ECS / CI/CD / AI / 外部 / 監視） |
+| 02 統合 3 ゾーン | ユーザー / AWS ランタイム / CI/CD / 外部 SaaS |
+| 03 ユーザーリクエスト | Browser → WAF → ALB → ECS |
+| 04 CI/CD パイプライン | GitHub → CodePipeline → CodeBuild → デプロイ |
+| 05 外部連携マップ | OpenAI / Neon / R2 / AWS AI サービス |
+| 06 クロスクラウド比較 | GCP 本番 vs AWS ステージング |
+| 07 Chat Pipeline v2 | マルチエージェント会話フロー |
+| 08 症状相談 Physical | ルールベース推奨 + AWS サービス |
+| 09 Bedrock KB RAG | KB 同期・ingestion・Retrieve |
+| 10 運用・コスト管理 | CloudWatch / Budget / Lambda / IAM |
+| 11 LINE Webhook (GCP) | LINE → Cloud Run 本番経路 |
+| 12 シークレット・データ | Secrets Manager / Neon / Web vs LINE 保存 |
 
 ### 図の選び方
 
 | 知りたいこと | 開く図 |
 |-------------|--------|
-| 全体を一度に把握したい | `aws-integrated-architecture.drawio`（左=外部 / 中央=AWS / 右=CI/CD） |
+| **全体を一度に（推奨）** | `medicine-recommend-aws-staging-complete.drawio` → タブ「01 全体構成」 |
+| シート一覧から選びたい | 同上 → タブ「00 目次」 |
 | チャット API の流れだけ | `aws-user-request-flow.drawio` |
 | デプロイの流れだけ | `aws-cicd-flow.drawio` |
 | ECS から何に繋がっているか | `aws-external-integrations.drawio` |

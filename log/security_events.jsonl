@@ -13550,3 +13550,7 @@
 {"timestamp": "2026-07-29T00:32:38.623645", "event_type": "input_validation", "user_id": "ユーザー62", "input_length": 25, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "免責事項・利用規約（β版）とプライバシーの違いは？"}}
 {"timestamp": "2026-07-29T00:44:28.980680", "original_length": 25, "sanitized_length": 25, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-07-29T00:44:28.981124", "event_type": "input_validation", "user_id": "ユーザー62", "input_length": 25, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "免責事項・利用規約（β版）とプライバシーの違いは？"}}
+{"timestamp": "2026-07-29T13:19:18.242201", "original_length": 25, "sanitized_length": 25, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-29T13:19:18.243540", "event_type": "input_validation", "user_id": "ユーザー10", "input_length": 25, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "免責事項・利用規約（β版）とプライバシーの違いは？"}}
+{"timestamp": "2026-07-29T13:37:35.390612", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-07-29T13:37:35.391600", "event_type": "input_validation", "user_id": "ユーザー62", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "改善デプロイ後の本番/dev ログを再取得"}}

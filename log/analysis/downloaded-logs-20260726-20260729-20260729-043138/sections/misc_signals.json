@@ -1,0 +1,994 @@
+{
+  "gunicorn": [
+    {
+      "timestamp": "2026-07-26T05:17:55.127243Z",
+      "message": "⚠️ GUNICORN_WORKER_CLASS=sync は FastAPI(ASGI) と非互換のため uvicorn.workers.UvicornWorker に切り替えます。"
+    },
+    {
+      "timestamp": "2026-07-26T05:17:55.127256Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-26T05:17:55.127303Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-26T05:17:55.127319Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T05:17:55.864861Z",
+      "message": "[2026-07-26 05:17:55 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-26T05:17:55.866260Z",
+      "message": "[2026-07-26 05:17:55 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T05:17:55.880378Z",
+      "message": "[2026-07-26 05:17:55 +0000] [2] [INFO] Booting worker with pid: 2"
+    },
+    {
+      "timestamp": "2026-07-26T05:17:55.984955Z",
+      "message": "[2026-07-26 05:17:55 +0000] [3] [INFO] Booting worker with pid: 3"
+    },
+    {
+      "timestamp": "2026-07-26T05:22:56.658388Z",
+      "message": "[2026-07-26 05:22:56 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:2)"
+    },
+    {
+      "timestamp": "2026-07-26T05:22:57.357595Z",
+      "message": "[2026-07-26 05:22:57 +0000] [1] [ERROR] Worker (pid:2) was sent SIGABRT!"
+    },
+    {
+      "timestamp": "2026-07-26T05:22:57.357757Z",
+      "message": "[2026-07-26 05:22:56 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:3)"
+    },
+    {
+      "timestamp": "2026-07-26T05:22:59.257006Z",
+      "message": "[2026-07-26 05:22:59 +0000] [4] [INFO] Booting worker with pid: 4"
+    },
+    {
+      "timestamp": "2026-07-26T05:22:59.257281Z",
+      "message": "[2026-07-26 05:22:59 +0000] [1] [ERROR] Worker (pid:3) was sent SIGABRT!"
+    },
+    {
+      "timestamp": "2026-07-26T05:23:02.557386Z",
+      "message": "[2026-07-26 05:23:02 +0000] [5] [INFO] Booting worker with pid: 5"
+    },
+    {
+      "timestamp": "2026-07-26T05:27:57.977738Z",
+      "message": "[2026-07-26 05:27:57 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:4)"
+    },
+    {
+      "timestamp": "2026-07-26T05:27:58.256828Z",
+      "message": "[2026-07-26 05:27:58 +0000] [1] [ERROR] Worker (pid:4) was sent SIGABRT!"
+    },
+    {
+      "timestamp": "2026-07-26T05:28:01.857472Z",
+      "message": "[2026-07-26 05:28:01 +0000] [6] [INFO] Booting worker with pid: 6"
+    },
+    {
+      "timestamp": "2026-07-26T05:28:02.658180Z",
+      "message": "[2026-07-26 05:28:02 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:5)"
+    },
+    {
+      "timestamp": "2026-07-26T05:28:03.156799Z",
+      "message": "[2026-07-26 05:28:03 +0000] [1] [ERROR] Worker (pid:5) was sent SIGABRT!"
+    },
+    {
+      "timestamp": "2026-07-26T05:28:06.557314Z",
+      "message": "[2026-07-26 05:28:06 +0000] [7] [INFO] Booting worker with pid: 7"
+    },
+    {
+      "timestamp": "2026-07-26T05:46:20.856850Z",
+      "message": "[2026-07-26 05:46:20 +0000] [1] [ERROR] Worker (pid:6) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-26T05:46:20.859239Z",
+      "message": "[2026-07-26 05:46:20 +0000] [1] [ERROR] Worker (pid:7) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-26T06:09:47.668707Z",
+      "message": "⚠️ GUNICORN_WORKER_CLASS=sync は FastAPI(ASGI) と非互換のため uvicorn.workers.UvicornWorker に切り替えます。"
+    },
+    {
+      "timestamp": "2026-07-26T06:09:47.668721Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-26T06:09:47.668774Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-26T06:09:47.668790Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T06:09:48.455575Z",
+      "message": "[2026-07-26 06:09:48 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-26T06:09:48.456960Z",
+      "message": "[2026-07-26 06:09:48 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T06:09:48.473636Z",
+      "message": "[2026-07-26 06:09:48 +0000] [2] [INFO] Booting worker with pid: 2"
+    },
+    {
+      "timestamp": "2026-07-26T06:09:48.497218Z",
+      "message": "[2026-07-26 06:09:48 +0000] [3] [INFO] Booting worker with pid: 3"
+    },
+    {
+      "timestamp": "2026-07-26T06:25:17.163422Z",
+      "message": "[2026-07-26 06:25:17 +0000] [1] [ERROR] Worker (pid:3) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-26T07:51:13.760963Z",
+      "message": "⚠️ GUNICORN_WORKER_CLASS=sync は FastAPI(ASGI) と非互換のため uvicorn.workers.UvicornWorker に切り替えます。"
+    },
+    {
+      "timestamp": "2026-07-26T07:51:13.760986Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-26T07:51:13.761021Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-26T07:51:13.761037Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T07:51:14.540993Z",
+      "message": "[2026-07-26 07:51:14 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-26T07:51:14.542094Z",
+      "message": "[2026-07-26 07:51:14 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T07:51:14.555774Z",
+      "message": "[2026-07-26 07:51:14 +0000] [2] [INFO] Booting worker with pid: 2"
+    },
+    {
+      "timestamp": "2026-07-26T07:51:14.577141Z",
+      "message": "[2026-07-26 07:51:14 +0000] [3] [INFO] Booting worker with pid: 3"
+    },
+    {
+      "timestamp": "2026-07-26T07:56:17.105941Z",
+      "message": "[2026-07-26 07:56:15 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:2)"
+    },
+    {
+      "timestamp": "2026-07-26T07:56:17.406215Z",
+      "message": "[2026-07-26 07:56:17 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:3)"
+    },
+    {
+      "timestamp": "2026-07-26T07:56:17.708201Z",
+      "message": "[2026-07-26 07:56:17 +0000] [1] [ERROR] Worker (pid:3) was sent SIGABRT!"
+    },
+    {
+      "timestamp": "2026-07-26T07:56:18.206950Z",
+      "message": "[2026-07-26 07:56:18 +0000] [1] [ERROR] Worker (pid:2) was sent SIGABRT!"
+    },
+    {
+      "timestamp": "2026-07-26T07:56:21.507674Z",
+      "message": "[2026-07-26 07:56:21 +0000] [4] [INFO] Booting worker with pid: 4"
+    },
+    {
+      "timestamp": "2026-07-26T07:56:23.607878Z",
+      "message": "[2026-07-26 07:56:23 +0000] [5] [INFO] Booting worker with pid: 5"
+    },
+    {
+      "timestamp": "2026-07-26T08:01:19.006014Z",
+      "message": "[2026-07-26 08:01:18 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:4)"
+    },
+    {
+      "timestamp": "2026-07-26T08:01:20.706149Z",
+      "message": "[2026-07-26 08:01:20 +0000] [1] [ERROR] Worker (pid:4) was sent SIGABRT!"
+    },
+    {
+      "timestamp": "2026-07-26T08:01:24.006245Z",
+      "message": "[2026-07-26 08:01:23 +0000] [6] [INFO] Booting worker with pid: 6"
+    },
+    {
+      "timestamp": "2026-07-26T08:01:24.605916Z",
+      "message": "[2026-07-26 08:01:24 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:5)"
+    },
+    {
+      "timestamp": "2026-07-26T08:01:25.006561Z",
+      "message": "[2026-07-26 08:01:25 +0000] [1] [ERROR] Worker (pid:5) was sent SIGABRT!"
+    },
+    {
+      "timestamp": "2026-07-26T08:01:28.206012Z",
+      "message": "[2026-07-26 08:01:28 +0000] [7] [INFO] Booting worker with pid: 7"
+    },
+    {
+      "timestamp": "2026-07-26T08:06:19.439873Z",
+      "message": "[2026-07-26 08:06:19 +0000] [1] [ERROR] Worker (pid:6) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-26T08:06:19.440938Z",
+      "message": "[2026-07-26 08:06:19 +0000] [1] [ERROR] Worker (pid:7) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-26T09:29:36.232921Z",
+      "message": "⚠️ GUNICORN_WORKER_CLASS=sync は FastAPI(ASGI) と非互換のため uvicorn.workers.UvicornWorker に切り替えます。"
+    },
+    {
+      "timestamp": "2026-07-26T09:29:36.232933Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-26T09:29:36.232973Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-26T09:29:36.232988Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T09:29:37.061241Z",
+      "message": "[2026-07-26 09:29:37 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-26T09:29:37.062396Z",
+      "message": "[2026-07-26 09:29:37 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T09:29:37.078186Z",
+      "message": "[2026-07-26 09:29:37 +0000] [2] [INFO] Booting worker with pid: 2"
+    },
+    {
+      "timestamp": "2026-07-26T09:29:37.162107Z",
+      "message": "[2026-07-26 09:29:37 +0000] [3] [INFO] Booting worker with pid: 3"
+    },
+    {
+      "timestamp": "2026-07-26T09:44:59.861671Z",
+      "message": "[2026-07-26 09:44:59 +0000] [1] [ERROR] Worker (pid:3) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-26T09:44:59.871702Z",
+      "message": "[2026-07-26 09:44:59 +0000] [1] [ERROR] Worker (pid:2) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-26T09:48:06.607878Z",
+      "message": "⚠️ GUNICORN_WORKER_CLASS=sync は FastAPI(ASGI) と非互換のため uvicorn.workers.UvicornWorker に切り替えます。"
+    },
+    {
+      "timestamp": "2026-07-26T09:48:06.607899Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-26T09:48:06.607929Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-26T09:48:06.607944Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T09:48:06.931739Z",
+      "message": "[2026-07-26 09:48:06 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-26T09:48:06.932820Z",
+      "message": "[2026-07-26 09:48:06 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T09:48:06.947457Z",
+      "message": "[2026-07-26 09:48:06 +0000] [2] [INFO] Booting worker with pid: 2"
+    },
+    {
+      "timestamp": "2026-07-26T09:48:07.032041Z",
+      "message": "[2026-07-26 09:48:07 +0000] [3] [INFO] Booting worker with pid: 3"
+    },
+    {
+      "timestamp": "2026-07-26T10:03:19.719584Z",
+      "message": "[2026-07-26 10:03:19 +0000] [1] [ERROR] Worker (pid:3) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-26T10:03:19.735813Z",
+      "message": "[2026-07-26 10:03:19 +0000] [1] [ERROR] Worker (pid:2) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-26T11:28:26.350291Z",
+      "message": "⚠️ GUNICORN_WORKER_CLASS=sync は FastAPI(ASGI) と非互換のため uvicorn.workers.UvicornWorker に切り替えます。"
+    },
+    {
+      "timestamp": "2026-07-26T11:28:26.350309Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-26T11:28:26.350351Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-26T11:28:26.350362Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T11:28:27.370447Z",
+      "message": "[2026-07-26 11:28:27 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-26T11:28:27.371829Z",
+      "message": "[2026-07-26 11:28:27 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-26T11:28:27.388839Z",
+      "message": "[2026-07-26 11:28:27 +0000] [2] [INFO] Booting worker with pid: 2"
+    }
+  ],
+  "openai_errors": [
+    {
+      "timestamp": "2026-07-26T05:17:55.127274Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T05:17:55.127289Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-26T05:22:56.658388Z",
+      "message": "[2026-07-26 05:22:56 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:2)"
+    },
+    {
+      "timestamp": "2026-07-26T05:22:57.357757Z",
+      "message": "[2026-07-26 05:22:56 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:3)"
+    },
+    {
+      "timestamp": "2026-07-26T05:27:57.977738Z",
+      "message": "[2026-07-26 05:27:57 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:4)"
+    },
+    {
+      "timestamp": "2026-07-26T05:28:02.658180Z",
+      "message": "[2026-07-26 05:28:02 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:5)"
+    },
+    {
+      "timestamp": "2026-07-26T06:09:47.668741Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T06:09:47.668757Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-26T07:51:13.760991Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T07:51:13.761005Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-26T07:56:17.105941Z",
+      "message": "[2026-07-26 07:56:15 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:2)"
+    },
+    {
+      "timestamp": "2026-07-26T07:56:17.406215Z",
+      "message": "[2026-07-26 07:56:17 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:3)"
+    },
+    {
+      "timestamp": "2026-07-26T08:01:19.006014Z",
+      "message": "[2026-07-26 08:01:18 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:4)"
+    },
+    {
+      "timestamp": "2026-07-26T08:01:24.605916Z",
+      "message": "[2026-07-26 08:01:24 +0000] [1] [CRITICAL] WORKER TIMEOUT (pid:5)"
+    },
+    {
+      "timestamp": "2026-07-26T09:29:36.232950Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T09:29:36.232959Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-26T09:48:06.607904Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T09:48:06.607915Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-26T11:28:26.350313Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T11:28:26.350331Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-26T12:51:34.299978Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T12:51:34.300006Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-26T13:09:48.409149Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T13:09:48.409152Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-26T14:02:14.538587Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T14:02:14.538598Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-26T14:06:57.395222Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T14:06:57.395233Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-26T17:17:16.401277Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T17:17:16.401292Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-26T20:39:16.731701Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T20:39:16.731706Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-26T23:56:47.300180Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-26T23:56:47.300185Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-27T03:12:16.759190Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-27T03:12:16.759214Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-27T06:39:45.594340Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-27T06:39:45.594365Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-27T08:04:39.338280Z",
+      "message": "2026-07-27 08:04:39,339 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:04:41.463238Z",
+      "message": "2026-07-27 08:04:41,463 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:04:46.222623Z",
+      "message": "2026-07-27 08:04:46,223 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:04:49.544202Z",
+      "message": "2026-07-27 08:04:49,544 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:04:50.540573Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-27T08:04:50.540578Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-27T08:04:51.137693Z",
+      "message": "2026-07-27 08:04:51,138 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:04:55.683041Z",
+      "message": "2026-07-27 08:04:55,683 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:22:38.731893Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-27T08:22:38.731897Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-27T08:22:42.952464Z",
+      "message": "2026-07-27 08:22:42,953 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:22:43.633850Z",
+      "message": "2026-07-27 08:22:43,634 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:22:43.717290Z",
+      "message": "2026-07-27 08:22:43,718 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:22:47.327582Z",
+      "message": "2026-07-27 08:22:47,328 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:22:48.924439Z",
+      "message": "2026-07-27 08:22:48,925 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:22:50.922663Z",
+      "message": "2026-07-27 08:22:50,923 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:22:56.428267Z",
+      "message": "2026-07-27 08:22:56,429 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:23:02.323288Z",
+      "message": "2026-07-27 08:23:02,324 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:24:06.557637Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-27T08:24:06.557646Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-27T08:30:31.176856Z",
+      "message": "169.254.169.126:45970 - \"GET /static/img/about/generated/tech/icon-openai.png HTTP/1.1\" 200"
+    },
+    {
+      "timestamp": "2026-07-27T08:57:20.231972Z",
+      "message": "2026-07-27 08:57:20,232 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:57:20.260646Z",
+      "message": "2026-07-27 08:57:20,261 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:57:20.516294Z",
+      "message": "2026-07-27 08:57:20,516 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:57:24.518446Z",
+      "message": "2026-07-27 08:57:24,519 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:57:36.129061Z",
+      "message": "2026-07-27 08:57:36,129 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:57:37.609897Z",
+      "message": "2026-07-27 08:57:37,610 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:57:42.610585Z",
+      "message": "2026-07-27 08:57:42,611 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:57:44.319623Z",
+      "message": "2026-07-27 08:57:44,320 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:57:52.432497Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-27T08:57:52.432502Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-27T08:57:56.340882Z",
+      "message": "2026-07-27 08:57:56,341 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:57:58.117913Z",
+      "message": "2026-07-27 08:57:58,118 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:58:02.357411Z",
+      "message": "2026-07-27 08:58:02,358 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T08:58:29.405235Z",
+      "message": "2026-07-27 08:58:29,405 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T09:00:14.209818Z",
+      "message": "2026-07-27 09:00:14,210 - ERROR - SSE chat worker timeout after 180s sid=1785142396807635524584"
+    },
+    {
+      "timestamp": "2026-07-27T09:00:22.279830Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-27T09:00:22.279833Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-27T09:10:47.501518Z",
+      "message": "2026-07-27 09:10:47,502 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T09:10:48.647765Z",
+      "message": "2026-07-27 09:10:48,648 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T09:10:49.223349Z",
+      "message": "2026-07-27 09:10:49,224 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    },
+    {
+      "timestamp": "2026-07-27T09:10:54.069231Z",
+      "message": "2026-07-27 09:10:54,070 - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\""
+    }
+  ],
+  "duplicate_triage": [
+    {
+      "timestamp": "2026-07-27T08:04:47.037097Z",
+      "message": "{\"confidence\":0.99,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"resolved_by\":\"llm\",\"session_id\":\"1785074557433512863996\",\"source\":\"intent_router_llm\",\"sub_route\":\"app_about\",\"timestamp\":\"2026-07-27T08:04:47.037165\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\",\"user_input\":\"こんにちは自己紹介してください。\"}"
+    },
+    {
+      "timestamp": "2026-07-27T08:04:58.461374Z",
+      "message": "2026-07-27 08:04:58,462 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785074557433512863996', 'total_ms': 31720.27, 'breakdown': {'post_start': 106.74, 'parsed_message': 107.04, 'session_db_read': 107.07, 'after_get_session_db': 494.19, 'before_llm_setup': 2225.26, 'before_security': 3200.54, 'after_security': 7896.33, 'before_emoji_route':"
+    },
+    {
+      "timestamp": "2026-07-27T08:22:44.723315Z",
+      "message": "2026-07-27 08:22:44,724 - INFO - intent_router_shadow mismatch sid=1785074557433512863996 kind=gate_improvement decision=Physical/medicine_qa triage=Other/general_other"
+    },
+    {
+      "timestamp": "2026-07-27T08:22:44.734207Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":true,\"mismatch_kind\":\"gate_improvement\",\"primary_route\":\"Physical\",\"resolved_by\":\"gate\",\"session_id\":\"1785074557433512863996\",\"source\":\"layer1_medicine_qa\",\"sub_route\":\"medicine_qa\",\"timestamp\":\"2026-07-27T08:22:44.724297\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\""
+    },
+    {
+      "timestamp": "2026-07-27T08:22:51.633300Z",
+      "message": "2026-07-27 08:22:51,634 - INFO - Skipping rule_based_medicine_recommendation for explicit medicine Q&A: GithubとGitlabの使い分けを教えてください"
+    },
+    {
+      "timestamp": "2026-07-27T08:57:33.204392Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785142396807635524584\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T08:57:33.148998\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"throat_pain\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T09:11:02.714904Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785142870047521999318\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T09:11:02.715973\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"throat_pain\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T09:28:47.202658Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785142870047521999318\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T09:28:47.203510\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"throat_pain\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T10:27:03.447610Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785148001590643899235\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T10:27:03.448352\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"throat_pain\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T10:37:09.139015Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785142870047521999318\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T10:37:09.139820\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"throat_pain\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T10:44:01.903619Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785149022180487798100\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T10:44:01.904392\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"sore_throat\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T10:52:07.173857Z",
+      "message": "2026-07-27 10:52:07,175 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785149022180487798100', 'total_ms': 502596.33, 'breakdown': {'post_start': 8.98, 'parsed_message': 9.38, 'session_db_read': 9.41, 'after_get_session_db': 368.51, 'before_llm_setup': 886.56, 'before_security': 1602.81, 'after_security': 2313.63, 'before_emoji_route': 2538."
+    },
+    {
+      "timestamp": "2026-07-27T10:56:42.156703Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785149782911910270036\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T10:56:42.157649\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"throat_pain\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T11:04:08.027491Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785150228497408585586\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T11:04:08.028646\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"throat_pain\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T11:11:38.894671Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785150676388766393702\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T11:11:38.894496\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"throat_pain\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T11:11:45.650795Z",
+      "message": "2026-07-27 11:11:45,651 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785150228497408585586', 'total_ms': 474558.13, 'breakdown': {'post_start': 7.49, 'parsed_message': 7.66, 'session_db_read': 7.68, 'after_get_session_db': 347.68, 'before_llm_setup': 812.13, 'before_security': 1534.73, 'after_security': 2328.68, 'before_emoji_route': 2539."
+    },
+    {
+      "timestamp": "2026-07-27T11:12:24.837347Z",
+      "message": "2026-07-27 11:12:24,837 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785150676388766393702', 'total_ms': 61118.23, 'breakdown': {'post_start': 0.29, 'parsed_message': 0.4, 'session_db_read': 0.43, 'after_get_session_db': 356.78, 'before_llm_setup': 697.56, 'before_security': 1327.69, 'after_security': 2004.91, 'before_emoji_route': 2005.31"
+    },
+    {
+      "timestamp": "2026-07-27T11:19:04.011780Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785151123725849725067\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T11:19:04.012890\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"sore_throat\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T11:23:25.596242Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785151386548951630839\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T11:23:25.596728\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"sore_throat\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T11:31:28.532956Z",
+      "message": "2026-07-27 11:31:28,533 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785151386548951630839', 'total_ms': 499618.78, 'breakdown': {'post_start': 8.34, 'parsed_message': 8.55, 'session_db_read': 8.57, 'after_get_session_db': 355.19, 'before_llm_setup': 840.01, 'before_security': 1544.55, 'after_security': 2289.3, 'before_emoji_route': 2472.6"
+    },
+    {
+      "timestamp": "2026-07-27T11:34:06.321820Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785152027486725748682\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T11:34:06.322382\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"sore_throat\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T11:43:16.638765Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785152564413894809137\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T11:43:16.627724\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"throat_pain\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T11:43:25.814155Z",
+      "message": "2026-07-27 11:43:25,814 - INFO - legacy_fallback_allowed sid=1785152564413894809137 path=route_triage_category reason=no_router_decision"
+    },
+    {
+      "timestamp": "2026-07-27T11:50:26.976970Z",
+      "message": "2026-07-27 11:50:26,977 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785152564413894809137', 'total_ms': 458943.71, 'breakdown': {'post_start': 8.51, 'parsed_message': 8.67, 'session_db_read': 8.69, 'after_get_session_db': 373.51, 'before_llm_setup': 1981.76, 'before_security': 2883.8, 'after_security': 8508.51, 'before_emoji_route': 9976."
+    },
+    {
+      "timestamp": "2026-07-27T11:56:13.448861Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785153353066572558171\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-07-27T11:56:13.448979\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"sore_throat\",\"user_i"
+    },
+    {
+      "timestamp": "2026-07-27T11:56:20.712013Z",
+      "message": "2026-07-27 11:56:20,712 - INFO - legacy_fallback_allowed sid=1785153353066572558171 path=route_triage_category reason=no_router_decision"
+    },
+    {
+      "timestamp": "2026-07-27T11:56:50.082167Z",
+      "message": "2026-07-27 11:56:50,082 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785153353066572558171', 'total_ms': 54368.41, 'breakdown': {'post_start': 8.02, 'parsed_message': 8.19, 'session_db_read': 8.21, 'after_get_session_db': 348.73, 'before_llm_setup': 834.2, 'before_security': 1610.04, 'after_security': 2799.34, 'before_emoji_route': 2978.81"
+    },
+    {
+      "timestamp": "2026-07-28T02:16:25.258051Z",
+      "message": "{\"confidence\":0.97,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"resolved_by\":\"llm\",\"session_id\":\"1785204825088924115135\",\"source\":\"intent_router_llm\",\"sub_route\":\"architecture\",\"timestamp\":\"2026-07-28T02:16:25.259120\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\",\"user_input\":\"AWSで何を使っている\"}"
+    },
+    {
+      "timestamp": "2026-07-28T02:16:34.147864Z",
+      "message": "2026-07-28 02:16:34,149 - INFO - legacy_fallback_allowed sid=1785204825088924115135 path=route_triage_category reason=no_router_decision"
+    },
+    {
+      "timestamp": "2026-07-28T02:16:42.784342Z",
+      "message": "2026-07-28 02:16:42,785 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785204825088924115135', 'total_ms': 29668.03, 'breakdown': {'post_start': 10.67, 'parsed_message': 10.84, 'session_db_read': 10.86, 'after_get_session_db': 330.15, 'before_llm_setup': 819.85, 'before_security': 1546.62, 'after_security': 3005.27, 'before_emoji_route': 321"
+    },
+    {
+      "timestamp": "2026-07-28T02:20:13.568954Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"gate\",\"session_id\":\"1785205096348002784444\",\"source\":\"layer1_medicine_qa\",\"sub_route\":\"medicine_qa\",\"timestamp\":\"2026-07-28T02:20:13.569395\",\"triage_category\":\"Ask\",\"triage_subcategory\":\"medication_comparison\",\"user_input\":\"ロキソニンとイブの違いは？"
+    },
+    {
+      "timestamp": "2026-07-28T02:20:30.247733Z",
+      "message": "2026-07-28 02:20:30,248 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785205096348002784444', 'total_ms': 29580.97, 'breakdown': {'post_start': 80.66, 'parsed_message': 80.92, 'session_db_read': 80.95, 'after_get_session_db': 486.84, 'before_llm_setup': 1204.93, 'before_security': 1999.12, 'after_security': 5796.12, 'before_emoji_route': 60"
+    },
+    {
+      "timestamp": "2026-07-28T02:21:27.944566Z",
+      "message": "2026-07-28 02:21:27,944 - INFO - intent_router_shadow mismatch sid=1785205096348002784444 kind=gate_improvement decision=Physical/medicine_qa triage=Other/general_other"
+    },
+    {
+      "timestamp": "2026-07-28T02:21:29.769420Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":true,\"mismatch_kind\":\"gate_improvement\",\"primary_route\":\"Physical\",\"resolved_by\":\"gate\",\"session_id\":\"1785205096348002784444\",\"source\":\"layer1_medicine_qa\",\"sub_route\":\"medicine_qa\",\"timestamp\":\"2026-07-28T02:21:29.769437\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\""
+    },
+    {
+      "timestamp": "2026-07-28T02:21:31.390733Z",
+      "message": "2026-07-28 02:21:31,391 - INFO - Skipping rule_based_medicine_recommendation for explicit medicine Q&A: 画像見せて"
+    },
+    {
+      "timestamp": "2026-07-28T02:21:36.501615Z",
+      "message": "2026-07-28 02:21:36,502 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785205096348002784444', 'total_ms': 48233.53, 'breakdown': {'post_start': 7.34, 'parsed_message': 7.63, 'session_db_read': 7.65, 'after_get_session_db': 326.63, 'before_llm_setup': 9191.39, 'before_security': 9885.28, 'after_security': 24745.9, 'before_emoji_route': 26917"
+    },
+    {
+      "timestamp": "2026-07-28T02:22:47.726155Z",
+      "message": "{\"confidence\":0.98,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"resolved_by\":\"llm\",\"session_id\":\"1785205302967765525144\",\"source\":\"intent_router_llm\",\"sub_route\":\"architecture\",\"timestamp\":\"2026-07-28T02:22:47.727067\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\",\"user_input\":\"AWSでは何を使ってるの？\"}"
+    },
+    {
+      "timestamp": "2026-07-28T02:22:55.267250Z",
+      "message": "2026-07-28 02:22:55,268 - INFO - 🛎️ QA gate → Concierge: intent=architecture source=triage_concierge_intent text='AWSでは何を使ってるの?'"
+    },
+    {
+      "timestamp": "2026-07-28T02:23:07.802532Z",
+      "message": "2026-07-28 02:23:07,804 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785205302967765525144', 'total_ms': 30830.86, 'breakdown': {'post_start': 6.96, 'parsed_message': 7.16, 'session_db_read': 7.21, 'after_get_session_db': 312.7, 'before_llm_setup': 796.82, 'before_security': 1529.2, 'after_security': 2238.0, 'before_emoji_route': 2415.98, "
+    },
+    {
+      "timestamp": "2026-07-28T02:24:56.126440Z",
+      "message": "2026-07-28 02:24:56,128 - INFO - intent_router_llm: keyword_meta guard corrected sub_route redirect -> architecture (triage locked)"
+    },
+    {
+      "timestamp": "2026-07-28T02:24:56.127845Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"resolved_by\":\"llm\",\"session_id\":\"1785205302967765525144\",\"source\":\"intent_router_llm\",\"sub_route\":\"architecture\",\"timestamp\":\"2026-07-28T02:24:56.129403\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\",\"user_input\":\"GithubとGitlabの違いは？\""
+    },
+    {
+      "timestamp": "2026-07-28T02:25:02.928127Z",
+      "message": "2026-07-28 02:25:02,929 - INFO - 🛎️ QA gate → Concierge: intent=architecture source=triage_concierge_intent text='GithubとGitlabの違いは?'"
+    },
+    {
+      "timestamp": "2026-07-28T02:25:12.186489Z",
+      "message": "2026-07-28 02:25:12,187 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785205302967765525144', 'total_ms': 32938.38, 'breakdown': {'post_start': 1.19, 'parsed_message': 1.33, 'session_db_read': 1.36, 'after_get_session_db': 313.28, 'before_llm_setup': 2166.78, 'before_security': 3103.85, 'after_security': 3859.73, 'before_emoji_route': 4092."
+    },
+    {
+      "timestamp": "2026-07-28T02:26:12.488013Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"resolved_by\":\"gate\",\"session_id\":\"1785205302967765525144\",\"source\":\"layer1_topic_break\",\"sub_route\":\"app_about\",\"timestamp\":\"2026-07-28T02:26:12.489041\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\",\"user_input\":\"このサービスはどっちなの？\"}"
+    },
+    {
+      "timestamp": "2026-07-28T02:26:46.483727Z",
+      "message": "2026-07-28 02:26:46,484 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785205302967765525144', 'total_ms': 50515.91, 'breakdown': {'post_start': 86.31, 'parsed_message': 86.52, 'session_db_read': 86.55, 'after_get_session_db': 475.17, 'before_llm_setup': 2206.46, 'before_security': 3480.32, 'after_security': 10410.62, 'before_emoji_route': 1"
+    },
+    {
+      "timestamp": "2026-07-28T03:26:21.276804Z",
+      "message": "{\"confidence\":0.98,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"resolved_by\":\"llm\",\"session_id\":\"1785209147864235884417\",\"source\":\"intent_router_llm\",\"sub_route\":\"architecture\",\"timestamp\":\"2026-07-28T03:26:21.276897\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\",\"user_input\":\"Aws環境とGCP環境と本番環境の違い"
+    },
+    {
+      "timestamp": "2026-07-28T03:26:28.668368Z",
+      "message": "2026-07-28 03:26:28,668 - INFO - 🛎️ QA gate → Concierge: intent=architecture source=triage_concierge_intent text='Aws環境とGCP環境と本番環境の違いは?'"
+    },
+    {
+      "timestamp": "2026-07-28T03:26:42.831242Z",
+      "message": "2026-07-28 03:26:42,831 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785209147864235884417', 'total_ms': 34204.13, 'breakdown': {'post_start': 9.48, 'parsed_message': 9.66, 'session_db_read': 9.68, 'after_get_session_db': 338.01, 'before_llm_setup': 825.02, 'before_security': 1555.23, 'after_security': 2624.48, 'before_emoji_route': 2845.3"
+    },
+    {
+      "timestamp": "2026-07-28T06:54:04.396787Z",
+      "message": "{\"confidence\":0.95,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"resolved_by\":\"gate\",\"session_id\":\"1785205302967765525144\",\"source\":\"concierge_fast_path\",\"sub_route\":\"greeting\",\"timestamp\":\"2026-07-28T06:54:04.397285\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\",\"user_input\":\"やあ\"}"
+    },
+    {
+      "timestamp": "2026-07-28T06:54:06.501527Z",
+      "message": "2026-07-28 06:54:06,500 - INFO - 🛎️ QA gate → Concierge: intent=greeting source=triage_concierge_intent text='やあ'"
+    },
+    {
+      "timestamp": "2026-07-28T06:54:10.413971Z",
+      "message": "2026-07-28 06:54:10,414 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785205302967765525144', 'total_ms': 17846.46, 'breakdown': {'post_start': 16.31, 'parsed_message': 16.52, 'session_db_read': 16.55, 'after_get_session_db': 375.38, 'before_llm_setup': 930.62, 'before_security': 1710.37, 'after_security': 3831.67, 'before_emoji_route': 421"
+    },
+    {
+      "timestamp": "2026-07-28T06:55:03.093223Z",
+      "message": "{\"confidence\":0.95,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Concierge\",\"resolved_by\":\"gate\",\"session_id\":\"1785205302967765525144\",\"source\":\"concierge_fast_path\",\"sub_route\":\"greeting\",\"timestamp\":\"2026-07-28T06:55:03.093188\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_other\",\"user_input\":\"やあ\"}"
+    },
+    {
+      "timestamp": "2026-07-28T06:55:06.166929Z",
+      "message": "2026-07-28 06:55:06,134 - INFO - 🛎️ QA gate → Concierge: intent=greeting source=triage_concierge_intent text='やあ'"
+    },
+    {
+      "timestamp": "2026-07-28T06:55:12.373128Z",
+      "message": "2026-07-28 06:55:12,372 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785205302967765525144', 'total_ms': 23995.69, 'breakdown': {'post_start': 34.12, 'parsed_message': 105.18, 'session_db_read': 105.26, 'after_get_session_db': 491.35, 'before_llm_setup': 1905.92, 'before_security': 2821.33, 'after_security': 6721.29, 'before_emoji_route': "
+    }
+  ],
+  "emergency": [
+    {
+      "timestamp": "2026-07-27T08:57:33.583813Z",
+      "message": "2026-07-27 08:57:33,584 - INFO - 🔍 緊急事案検出開始: 喉が痛いです。"
+    },
+    {
+      "timestamp": "2026-07-27T08:57:33.584053Z",
+      "message": "2026-07-27 08:57:33,584 - INFO - 🔍 緊急事案検出なし: 喉が痛いです。"
+    },
+    {
+      "timestamp": "2026-07-27T09:11:02.779151Z",
+      "message": "2026-07-27 09:11:02,780 - INFO - 🔍 緊急事案検出開始: 喉が痛いです。"
+    },
+    {
+      "timestamp": "2026-07-27T09:11:02.779300Z",
+      "message": "2026-07-27 09:11:02,780 - INFO - 🔍 緊急事案検出なし: 喉が痛いです。"
+    },
+    {
+      "timestamp": "2026-07-27T09:28:47.264627Z",
+      "message": "2026-07-27 09:28:47,265 - INFO - 🔍 緊急事案検出開始: 喉が痛いです。"
+    },
+    {
+      "timestamp": "2026-07-27T09:28:47.264798Z",
+      "message": "2026-07-27 09:28:47,265 - INFO - 🔍 緊急事案検出なし: 喉が痛いです。"
+    },
+    {
+      "timestamp": "2026-07-27T10:27:03.514454Z",
+      "message": "2026-07-27 10:27:03,515 - INFO - 🔍 緊急事案検出開始: のどが痛いです"
+    },
+    {
+      "timestamp": "2026-07-27T10:27:03.514596Z",
+      "message": "2026-07-27 10:27:03,516 - INFO - 🔍 緊急事案検出なし: のどが痛いです"
+    },
+    {
+      "timestamp": "2026-07-27T10:37:09.140272Z",
+      "message": "2026-07-27 10:37:09,141 - INFO - 🔍 緊急事案検出開始: 喉が痛いです。"
+    },
+    {
+      "timestamp": "2026-07-27T10:37:09.140394Z",
+      "message": "2026-07-27 10:37:09,141 - INFO - 🔍 緊急事案検出なし: 喉が痛いです。"
+    },
+    {
+      "timestamp": "2026-07-27T10:44:01.960482Z",
+      "message": "2026-07-27 10:44:01,961 - INFO - 🔍 緊急事案検出開始: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T10:44:01.960575Z",
+      "message": "2026-07-27 10:44:01,961 - INFO - 🔍 緊急事案検出なし: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T10:56:42.208184Z",
+      "message": "2026-07-27 10:56:42,209 - INFO - 🔍 緊急事案検出開始: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T10:56:42.208298Z",
+      "message": "2026-07-27 10:56:42,209 - INFO - 🔍 緊急事案検出なし: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T11:04:08.076129Z",
+      "message": "2026-07-27 11:04:08,077 - INFO - 🔍 緊急事案検出開始: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T11:04:08.076287Z",
+      "message": "2026-07-27 11:04:08,077 - INFO - 🔍 緊急事案検出なし: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T11:11:38.896299Z",
+      "message": "2026-07-27 11:11:38,896 - INFO - 🔍 緊急事案検出開始: 喉が痛いです。"
+    },
+    {
+      "timestamp": "2026-07-27T11:11:38.896498Z",
+      "message": "2026-07-27 11:11:38,896 - INFO - 🔍 緊急事案検出なし: 喉が痛いです。"
+    },
+    {
+      "timestamp": "2026-07-27T11:19:04.065857Z",
+      "message": "2026-07-27 11:19:04,067 - INFO - 🔍 緊急事案検出開始: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T11:19:04.065981Z",
+      "message": "2026-07-27 11:19:04,067 - INFO - 🔍 緊急事案検出なし: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T11:23:25.645894Z",
+      "message": "2026-07-27 11:23:25,646 - INFO - 🔍 緊急事案検出開始: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T11:23:25.646094Z",
+      "message": "2026-07-27 11:23:25,646 - INFO - 🔍 緊急事案検出なし: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T11:34:06.363217Z",
+      "message": "2026-07-27 11:34:06,363 - INFO - 🔍 緊急事案検出開始: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T11:34:06.363333Z",
+      "message": "2026-07-27 11:34:06,364 - INFO - 🔍 緊急事案検出なし: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T11:43:17.312046Z",
+      "message": "2026-07-27 11:43:17,312 - INFO - 🔍 緊急事案検出開始: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T11:43:17.318106Z",
+      "message": "2026-07-27 11:43:17,318 - INFO - 🔍 緊急事案検出なし: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T11:56:13.501865Z",
+      "message": "2026-07-27 11:56:13,502 - INFO - 🔍 緊急事案検出開始: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-27T11:56:13.502010Z",
+      "message": "2026-07-27 11:56:13,502 - INFO - 🔍 緊急事案検出なし: のどが痛い"
+    },
+    {
+      "timestamp": "2026-07-28T02:20:14.670258Z",
+      "message": "2026-07-28 02:20:14,670 - INFO - 🔍 緊急事案検出開始: ロキソニンとイブの違いは？"
+    },
+    {
+      "timestamp": "2026-07-28T02:20:14.670404Z",
+      "message": "2026-07-28 02:20:14,671 - INFO - 🔍 緊急事案検出なし: ロキソニンとイブの違いは？"
+    },
+    {
+      "timestamp": "2026-07-28T02:21:29.970849Z",
+      "message": "2026-07-28 02:21:29,971 - INFO - 🔍 緊急事案検出開始: 画像見せて"
+    },
+    {
+      "timestamp": "2026-07-28T02:21:29.970964Z",
+      "message": "2026-07-28 02:21:29,971 - INFO - 🔍 緊急事案検出なし: 画像見せて"
+    }
+  ]
+}

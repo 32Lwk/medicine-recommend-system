@@ -1,0 +1,54 @@
+{
+  "source_path": "/Users/yuto/medicine recomended/log/raw/downloaded-logs-20260726-20260729-20260729-043138.json",
+  "source_name": "downloaded-logs-20260726-20260729-20260729-043138.json",
+  "entry_count": 26100,
+  "time_range": {
+    "start": "2026-07-26T05:17:29.180452Z",
+    "end": "2026-07-29T03:42:59.659228Z"
+  },
+  "services": {
+    "medicine-recommend": 26100
+  },
+  "primary_service": "medicine-recommend",
+  "revisions": {
+    "medicine-recommend-00068-xbz": 10398,
+    "medicine-recommend-00069-vgr": 5066,
+    "medicine-recommend-00084-gwp": 2041,
+    "medicine-recommend-00071-7rl": 1297,
+    "medicine-recommend-00088-6rw": 1097,
+    "medicine-recommend-00085-dvm": 1070,
+    "medicine-recommend-00087-fsw": 650,
+    "medicine-recommend-00075-9rg": 638,
+    "medicine-recommend-00067-j5z": 618,
+    "medicine-recommend-00089-gc6": 513,
+    "medicine-recommend-00072-rp5": 435,
+    "medicine-recommend-00082-h4k": 291,
+    "medicine-recommend-00074-lcg": 288,
+    "medicine-recommend-00078-l7k": 277,
+    "medicine-recommend-00080-ncv": 203,
+    "medicine-recommend-00077-2mp": 199,
+    "medicine-recommend-00066-q4c": 136,
+    "medicine-recommend-00086-6gh": 127,
+    "medicine-recommend-00083-v6n": 126,
+    "medicine-recommend-00073-l4g": 124
+  },
+  "commit_shas": {
+    "0fd859356c7f02bd434603273752a86f10f663df": 15462,
+    "cec79d9d29696335448f1f51ad1f88f030f1e26a": 2163,
+    "6d34e9c99d306002639c4b570185e3efadcb71fc": 1817,
+    "91ead571c99716a801a0539b9adde8831ae70fa2": 1194,
+    "38603e295f59fc9f00fcddc4494c6c991b1926b9": 1095,
+    "516cf5dee6500efcc2ad91e8aeee7b995d56ad6a": 1044,
+    "7e3325d1412135a2a97bf1ab2cd021328f780c5e": 726,
+    "d24f4f73d096eeccfe3408923d2a3d4352afb280": 649,
+    "f2ea59b1b0f5f114e53d86278962d0733a10a943": 617,
+    "8736bdb823c989b496406707957acc273b59737d": 594
+  },
+  "severity_counts": {
+    "NOTICE": 24,
+    "INFO": 8968,
+    "DEFAULT": 17024,
+    "ERROR": 23,
+    "WARNING": 61
+  }
+}
