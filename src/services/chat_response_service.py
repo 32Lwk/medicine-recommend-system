@@ -320,22 +320,9 @@ def generate_personalized_advice(
 
     try:
         from src.core.i18n_prompts import normalize_lang
-        from src.services.sse_emit import is_streaming_active
 
         lang = normalize_lang((user_attrs or {}).get("language") or (user_attrs or {}).get("lang"))
         sid = session_id
-        stream_active = is_streaming_active(sid)
-
-        # 推奨フロー中は counsel LLM を避け SSE 180s 内に収める（stream sink 未束縛時も含む）
-        if lang == "ja" or stream_active:
-            if stream_active:
-                logger.info("SSE/recommendation path — template personalized_advice (skip counsel LLM)")
-            return _personalized_advice_fallback(
-                user_attrs,
-                user_text=user_text,
-                influenza_risk=influenza_risk,
-                influenza_reason=influenza_reason,
-            )
 
         from src.core.llm_client import chat_completion_create
         from src.core.i18n_prompts import append_dialect_counseling_hints, append_language_instruction
