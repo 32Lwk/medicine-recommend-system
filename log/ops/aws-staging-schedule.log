@@ -1,0 +1,19 @@
+2026-07-31 16:15:00 [resume] START 7/31 mentoring resume (17:00-17:30) -> resume-aws-staging.sh
+2026-07-31 16:15:02 [resume] Traceback (most recent call last):
+2026-07-31 16:15:02 [resume]   File "<stdin>", line 2, in <module>
+2026-07-31 16:15:02 [resume] FileNotFoundError: [Errno 2] No such file or directory: '/d/Programing/medicine-recommend/scripts/.aws-staging-stop-state.json'
+2026-07-31 16:15:02 [resume] ERROR exit=1
+2026-07-31 18:00:00 [stop] START 7/31 mentoring stop -> stop-aws-staging.sh
+2026-07-31 18:00:04 [stop] ==> AWS staging stop (reversible)
+2026-07-31 18:00:04 [stop]     cluster=default service=medicine-recommend region=ap-northeast-1
+2026-07-31 18:00:04 [stop]     current desiredCount=1
+2026-07-31 18:00:04 [stop] {
+2026-07-31 18:00:04 [stop]     "desired": 0,
+2026-07-31 18:00:04 [stop]     "running": 1
+2026-07-31 18:00:04 [stop] }
+2026-07-31 18:00:04 [stop] 
+2026-07-31 18:00:04 [stop] Stopped. State saved: scripts/.aws-staging-stop-state.json
+2026-07-31 18:00:04 [stop] Resume: ./scripts/resume-aws-staging.sh
+2026-07-31 18:00:04 [stop] 
+2026-07-31 18:00:04 [stop] Note: ALB / Managed Bedrock KB / Secrets / CodePipeline base fee still incur charges.
+2026-07-31 18:00:18 [stop] DONE 7/31 mentoring stop
