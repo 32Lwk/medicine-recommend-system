@@ -22,7 +22,7 @@ Google Slides / PowerPoint に **01〜09 の PNG を順番に取り込む**だ�
 | `03-seven-prefectures.png` | 7県の課題概要 | 45s |
 | `04-deep-dive.png` | 課題の深掘り | 40s |
 | `05-solution.png` | ソリューション | 40s |
-| `05-multiagent/` | マルチエージェント構成・振り分け **5パターン**（A〜E） | 30〜40s |
+| `05-multiagent/` | マルチエージェント（セージグリーン和風 A〜E + **PDF続き pdf-style/**） | 30〜40s |
 | `06-aws-architecture.png` | AWS アーキテクチャ | 40s |
 | `07-live-demo.png` | ライブデモ導入 | 15s |
 | — | **ライブデモ**（[`03-demo-script.md`](../03-demo-script.md)） | 90〜120s |
