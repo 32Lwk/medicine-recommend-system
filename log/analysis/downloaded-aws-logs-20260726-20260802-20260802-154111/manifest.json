@@ -1,0 +1,50 @@
+{
+  "generated_at": "2026-08-03T00:42:47",
+  "metadata_path": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\metadata.json",
+  "sections": {
+    "metadata": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\metadata.json",
+    "errors_http": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\sections\\errors_http.json",
+    "pipeline_perf": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\sections\\pipeline_perf.json",
+    "llm_cost": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\sections\\llm_cost.json",
+    "deploy_revision": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\sections\\deploy_revision.json",
+    "db_neon": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\sections\\db_neon.json",
+    "line_webhook": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\sections\\line_webhook.json",
+    "chat_flow": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\sections\\chat_flow.json",
+    "user_sessions": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\sections\\user_sessions.json",
+    "misc_signals": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\sections\\misc_signals.json",
+    "manifest": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\manifest.json"
+  },
+  "analysis_groups": {
+    "infra_errors": [
+      "errors_http",
+      "deploy_revision"
+    ],
+    "performance_cost": [
+      "pipeline_perf",
+      "llm_cost"
+    ],
+    "conversation_quality": [
+      "chat_flow",
+      "user_sessions"
+    ],
+    "integrations": [
+      "line_webhook",
+      "db_neon",
+      "misc_signals"
+    ]
+  },
+  "conversation_quality_focus": {
+    "session_timelines": "user_sessions.session_conversations.sessions",
+    "conversation_history": "sessions[].conversation_history / turns[].conversation_history",
+    "heuristic_hints": "user_sessions.intent_mismatches (LLM must re-judge)",
+    "physical_advisor": "sessions[].physical_recommendation_summary",
+    "quality_summary": "quality_metrics.json"
+  },
+  "session_transcripts": {
+    "1785684950122867517003": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\sessions\\1785684950122867517003.md",
+    "1785132851553095757122": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\sessions\\1785132851553095757122.md",
+    "1785484113183415974247": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\sessions\\1785484113183415974247.md",
+    "1785684863923493244707": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260726-20260802-20260802-154111\\sessions\\1785684863923493244707.md"
+  },
+  "platform": "aws"
+}

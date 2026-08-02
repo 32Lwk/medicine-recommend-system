@@ -1,8 +1,11 @@
 # AWS staging スケジュール実行 + デスクトップ通知
-# Usage: .\scripts\aws-staging-scheduled-action.ps1 -Action resume -Label "7/31 mentoring start"
+# Usage:
+#   .\scripts\aws-staging-scheduled-action.ps1 -Action resume -Label "7/31 mentoring start"
+#   .\scripts\aws-staging-scheduled-action.ps1 -Action contest-apply -Label "8/5 contest scale up"
+#   .\scripts\aws-staging-scheduled-action.ps1 -Action contest-restore -Label "8/5 contest scale down"
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("resume", "stop")]
+    [ValidateSet("resume", "stop", "contest-apply", "contest-restore")]
     [string]$Action,
 
     [Parameter(Mandatory = $true)]
@@ -51,10 +54,14 @@ if (-not (Test-Path $Bash)) {
     exit 1
 }
 
-$ScriptName = if ($Action -eq "resume") { "resume-aws-staging.sh" } else { "stop-aws-staging.sh" }
-Write-ScheduleLog "START $Label -> $ScriptName"
+switch ($Action) {
+    "resume" { $bashCmd = "cd '$($Root -replace '\\','/')' && export AWS_PROFILE=medicine-recommend-dev && ./scripts/resume-aws-staging.sh" }
+    "stop" { $bashCmd = "cd '$($Root -replace '\\','/')' && export AWS_PROFILE=medicine-recommend-dev && ./scripts/stop-aws-staging.sh" }
+    "contest-apply" { $bashCmd = "cd '$($Root -replace '\\','/')' && export AWS_PROFILE=medicine-recommend-dev && ./scripts/prepare-aws-contest-capacity.sh --apply" }
+    "contest-restore" { $bashCmd = "cd '$($Root -replace '\\','/')' && export AWS_PROFILE=medicine-recommend-dev && ./scripts/prepare-aws-contest-capacity.sh --restore" }
+}
+Write-ScheduleLog "START $Label -> $Action"
 
-$bashCmd = "cd '$($Root -replace '\\','/')' && export AWS_PROFILE=medicine-recommend-dev && ./scripts/$ScriptName"
 $output = & $Bash -lc $bashCmd 2>&1
 $output | ForEach-Object { Write-ScheduleLog $_ }
 
@@ -64,7 +71,7 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-if ($Action -eq "resume") {
+if ($Action -in @("resume", "contest-apply")) {
     Start-Sleep -Seconds 45
     $health = try {
         (Invoke-WebRequest -Uri "https://aws.medicine.yutok.dev/health" -UseBasicParsing -TimeoutSec 30).StatusCode
@@ -74,11 +81,15 @@ if ($Action -eq "resume") {
     }
     Write-ScheduleLog "health=$health"
     if ($health -eq 200) {
-        Show-ScheduleToast "AWS staging resumed" "$Label — health OK (200)"
+        $toastTitle = if ($Action -eq "contest-apply") { "AWS contest capacity applied" } else { "AWS staging resumed" }
+        Show-ScheduleToast $toastTitle "$Label — health OK (200)"
     }
     else {
-        Show-ScheduleToast "AWS staging resumed (check health)" "$Label — health=$health"
+        Show-ScheduleToast "AWS staging action done (check health)" "$Label — health=$health"
     }
+}
+elseif ($Action -eq "contest-restore") {
+    Show-ScheduleToast "AWS contest capacity restored" "$Label — normal sizing"
 }
 else {
     Show-ScheduleToast "AWS staging stopped" "$Label — ECS desiredCount=0"

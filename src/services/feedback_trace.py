@@ -17,6 +17,10 @@ logger = logging.getLogger(__name__)
 _executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="feedback_async")
 
 
+def shutdown_feedback_trace_executor() -> None:
+    _executor.shutdown(wait=False, cancel_futures=True)
+
+
 def build_feedback_trace(
     *,
     source: str,

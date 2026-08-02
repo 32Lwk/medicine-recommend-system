@@ -1,0 +1,1190 @@
+{
+  "trace_count": 8,
+  "exported_traces": [
+    {
+      "trace_id": "8e7bc60e-3268-4e6a-bc89-97fbe44c84eb",
+      "events": [
+        {
+          "ts": "2026-07-27T06:14:42.568Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-27T06:14:42.572Z",
+          "type": "received_message",
+          "text": "やあ"
+        },
+        {
+          "ts": "2026-07-27T06:14:44.251Z",
+          "type": "user_message",
+          "text": "やあ"
+        },
+        {
+          "ts": "2026-07-27T06:14:45.532Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-27T06:14:56.721Z",
+          "type": "concierge_intent",
+          "value": "greeting"
+        },
+        {
+          "ts": "2026-07-27T06:14:59.106Z",
+          "type": "pipeline_perf",
+          "total_ms": 16537.82,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-27T06:14:42.568Z",
+      "session_id": "1785132851553095757122",
+      "user_message": "やあ",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "greeting",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785132851553095757122",
+        "total_ms": 16537.82,
+        "breakdown": {
+          "post_start": 3.4,
+          "parsed_message": 3.67,
+          "session_db_read": 4.22,
+          "after_get_session_db": 282.33,
+          "before_llm_setup": 613.1,
+          "before_security": 1191.19,
+          "after_security": 2164.8,
+          "before_emoji_route": 2275.32,
+          "before_triage": 2283.01,
+          "after_triage": 3243.14,
+          "safety_gate_done": 7413.23,
+          "before_orchestrator": 14017.31,
+          "concierge_resolve_intent_start": 14152.47,
+          "concierge_resolve_intent_end": 14152.49,
+          "concierge_build_payload_start": 14152.91,
+          "concierge_build_payload_end": 15966.95
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-27T06:14:48.133008",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1393.9,
+              "prompt_tokens": 362,
+              "completion_tokens": 40,
+              "cost_jpy": 0.0121,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-27T06:14:52.170760",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1343.69,
+              "prompt_tokens": 365,
+              "completion_tokens": 39,
+              "cost_jpy": 0.0121,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-27T06:14:54.073606",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1342.59,
+              "prompt_tokens": 365,
+              "completion_tokens": 40,
+              "cost_jpy": 0.0122,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-27T06:14:57.974296",
+              "model": "gpt-4o-mini",
+              "path": "concierge_agent.greeting",
+              "latency_ms": 1249.69,
+              "prompt_tokens": 866,
+              "completion_tokens": 55,
+              "cost_jpy": 0.0276,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 4,
+          "llm_total_latency_ms": 5329.870000000001,
+          "llm_session_cost_jpy": 0.064,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "24715cc4-f285-44ea-9f2c-4ef170e8800b",
+      "events": [
+        {
+          "ts": "2026-07-27T06:15:19.343Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-27T06:15:19.343Z",
+          "type": "received_message",
+          "text": "ロキソニンとイブとバファリンを画像付きで比較して"
+        },
+        {
+          "ts": "2026-07-27T06:15:20.459Z",
+          "type": "user_message",
+          "text": "ロキソニンとイブとバファリンを画像付きで比較して"
+        },
+        {
+          "ts": "2026-07-27T06:15:23.271Z",
+          "type": "triage",
+          "category": "Ask",
+          "subcategory": "general_other",
+          "confidence": 0.93
+        },
+        {
+          "ts": "2026-07-27T06:15:28.290Z",
+          "type": "pipeline_perf",
+          "total_ms": 8946.82,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-27T06:15:19.343Z",
+      "session_id": "1785132851553095757122",
+      "user_message": "ロキソニンとイブとバファリンを画像付きで比較して",
+      "triage": {
+        "category": "Ask",
+        "subcategory": "general_other",
+        "confidence": 0.93
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785132851553095757122",
+        "total_ms": 8946.82,
+        "breakdown": {
+          "post_start": 0.3,
+          "parsed_message": 0.45,
+          "session_db_read": 0.51,
+          "after_get_session_db": 277.96,
+          "before_llm_setup": 556.47,
+          "before_security": 1112.52,
+          "after_security": 1484.15,
+          "before_emoji_route": 1485.29,
+          "before_triage": 1485.32,
+          "after_triage": 3928.66,
+          "safety_gate_done": 5016.46
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-27T06:15:22.354088",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1515.03,
+              "prompt_tokens": 3204,
+              "completion_tokens": 114,
+              "cost_jpy": 0.0995,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 1,
+          "llm_total_latency_ms": 1515.03,
+          "llm_session_cost_jpy": 0.0995,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "dd617c51-27e1-46fe-a4ad-b889e472ac3b",
+      "events": [
+        {
+          "ts": "2026-07-31T07:48:43.418Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-31T07:48:43.421Z",
+          "type": "received_message",
+          "text": "こんにちは"
+        },
+        {
+          "ts": "2026-07-31T07:48:45.063Z",
+          "type": "user_message",
+          "text": "こんにちは"
+        },
+        {
+          "ts": "2026-07-31T07:48:46.251Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-31T07:48:56.253Z",
+          "type": "concierge_intent",
+          "value": "greeting"
+        },
+        {
+          "ts": "2026-07-31T07:48:58.775Z",
+          "type": "pipeline_perf",
+          "total_ms": 15356.86,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-31T07:48:43.418Z",
+      "session_id": "1785484113183415974247",
+      "user_message": "こんにちは",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "greeting",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785484113183415974247",
+        "total_ms": 15356.86,
+        "breakdown": {
+          "post_start": 3.15,
+          "parsed_message": 3.39,
+          "session_db_read": 3.66,
+          "after_get_session_db": 284.3,
+          "before_llm_setup": 606.81,
+          "before_security": 1163.76,
+          "after_security": 2064.63,
+          "before_emoji_route": 2172.82,
+          "before_triage": 2179.37,
+          "after_triage": 3109.03,
+          "safety_gate_done": 6714.79,
+          "concierge_resolve_intent_start": 12834.11,
+          "concierge_resolve_intent_end": 12834.26,
+          "concierge_build_payload_start": 12834.58,
+          "concierge_build_payload_end": 14781.98
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-31T07:48:48.673861",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1213.37,
+              "prompt_tokens": 361,
+              "completion_tokens": 28,
+              "cost_jpy": 0.0117,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-31T07:48:51.832501",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 859.1,
+              "prompt_tokens": 363,
+              "completion_tokens": 28,
+              "cost_jpy": 0.0117,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-31T07:48:53.594102",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1196.74,
+              "prompt_tokens": 363,
+              "completion_tokens": 28,
+              "cost_jpy": 0.0117,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-31T07:48:57.635536",
+              "model": "gpt-4o-mini",
+              "path": "concierge_agent.greeting",
+              "latency_ms": 1379.19,
+              "prompt_tokens": 865,
+              "completion_tokens": 60,
+              "cost_jpy": 0.0278,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 4,
+          "llm_total_latency_ms": 4648.4,
+          "llm_session_cost_jpy": 0.0629,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "f70cb59a-dc0a-430d-8187-e5e1f146dc0c",
+      "events": [
+        {
+          "ts": "2026-07-31T07:49:14.809Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-31T07:49:14.812Z",
+          "type": "received_message",
+          "text": "ロキソニンとイブとバファリンを画像付きで比較して"
+        },
+        {
+          "ts": "2026-07-31T07:49:16.507Z",
+          "type": "user_message",
+          "text": "ロキソニンとイブとバファリンを画像付きで比較して"
+        },
+        {
+          "ts": "2026-07-31T07:49:19.592Z",
+          "type": "triage",
+          "category": "Ask",
+          "subcategory": "general_other",
+          "confidence": 0.97
+        },
+        {
+          "ts": "2026-07-31T07:49:24.741Z",
+          "type": "pipeline_perf",
+          "total_ms": 9932.59,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-31T07:49:14.809Z",
+      "session_id": "1785132851553095757122",
+      "user_message": "ロキソニンとイブとバファリンを画像付きで比較して",
+      "triage": {
+        "category": "Ask",
+        "subcategory": "general_other",
+        "confidence": 0.97
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785132851553095757122",
+        "total_ms": 9932.59,
+        "breakdown": {
+          "post_start": 3.14,
+          "parsed_message": 3.46,
+          "session_db_read": 3.8,
+          "after_get_session_db": 285.2,
+          "before_llm_setup": 611.73,
+          "before_security": 1172.09,
+          "after_security": 2195.9,
+          "before_emoji_route": 2322.52,
+          "before_triage": 2329.41,
+          "after_triage": 4783.64,
+          "safety_gate_done": 5985.25
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-31T07:49:18.773175",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1565.87,
+              "prompt_tokens": 3311,
+              "completion_tokens": 129,
+              "cost_jpy": 0.1032,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 1,
+          "llm_total_latency_ms": 1565.87,
+          "llm_session_cost_jpy": 0.1032,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "5ea1224b-238e-497d-85b4-9e85f56ede3f",
+      "events": [
+        {
+          "ts": "2026-07-31T07:49:30.468Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-31T07:49:30.468Z",
+          "type": "received_message",
+          "text": "頭痛いです"
+        },
+        {
+          "ts": "2026-07-31T07:49:31.583Z",
+          "type": "user_message",
+          "text": "頭痛いです"
+        },
+        {
+          "ts": "2026-07-31T07:49:34.743Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "headache",
+          "confidence": 0.98
+        }
+      ],
+      "started_at": "2026-07-31T07:49:30.468Z",
+      "session_id": null,
+      "user_message": "頭痛いです",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "headache",
+        "confidence": 0.98
+      },
+      "concierge_intent": null,
+      "pipeline_perf": null,
+      "agent_steps": []
+    },
+    {
+      "trace_id": "e318d322-9356-4d62-9148-22a97855d586",
+      "events": [
+        {
+          "ts": "2026-08-02T15:35:07.533Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-08-02T15:35:07.636Z",
+          "type": "received_message",
+          "text": "アレルギー症状が出た"
+        },
+        {
+          "ts": "2026-08-02T15:35:14.619Z",
+          "type": "user_message",
+          "text": "アレルギー症状が出た"
+        },
+        {
+          "ts": "2026-08-02T15:35:23.922Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "allergy_symptoms",
+          "confidence": 0.95
+        }
+      ],
+      "started_at": "2026-08-02T15:35:07.533Z",
+      "session_id": null,
+      "user_message": "アレルギー症状が出た",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "allergy_symptoms",
+        "confidence": 0.95
+      },
+      "concierge_intent": null,
+      "pipeline_perf": null,
+      "agent_steps": []
+    },
+    {
+      "trace_id": "3c868d8a-6e6a-48eb-ab65-9073cb55f591",
+      "events": [
+        {
+          "ts": "2026-08-02T15:35:54.731Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-08-02T15:35:54.741Z",
+          "type": "received_message",
+          "text": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ"
+        },
+        {
+          "ts": "2026-08-02T15:36:01.125Z",
+          "type": "user_message",
+          "text": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ"
+        },
+        {
+          "ts": "2026-08-02T15:36:09.930Z",
+          "type": "pipeline_perf",
+          "total_ms": 62398.57,
+          "channel": "web"
+        },
+        {
+          "ts": "2026-08-02T15:36:12.030Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 0.99
+        },
+        {
+          "ts": "2026-08-02T15:36:25.739Z",
+          "type": "concierge_intent",
+          "value": "chitchat"
+        },
+        {
+          "ts": "2026-08-02T15:36:32.925Z",
+          "type": "pipeline_perf",
+          "total_ms": 38194.1,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-08-02T15:35:54.731Z",
+      "session_id": "1785684863923493244707",
+      "user_message": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 0.99
+      },
+      "concierge_intent": "chitchat",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785684950122867517003",
+        "total_ms": 38194.1,
+        "breakdown": {
+          "post_start": 9.75,
+          "parsed_message": 11.65,
+          "session_db_read": 12.14,
+          "after_get_session_db": 497.64,
+          "before_llm_setup": 1699.32,
+          "before_security": 2605.54,
+          "after_security": 10404.15,
+          "before_emoji_route": 11404.04,
+          "before_triage": 11594.82,
+          "after_triage": 17698.13,
+          "safety_gate_done": 20099.7,
+          "after_triage_follow_ups": 20294.86,
+          "after_counseling_flow": 21097.87,
+          "moderation_done": 21097.91,
+          "before_medicine_qa_route": 21497.72,
+          "after_medicine_qa_route": 26297.69,
+          "before_orchestrator": 29214.98,
+          "concierge_resolve_intent_start": 31007.34,
+          "concierge_resolve_intent_end": 31007.37,
+          "concierge_build_payload_start": 31092.91,
+          "concierge_build_payload_end": 37103.59
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-08-02T15:36:09.131665",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1581.48,
+              "prompt_tokens": 3121,
+              "completion_tokens": 91,
+              "cost_jpy": 0.0964,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:11.232330",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage2",
+              "latency_ms": 1302.58,
+              "prompt_tokens": 3422,
+              "completion_tokens": 70,
+              "cost_jpy": 0.1048,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:17.827366",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1186.07,
+              "prompt_tokens": 400,
+              "completion_tokens": 45,
+              "cost_jpy": 0.0133,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:20.132134",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1503.94,
+              "prompt_tokens": 400,
+              "completion_tokens": 45,
+              "cost_jpy": 0.0133,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:26.939716",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.chitchat",
+              "latency_ms": 1091.5,
+              "prompt_tokens": 766,
+              "completion_tokens": 38,
+              "cost_jpy": 0.0241,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 5,
+          "llm_total_latency_ms": 6665.57,
+          "llm_session_cost_jpy": 0.2519,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "f440ac34-da11-4ce3-9854-0d38eef4c1f5",
+      "events": [
+        {
+          "ts": "2026-08-02T15:37:45.323Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-08-02T15:37:45.324Z",
+          "type": "received_message",
+          "text": "頭痛が殺す"
+        },
+        {
+          "ts": "2026-08-02T15:37:49.541Z",
+          "type": "user_message",
+          "text": "頭痛が殺す"
+        },
+        {
+          "ts": "2026-08-02T15:37:52.522Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "headache",
+          "confidence": 0.86
+        }
+      ],
+      "started_at": "2026-08-02T15:37:45.323Z",
+      "session_id": null,
+      "user_message": "頭痛が殺す",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "headache",
+        "confidence": 0.86
+      },
+      "concierge_intent": null,
+      "pipeline_perf": null,
+      "agent_steps": []
+    }
+  ],
+  "slow_traces_ge_8s": [
+    {
+      "trace_id": "8e7bc60e-3268-4e6a-bc89-97fbe44c84eb",
+      "events": [
+        {
+          "ts": "2026-07-27T06:14:42.568Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-27T06:14:42.572Z",
+          "type": "received_message",
+          "text": "やあ"
+        },
+        {
+          "ts": "2026-07-27T06:14:44.251Z",
+          "type": "user_message",
+          "text": "やあ"
+        },
+        {
+          "ts": "2026-07-27T06:14:45.532Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-27T06:14:56.721Z",
+          "type": "concierge_intent",
+          "value": "greeting"
+        },
+        {
+          "ts": "2026-07-27T06:14:59.106Z",
+          "type": "pipeline_perf",
+          "total_ms": 16537.82,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-27T06:14:42.568Z",
+      "session_id": "1785132851553095757122",
+      "user_message": "やあ",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "greeting",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785132851553095757122",
+        "total_ms": 16537.82,
+        "breakdown": {
+          "post_start": 3.4,
+          "parsed_message": 3.67,
+          "session_db_read": 4.22,
+          "after_get_session_db": 282.33,
+          "before_llm_setup": 613.1,
+          "before_security": 1191.19,
+          "after_security": 2164.8,
+          "before_emoji_route": 2275.32,
+          "before_triage": 2283.01,
+          "after_triage": 3243.14,
+          "safety_gate_done": 7413.23,
+          "before_orchestrator": 14017.31,
+          "concierge_resolve_intent_start": 14152.47,
+          "concierge_resolve_intent_end": 14152.49,
+          "concierge_build_payload_start": 14152.91,
+          "concierge_build_payload_end": 15966.95
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-27T06:14:48.133008",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1393.9,
+              "prompt_tokens": 362,
+              "completion_tokens": 40,
+              "cost_jpy": 0.0121,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-27T06:14:52.170760",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1343.69,
+              "prompt_tokens": 365,
+              "completion_tokens": 39,
+              "cost_jpy": 0.0121,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-27T06:14:54.073606",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1342.59,
+              "prompt_tokens": 365,
+              "completion_tokens": 40,
+              "cost_jpy": 0.0122,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-27T06:14:57.974296",
+              "model": "gpt-4o-mini",
+              "path": "concierge_agent.greeting",
+              "latency_ms": 1249.69,
+              "prompt_tokens": 866,
+              "completion_tokens": 55,
+              "cost_jpy": 0.0276,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 4,
+          "llm_total_latency_ms": 5329.870000000001,
+          "llm_session_cost_jpy": 0.064,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "24715cc4-f285-44ea-9f2c-4ef170e8800b",
+      "events": [
+        {
+          "ts": "2026-07-27T06:15:19.343Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-27T06:15:19.343Z",
+          "type": "received_message",
+          "text": "ロキソニンとイブとバファリンを画像付きで比較して"
+        },
+        {
+          "ts": "2026-07-27T06:15:20.459Z",
+          "type": "user_message",
+          "text": "ロキソニンとイブとバファリンを画像付きで比較して"
+        },
+        {
+          "ts": "2026-07-27T06:15:23.271Z",
+          "type": "triage",
+          "category": "Ask",
+          "subcategory": "general_other",
+          "confidence": 0.93
+        },
+        {
+          "ts": "2026-07-27T06:15:28.290Z",
+          "type": "pipeline_perf",
+          "total_ms": 8946.82,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-27T06:15:19.343Z",
+      "session_id": "1785132851553095757122",
+      "user_message": "ロキソニンとイブとバファリンを画像付きで比較して",
+      "triage": {
+        "category": "Ask",
+        "subcategory": "general_other",
+        "confidence": 0.93
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785132851553095757122",
+        "total_ms": 8946.82,
+        "breakdown": {
+          "post_start": 0.3,
+          "parsed_message": 0.45,
+          "session_db_read": 0.51,
+          "after_get_session_db": 277.96,
+          "before_llm_setup": 556.47,
+          "before_security": 1112.52,
+          "after_security": 1484.15,
+          "before_emoji_route": 1485.29,
+          "before_triage": 1485.32,
+          "after_triage": 3928.66,
+          "safety_gate_done": 5016.46
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-27T06:15:22.354088",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1515.03,
+              "prompt_tokens": 3204,
+              "completion_tokens": 114,
+              "cost_jpy": 0.0995,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 1,
+          "llm_total_latency_ms": 1515.03,
+          "llm_session_cost_jpy": 0.0995,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "dd617c51-27e1-46fe-a4ad-b889e472ac3b",
+      "events": [
+        {
+          "ts": "2026-07-31T07:48:43.418Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-31T07:48:43.421Z",
+          "type": "received_message",
+          "text": "こんにちは"
+        },
+        {
+          "ts": "2026-07-31T07:48:45.063Z",
+          "type": "user_message",
+          "text": "こんにちは"
+        },
+        {
+          "ts": "2026-07-31T07:48:46.251Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 1.0
+        },
+        {
+          "ts": "2026-07-31T07:48:56.253Z",
+          "type": "concierge_intent",
+          "value": "greeting"
+        },
+        {
+          "ts": "2026-07-31T07:48:58.775Z",
+          "type": "pipeline_perf",
+          "total_ms": 15356.86,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-31T07:48:43.418Z",
+      "session_id": "1785484113183415974247",
+      "user_message": "こんにちは",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 1.0
+      },
+      "concierge_intent": "greeting",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785484113183415974247",
+        "total_ms": 15356.86,
+        "breakdown": {
+          "post_start": 3.15,
+          "parsed_message": 3.39,
+          "session_db_read": 3.66,
+          "after_get_session_db": 284.3,
+          "before_llm_setup": 606.81,
+          "before_security": 1163.76,
+          "after_security": 2064.63,
+          "before_emoji_route": 2172.82,
+          "before_triage": 2179.37,
+          "after_triage": 3109.03,
+          "safety_gate_done": 6714.79,
+          "concierge_resolve_intent_start": 12834.11,
+          "concierge_resolve_intent_end": 12834.26,
+          "concierge_build_payload_start": 12834.58,
+          "concierge_build_payload_end": 14781.98
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-31T07:48:48.673861",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1213.37,
+              "prompt_tokens": 361,
+              "completion_tokens": 28,
+              "cost_jpy": 0.0117,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-31T07:48:51.832501",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 859.1,
+              "prompt_tokens": 363,
+              "completion_tokens": 28,
+              "cost_jpy": 0.0117,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-31T07:48:53.594102",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1196.74,
+              "prompt_tokens": 363,
+              "completion_tokens": 28,
+              "cost_jpy": 0.0117,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-07-31T07:48:57.635536",
+              "model": "gpt-4o-mini",
+              "path": "concierge_agent.greeting",
+              "latency_ms": 1379.19,
+              "prompt_tokens": 865,
+              "completion_tokens": 60,
+              "cost_jpy": 0.0278,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 4,
+          "llm_total_latency_ms": 4648.4,
+          "llm_session_cost_jpy": 0.0629,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db",
+        "store_gate_cache_hit": true
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "f70cb59a-dc0a-430d-8187-e5e1f146dc0c",
+      "events": [
+        {
+          "ts": "2026-07-31T07:49:14.809Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-07-31T07:49:14.812Z",
+          "type": "received_message",
+          "text": "ロキソニンとイブとバファリンを画像付きで比較して"
+        },
+        {
+          "ts": "2026-07-31T07:49:16.507Z",
+          "type": "user_message",
+          "text": "ロキソニンとイブとバファリンを画像付きで比較して"
+        },
+        {
+          "ts": "2026-07-31T07:49:19.592Z",
+          "type": "triage",
+          "category": "Ask",
+          "subcategory": "general_other",
+          "confidence": 0.97
+        },
+        {
+          "ts": "2026-07-31T07:49:24.741Z",
+          "type": "pipeline_perf",
+          "total_ms": 9932.59,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-07-31T07:49:14.809Z",
+      "session_id": "1785132851553095757122",
+      "user_message": "ロキソニンとイブとバファリンを画像付きで比較して",
+      "triage": {
+        "category": "Ask",
+        "subcategory": "general_other",
+        "confidence": 0.97
+      },
+      "concierge_intent": null,
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785132851553095757122",
+        "total_ms": 9932.59,
+        "breakdown": {
+          "post_start": 3.14,
+          "parsed_message": 3.46,
+          "session_db_read": 3.8,
+          "after_get_session_db": 285.2,
+          "before_llm_setup": 611.73,
+          "before_security": 1172.09,
+          "after_security": 2195.9,
+          "before_emoji_route": 2322.52,
+          "before_triage": 2329.41,
+          "after_triage": 4783.64,
+          "safety_gate_done": 5985.25
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-07-31T07:49:18.773175",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1565.87,
+              "prompt_tokens": 3311,
+              "completion_tokens": 129,
+              "cost_jpy": 0.1032,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 1,
+          "llm_total_latency_ms": 1565.87,
+          "llm_session_cost_jpy": 0.1032,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "3c868d8a-6e6a-48eb-ab65-9073cb55f591",
+      "events": [
+        {
+          "ts": "2026-08-02T15:35:54.731Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-08-02T15:35:54.741Z",
+          "type": "received_message",
+          "text": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ"
+        },
+        {
+          "ts": "2026-08-02T15:36:01.125Z",
+          "type": "user_message",
+          "text": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ"
+        },
+        {
+          "ts": "2026-08-02T15:36:09.930Z",
+          "type": "pipeline_perf",
+          "total_ms": 62398.57,
+          "channel": "web"
+        },
+        {
+          "ts": "2026-08-02T15:36:12.030Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 0.99
+        },
+        {
+          "ts": "2026-08-02T15:36:25.739Z",
+          "type": "concierge_intent",
+          "value": "chitchat"
+        },
+        {
+          "ts": "2026-08-02T15:36:32.925Z",
+          "type": "pipeline_perf",
+          "total_ms": 38194.1,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-08-02T15:35:54.731Z",
+      "session_id": "1785684863923493244707",
+      "user_message": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 0.99
+      },
+      "concierge_intent": "chitchat",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785684950122867517003",
+        "total_ms": 38194.1,
+        "breakdown": {
+          "post_start": 9.75,
+          "parsed_message": 11.65,
+          "session_db_read": 12.14,
+          "after_get_session_db": 497.64,
+          "before_llm_setup": 1699.32,
+          "before_security": 2605.54,
+          "after_security": 10404.15,
+          "before_emoji_route": 11404.04,
+          "before_triage": 11594.82,
+          "after_triage": 17698.13,
+          "safety_gate_done": 20099.7,
+          "after_triage_follow_ups": 20294.86,
+          "after_counseling_flow": 21097.87,
+          "moderation_done": 21097.91,
+          "before_medicine_qa_route": 21497.72,
+          "after_medicine_qa_route": 26297.69,
+          "before_orchestrator": 29214.98,
+          "concierge_resolve_intent_start": 31007.34,
+          "concierge_resolve_intent_end": 31007.37,
+          "concierge_build_payload_start": 31092.91,
+          "concierge_build_payload_end": 37103.59
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-08-02T15:36:09.131665",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1581.48,
+              "prompt_tokens": 3121,
+              "completion_tokens": 91,
+              "cost_jpy": 0.0964,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:11.232330",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage2",
+              "latency_ms": 1302.58,
+              "prompt_tokens": 3422,
+              "completion_tokens": 70,
+              "cost_jpy": 0.1048,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:17.827366",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1186.07,
+              "prompt_tokens": 400,
+              "completion_tokens": 45,
+              "cost_jpy": 0.0133,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:20.132134",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1503.94,
+              "prompt_tokens": 400,
+              "completion_tokens": 45,
+              "cost_jpy": 0.0133,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:26.939716",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.chitchat",
+              "latency_ms": 1091.5,
+              "prompt_tokens": 766,
+              "completion_tokens": 38,
+              "cost_jpy": 0.0241,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 5,
+          "llm_total_latency_ms": 6665.57,
+          "llm_session_cost_jpy": 0.2519,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    }
+  ]
+}

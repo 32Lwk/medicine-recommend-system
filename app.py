@@ -85,6 +85,20 @@ def _prepare_local_database_async() -> None:
     threading.Thread(target=_run, daemon=True, name='local-db-prep').start()
 
 
+def _prepare_local_rag_warmup_async() -> None:
+    """Local RAG BM25 を uvicorn lifespan より早く preload（初回推奨の cold start 短縮）。"""
+
+    def _run() -> None:
+        try:
+            from src.services.local_rag_retrieve import warmup_local_rag_index
+
+            warmup_local_rag_index()
+        except Exception as exc:
+            logger.warning("Local RAG warmup をスキップしました: %s", exc)
+
+    threading.Thread(target=_run, daemon=True, name='local-rag-warmup').start()
+
+
 def _resolve_port() -> int:
     from src.utils.port_utils import find_free_port, is_port_in_use
 
@@ -181,17 +195,22 @@ if __name__ == '__main__':
         raise
 
     _prepare_local_database_async()
+    _prepare_local_rag_warmup_async()
     port = _resolve_port()
     from config.app_config import is_development_runtime
 
-    # 開発時は reload 既定 ON（Windows でチャット中に再起動するとハングするため UVICORN_RELOAD=0 で無効化可）
-    reload_env = os.getenv('UVICORN_RELOAD', '').strip().lower()
-    if reload_env in ('1', 'true', 'yes'):
-        reload = True
-    elif reload_env in ('0', 'false', 'no'):
-        reload = False
-    else:
-        reload = is_development_runtime()
+    from src.utils.dev_server import (
+        resolve_uvicorn_graceful_shutdown_sec,
+        resolve_uvicorn_reload,
+        run_uvicorn_dev,
+    )
+
+    reload = resolve_uvicorn_reload(is_development=is_development_runtime())
+    if os.name == 'nt' and not reload:
+        logger.info(
+            "Windows では UVICORN_RELOAD 未指定時は reload を無効にしています "
+            "（Ctrl+C 停止・子プロセス残留対策）。有効化: UVICORN_RELOAD=1"
+        )
     host = os.getenv('ASGI_HOST', '0.0.0.0')
     logger.info(f"🚀 Starting FastAPI (uvicorn) on port {port} (reload={reload})...")
     logger.info(
@@ -222,4 +241,9 @@ if __name__ == '__main__':
             '*.pyc',
             '*.jsonl',
         ]
-    uvicorn.run('main:app', **uvicorn_kwargs)
+    graceful_shutdown_sec = resolve_uvicorn_graceful_shutdown_sec()
+    run_uvicorn_dev(
+        'main:app',
+        timeout_graceful_shutdown=graceful_shutdown_sec,
+        **uvicorn_kwargs,
+    )

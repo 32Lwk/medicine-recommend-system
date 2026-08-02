@@ -5,6 +5,7 @@ import json
 import logging
 import math
 import re
+import threading
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
@@ -214,6 +215,13 @@ class BM25Index:
 
 
 _INDEX: Dict[str, BM25Index] = {}
+_INDEX_LOCK = threading.Lock()
+
+
+def is_bm25_index_ready(namespace: str) -> bool:
+    """BM25 index が構築済みか（構築中は False）。"""
+    with _INDEX_LOCK:
+        return namespace in _INDEX
 
 
 from src.services.local_rag_query import tokenize_for_search
@@ -589,7 +597,13 @@ def _build_concierge_chunks() -> List[IndexedChunk]:
 
 
 def get_bm25_index(namespace: str) -> BM25Index:
-    if namespace not in _INDEX:
+    cached = _INDEX.get(namespace)
+    if cached is not None:
+        return cached
+    with _INDEX_LOCK:
+        cached = _INDEX.get(namespace)
+        if cached is not None:
+            return cached
         idx = BM25Index()
         if namespace == "medicine":
             idx.build(_build_medicine_chunks())
@@ -599,11 +613,12 @@ def get_bm25_index(namespace: str) -> BM25Index:
             idx.build([])
         _INDEX[namespace] = idx
         logger.info("Local RAG BM25 index %s: %d chunks", namespace, len(idx.chunks))
-    return _INDEX[namespace]
+        return idx
 
 
 def clear_bm25_index() -> None:
-    _INDEX.clear()
+    with _INDEX_LOCK:
+        _INDEX.clear()
 
 
 def concierge_uri_prefixes(intent: str) -> Optional[Tuple[str, ...]]:

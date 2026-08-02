@@ -136,8 +136,9 @@ def test_structured_qa_sections_render_html_not_raw_tags():
         meds,
         "外用ののどスプレーが候補です。",
     )
-    assert "<p>" not in parsed["medicine_details"]
-    html = safe_format_qa_html(parsed["medicine_details"])
+    assert "ui-qa-product-line" in parsed["medicine_details"]
+    html = parsed["medicine_details"]
+    assert '<p class="ui-qa-product-line">' in html
     assert "<strong>スカイブブロンのどスプレー</strong>" in html
     assert "&lt;p&gt;" not in html
 

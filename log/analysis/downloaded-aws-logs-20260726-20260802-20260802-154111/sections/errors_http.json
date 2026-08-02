@@ -1,0 +1,850 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 224,
+    "by_status": {
+      "400": 8,
+      "404": 215,
+      "405": 1
+    },
+    "by_path": {
+      "UNKNOWN /.env (404)": 8,
+      "UNKNOWN /v1/speech (400)": 8,
+      "UNKNOWN /wp-admin/admin-ajax.php (404)": 7,
+      "UNKNOWN /.env.local (404)": 6,
+      "UNKNOWN /.env.production (404)": 6,
+      "UNKNOWN /.env.development (404)": 4,
+      "UNKNOWN /.env.staging (404)": 4,
+      "UNKNOWN /.env.old (404)": 4,
+      "UNKNOWN /.env.save (404)": 4,
+      "UNKNOWN /.env.production.local (404)": 4,
+      "UNKNOWN /config/.env (404)": 4,
+      "UNKNOWN /app/.env (404)": 4,
+      "UNKNOWN /api/.env (404)": 4,
+      "UNKNOWN /backend/.env (404)": 4,
+      "UNKNOWN /script/.env (404)": 4,
+      "UNKNOWN /public/.env (404)": 4,
+      "UNKNOWN /storage/.env (404)": 4,
+      "UNKNOWN /laravel/.env (404)": 4,
+      "UNKNOWN /app/.env.local (404)": 4,
+      "UNKNOWN /config.php (404)": 4,
+      "UNKNOWN /.env.development.local (404)": 3,
+      "UNKNOWN /src/.env (404)": 3,
+      "UNKNOWN /data/.env (404)": 3,
+      "UNKNOWN /server/.env (404)": 3,
+      "UNKNOWN /secrets.json (404)": 3,
+      "UNKNOWN /phpinfo.php (404)": 3,
+      "UNKNOWN /wp-config.php.old (404)": 3,
+      "UNKNOWN /db.sql (404)": 3,
+      "UNKNOWN /appsettings.Development.json (404)": 3,
+      "UNKNOWN /docker-compose.yaml (404)": 3
+    },
+    "slow_endpoints_ge_5s": {},
+    "samples": [
+      {
+        "timestamp": "2026-07-26T15:51:26.751Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:51:31.979Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:52:13.836Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.git/config",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:52:24.347Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:52:35.348Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:52:38.762Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.local",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:52:43.468Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.local",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:52:50.961Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.production",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:52:53.888Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.production",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:54:53.431Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:54:58.362Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:55:04.280Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.local",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:55:07.676Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.local",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:55:18.694Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.production",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:55:21.566Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.production",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:55:31.607Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.development",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:55:43.061Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.development",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:55:49.433Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.staging",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:55:51.711Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.staging",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:56:11.148Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.old",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:56:13.838Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.old",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:56:37.605Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.save",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:56:48.166Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.save",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:56:56.998Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.production.local",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:57:05.470Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.production.local",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:57:15.176Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.development.local",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:57:23.160Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.env.development.local",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:57:34.715Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/config/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:57:44.210Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/config/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:57:54.597Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/app/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:57:57.756Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/app/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:58:01.461Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:58:09.898Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:58:21.661Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/backend/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:58:32.697Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/backend/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:58:46.121Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/script/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:58:58.565Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/script/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:59:01.541Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/public/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:59:14.575Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/public/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:59:17.322Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/storage/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:59:32.804Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/storage/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T15:59:45.394Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/src/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:00:03.975Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/laravel/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:00:17.530Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/laravel/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:00:33.841Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/data/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:00:50.036Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/server/.env",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:01:03.063Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/.env.local",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:01:20.638Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/app/.env.local",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:01:22.617Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/app/.env.local",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:01:55.441Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/.aws/config",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:02:12.852Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/config.php",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:02:14.262Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/config.php",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:02:16.515Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/wp-config.php",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:02:42.036Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/config.json",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:03:06.059Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/secrets.json",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:03:12.359Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/secrets.json",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:03:27.357Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/keys.json",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:03:41.962Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/keys.json",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:04:02.185Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/aws.json",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:04:17.038Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/config/aws.json",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:04:28.311Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/config/aws.json",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:04:46.631Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/phpinfo.php",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:04:54.164Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/phpinfo.php",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:05:07.812Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/info.php",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:05:23.667Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/info.php",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:06:12.950Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/config/services.php",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:06:52.460Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/wp-json/gravitysmtp/v1/tests/mock-data",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:07:31.225Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/%40fs/.env.local",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:07:47.255Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/%40fs/.env.local",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:08:21.642Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/actuator/configprops",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:10:33.535Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/wp-config.php.old",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:11:14.885Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/wp-config.txt",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:12:28.548Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/db.sql",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:12:36.386Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/db.sql",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:12:59.635Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/dump.sql",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:13:26.742Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/database.sql",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:14:19.670Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/configuration.php",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:15:45.137Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/appsettings.Development.json",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:15:49.789Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/appsettings.Development.json",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-07-26T16:16:17.968Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/docker-compose.yml",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 0,
+    "top_patterns": [],
+    "samples": []
+  }
+}

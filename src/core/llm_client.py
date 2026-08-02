@@ -25,6 +25,10 @@ logger = logging.getLogger(__name__)
 
 _executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="llm_async")
 
+
+def shutdown_llm_executor() -> None:
+    _executor.shutdown(wait=False, cancel_futures=True)
+
 _COST_PER_1K: Dict[str, float] = {
     "gpt-4o-mini": 0.03,
     "gpt-4o": 0.15,

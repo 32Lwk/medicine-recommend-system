@@ -1,0 +1,2284 @@
+{
+  "counseling_detail_count": 6,
+  "counseling_dedup_removed": 0,
+  "counseling_details_exported": 6,
+  "counseling_details": [
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-07-27T06:14:58.539295",
+      "session_id": "1785132851553095757122",
+      "user_input": "やあ",
+      "response": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話しできますよ。何かお困りのことがあれば、ぜひ教えてくださいね！",
+      "conversation_history": [
+        {
+          "type": "user",
+          "content": "やあ",
+          "timestamp": "2026-07-27T15:14:49+09:00",
+          "uuid": "450e8249-8883-4048-b781-388670c6e3bd"
+        }
+      ],
+      "concierge_intent": "greeting",
+      "concierge_intent_source": "execution_sync",
+      "llm_used": true
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-07-27T06:15:28.289940",
+      "session_id": "1785132851553095757122",
+      "user_input": "ロキソニンとイブとバファリンを画像付きで比較して",
+      "response": "ロキソニンS、バファリンA、イブのパッケージ画像です。ロキソニンSはロキソプロフェンナトリウム水和物、バファリンAはアスピリン 合成ヒドロタルサイト、イブはイブプロフェンを主成分とする解熱鎮痛薬です。",
+      "conversation_history": [
+        {
+          "type": "user",
+          "uuid": "450e8249-8883-4048-b781-388670c6e3bd",
+          "content": "やあ",
+          "timestamp": "2026-07-27T15:14:49+09:00"
+        },
+        {
+          "type": "bot",
+          "uuid": "3d395ef9-bdaf-41d1-bb07-164a45bdaee4",
+          "content": "sage_status",
+          "greeting": true,
+          "concierge": true,
+          "diagnosis": {
+            "kind": "concierge_greeting",
+            "hints": [],
+            "title": "ご挨拶",
+            "layout": "plain",
+            "render": "sage_status",
+            "actions": [],
+            "message": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話しできますよ。何かお困りのことがあれば、ぜひ教えてくださいね！",
+            "variant": "notice",
+            "sections": [],
+            "subtitle": "",
+            "show_feedback": false,
+            "schema_version": 1,
+            "show_bug_report": false,
+            "feedback_context": {
+              "ai_response": "concierge:greeting",
+              "user_message": "やあ",
+              "concierge_intent": "greeting"
+            },
+            "suggested_symptoms": []
+          },
+          "timestamp": "2026-07-27T15:14:58+09:00",
+          "content_format": "text",
+          "concierge_intent": "greeting"
+        },
+        {
+          "type": "user",
+          "uuid": "95e75cdf-d342-4db9-b418-438a5d232eb1",
+          "content": "ロキソニンとイブとバファリンを画像付きで比較して",
+          "timestamp": "2026-07-27T15:15:24+09:00"
+        },
+        {
+          "type": "bot",
+          "content": "sage_qa",
+          "diagnosis": {
+            "kind": "medicine_qa",
+            "hints": [],
+            "title": "医薬品相談回答",
+            "layout": "card",
+            "render": "sage_qa",
+            "actions": [],
+            "message": "ロキソニンS、バファリンA、イブのパッケージ画像です。ロキソニンSはロキソプロフェンナトリウム水和物、バファリンAはアスピリン 合成ヒドロタルサイト、イブはイブプロフェンを主成分とする解熱鎮痛薬です。",
+            "variant": "notice",
+            "sections": [
+              {
+                "html": "<div class=\"ui-qa-product-images app-scrollbar ui-qa-product-images--count-3\"><figure class=\"ui-qa-product-images__item\"><div class=\"ui-med-image ui-med-image--card\"><img src=\"https://images.yutok.dev/otc/%E3%83%AD%E3%82%AD%E3%82%BD%E3%83%8B%E3%83%B3S.webp?v=7ab95406\" alt=\"ロキソニンS\" loading=\"lazy\" decoding=\"async\" onerror=\"this.onerror=null;this.src='/static/line/medicine-noimage-hero.png';this.closest('.ui-med-image').classList.add('ui-med-image--placeholder');\"></div><figcaption class=\"ui-qa-product-images__caption\">ロキソニンS</figcaption></figure><figure class=\"ui-qa-product-images__item\"><div class=\"ui-med-image ui-med-image--card\"><img src=\"https://images.yutok.dev/otc/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3A.webp?v=0f83fcf5\" alt=\"バファリンA\" loading=\"lazy\" decoding=\"async\" onerror=\"this.onerror=null;this.src='/static/line/medicine-noimage-hero.png';this.closest('.ui-med-image').classList.add('ui-med-image--placeholder');\"></div><figcaption class=\"ui-qa-product-images__caption\">バファリンA</figcaption></figure><figure class=\"ui-qa-product-images__item\"><div class=\"ui-med-image ui-med-image--card\"><img src=\"https://images.yutok.dev/otc/%E3%82%A4%E3%83%96A%E9%8C%A0.webp?v=56b704d9\" alt=\"イブ\" loading=\"lazy\" decoding=\"async\" onerror=\"this.onerror=null;this.src='/static/line/medicine-noimage-hero.png';this.closest('.ui-med-image').classList.add('ui-med-image--placeholder');\"></div><figcaption class=\"ui-qa-product-images__caption\">イブ</figcaption></figure></div>",
+                "items": [],
+                "title": "製品画像",
+                "commit": ""
+              }
+            ],
+            "subtitle": "",
+            "show_feedback": true,
+            "schema_version": 1,
+            "show_bug_report": false,
+            "feedback_context": {
+              "ai_response": "ロキソニンS、バファリンA、イブのパッケージ画像です。ロキソニンSはロキソプロフェンナトリウム水和物、バファリンAはアスピリン 合成ヒドロタルサイト、イブはイブプロフェンを主成分とする解熱鎮痛薬です。",
+              "user_message": "ロキソニンとイブとバファリンを画像付きで比較して"
+            },
+            "suggested_symptoms": []
+          },
+          "timestamp": "2026-07-27T15:15:27+09:00",
+          "message_id": "msg_1785132927429_7821"
+        }
+      ]
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-07-31T07:48:58.204000",
+      "session_id": "1785484113183415974247",
+      "user_input": "こんにちは",
+      "response": "こんにちは！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話ししていただければ、適切な市販薬をご案内いたします。どうぞお気軽にご相談ください。",
+      "conversation_history": [
+        {
+          "type": "user",
+          "content": "こんにちは",
+          "timestamp": "2026-07-31T16:48:50+09:00",
+          "uuid": "588d2225-3fe4-46ea-90ff-c9de1281e532"
+        }
+      ],
+      "concierge_intent": "greeting",
+      "concierge_intent_source": "execution_sync",
+      "llm_used": true
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-07-31T07:49:24.736336",
+      "session_id": "1785132851553095757122",
+      "user_input": "ロキソニンとイブとバファリンを画像付きで比較して",
+      "response": "ロキソニンS、バファリンA、イブのパッケージ画像です。ロキソニンSはロキソプロフェンナトリウム水和物、バファリンAはアスピリン 合成ヒドロタルサイト、イブはイブプロフェンを主成分とする解熱鎮痛薬です。",
+      "conversation_history": [
+        {
+          "type": "user",
+          "uuid": "450e8249-8883-4048-b781-388670c6e3bd",
+          "content": "やあ",
+          "timestamp": "2026-07-27T15:14:49+09:00"
+        },
+        {
+          "type": "bot",
+          "uuid": "3d395ef9-bdaf-41d1-bb07-164a45bdaee4",
+          "content": "sage_status",
+          "greeting": true,
+          "concierge": true,
+          "diagnosis": {
+            "kind": "concierge_greeting",
+            "hints": [],
+            "title": "ご挨拶",
+            "layout": "plain",
+            "render": "sage_status",
+            "actions": [],
+            "message": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話しできますよ。何かお困りのことがあれば、ぜひ教えてくださいね！",
+            "variant": "notice",
+            "sections": [],
+            "subtitle": "",
+            "show_feedback": false,
+            "schema_version": 1,
+            "show_bug_report": false,
+            "feedback_context": {
+              "ai_response": "concierge:greeting",
+              "user_message": "やあ",
+              "concierge_intent": "greeting"
+            },
+            "suggested_symptoms": []
+          },
+          "timestamp": "2026-07-27T15:14:58+09:00",
+          "content_format": "text",
+          "concierge_intent": "greeting"
+        },
+        {
+          "type": "user",
+          "uuid": "95e75cdf-d342-4db9-b418-438a5d232eb1",
+          "content": "ロキソニンとイブとバファリンを画像付きで比較して",
+          "timestamp": "2026-07-27T15:15:24+09:00"
+        },
+        {
+          "type": "bot",
+          "content": "sage_qa",
+          "diagnosis": {
+            "kind": "medicine_qa",
+            "hints": [],
+            "title": "医薬品相談回答",
+            "layout": "card",
+            "render": "sage_qa",
+            "actions": [],
+            "message": "ロキソニンS、バファリンA、イブのパッケージ画像です。ロキソニンSはロキソプロフェンナトリウム水和物、バファリンAはアスピリン 合成ヒドロタルサイト、イブはイブプロフェンを主成分とする解熱鎮痛薬です。",
+            "variant": "notice",
+            "sections": [
+              {
+                "html": "<div class=\"ui-qa-product-images app-scrollbar ui-qa-product-images--count-3\"><figure class=\"ui-qa-product-images__item\"><div class=\"ui-med-image ui-med-image--card\"><img src=\"https://images.yutok.dev/otc/%E3%83%AD%E3%82%AD%E3%82%BD%E3%83%8B%E3%83%B3S.webp?v=7ab95406\" alt=\"ロキソニンS\" loading=\"lazy\" decoding=\"async\" onerror=\"this.onerror=null;this.src='/static/line/medicine-noimage-hero.png';this.closest('.ui-med-image').classList.add('ui-med-image--placeholder');\"></div><figcaption class=\"ui-qa-product-images__caption\">ロキソニンS</figcaption></figure><figure class=\"ui-qa-product-images__item\"><div class=\"ui-med-image ui-med-image--card\"><img src=\"https://images.yutok.dev/otc/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3A.webp?v=0f83fcf5\" alt=\"バファリンA\" loading=\"lazy\" decoding=\"async\" onerror=\"this.onerror=null;this.src='/static/line/medicine-noimage-hero.png';this.closest('.ui-med-image').classList.add('ui-med-image--placeholder');\"></div><figcaption class=\"ui-qa-product-images__caption\">バファリンA</figcaption></figure><figure class=\"ui-qa-product-images__item\"><div class=\"ui-med-image ui-med-image--card\"><img src=\"https://images.yutok.dev/otc/%E3%82%A4%E3%83%96A%E9%8C%A0.webp?v=56b704d9\" alt=\"イブ\" loading=\"lazy\" decoding=\"async\" onerror=\"this.onerror=null;this.src='/static/line/medicine-noimage-hero.png';this.closest('.ui-med-image').classList.add('ui-med-image--placeholder');\"></div><figcaption class=\"ui-qa-product-images__caption\">イブ</figcaption></figure></div>",
+                "items": [],
+                "title": "製品画像",
+                "commit": ""
+              }
+            ],
+            "subtitle": "",
+            "show_feedback": true,
+            "schema_version": 1,
+            "show_bug_report": false,
+            "feedback_context": {
+              "ai_response": "ロキソニンS、バファリンA、イブのパッケージ画像です。ロキソニンSはロキソプロフェンナトリウム水和物、バファリンAはアスピリン 合成ヒドロタルサイト、イブはイブプロフェンを主成分とする解熱鎮痛薬です。",
+              "user_message": "ロキソニンとイブとバファリンを画像付きで比較して"
+            },
+            "suggested_symptoms": []
+          },
+          "timestamp": "2026-07-27T15:15:27+09:00",
+          "message_id": "msg_1785132927429_7821"
+        },
+        {
+          "type": "user",
+          "uuid": "0206e40e-e2f1-4910-815f-4f5d4a0c961c",
+          "content": "ロキソニンとイブとバファリンを画像付きで比較して",
+          "timestamp": "2026-07-31T16:49:20+09:00"
+        },
+        {
+          "type": "bot",
+          "content": "sage_qa",
+          "diagnosis": {
+            "kind": "medicine_qa",
+            "hints": [],
+            "title": "医薬品相談回答",
+            "layout": "card",
+            "render": "sage_qa",
+            "actions": [],
+            "message": "ロキソニンS、バファリンA、イブのパッケージ画像です。ロキソニンSはロキソプロフェンナトリウム水和物、バファリンAはアスピリン 合成ヒドロタルサイト、イブはイブプロフェンを主成分とする解熱鎮痛薬です。",
+            "variant": "notice",
+            "sections": [
+              {
+                "html": "<div class=\"ui-qa-product-images app-scrollbar ui-qa-product-images--count-3\"><figure class=\"ui-qa-product-images__item\"><div class=\"ui-med-image ui-med-image--card\"><img src=\"https://images.yutok.dev/otc/%E3%83%AD%E3%82%AD%E3%82%BD%E3%83%8B%E3%83%B3S.webp?v=7ab95406\" alt=\"ロキソニンS\" loading=\"lazy\" decoding=\"async\" onerror=\"this.onerror=null;this.src='/static/line/medicine-noimage-hero.png';this.closest('.ui-med-image').classList.add('ui-med-image--placeholder');\"></div><figcaption class=\"ui-qa-product-images__caption\">ロキソニンS</figcaption></figure><figure class=\"ui-qa-product-images__item\"><div class=\"ui-med-image ui-med-image--card\"><img src=\"https://images.yutok.dev/otc/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3A.webp?v=0f83fcf5\" alt=\"バファリンA\" loading=\"lazy\" decoding=\"async\" onerror=\"this.onerror=null;this.src='/static/line/medicine-noimage-hero.png';this.closest('.ui-med-image').classList.add('ui-med-image--placeholder');\"></div><figcaption class=\"ui-qa-product-images__caption\">バファリンA</figcaption></figure><figure class=\"ui-qa-product-images__item\"><div class=\"ui-med-image ui-med-image--card\"><img src=\"https://images.yutok.dev/otc/%E3%82%A4%E3%83%96A%E9%8C%A0.webp?v=56b704d9\" alt=\"イブ\" loading=\"lazy\" decoding=\"async\" onerror=\"this.onerror=null;this.src='/static/line/medicine-noimage-hero.png';this.closest('.ui-med-image').classList.add('ui-med-image--placeholder');\"></div><figcaption class=\"ui-qa-product-images__caption\">イブ</figcaption></figure></div>",
+                "items": [],
+                "title": "製品画像",
+                "commit": ""
+              }
+            ],
+            "subtitle": "",
+            "show_feedback": true,
+            "schema_version": 1,
+            "show_bug_report": false,
+            "feedback_context": {
+              "ai_response": "ロキソニンS、バファリンA、イブのパッケージ画像です。ロキソニンSはロキソプロフェンナトリウム水和物、バファリンAはアスピリン 合成ヒドロタルサイト、イブはイブプロフェンを主成分とする解熱鎮痛薬です。",
+              "user_message": "ロキソニンとイブとバファリンを画像付きで比較して"
+            },
+            "suggested_symptoms": []
+          },
+          "timestamp": "2026-07-31T16:49:23+09:00",
+          "message_id": "msg_1785484163883_8278"
+        }
+      ]
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-08-02T15:36:09.817209",
+      "session_id": "1785684863923493244707",
+      "user_input": "アレルギー症状が出た",
+      "response": "sage_reco",
+      "conversation_history": [
+        {
+          "type": "user",
+          "uuid": "2dba02b0-0bac-4948-a070-69075a4b013c",
+          "content": "アレルギー症状が出た",
+          "timestamp": "2026-08-03T00:35:26+09:00"
+        },
+        {
+          "type": "bot",
+          "content": "sage_reco",
+          "diagnosis": {
+            "error": {
+              "type": "no_candidates",
+              "title": "医薬品が見つかりませんでした",
+              "message": "該当する医薬品が見つかりませんでした",
+              "severity": "warn",
+              "recommendations": [
+                "症状をより具体的に記述してください（例：痛みの部位、程度、継続期間など）",
+                "症状が1週間以上続いている場合は、医療機関を受診することをお勧めします",
+                "重症の症状がある場合は、速やかに医師の診察を受けてください"
+              ]
+            },
+            "render": "sage_reco",
+            "symptoms": [],
+            "show_feedback": true,
+            "influenza_risk": false,
+            "schema_version": 1,
+            "usage_sections": [],
+            "feedback_context": {
+              "ai_response": "該当する医薬品が見つかりませんでした",
+              "user_message": "アレルギー症状が出た"
+            },
+            "influenza_reason": "",
+            "missing_priority": "critical",
+            "age_policy_notice": "",
+            "critical_questions": [],
+            "doctor_consultation": "",
+            "personalized_advice": "",
+            "severity_escalation": "",
+            "additional_questions": [
+              "年齢を教えてください。（医薬品の適切な選択に必要です）",
+              "性別を教えてください。（男性/女性）",
+              "症状はいつ頃から続いていますか？（例：昨日から、3日前から）",
+              "アレルギーはありますか？（薬物アレルギー、食物アレルギーなど）",
+              "現在服用中の薬はありますか？",
+              "持病や既往歴はありますか？"
+            ],
+            "recommended_medicines": []
+          },
+          "timestamp": "2026-08-02T15:36:07.127532"
+        }
+      ]
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-08-02T15:36:31.846921",
+      "session_id": "1785684950122867517003",
+      "user_input": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ",
+      "response": "That sounds great! 🤘  \nKeep it up, and if you have any symptoms that concern you or are considering any over-the-counter medications, feel free to let me know anytime.",
+      "conversation_history": [
+        {
+          "type": "user",
+          "content": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ",
+          "timestamp": "2026-08-03T00:36:15+09:00",
+          "uuid": "57a37a05-6331-4adb-b020-5e51b35c667d"
+        }
+      ],
+      "concierge_intent": "chitchat",
+      "concierge_intent_source": "execution_sync",
+      "llm_used": true
+    }
+  ],
+  "security_flags": [
+    {
+      "timestamp": "2026-07-27T06:14:44.250Z",
+      "message": "2026-07-27 06:14:44,250 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-07-27T06:15:20.458Z",
+      "message": "2026-07-27 06:15:20,458 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-07-31T07:48:45.062Z",
+      "message": "2026-07-31 07:48:45,061 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-07-31T07:49:16.506Z",
+      "message": "2026-07-31 07:49:16,505 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-07-31T07:49:31.582Z",
+      "message": "2026-07-31 07:49:31,582 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-07-31T07:49:59.162Z",
+      "message": "2026-07-31 07:49:59,162 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-02T15:35:14.618Z",
+      "message": "2026-08-02 15:35:14,618 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-02T15:35:55.124Z",
+      "message": "2026-08-02 15:35:55,123 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-02T15:35:56.245Z",
+      "message": "2026-08-02 15:35:56,244 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-02T15:36:01.042Z",
+      "message": "2026-08-02 15:36:01,042 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-02T15:37:49.539Z",
+      "message": "2026-08-02 15:37:49,539 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-02T15:38:23.916Z",
+      "message": "2026-08-02 15:38:23,836 - INFO - Security validation: score=0, safe=True, warnings=0"
+    }
+  ],
+  "session_conversations": {
+    "session_count": 4,
+    "exported_session_count": 4,
+    "counseling_session_count": 4,
+    "trace_only_session_count": 0,
+    "chat_flow_trace_count": 8,
+    "sessions": [
+      {
+        "session_id": "1785684950122867517003",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-02T15:36:31.846921",
+          "end": "2026-08-02T15:36:31.846921"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ"
+          },
+          {
+            "role": "assistant",
+            "content": "That sounds great! 🤘 Keep it up, and if you have any symptoms that concern you or are considering any over-the-counter medications, feel free to let me know anytime."
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-02T15:36:31.846921",
+            "user_input": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ",
+            "response_preview": "That sounds great! 🤘 Keep it up, and if you have any symptoms that concern you or are considering any over-the-counter medications, feel free to let me know anytime.",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {},
+            "timing": {
+              "user_message_at": null,
+              "response_at": "2026-08-02T15:36:31.846921",
+              "e2e_ms": null,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": null,
+              "phase_summary_ms": {},
+              "breakdown_ms": {},
+              "llm_call_count": 0,
+              "llm_total_latency_ms": null,
+              "llm_session_cost_jpy": null,
+              "llm_calls": []
+            },
+            "conversation_history": [],
+            "heuristic_signals": [
+              {
+                "type": "greeting_to_non_greeting",
+                "severity": "warning",
+                "cause_hypothesis": "非挨拶入力に挨拶テンプレート応答",
+                "evidence": "input='🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ' labels=['general']"
+              }
+            ],
+            "issues": [
+              {
+                "type": "greeting_to_non_greeting",
+                "severity": "warning",
+                "cause_hypothesis": "非挨拶入力に挨拶テンプレート応答",
+                "evidence": "input='🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ' labels=['general']"
+              }
+            ],
+            "llm_review_required": true,
+            "turn_grade": "warning"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 1,
+          "issue_count": 1,
+          "critical_count": 0,
+          "warning_count": 1,
+          "issue_type_counts": {
+            "greeting_to_non_greeting": 1
+          },
+          "overall_grade": "acceptable_with_issues",
+          "strengths": [],
+          "weaknesses": [
+            "greeting_to_non_greeting: 1件"
+          ],
+          "summary": "session=1785684950122867517003 turns=1 grade=acceptable_with_issues issues=[greeting_to_non_greeting×1] first='🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ' last='🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1785132851553095757122",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-07-27T06:14:59.105820Z",
+          "end": "2026-07-27T06:15:28.289940"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "やあ"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_status"
+          },
+          {
+            "role": "user",
+            "content": "ロキソニンとイブとバファリンを画像付きで比較して"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_qa"
+          },
+          {
+            "role": "user",
+            "content": "やあ"
+          },
+          {
+            "role": "assistant",
+            "content": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話しできますよ。何かお困りのことがあれば、ぜひ教えてくださいね！"
+          },
+          {
+            "role": "user",
+            "content": "ロキソニンとイブとバファリンを画像付きで比較して"
+          },
+          {
+            "role": "assistant",
+            "content": "ロキソニンS、バファリンA、イブのパッケージ画像です。ロキソニンSはロキソプロフェンナトリウム水和物、バファリンAはアスピリン 合成ヒドロタルサイト、イブはイブプロフェンを主成分とする解熱鎮痛薬です。"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-07-27T06:14:59.105820Z",
+            "user_input": "やあ",
+            "response_preview": "sage_status",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "conversation_history",
+            "input_labels": [
+              "greeting"
+            ],
+            "routing": {
+              "trace_id": "8e7bc60e-3268-4e6a-bc89-97fbe44c84eb",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 1.0
+              },
+              "concierge_intent": "greeting",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 16537.82,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 973.6,
+                "triage_ms": 960.1,
+                "post_to_security_ms": 2161.4,
+                "safety_gate_ms": 5248.4,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 1814.0,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 4
+            },
+            "timing": {
+              "user_message_at": "2026-07-27T06:14:42.568Z",
+              "response_at": "2026-07-27T06:14:59.105820Z",
+              "e2e_ms": 16537.8,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 16537.82,
+              "phase_summary_ms": {
+                "security_ms": 973.6,
+                "triage_ms": 960.1,
+                "post_to_security_ms": 2161.4,
+                "safety_gate_ms": 5248.4,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 1814.0,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 3.4,
+                "parsed_message": 3.67,
+                "session_db_read": 4.22,
+                "after_get_session_db": 282.33,
+                "before_llm_setup": 613.1,
+                "before_security": 1191.19,
+                "after_security": 2164.8,
+                "before_emoji_route": 2275.32,
+                "before_triage": 2283.01,
+                "after_triage": 3243.14,
+                "safety_gate_done": 7413.23,
+                "before_orchestrator": 14017.31,
+                "concierge_resolve_intent_start": 14152.47,
+                "concierge_resolve_intent_end": 14152.49,
+                "concierge_build_payload_start": 14152.91,
+                "concierge_build_payload_end": 15966.95
+              },
+              "llm_call_count": 4,
+              "llm_total_latency_ms": 5329.870000000001,
+              "llm_session_cost_jpy": 0.064,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-07-27T06:14:48.133008",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1393.9,
+                  "prompt_tokens": 362,
+                  "completion_tokens": 40,
+                  "cost_jpy": 0.0121,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-07-27T06:14:52.170760",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1343.69,
+                  "prompt_tokens": 365,
+                  "completion_tokens": 39,
+                  "cost_jpy": 0.0121,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-07-27T06:14:54.073606",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1342.59,
+                  "prompt_tokens": 365,
+                  "completion_tokens": 40,
+                  "cost_jpy": 0.0122,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-07-27T06:14:57.974296",
+                  "model": "gpt-4o-mini",
+                  "path": "concierge_agent.greeting",
+                  "latency_ms": 1249.69,
+                  "prompt_tokens": 866,
+                  "completion_tokens": 55,
+                  "cost_jpy": 0.0276,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-07-27T06:15:28.289820Z",
+            "user_input": "ロキソニンとイブとバファリンを画像付きで比較して",
+            "response_preview": "sage_qa",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "conversation_history",
+            "input_labels": [
+              "image_generation"
+            ],
+            "routing": {
+              "trace_id": "24715cc4-f285-44ea-9f2c-4ef170e8800b",
+              "triage": {
+                "category": "Ask",
+                "subcategory": "general_other",
+                "confidence": 0.93
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 8946.82,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 371.6,
+                "triage_ms": 2443.3,
+                "post_to_security_ms": 1483.9,
+                "safety_gate_ms": 3532.3,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-07-27T06:15:19.343Z",
+              "response_at": "2026-07-27T06:15:28.289820Z",
+              "e2e_ms": 8946.8,
+              "since_previous_turn_ms": 29184.0,
+              "pipeline_total_ms": 8946.82,
+              "phase_summary_ms": {
+                "security_ms": 371.6,
+                "triage_ms": 2443.3,
+                "post_to_security_ms": 1483.9,
+                "safety_gate_ms": 3532.3,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.3,
+                "parsed_message": 0.45,
+                "session_db_read": 0.51,
+                "after_get_session_db": 277.96,
+                "before_llm_setup": 556.47,
+                "before_security": 1112.52,
+                "after_security": 1484.15,
+                "before_emoji_route": 1485.29,
+                "before_triage": 1485.32,
+                "after_triage": 3928.66,
+                "safety_gate_done": 5016.46
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 1515.03,
+              "llm_session_cost_jpy": 0.0995,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-07-27T06:15:22.354088",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1515.03,
+                  "prompt_tokens": 3204,
+                  "completion_tokens": 114,
+                  "cost_jpy": 0.0995,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "やあ"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_status"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-07-27T06:14:58.539295",
+            "user_input": "やあ",
+            "response_preview": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話しできますよ。何かお困りのことがあれば、ぜひ教えてくださいね！",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "greeting"
+            ],
+            "routing": {
+              "trace_id": "8e7bc60e-3268-4e6a-bc89-97fbe44c84eb",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 1.0
+              },
+              "concierge_intent": "greeting",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 16537.82,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 973.6,
+                "triage_ms": 960.1,
+                "post_to_security_ms": 2161.4,
+                "safety_gate_ms": 5248.4,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 1814.0,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 4
+            },
+            "timing": {
+              "user_message_at": "2026-07-27T06:14:42.568Z",
+              "response_at": "2026-07-27T06:14:58.539295",
+              "e2e_ms": 15971.3,
+              "since_previous_turn_ms": -29750.5,
+              "pipeline_total_ms": 16537.82,
+              "phase_summary_ms": {
+                "security_ms": 973.6,
+                "triage_ms": 960.1,
+                "post_to_security_ms": 2161.4,
+                "safety_gate_ms": 5248.4,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 1814.0,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 3.4,
+                "parsed_message": 3.67,
+                "session_db_read": 4.22,
+                "after_get_session_db": 282.33,
+                "before_llm_setup": 613.1,
+                "before_security": 1191.19,
+                "after_security": 2164.8,
+                "before_emoji_route": 2275.32,
+                "before_triage": 2283.01,
+                "after_triage": 3243.14,
+                "safety_gate_done": 7413.23,
+                "before_orchestrator": 14017.31,
+                "concierge_resolve_intent_start": 14152.47,
+                "concierge_resolve_intent_end": 14152.49,
+                "concierge_build_payload_start": 14152.91,
+                "concierge_build_payload_end": 15966.95
+              },
+              "llm_call_count": 4,
+              "llm_total_latency_ms": 5329.870000000001,
+              "llm_session_cost_jpy": 0.064,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-07-27T06:14:48.133008",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1393.9,
+                  "prompt_tokens": 362,
+                  "completion_tokens": 40,
+                  "cost_jpy": 0.0121,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-07-27T06:14:52.170760",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1343.69,
+                  "prompt_tokens": 365,
+                  "completion_tokens": 39,
+                  "cost_jpy": 0.0121,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-07-27T06:14:54.073606",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1342.59,
+                  "prompt_tokens": 365,
+                  "completion_tokens": 40,
+                  "cost_jpy": 0.0122,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-07-27T06:14:57.974296",
+                  "model": "gpt-4o-mini",
+                  "path": "concierge_agent.greeting",
+                  "latency_ms": 1249.69,
+                  "prompt_tokens": 866,
+                  "completion_tokens": 55,
+                  "cost_jpy": 0.0276,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "やあ"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_status"
+              },
+              {
+                "role": "user",
+                "content": "ロキソニンとイブとバファリンを画像付きで比較して"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_qa"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-07-27T06:15:28.289940",
+            "user_input": "ロキソニンとイブとバファリンを画像付きで比較して",
+            "response_preview": "ロキソニンS、バファリンA、イブのパッケージ画像です。ロキソニンSはロキソプロフェンナトリウム水和物、バファリンAはアスピリン 合成ヒドロタルサイト、イブはイブプロフェンを主成分とする解熱鎮痛薬です。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "image_generation"
+            ],
+            "routing": {
+              "trace_id": "24715cc4-f285-44ea-9f2c-4ef170e8800b",
+              "triage": {
+                "category": "Ask",
+                "subcategory": "general_other",
+                "confidence": 0.93
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 8946.82,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 371.6,
+                "triage_ms": 2443.3,
+                "post_to_security_ms": 1483.9,
+                "safety_gate_ms": 3532.3,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-07-27T06:15:19.343Z",
+              "response_at": "2026-07-27T06:15:28.289940",
+              "e2e_ms": 8946.9,
+              "since_previous_turn_ms": 29750.6,
+              "pipeline_total_ms": 8946.82,
+              "phase_summary_ms": {
+                "security_ms": 371.6,
+                "triage_ms": 2443.3,
+                "post_to_security_ms": 1483.9,
+                "safety_gate_ms": 3532.3,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.3,
+                "parsed_message": 0.45,
+                "session_db_read": 0.51,
+                "after_get_session_db": 277.96,
+                "before_llm_setup": 556.47,
+                "before_security": 1112.52,
+                "after_security": 1484.15,
+                "before_emoji_route": 1485.29,
+                "before_triage": 1485.32,
+                "after_triage": 3928.66,
+                "safety_gate_done": 5016.46
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 1515.03,
+              "llm_session_cost_jpy": 0.0995,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-07-27T06:15:22.354088",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1515.03,
+                  "prompt_tokens": 3204,
+                  "completion_tokens": 114,
+                  "cost_jpy": 0.0995,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "やあ"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_status"
+              },
+              {
+                "role": "user",
+                "content": "ロキソニンとイブとバファリンを画像付きで比較して"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_qa"
+              },
+              {
+                "role": "user",
+                "content": "やあ"
+              },
+              {
+                "role": "assistant",
+                "content": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話しできますよ。何かお困りのことがあれば、ぜひ教えてくださいね！"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 4,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [
+            "同一ユーザーが似た入力を繰り返し（2回）— 文脈維持が課題"
+          ],
+          "summary": "session=1785132851553095757122 turns=4 grade=good first='やあ' last='ロキソニンとイブとバファリンを画像付きで比較して'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "conversation_history": 2,
+          "counseling_detail": 2
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1785484113183415974247",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-07-31T07:48:58.204000",
+          "end": "2026-07-31T07:48:58.204000"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "こんにちは"
+          },
+          {
+            "role": "assistant",
+            "content": "こんにちは！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話ししていただければ、適切な市販薬をご案内いたします。どうぞお気軽にご相談ください。"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-07-31T07:48:58.204000",
+            "user_input": "こんにちは",
+            "response_preview": "こんにちは！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話ししていただければ、適切な市販薬をご案内いたします。どうぞお気軽にご相談ください。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "greeting"
+            ],
+            "routing": {
+              "trace_id": "dd617c51-27e1-46fe-a4ad-b889e472ac3b",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 1.0
+              },
+              "concierge_intent": "greeting",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 15356.86,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 900.9,
+                "triage_ms": 929.7,
+                "post_to_security_ms": 2061.5,
+                "safety_gate_ms": 4650.2,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 1947.4,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 4
+            },
+            "timing": {
+              "user_message_at": "2026-07-31T07:48:43.418Z",
+              "response_at": "2026-07-31T07:48:58.204000",
+              "e2e_ms": 14786.0,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 15356.86,
+              "phase_summary_ms": {
+                "security_ms": 900.9,
+                "triage_ms": 929.7,
+                "post_to_security_ms": 2061.5,
+                "safety_gate_ms": 4650.2,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 1947.4,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 3.15,
+                "parsed_message": 3.39,
+                "session_db_read": 3.66,
+                "after_get_session_db": 284.3,
+                "before_llm_setup": 606.81,
+                "before_security": 1163.76,
+                "after_security": 2064.63,
+                "before_emoji_route": 2172.82,
+                "before_triage": 2179.37,
+                "after_triage": 3109.03,
+                "safety_gate_done": 6714.79,
+                "concierge_resolve_intent_start": 12834.11,
+                "concierge_resolve_intent_end": 12834.26,
+                "concierge_build_payload_start": 12834.58,
+                "concierge_build_payload_end": 14781.98
+              },
+              "llm_call_count": 4,
+              "llm_total_latency_ms": 4648.4,
+              "llm_session_cost_jpy": 0.0629,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-07-31T07:48:48.673861",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1213.37,
+                  "prompt_tokens": 361,
+                  "completion_tokens": 28,
+                  "cost_jpy": 0.0117,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-07-31T07:48:51.832501",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 859.1,
+                  "prompt_tokens": 363,
+                  "completion_tokens": 28,
+                  "cost_jpy": 0.0117,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-07-31T07:48:53.594102",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1196.74,
+                  "prompt_tokens": 363,
+                  "completion_tokens": 28,
+                  "cost_jpy": 0.0117,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-07-31T07:48:57.635536",
+                  "model": "gpt-4o-mini",
+                  "path": "concierge_agent.greeting",
+                  "latency_ms": 1379.19,
+                  "prompt_tokens": 865,
+                  "completion_tokens": 60,
+                  "cost_jpy": 0.0278,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 1,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1785484113183415974247 turns=1 grade=good first='こんにちは' last='こんにちは'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1785684863923493244707",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-02T15:36:09.817209",
+          "end": "2026-08-02T15:36:32.925100Z"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "アレルギー症状が出た"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_reco"
+          },
+          {
+            "role": "user",
+            "content": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ"
+          },
+          {
+            "role": "assistant",
+            "content": ""
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-02T15:36:09.817209",
+            "user_input": "アレルギー症状が出た",
+            "response_preview": "sage_reco",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "physical_symptom"
+            ],
+            "routing": {
+              "trace_id": "3c868d8a-6e6a-48eb-ab65-9073cb55f591",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.99
+              },
+              "concierge_intent": "chitchat",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 38194.1,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 7798.6,
+                "triage_ms": 6103.3,
+                "post_to_security_ms": 10394.4,
+                "safety_gate_ms": 9695.6,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 6010.7,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 5
+            },
+            "timing": {
+              "user_message_at": "2026-08-02T15:35:54.731Z",
+              "response_at": "2026-08-02T15:36:09.817209",
+              "e2e_ms": 15086.2,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 38194.1,
+              "phase_summary_ms": {
+                "security_ms": 7798.6,
+                "triage_ms": 6103.3,
+                "post_to_security_ms": 10394.4,
+                "safety_gate_ms": 9695.6,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 6010.7,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 9.75,
+                "parsed_message": 11.65,
+                "session_db_read": 12.14,
+                "after_get_session_db": 497.64,
+                "before_llm_setup": 1699.32,
+                "before_security": 2605.54,
+                "after_security": 10404.15,
+                "before_emoji_route": 11404.04,
+                "before_triage": 11594.82,
+                "after_triage": 17698.13,
+                "safety_gate_done": 20099.7,
+                "after_triage_follow_ups": 20294.86,
+                "after_counseling_flow": 21097.87,
+                "moderation_done": 21097.91,
+                "before_medicine_qa_route": 21497.72,
+                "after_medicine_qa_route": 26297.69,
+                "before_orchestrator": 29214.98,
+                "concierge_resolve_intent_start": 31007.34,
+                "concierge_resolve_intent_end": 31007.37,
+                "concierge_build_payload_start": 31092.91,
+                "concierge_build_payload_end": 37103.59
+              },
+              "llm_call_count": 5,
+              "llm_total_latency_ms": 6665.57,
+              "llm_session_cost_jpy": 0.2519,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-02T15:36:09.131665",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1581.48,
+                  "prompt_tokens": 3121,
+                  "completion_tokens": 91,
+                  "cost_jpy": 0.0964,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-02T15:36:11.232330",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage2",
+                  "latency_ms": 1302.58,
+                  "prompt_tokens": 3422,
+                  "completion_tokens": 70,
+                  "cost_jpy": 0.1048,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-02T15:36:17.827366",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1186.07,
+                  "prompt_tokens": 400,
+                  "completion_tokens": 45,
+                  "cost_jpy": 0.0133,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-02T15:36:20.132134",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1503.94,
+                  "prompt_tokens": 400,
+                  "completion_tokens": 45,
+                  "cost_jpy": 0.0133,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-02T15:36:26.939716",
+                  "model": "gpt-5.4-mini",
+                  "path": "concierge_agent.chitchat",
+                  "latency_ms": 1091.5,
+                  "prompt_tokens": 766,
+                  "completion_tokens": 38,
+                  "cost_jpy": 0.0241,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok",
+            "medicine_recommendation_review": {
+              "eligible_for_advisor": true,
+              "advisor_skill": "medicine-recommendation-advisor",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.99
+              },
+              "recommendation_events": [],
+              "has_medicine_list": false
+            }
+          },
+          {
+            "timestamp": "2026-08-02T15:36:32.925100Z",
+            "user_input": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ",
+            "response_preview": "",
+            "response_html": false,
+            "response_missing": true,
+            "turn_source": "chat_flow",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {
+              "trace_id": "3c868d8a-6e6a-48eb-ab65-9073cb55f591",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.99
+              },
+              "concierge_intent": "chitchat",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 38194.1,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 7798.6,
+                "triage_ms": 6103.3,
+                "post_to_security_ms": 10394.4,
+                "safety_gate_ms": 9695.6,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 6010.7,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 5
+            },
+            "timing": {
+              "user_message_at": "2026-08-02T15:35:54.731Z",
+              "response_at": "2026-08-02T15:36:32.925100Z",
+              "e2e_ms": 38194.1,
+              "since_previous_turn_ms": 23107.9,
+              "pipeline_total_ms": 38194.1,
+              "phase_summary_ms": {
+                "security_ms": 7798.6,
+                "triage_ms": 6103.3,
+                "post_to_security_ms": 10394.4,
+                "safety_gate_ms": 9695.6,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 6010.7,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 9.75,
+                "parsed_message": 11.65,
+                "session_db_read": 12.14,
+                "after_get_session_db": 497.64,
+                "before_llm_setup": 1699.32,
+                "before_security": 2605.54,
+                "after_security": 10404.15,
+                "before_emoji_route": 11404.04,
+                "before_triage": 11594.82,
+                "after_triage": 17698.13,
+                "safety_gate_done": 20099.7,
+                "after_triage_follow_ups": 20294.86,
+                "after_counseling_flow": 21097.87,
+                "moderation_done": 21097.91,
+                "before_medicine_qa_route": 21497.72,
+                "after_medicine_qa_route": 26297.69,
+                "before_orchestrator": 29214.98,
+                "concierge_resolve_intent_start": 31007.34,
+                "concierge_resolve_intent_end": 31007.37,
+                "concierge_build_payload_start": 31092.91,
+                "concierge_build_payload_end": 37103.59
+              },
+              "llm_call_count": 5,
+              "llm_total_latency_ms": 6665.57,
+              "llm_session_cost_jpy": 0.2519,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-02T15:36:09.131665",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1581.48,
+                  "prompt_tokens": 3121,
+                  "completion_tokens": 91,
+                  "cost_jpy": 0.0964,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-02T15:36:11.232330",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage2",
+                  "latency_ms": 1302.58,
+                  "prompt_tokens": 3422,
+                  "completion_tokens": 70,
+                  "cost_jpy": 0.1048,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-02T15:36:17.827366",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1186.07,
+                  "prompt_tokens": 400,
+                  "completion_tokens": 45,
+                  "cost_jpy": 0.0133,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-02T15:36:20.132134",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1503.94,
+                  "prompt_tokens": 400,
+                  "completion_tokens": 45,
+                  "cost_jpy": 0.0133,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-02T15:36:26.939716",
+                  "model": "gpt-5.4-mini",
+                  "path": "concierge_agent.chitchat",
+                  "latency_ms": 1091.5,
+                  "prompt_tokens": 766,
+                  "completion_tokens": 38,
+                  "cost_jpy": 0.0241,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "アレルギー症状が出た"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_reco"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 2,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1785684863923493244707 turns=2 grade=good first='アレルギー症状が出た' last='🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "counseling_detail": 1,
+          "chat_flow": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 1,
+          "recommendation_event_count": 0,
+          "turns": [
+            {
+              "timestamp": "2026-08-02T15:36:09.817209",
+              "user_input": "アレルギー症状が出た",
+              "review": {
+                "eligible_for_advisor": true,
+                "advisor_skill": "medicine-recommendation-advisor",
+                "triage": {
+                  "category": "Other",
+                  "subcategory": "general_other",
+                  "confidence": 0.99
+                },
+                "recommendation_events": [],
+                "has_medicine_list": false
+              }
+            }
+          ],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      }
+    ],
+    "intent_mismatches": [
+      {
+        "session_id": "1785684950122867517003",
+        "timestamp": "2026-08-02T15:36:31.846921",
+        "user_input": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ",
+        "issue_type": "greeting_to_non_greeting",
+        "severity": "warning",
+        "cause_hypothesis": "非挨拶入力に挨拶テンプレート応答",
+        "evidence": "input='🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ' labels=['general']",
+        "routing": {}
+      }
+    ],
+    "mismatch_count": 1,
+    "sessions_by_grade": {
+      "acceptable_with_issues": 1,
+      "good": 3
+    },
+    "physical_recommendation_events": [
+      {
+        "timestamp": "2026-07-27T06:14:46.741Z",
+        "trace_id": "8e7bc60e-3268-4e6a-bc89-97fbe44c84eb",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-07-27T06:14:50.829Z",
+        "trace_id": "8e7bc60e-3268-4e6a-bc89-97fbe44c84eb",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: やあ\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: やあ\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → "
+      },
+      {
+        "timestamp": "2026-07-27T06:14:52.733Z",
+        "trace_id": "8e7bc60e-3268-4e6a-bc89-97fbe44c84eb",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: やあ\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: やあ\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → "
+      },
+      {
+        "timestamp": "2026-07-31T07:48:47.462Z",
+        "trace_id": "dd617c51-27e1-46fe-a4ad-b889e472ac3b",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-07-31T07:48:50.975Z",
+        "trace_id": "dd617c51-27e1-46fe-a4ad-b889e472ac3b",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: こんにちは\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: こんにちは\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか"
+      },
+      {
+        "timestamp": "2026-07-31T07:48:52.401Z",
+        "trace_id": "dd617c51-27e1-46fe-a4ad-b889e472ac3b",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: こんにちは\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: こんにちは\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか"
+      },
+      {
+        "timestamp": "2026-07-31T07:49:41.931Z",
+        "trace_id": "5ea1224b-238e-497d-85b4-9e85f56ede3f",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: こんにちは\\nuser: sage_status\\nuser: 頭痛いです\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: こんにちは\\nuser: sage_status\\nuser: 頭痛いです\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら"
+      },
+      {
+        "timestamp": "2026-07-31T07:49:43.541Z",
+        "trace_id": "5ea1224b-238e-497d-85b4-9e85f56ede3f",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: こんにちは\\nuser: sage_status\\nuser: 頭痛いです\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: こんにちは\\nuser: sage_status\\nuser: 頭痛いです\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら"
+      },
+      {
+        "timestamp": "2026-07-31T07:49:47.234Z",
+        "trace_id": "5ea1224b-238e-497d-85b4-9e85f56ede3f",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: こんにちは\\nuser: sage_status\\nuser: 頭痛いです\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: こんにちは\\nuser: sage_status\\nuser: 頭痛いです\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら"
+      },
+      {
+        "timestamp": "2026-07-31T07:49:48.891Z",
+        "trace_id": "5ea1224b-238e-497d-85b4-9e85f56ede3f",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: こんにちは\\nuser: sage_status\\nuser: 頭痛いです\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: こんにちは\\nuser: sage_status\\nuser: 頭痛いです\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら"
+      },
+      {
+        "timestamp": "2026-07-31T07:49:50.857Z",
+        "trace_id": "5ea1224b-238e-497d-85b4-9e85f56ede3f",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: こんにちは\\nuser: sage_status\\nuser: 頭痛いです\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: こんにちは\\nuser: sage_status\\nuser: 頭痛いです\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら"
+      },
+      {
+        "timestamp": "2026-08-02T15:35:28.230Z",
+        "trace_id": "e318d322-9356-4d62-9148-22a97855d586",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: アレルギー症状が出た\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: アレルギー症状が出た\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使"
+      },
+      {
+        "timestamp": "2026-08-02T15:35:42.823Z",
+        "trace_id": "e318d322-9356-4d62-9148-22a97855d586",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: アレルギー症状が出た\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: アレルギー症状が出た\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使"
+      },
+      {
+        "timestamp": "2026-08-02T15:36:16.643Z",
+        "trace_id": "3c868d8a-6e6a-48eb-ab65-9073cb55f591",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- "
+      },
+      {
+        "timestamp": "2026-08-02T15:36:17.026Z",
+        "trace_id": "3c868d8a-6e6a-48eb-ab65-9073cb55f591",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-08-02T15:36:18.632Z",
+        "trace_id": "3c868d8a-6e6a-48eb-ab65-9073cb55f591",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- "
+      },
+      {
+        "timestamp": "2026-08-02T15:37:55.917Z",
+        "trace_id": "f440ac34-da11-4ce3-9854-0d38eef4c1f5",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ\\nuser: sage_status\\nuser: 頭痛が殺す\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ\\nuser: sage_status\\nuser: 頭痛が殺す\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction"
+      },
+      {
+        "timestamp": "2026-08-02T15:38:11.921Z",
+        "trace_id": "f440ac34-da11-4ce3-9854-0d38eef4c1f5",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ\\nuser: sage_status\\nuser: 頭痛が殺す\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ\\nuser: sage_status\\nuser: 頭痛が殺す\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction"
+      }
+    ]
+  },
+  "intent_mismatches": [
+    {
+      "session_id": "1785684950122867517003",
+      "timestamp": "2026-08-02T15:36:31.846921",
+      "user_input": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ",
+      "issue_type": "greeting_to_non_greeting",
+      "severity": "warning",
+      "cause_hypothesis": "非挨拶入力に挨拶テンプレート応答",
+      "evidence": "input='🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ' labels=['general']",
+      "routing": {}
+    }
+  ],
+  "intent_review_queue": [
+    {
+      "session_id": "1785684950122867517003",
+      "timestamp": "2026-08-02T15:36:31.846921",
+      "user_input": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ",
+      "issue_type": "greeting_to_non_greeting",
+      "severity": "warning",
+      "cause_hypothesis": "非挨拶入力に挨拶テンプレート応答",
+      "evidence": "input='🤘( ˙꒳\\u200b˙ )🤘ﾔｯﾀｾﾞ' labels=['general']",
+      "routing": {}
+    }
+  ],
+  "sessions_by_grade": {
+    "acceptable_with_issues": 1,
+    "good": 3
+  },
+  "intent_router": {
+    "rows": [
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-07-27T06:14:49.978337",
+        "session_id": "1785132851553095757122",
+        "user_input": "やあ",
+        "mismatch": false,
+        "primary_route": "Concierge",
+        "sub_route": "greeting",
+        "resolved_by": "gate",
+        "confidence": 0.95,
+        "source": "concierge_fast_path",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other"
+      },
+      {
+        "log_type": "dialogue_route_execution",
+        "timestamp": "2026-07-27T06:14:58.537228",
+        "session_id": "1785132851553095757122",
+        "user_input": "やあ",
+        "dispatch_sub_route": "greeting",
+        "resolved_concierge_intent": "greeting",
+        "resolved_execution_intent": "greeting",
+        "llm_path": null,
+        "layer_used": null,
+        "mismatch": false,
+        "handler": "concierge_agent",
+        "sync": "concierge_execution_metadata"
+      },
+      {
+        "log_type": "dialogue_route_dispatch",
+        "timestamp": "2026-07-27T06:14:59.099925",
+        "session_id": "1785132851553095757122",
+        "user_input": "やあ",
+        "handler": "concierge_agent",
+        "handled": true,
+        "primary_route": "Concierge",
+        "sub_route": "greeting",
+        "resolved_by": "gate",
+        "confidence": 0.95,
+        "source": "concierge_fast_path"
+      },
+      {
+        "log_type": "dialogue_route_execution",
+        "timestamp": "2026-07-27T06:14:59.100842",
+        "session_id": "1785132851553095757122",
+        "user_input": "やあ",
+        "dispatch_sub_route": "greeting",
+        "resolved_concierge_intent": "greeting",
+        "resolved_execution_intent": "greeting",
+        "llm_path": null,
+        "layer_used": "layer2",
+        "mismatch": false,
+        "handler": "concierge_agent",
+        "execution_lock": false,
+        "handled": true
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-07-27T06:15:24.336925",
+        "session_id": "1785132851553095757122",
+        "user_input": "ロキソニンとイブとバファリンを画像付きで比較して",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "sub_route": "medicine_qa",
+        "resolved_by": "gate",
+        "confidence": 0.94,
+        "source": "layer1_medicine_qa",
+        "triage_category": "Ask",
+        "triage_subcategory": "general_other"
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-07-31T07:48:50.130306",
+        "session_id": "1785484113183415974247",
+        "user_input": "こんにちは",
+        "mismatch": false,
+        "primary_route": "Concierge",
+        "sub_route": "greeting",
+        "resolved_by": "gate",
+        "confidence": 0.95,
+        "source": "concierge_fast_path",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other"
+      },
+      {
+        "log_type": "dialogue_route_execution",
+        "timestamp": "2026-07-31T07:48:58.202114",
+        "session_id": "1785484113183415974247",
+        "user_input": "こんにちは",
+        "dispatch_sub_route": "greeting",
+        "resolved_concierge_intent": "greeting",
+        "resolved_execution_intent": "greeting",
+        "llm_path": null,
+        "layer_used": null,
+        "mismatch": false,
+        "handler": "concierge_agent",
+        "sync": "concierge_execution_metadata"
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-07-31T07:49:20.726517",
+        "session_id": "1785132851553095757122",
+        "user_input": "ロキソニンとイブとバファリンを画像付きで比較して",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "sub_route": "medicine_qa",
+        "resolved_by": "gate",
+        "confidence": 0.94,
+        "source": "layer1_medicine_qa",
+        "triage_category": "Ask",
+        "triage_subcategory": "general_other"
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-07-31T07:49:41.079856",
+        "session_id": "1785484113183415974247",
+        "user_input": "頭痛いです",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "resolved_by": "guard",
+        "confidence": 0.94,
+        "source": "medicine_context_cold_start_guard",
+        "triage_category": "Physical",
+        "triage_subcategory": "headache"
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-08-02T15:35:35.931044",
+        "session_id": "1785684863923493244707",
+        "user_input": "アレルギー症状が出た",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "resolved_by": "guard",
+        "confidence": 0.94,
+        "source": "medicine_context_cold_start_guard",
+        "triage_category": "Physical",
+        "triage_subcategory": "allergy_symptoms"
+      },
+      {
+        "log_type": "dialogue_route_dispatch",
+        "timestamp": "2026-08-02T15:36:09.123567",
+        "session_id": "1785684863923493244707",
+        "user_input": "あれるぎ症状が出た",
+        "handler": "physical_agent",
+        "handled": true,
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "resolved_by": "guard",
+        "confidence": 0.94,
+        "source": "medicine_context_cold_start_guard"
+      },
+      {
+        "log_type": "dialogue_route_execution",
+        "timestamp": "2026-08-02T15:36:09.124109",
+        "session_id": "1785684863923493244707",
+        "user_input": "あれるぎ症状が出た",
+        "dispatch_sub_route": "rule_based_recommend",
+        "resolved_concierge_intent": null,
+        "resolved_execution_intent": null,
+        "llm_path": null,
+        "layer_used": "layer2",
+        "mismatch": false,
+        "handler": "physical_agent",
+        "execution_lock": false,
+        "handled": true
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-08-02T15:36:22.439710",
+        "session_id": "1785684950122867517003",
+        "user_input": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ",
+        "mismatch": false,
+        "primary_route": "Concierge",
+        "sub_route": "chitchat",
+        "resolved_by": "llm",
+        "confidence": 0.98,
+        "source": "intent_router_llm",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other"
+      },
+      {
+        "log_type": "dialogue_route_execution",
+        "timestamp": "2026-08-02T15:36:31.842927",
+        "session_id": "1785684950122867517003",
+        "user_input": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ",
+        "dispatch_sub_route": "chitchat",
+        "resolved_concierge_intent": "chitchat",
+        "resolved_execution_intent": "chitchat",
+        "llm_path": null,
+        "layer_used": null,
+        "mismatch": false,
+        "handler": "concierge_agent",
+        "sync": "concierge_execution_metadata"
+      },
+      {
+        "log_type": "dialogue_route_dispatch",
+        "timestamp": "2026-08-02T15:36:32.735232",
+        "session_id": "1785684950122867517003",
+        "user_input": "🤘(  ̇꒳​ ̇ )🤘やったぜ",
+        "handler": "concierge_agent",
+        "handled": true,
+        "primary_route": "Concierge",
+        "sub_route": "chitchat",
+        "resolved_by": "llm",
+        "confidence": 0.98,
+        "source": "intent_router_llm"
+      },
+      {
+        "log_type": "dialogue_route_execution",
+        "timestamp": "2026-08-02T15:36:32.740965",
+        "session_id": "1785684950122867517003",
+        "user_input": "🤘(  ̇꒳​ ̇ )🤘やったぜ",
+        "dispatch_sub_route": "chitchat",
+        "resolved_concierge_intent": "chitchat",
+        "resolved_execution_intent": "chitchat",
+        "llm_path": null,
+        "layer_used": "layer2",
+        "mismatch": false,
+        "handler": "concierge_agent",
+        "execution_lock": false,
+        "handled": true
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-08-02T15:38:02.722266",
+        "session_id": "1785684950122867517003",
+        "user_input": "頭痛が殺す",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "resolved_by": "guard",
+        "confidence": 0.94,
+        "source": "medicine_context_cold_start_guard",
+        "triage_category": "Physical",
+        "triage_subcategory": "headache"
+      }
+    ],
+    "shadow_total": 8,
+    "shadow_mismatch": 0,
+    "shadow_mismatch_rate_pct": 0.0,
+    "shadow_improvement_mismatch": 0,
+    "shadow_improvement_mismatch_rate_pct": 0.0,
+    "shadow_regression_mismatch": 0,
+    "shadow_regression_mismatch_rate_pct": 0.0,
+    "shadow_exempt": 0,
+    "shadow_exempt_rate_pct": 0.0,
+    "shadow_by_mismatch_kind": {
+      "agree": 8
+    },
+    "shadow_by_primary_route": {
+      "Concierge": 3,
+      "Physical": 5
+    },
+    "shadow_by_resolved_by": {
+      "gate": 4,
+      "guard": 3,
+      "llm": 1
+    },
+    "shadow_with_fever_context_flag": 0,
+    "shadow_with_pending_cancelled_flag": 0,
+    "dispatch_with_fever_context_flag": 0,
+    "dispatch_with_pending_cancelled_flag": 0,
+    "dispatch_total": 3,
+    "dispatch_handled": 3,
+    "dispatch_unhandled": 0,
+    "dispatch_success_rate_pct": 100.0,
+    "dispatch_by_handler": {
+      "concierge_agent": 2,
+      "physical_agent": 1
+    },
+    "execution_total": 6,
+    "execution_mismatch": 0,
+    "execution_mismatch_rate_pct": 0.0,
+    "execution_by_layer_used": {
+      "unknown": 3,
+      "layer2": 3
+    },
+    "execution_side_effect_qa": 0,
+    "mismatch_samples": []
+  }
+}

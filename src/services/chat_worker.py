@@ -43,6 +43,10 @@ def submit_chat_job(fn: Callable[..., T], /, *args: Any, **kwargs: Any) -> Futur
     return _CHAT_EXECUTOR.submit(fn, *args, **kwargs)
 
 
+def shutdown_chat_executor() -> None:
+    _CHAT_EXECUTOR.shutdown(wait=False, cancel_futures=True)
+
+
 @atexit.register
 def _shutdown_chat_executor() -> None:
-    _CHAT_EXECUTOR.shutdown(wait=False, cancel_futures=True)
+    shutdown_chat_executor()

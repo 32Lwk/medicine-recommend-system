@@ -15,6 +15,10 @@ logger = logging.getLogger(__name__)
 _DEBOUNCE_SEC = 0.4
 _READ_CACHE_TTL_SEC = float(os.getenv("PROCESSING_STATUS_READ_CACHE_SEC", "2.5"))
 _executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="proc_status")
+
+
+def shutdown_processing_status_executor() -> None:
+    _executor.shutdown(wait=False, cancel_futures=True)
 _read_cache: Dict[str, Tuple[float, Dict[str, Any]]] = {}
 
 PROCESSING_STEPS: List[Dict[str, Any]] = [

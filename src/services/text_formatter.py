@@ -96,6 +96,68 @@ def _normalize_llm_html_fragments(text: str) -> str:
     return result.strip()
 
 
+def _qa_product_line_html(name: str, description: str) -> str:
+    """製品名と説明を改行崩れしにくい HTML ブロックで返す。"""
+    name_esc = html.escape(name.strip())
+    desc_esc = html.escape(description.strip())
+    if not name_esc:
+        return f'<p class="ui-qa-product-line">{desc_esc}</p>' if desc_esc else ""
+    return (
+        f'<p class="ui-qa-product-line">'
+        f'<span class="ui-qa-product-line__lead">'
+        f"<strong>{name_esc}</strong>："
+        f"</span>"
+        f'<span class="ui-qa-product-line__body">{desc_esc}</span>'
+        f"</p>"
+    )
+
+
+_MEDICINE_PRODUCT_CHUNK_SPLIT_RE = re.compile(
+    r"(?:(?<=[。!！?？])\s+|\n+)"
+    r"(?=[^\s：。]{2,45}(?:《[^》]*》)?[^：\s]*：)"
+)
+_MEDICINE_PRODUCT_CHUNK_PARSE_RE = re.compile(
+    r"^(?:\*\*)?(?P<name>[^：\n*]+?)(?:\*\*)?：(?P<body>.+)$",
+    re.DOTALL,
+)
+
+
+def _split_medicine_product_chunks(text: str) -> list[str]:
+    chunks: list[str] = []
+    for line in text.split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        parts = _MEDICINE_PRODUCT_CHUNK_SPLIT_RE.split(line)
+        chunks.extend(part.strip() for part in parts if part.strip())
+    return chunks
+
+
+def format_medicine_product_lines_html(text: Any) -> str:
+    """医薬品 Q&A の medicine_details を製品ごとの ui-qa-product-line HTML に整形する。"""
+    normalized = _normalize_qa_text(text)
+    if not normalized:
+        return ""
+    if "ui-qa-product-line" in normalized:
+        return normalized.strip()
+    normalized = _normalize_llm_html_fragments(normalized).strip()
+    if not normalized:
+        return ""
+
+    blocks: list[str] = []
+    for chunk in _split_medicine_product_chunks(normalized):
+        match = _MEDICINE_PRODUCT_CHUNK_PARSE_RE.match(chunk)
+        if not match:
+            continue
+        name = match.group("name").strip()
+        body = match.group("body").strip()
+        if name and body:
+            blocks.append(_qa_product_line_html(name, body))
+    if blocks:
+        return "".join(blocks)
+    return safe_format_qa_html(normalized)
+
+
 def safe_format_qa_html(text: Any) -> str:
     """医薬品Q&A表示用: XSSエスケープ後にMarkdown太字・改行をHTML化"""
     normalized = _normalize_qa_text(text)

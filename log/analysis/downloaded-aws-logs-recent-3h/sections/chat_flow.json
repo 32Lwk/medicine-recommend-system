@@ -1,0 +1,361 @@
+{
+  "trace_count": 3,
+  "exported_traces": [
+    {
+      "trace_id": "e318d322-9356-4d62-9148-22a97855d586",
+      "events": [
+        {
+          "ts": "2026-08-02T15:35:07.533Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-08-02T15:35:07.636Z",
+          "type": "received_message",
+          "text": "アレルギー症状が出た"
+        },
+        {
+          "ts": "2026-08-02T15:35:14.619Z",
+          "type": "user_message",
+          "text": "アレルギー症状が出た"
+        },
+        {
+          "ts": "2026-08-02T15:35:23.922Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "allergy_symptoms",
+          "confidence": 0.95
+        }
+      ],
+      "started_at": "2026-08-02T15:35:07.533Z",
+      "session_id": null,
+      "user_message": "アレルギー症状が出た",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "allergy_symptoms",
+        "confidence": 0.95
+      },
+      "concierge_intent": null,
+      "pipeline_perf": null,
+      "agent_steps": []
+    },
+    {
+      "trace_id": "3c868d8a-6e6a-48eb-ab65-9073cb55f591",
+      "events": [
+        {
+          "ts": "2026-08-02T15:35:54.731Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-08-02T15:35:54.741Z",
+          "type": "received_message",
+          "text": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ"
+        },
+        {
+          "ts": "2026-08-02T15:36:01.125Z",
+          "type": "user_message",
+          "text": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ"
+        },
+        {
+          "ts": "2026-08-02T15:36:09.930Z",
+          "type": "pipeline_perf",
+          "total_ms": 62398.57,
+          "channel": "web"
+        },
+        {
+          "ts": "2026-08-02T15:36:12.030Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 0.99
+        },
+        {
+          "ts": "2026-08-02T15:36:25.739Z",
+          "type": "concierge_intent",
+          "value": "chitchat"
+        },
+        {
+          "ts": "2026-08-02T15:36:32.925Z",
+          "type": "pipeline_perf",
+          "total_ms": 38194.1,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-08-02T15:35:54.731Z",
+      "session_id": "1785684863923493244707",
+      "user_message": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 0.99
+      },
+      "concierge_intent": "chitchat",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785684950122867517003",
+        "total_ms": 38194.1,
+        "breakdown": {
+          "post_start": 9.75,
+          "parsed_message": 11.65,
+          "session_db_read": 12.14,
+          "after_get_session_db": 497.64,
+          "before_llm_setup": 1699.32,
+          "before_security": 2605.54,
+          "after_security": 10404.15,
+          "before_emoji_route": 11404.04,
+          "before_triage": 11594.82,
+          "after_triage": 17698.13,
+          "safety_gate_done": 20099.7,
+          "after_triage_follow_ups": 20294.86,
+          "after_counseling_flow": 21097.87,
+          "moderation_done": 21097.91,
+          "before_medicine_qa_route": 21497.72,
+          "after_medicine_qa_route": 26297.69,
+          "before_orchestrator": 29214.98,
+          "concierge_resolve_intent_start": 31007.34,
+          "concierge_resolve_intent_end": 31007.37,
+          "concierge_build_payload_start": 31092.91,
+          "concierge_build_payload_end": 37103.59
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-08-02T15:36:09.131665",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1581.48,
+              "prompt_tokens": 3121,
+              "completion_tokens": 91,
+              "cost_jpy": 0.0964,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:11.232330",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage2",
+              "latency_ms": 1302.58,
+              "prompt_tokens": 3422,
+              "completion_tokens": 70,
+              "cost_jpy": 0.1048,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:17.827366",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1186.07,
+              "prompt_tokens": 400,
+              "completion_tokens": 45,
+              "cost_jpy": 0.0133,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:20.132134",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1503.94,
+              "prompt_tokens": 400,
+              "completion_tokens": 45,
+              "cost_jpy": 0.0133,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:26.939716",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.chitchat",
+              "latency_ms": 1091.5,
+              "prompt_tokens": 766,
+              "completion_tokens": 38,
+              "cost_jpy": 0.0241,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 5,
+          "llm_total_latency_ms": 6665.57,
+          "llm_session_cost_jpy": 0.2519,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    },
+    {
+      "trace_id": "f440ac34-da11-4ce3-9854-0d38eef4c1f5",
+      "events": [
+        {
+          "ts": "2026-08-02T15:37:45.323Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-08-02T15:37:45.324Z",
+          "type": "received_message",
+          "text": "頭痛が殺す"
+        },
+        {
+          "ts": "2026-08-02T15:37:49.541Z",
+          "type": "user_message",
+          "text": "頭痛が殺す"
+        },
+        {
+          "ts": "2026-08-02T15:37:52.522Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "headache",
+          "confidence": 0.86
+        }
+      ],
+      "started_at": "2026-08-02T15:37:45.323Z",
+      "session_id": null,
+      "user_message": "頭痛が殺す",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "headache",
+        "confidence": 0.86
+      },
+      "concierge_intent": null,
+      "pipeline_perf": null,
+      "agent_steps": []
+    }
+  ],
+  "slow_traces_ge_8s": [
+    {
+      "trace_id": "3c868d8a-6e6a-48eb-ab65-9073cb55f591",
+      "events": [
+        {
+          "ts": "2026-08-02T15:35:54.731Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-08-02T15:35:54.741Z",
+          "type": "received_message",
+          "text": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ"
+        },
+        {
+          "ts": "2026-08-02T15:36:01.125Z",
+          "type": "user_message",
+          "text": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ"
+        },
+        {
+          "ts": "2026-08-02T15:36:09.930Z",
+          "type": "pipeline_perf",
+          "total_ms": 62398.57,
+          "channel": "web"
+        },
+        {
+          "ts": "2026-08-02T15:36:12.030Z",
+          "type": "triage",
+          "category": "Other",
+          "subcategory": "general_other",
+          "confidence": 0.99
+        },
+        {
+          "ts": "2026-08-02T15:36:25.739Z",
+          "type": "concierge_intent",
+          "value": "chitchat"
+        },
+        {
+          "ts": "2026-08-02T15:36:32.925Z",
+          "type": "pipeline_perf",
+          "total_ms": 38194.1,
+          "channel": "web"
+        }
+      ],
+      "started_at": "2026-08-02T15:35:54.731Z",
+      "session_id": "1785684863923493244707",
+      "user_message": "🤘( ˙꒳​˙ )🤘ﾔｯﾀｾﾞ",
+      "triage": {
+        "category": "Other",
+        "subcategory": "general_other",
+        "confidence": 0.99
+      },
+      "concierge_intent": "chitchat",
+      "pipeline_perf": {
+        "channel": "web",
+        "sid": "1785684950122867517003",
+        "total_ms": 38194.1,
+        "breakdown": {
+          "post_start": 9.75,
+          "parsed_message": 11.65,
+          "session_db_read": 12.14,
+          "after_get_session_db": 497.64,
+          "before_llm_setup": 1699.32,
+          "before_security": 2605.54,
+          "after_security": 10404.15,
+          "before_emoji_route": 11404.04,
+          "before_triage": 11594.82,
+          "after_triage": 17698.13,
+          "safety_gate_done": 20099.7,
+          "after_triage_follow_ups": 20294.86,
+          "after_counseling_flow": 21097.87,
+          "moderation_done": 21097.91,
+          "before_medicine_qa_route": 21497.72,
+          "after_medicine_qa_route": 26297.69,
+          "before_orchestrator": 29214.98,
+          "concierge_resolve_intent_start": 31007.34,
+          "concierge_resolve_intent_end": 31007.37,
+          "concierge_build_payload_start": 31092.91,
+          "concierge_build_payload_end": 37103.59
+        },
+        "llm": {
+          "llm_calls": [
+            {
+              "timestamp": "2026-08-02T15:36:09.131665",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage1",
+              "latency_ms": 1581.48,
+              "prompt_tokens": 3121,
+              "completion_tokens": 91,
+              "cost_jpy": 0.0964,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:11.232330",
+              "model": "gpt-5.4-mini",
+              "path": "llm_triage.stage2",
+              "latency_ms": 1302.58,
+              "prompt_tokens": 3422,
+              "completion_tokens": 70,
+              "cost_jpy": 0.1048,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:17.827366",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1186.07,
+              "prompt_tokens": 400,
+              "completion_tokens": 45,
+              "cost_jpy": 0.0133,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:20.132134",
+              "model": "gpt-4o-mini",
+              "path": "medicine_qa/focus_llm",
+              "latency_ms": 1503.94,
+              "prompt_tokens": 400,
+              "completion_tokens": 45,
+              "cost_jpy": 0.0133,
+              "prompt_version": "completions"
+            },
+            {
+              "timestamp": "2026-08-02T15:36:26.939716",
+              "model": "gpt-5.4-mini",
+              "path": "concierge_agent.chitchat",
+              "latency_ms": 1091.5,
+              "prompt_tokens": 766,
+              "completion_tokens": 38,
+              "cost_jpy": 0.0241,
+              "prompt_version": "completions"
+            }
+          ],
+          "llm_call_count": 5,
+          "llm_total_latency_ms": 6665.57,
+          "llm_session_cost_jpy": 0.2519,
+          "model_profile": "gpt5"
+        },
+        "session_db_source": "db"
+      },
+      "agent_steps": []
+    }
+  ]
+}

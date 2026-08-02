@@ -6620,6 +6620,17 @@
         } catch (e) { /* ignore */ }
     }
 
+    /** リロード後など tab ID が変わったときの stale ロック解除 */
+    function forceReleaseChatSubmitLock(sid) {
+        const id = (sid || getSidFromCookie() || '').trim();
+        if (!id) {
+            return;
+        }
+        try {
+            localStorage.removeItem(CHAT_SUBMIT_LOCK_PREFIX + id);
+        } catch (e) { /* ignore */ }
+    }
+
     function tryAcquireChatStreamLock(sid) {
         const id = (sid || getSidFromCookie() || '').trim();
         if (!id) {
@@ -6657,6 +6668,16 @@
             if (parsed && parsed.tab === CHAT_TAB_ID) {
                 localStorage.removeItem(key);
             }
+        } catch (e) { /* ignore */ }
+    }
+
+    function forceReleaseChatStreamLock(sid) {
+        const id = (sid || getSidFromCookie() || '').trim();
+        if (!id) {
+            return;
+        }
+        try {
+            localStorage.removeItem(CHAT_STREAM_LOCK_PREFIX + id);
         } catch (e) { /* ignore */ }
     }
 
@@ -6743,7 +6764,8 @@
             return false;
         }
         if (processingBubbleLocked || isProcessingInFlight()) {
-            return isCurrentTurnComplete(merged) && isCurrentTurnRenderedInDom(merged);
+            // セッション上ターン確定後は applyBotResponseSession で DOM 反映する（DOM 待ちだとデッドロック）
+            return isCurrentTurnComplete(merged);
         }
         return isChatResponseComplete(merged) && isLatestTurnRenderedInDom(merged);
     }
@@ -6825,7 +6847,7 @@
                 if (
                     message
                     && message.type === 'user'
-                    && userMessageText(message) === pendingUser
+                    && userMessagesMatch(message, pendingUser)
                 ) {
                     userIndex = i;
                     break;
@@ -7068,7 +7090,7 @@
                 continue;
             }
             if (
-                userMessageText(m) !== userText
+                comparableUserMessageText(m) !== comparableUserMessageText(userText)
                 && !isBlockedUserPlaceholderMessage(m)
             ) {
                 continue;
@@ -7099,8 +7121,12 @@
         lastProcessingStatusPayload = null;
         stopProcessingBubbleWatchdog();
         clearChatSubmitBaseline();
-        clearInFlightTurn(resolveActiveSubmitSid());
+        const sid = resolveActiveSubmitSid();
+        clearInFlightTurn(sid);
+        forceReleaseChatSubmitLock(sid);
+        forceReleaseChatStreamLock(sid);
         endAwaitingPostResponse();
+        removeProcessingMessage();
         if (opts.preserveStatusCards !== true) {
             clearPersistentStatusMessages();
         }
@@ -7330,7 +7356,16 @@
             
             // 送信処理開始
             const submitSid = getSidFromCookie();
-            if (!tryAcquireChatSubmitLock(submitSid)) {
+            let submitLockAcquired = tryAcquireChatSubmitLock(submitSid);
+            if (
+                !submitLockAcquired
+                && !loadInFlightTurn(submitSid)
+                && !processingBubbleLocked
+            ) {
+                forceReleaseChatSubmitLock(submitSid);
+                submitLockAcquired = tryAcquireChatSubmitLock(submitSid);
+            }
+            if (!submitLockAcquired) {
                 showProcessingMessage();
                 return;
             }
@@ -7837,7 +7872,7 @@
             if (!m || m.type !== 'user') {
                 return false;
             }
-            if (userMessageText(m) !== userText && !isBlockedUserPlaceholderMessage(m)) {
+            if (!userMessagesMatch(m, userText) && !isBlockedUserPlaceholderMessage(m)) {
                 return false;
             }
             if (turnId && m.pending_turn_id && m.pending_turn_id !== turnId) {
@@ -7867,6 +7902,8 @@
         ensureProcessingBubbleVisible();
         restartProcessingPollIfNeeded();
         startProcessingBubbleWatchdog();
+        activeSubmitSid = sid;
+        scheduleDeferredSessionRecovery(chatSubmitGeneration, 0, { maxAttempts: 30, force: true });
         return true;
     }
 
@@ -8235,7 +8272,7 @@
             if (
                 userMsg
                 && userMsg.type === 'user'
-                && userMessageText(userMsg) === text
+                && userMessagesMatch(userMsg, text)
                 && botMsg
                 && botMsg.type === 'bot'
                 && !botMsg.error
@@ -8394,7 +8431,7 @@
         const list = Array.isArray(messages) ? messages : [];
         for (let i = list.length - 1; i >= 0; i--) {
             const message = list[i];
-            if (message && message.type === 'user' && userMessageText(message) === target) {
+            if (message && message.type === 'user' && userMessagesMatch(message, target)) {
                 return message;
             }
         }
@@ -8516,6 +8553,102 @@
         return String((message && message.content) || '').trim();
     }
 
+    /** 重複判定用（\\r\\n や連続空白を正規化） */
+    function comparableUserMessageText(messageOrText) {
+        const raw = typeof messageOrText === 'object' && messageOrText
+            ? userMessageText(messageOrText)
+            : String(messageOrText || '').trim();
+        return raw.replace(/\r\n?/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function userMessagesMatch(a, b) {
+        return comparableUserMessageText(a) === comparableUserMessageText(b);
+    }
+
+    /** 今回ターン（baseline 以降）に同一文言の user がサーバー側にあれば true */
+    function serverHasUserMatchingTextInCurrentTurn(serverMsgs, text) {
+        const target = comparableUserMessageText(text);
+        if (!target) {
+            return false;
+        }
+        const baseline = getChatSubmitBaselineLength();
+        const slice = (Array.isArray(serverMsgs) ? serverMsgs : []).slice(baseline);
+        return slice.some(function (m) {
+            return m && m.type === 'user' && comparableUserMessageText(m) === target;
+        });
+    }
+
+    /** 楽観 pending user がサーバー保存済み user と重複しているか */
+    function isRedundantOptimisticUser(serverMsgs, localMsg) {
+        if (!localMsg || localMsg.type !== 'user' || localMsg.uuid || localMsg.message_id) {
+            return false;
+        }
+        if (!localMsg.pending_local && !localMsg.pending_turn_id && !isInflightPendingUserMessage(localMsg)) {
+            return false;
+        }
+        return serverHasUserMatchingTextInCurrentTurn(serverMsgs, localMsg);
+    }
+
+    /** サーバー確定 user と同一文言の楽観 pending user を除去 */
+    function stripRedundantOptimisticUsers(messages) {
+        const list = Array.isArray(messages) ? messages : [];
+        const out = [];
+        list.forEach(function (m, index) {
+            if (!m) {
+                return;
+            }
+            if (
+                m.type === 'user'
+                && !m.uuid
+                && !m.message_id
+                && (m.pending_local || m.pending_turn_id)
+            ) {
+                const text = comparableUserMessageText(m);
+                const hasConfirmedDuplicate = list.some(function (other, j) {
+                    if (j === index || !other || other.type !== 'user') {
+                        return false;
+                    }
+                    if (!(other.uuid || other.message_id)) {
+                        return false;
+                    }
+                    return comparableUserMessageText(other) === text;
+                });
+                if (hasConfirmedDuplicate) {
+                    return;
+                }
+                const hasPendingDuplicateInOut = out.some(function (prev) {
+                    return prev.type === 'user' && comparableUserMessageText(prev) === text;
+                });
+                if (hasPendingDuplicateInOut) {
+                    return;
+                }
+            }
+            out.push(m);
+        });
+        return out;
+    }
+
+    function findUserMessageNodeByComparableText(chatMessages, text) {
+        if (!chatMessages) {
+            return null;
+        }
+        const target = comparableUserMessageText(text);
+        if (!target) {
+            return null;
+        }
+        const nodes = chatMessages.querySelectorAll('.message.user');
+        for (let i = nodes.length - 1; i >= 0; i--) {
+            const node = nodes[i];
+            if (node.id === 'currentTypingIndicator') {
+                continue;
+            }
+            if (comparableUserMessageText(messageNodeTextContent(node)) === target) {
+                return node;
+            }
+        }
+        return null;
+    }
+
     /** キャッシュ由来の空 user やサーバー確定済み user の文言欠落を補正 */
     function sanitizeSessionMessages(messages) {
         const list = Array.isArray(messages) ? messages : [];
@@ -8583,6 +8716,9 @@
         if (!localText) {
             return true;
         }
+        if (isRedundantOptimisticUser(serverMsgs, localMsg)) {
+            return true;
+        }
         if (isInflightPendingUserMessage(localMsg)) {
             const inflight = loadInFlightTurn(getSidFromCookie());
             if (inflight && hasServerCompletedInFlightTurn({ messages: serverMsgs }, inflight)) {
@@ -8620,10 +8756,7 @@
             if (!m || m.type !== 'user') {
                 return false;
             }
-            if (localMsg.pending_turn_id) {
-                return false;
-            }
-            return userMessageText(m) === localText;
+            return userMessagesMatch(m, localMsg);
         });
     }
 
@@ -8831,7 +8964,7 @@
             if (node.id === 'currentTypingIndicator') {
                 return;
             }
-            const text = messageNodeTextContent(node);
+            const text = comparableUserMessageText(messageNodeTextContent(node));
             if (!text) {
                 prevUser = node;
                 prevText = text;
@@ -8857,8 +8990,7 @@
                     return;
                 }
                 if (prevIsPending && nodeIsPending) {
-                    prevUser = node;
-                    prevText = text;
+                    node.remove();
                     return;
                 }
                 prevUser = node;
@@ -9157,6 +9289,8 @@
         awaitingPostResponse = false;
         chatStreamInProgress = false;
         chatSubmitBaselineCount = 0;
+        forceReleaseChatSubmitLock(getSidFromCookie());
+        forceReleaseChatStreamLock(getSidFromCookie());
     }
 
     function findLastBotMessage(messages) {
@@ -9184,7 +9318,7 @@
             }
             if (m.type === 'user' && out.length > 0) {
                 const prev = out[out.length - 1];
-                if (prev.type === 'user' && userMessageText(prev) === userMessageText(m)) {
+                if (prev.type === 'user' && userMessagesMatch(prev, m)) {
                     if (!prev.uuid && !prev.message_id && (m.uuid || m.message_id)) {
                         seen.delete(stableMessageKey(prev));
                         out[out.length - 1] = m;
@@ -9207,8 +9341,15 @@
                         if ((!prevTurn && !mTurn) || (prevTurn && mTurn && prevTurn === mTurn)) {
                             return;
                         }
+                        return;
                     }
                     if ((prev.uuid || prev.message_id) && !(m.uuid || m.message_id)) {
+                        return;
+                    }
+                    if ((m.uuid || m.message_id) && !(prev.uuid || prev.message_id)) {
+                        seen.delete(stableMessageKey(prev));
+                        out[out.length - 1] = m;
+                        seen.add(k);
                         return;
                     }
                 }
@@ -9216,7 +9357,7 @@
             seen.add(k);
             out.push(m);
         });
-        return collapseDuplicateUserMessages(out);
+        return collapseDuplicateUserMessages(stripRedundantOptimisticUsers(out));
     }
 
     function messagesFingerprint(messages) {
@@ -9436,7 +9577,7 @@
             const isServerConfirmed = !!(tail.uuid || tail.message_id);
             const isPending =
                 !isServerConfirmed &&
-                ((lastUser && tailText === lastUser) ||
+                ((lastUser && userMessagesMatch(tailText, lastUser)) ||
                     (userMsg && stableMessageKey(tail) === stableMessageKey(userMsg)));
             if (!isPending) {
                 break;
@@ -9454,7 +9595,7 @@
             const candidateText = userMessageText(userCandidate);
             const skipOptimisticDuplicate =
                 lastUser
-                && candidateText === lastUser
+                && userMessagesMatch(candidateText, lastUser)
                 && serverHasBlockedTurnUser(msgs, lastUser);
             const skipBlockedDuplicate =
                 isBlockedUserPlaceholderMessage(userCandidate)
@@ -9491,7 +9632,7 @@
             return msgs;
         }
         const tail = msgs[msgs.length - 1];
-        if (tail.type !== 'user' || String(tail.content || '').trim() !== lastUser) {
+        if (tail.type !== 'user' || !userMessagesMatch(tail, lastUser)) {
             return msgs;
         }
         if (tail.uuid || tail.message_id) {
@@ -10035,31 +10176,49 @@
         }
     }
 
-    function tryRestoreInFlightProcessingOnLoad(sessionData) {
+    function recoverCompletedInflightOnLoad(sessionData, merged) {
         const sid = getSidFromCookie();
         const inflight = loadInFlightTurn(sid);
         if (inflight && hasServerCompletedInFlightTurn(sessionData, inflight)) {
             clearInFlightTurn(sid);
-            const merged = resolveSessionMessages(sessionData || {}, { allowRestore: false });
-            applySessionMessages(sessionData, {
-                preserveStatusCards: true,
-                forceRender: true,
-                allowWhileStreaming: true,
-            });
-            finalizeProcessingTurnIfReady(merged);
-            return;
-        }
-        const merged = sanitizeSessionMessages(
-            (sessionData && sessionData.messages) ? sessionData.messages : []
-        );
-        if (merged.length === 0 && !inflight) {
-            return;
+            if (!applyBotResponseSession(sessionData, { preserveStatusCards: true, forceRender: true })) {
+                finalizeProcessingTurnIfReady(merged);
+            }
+            forceReleaseChatSubmitLock(sid);
+            forceReleaseChatStreamLock(sid);
+            removeProcessingMessage();
+            return true;
         }
         const last = merged.length > 0 ? merged[merged.length - 1] : null;
         if (last && last.type === 'bot' && !last.error) {
             if (inflight) {
                 clearInFlightTurn(sid);
             }
+            if (processingBubbleLocked || !postResponseResolved) {
+                if (!finalizeProcessingTurnIfReady(merged)) {
+                    markPostResponseResolved({ preserveStatusCards: true });
+                    restoreSubmitButton();
+                    removeTypingIndicator({ force: true });
+                    removeProcessingMessage();
+                }
+            }
+            forceReleaseChatSubmitLock(sid);
+            forceReleaseChatStreamLock(sid);
+            return true;
+        }
+        return false;
+    }
+
+    function tryRestoreInFlightProcessingOnLoad(sessionData) {
+        const sid = getSidFromCookie();
+        const merged = sanitizeSessionMessages(
+            (sessionData && sessionData.messages) ? sessionData.messages : []
+        );
+        if (recoverCompletedInflightOnLoad(sessionData, merged)) {
+            return;
+        }
+        const inflight = loadInFlightTurn(sid);
+        if (merged.length === 0 && !inflight) {
             return;
         }
         if (inflight && !processingBubbleLocked) {
@@ -10075,11 +10234,19 @@
             })
             .then(function (data) {
                 if (!data || !data.active) {
+                    if (processingBubbleLocked && inflight) {
+                        activeSubmitSid = sid;
+                        scheduleDeferredSessionRecovery(chatSubmitGeneration, 0, {
+                            maxAttempts: 30,
+                            force: true,
+                        });
+                    }
                     return;
                 }
                 postResponseResolved = false;
                 processingBubbleLocked = true;
                 isSubmitting = false;
+                const last = merged.length > 0 ? merged[merged.length - 1] : null;
                 setChatSubmitBaseline(Math.max(0, merged.length - 1));
                 if (last && last.type === 'user') {
                     const lastUser = userMessageText(last);
@@ -10180,7 +10347,7 @@
         isSubmitting = false;
         clearSubmitWatchdog();
         clearSlowRequestTimer();
-        releaseChatSubmitLock(resolveActiveSubmitSid());
+        forceReleaseChatSubmitLock(resolveActiveSubmitSid());
         activeSubmitSid = '';
         if (submitBtn) {
             submitBtn.disabled = false;
@@ -12410,6 +12577,16 @@ function appendQaDelta(text, section) {
                             preserveStatusCards: true,
                             forceRender: false,
                         });
+                    } else if (
+                        mergedAfterPost.length > 0
+                        && isCurrentTurnComplete(mergedAfterPost)
+                        && !isSessionRenderStable(mergedAfterPost)
+                    ) {
+                        applySessionMessages(sessionData, {
+                            preserveStatusCards: true,
+                            forceRender: true,
+                            allowWhileStreaming: true,
+                        });
                     }
 
                     if (
@@ -14036,12 +14213,24 @@ function appendQaDelta(text, section) {
                 }
                 return;
             }
+            if (message.type === 'user') {
+                const existingUser = findUserMessageNodeByComparableText(chatMessages, message);
+                if (existingUser) {
+                    if (existingUser.getAttribute('data-message-id') !== messageKey) {
+                        existingUser.setAttribute('data-message-id', messageKey);
+                        existingUser.removeAttribute('data-temporary');
+                    }
+                    refreshUserMessageNodeContent(existingUser, message);
+                    return;
+                }
+            }
             const messageDiv = createDomNodeForSessionMessage(message, index);
             if (!messageDiv) {
                 return;
             }
             appendMessageNodeToChat(chatMessages, messageDiv);
         });
+        collapseDuplicateUserDomNodes(chatMessages, messages);
         collapseDuplicateBlockedUserDomNodes(chatMessages, messages);
     }
 
@@ -14124,7 +14313,8 @@ function appendQaDelta(text, section) {
             // 既存メッセージの場合はスキップ（重複防止）
             const messageKey = getMessageDomKey(message);
             if (message.type === 'user') {
-                const existingUser = findDuplicateUserContentNode(chatMessages, message);
+                const existingUser = findDuplicateUserContentNode(chatMessages, message)
+                    || findUserMessageNodeByComparableText(chatMessages, message);
                 if (existingUser) {
                     if (existingUser.getAttribute('data-message-id') !== messageKey) {
                         existingUser.setAttribute('data-message-id', messageKey);

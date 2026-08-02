@@ -15,7 +15,13 @@ logger = logging.getLogger(__name__)
 
 # counseling_detail の JSONL 書き込みのみ別スレッド（stdout/GCP は同期 — Cloud Run で応答返却後にワーカーが落ちると非同期 emit が欠落する）
 _detail_log_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="detail_log")
-atexit.register(lambda: _detail_log_executor.shutdown(wait=False, cancel_futures=False))
+
+
+def shutdown_detail_log_executor() -> None:
+    _detail_log_executor.shutdown(wait=False, cancel_futures=True)
+
+
+atexit.register(shutdown_detail_log_executor)
 
 # ログディレクトリのパス
 from src import PROJECT_ROOT

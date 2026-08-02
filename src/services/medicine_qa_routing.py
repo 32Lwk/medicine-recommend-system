@@ -1066,18 +1066,26 @@ def is_generic_qa_boilerplate(text: str) -> bool:
 
 def _qa_product_line_html(name: str, description: str) -> str:
     """製品名と説明を改行崩れしにくい HTML ブロックで返す。"""
-    name_esc = html.escape(name.strip())
-    desc_esc = html.escape(description.strip())
-    if not name_esc:
-        return f'<p class="ui-qa-product-line">{desc_esc}</p>' if desc_esc else ""
-    return (
-        f'<p class="ui-qa-product-line">'
-        f'<span class="ui-qa-product-line__lead">'
-        f"<strong>{name_esc}</strong>："
-        f"</span>"
-        f'<span class="ui-qa-product-line__body">{desc_esc}</span>'
-        f"</p>"
-    )
+    from src.services.text_formatter import _qa_product_line_html as _product_line_html
+
+    return _product_line_html(name, description)
+
+
+def _medicine_use_detail_html(
+    medicines: list[dict[str, Any]],
+    user_message: str,
+    *,
+    limit: int = 3,
+) -> str:
+    from src.core.medicine.medicine_response_builder import _short_medicine_use_hint
+
+    parts: list[str] = []
+    for med in medicines[:limit]:
+        name = str(med.get("product_name") or "").strip()
+        if not name:
+            continue
+        parts.append(_qa_product_line_html(name, _short_medicine_use_hint(med, user_message)))
+    return "".join(parts)
 
 
 def _infer_dosage_form(med: dict[str, Any]) -> str:
@@ -1334,8 +1342,6 @@ def _sections_for_focus(
     user_message: str,
     meds: list[dict[str, Any]],
 ) -> dict[str, str]:
-    from src.core.medicine.medicine_response_builder import _short_medicine_use_hint
-
     out: dict[str, str] = {k: "" for k in _QA_SECTION_KEYS}
 
     if focus == "comparison" and meds:
@@ -1358,19 +1364,11 @@ def _sections_for_focus(
         sec = build_side_effect_section(user_message, meds)
         if sec.get("side_effects"):
             out["side_effects"] = str(sec["side_effects"])
-        out["medicine_details"] = "\n".join(
-            f"**{m.get('product_name')}**：{_short_medicine_use_hint(m, user_message)}"
-            for m in meds[:3]
-            if m.get("product_name")
-        )
+        out["medicine_details"] = _medicine_use_detail_html(meds, user_message)
         return out
 
     if focus == "doping" and meds:
-        out["medicine_details"] = "\n".join(
-            f"**{m.get('product_name')}**：{_short_medicine_use_hint(m, user_message)}"
-            for m in meds[:3]
-            if m.get("product_name")
-        )
+        out["medicine_details"] = _medicine_use_detail_html(meds, user_message)
         dop_parts: list[str] = []
         for m in meds[:3]:
             name = str(m.get("product_name") or "")
@@ -1384,22 +1382,14 @@ def _sections_for_focus(
         return out
 
     if focus == "interaction" and meds:
-        out["medicine_details"] = "\n".join(
-            f"**{m.get('product_name')}**：{_short_medicine_use_hint(m, user_message)}"
-            for m in meds[:3]
-            if m.get("product_name")
-        )
+        out["medicine_details"] = _medicine_use_detail_html(meds, user_message)
         note = _comparison_interaction_note(meds)
         if note:
             out["interactions"] = note
         return out
 
     if focus == "usage" and meds:
-        out["medicine_details"] = "\n".join(
-            f"**{m.get('product_name')}**：{_short_medicine_use_hint(m, user_message)}"
-            for m in meds[:3]
-            if m.get("product_name")
-        )
+        out["medicine_details"] = _medicine_use_detail_html(meds, user_message)
         usage_bits = [
             _normalize_ws(str(m.get("usage") or ""), limit=160)
             for m in meds[:2]
@@ -1414,11 +1404,7 @@ def _sections_for_focus(
         return out
 
     if focus == "age" and meds:
-        out["medicine_details"] = "\n".join(
-            f"**{m.get('product_name')}**：{_short_medicine_use_hint(m, user_message)}"
-            for m in meds[:2]
-            if m.get("product_name")
-        )
+        out["medicine_details"] = _medicine_use_detail_html(meds, user_message, limit=2)
         age_lines = _age_restriction_lines(meds)
         if age_lines:
             out["consultation_advice"] = age_lines
@@ -1428,11 +1414,7 @@ def _sections_for_focus(
         return out
 
     if meds:
-        out["medicine_details"] = "\n".join(
-            f"**{m.get('product_name')}**：{_short_medicine_use_hint(m, user_message)}"
-            for m in meds[:2]
-            if m.get("product_name")
-        )
+        out["medicine_details"] = _medicine_use_detail_html(meds, user_message, limit=2)
     return out
 
 
@@ -1483,6 +1465,10 @@ def _clean_qa_text(text: str) -> str:
     """QA 本文からノイズフレーズを除去。"""
     cleaned = _QA_NOISE_PHRASE_RE.sub("", str(text or ""))
     cleaned = re.sub(r"[、。]{2,}", "。", cleaned)
+    if "ui-qa-product-line" in cleaned or (
+        cleaned.strip().startswith("<") and ">" in cleaned
+    ):
+        return cleaned.strip("、")
     cleaned = re.sub(r"\s+", " ", cleaned.replace("\n", " ")).strip()
     return cleaned.strip("、")
 

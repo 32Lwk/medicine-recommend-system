@@ -395,7 +395,7 @@ def build_qa_from_chat_response(
         prune_qa_response,
         section_title_for_focuses,
     )
-    from src.services.text_formatter import safe_format_qa_html
+    from src.services.text_formatter import format_medicine_product_lines_html, safe_format_qa_html
 
     user_message = str((feedback_context or {}).get("user_message") or "")
     pruned = prune_qa_response(chat_response, user_message)
@@ -418,7 +418,9 @@ def build_qa_from_chat_response(
         if val and str(val).strip():
             title = section_title_for_focuses(focuses, key, default_title)
             raw = str(val).strip()
-            if raw.startswith("<") and ">" in raw:
+            if key == "medicine_details":
+                body_html = format_medicine_product_lines_html(raw)
+            elif raw.startswith("<") and ">" in raw:
                 body_html = raw
             else:
                 body_html = safe_format_qa_html(raw)

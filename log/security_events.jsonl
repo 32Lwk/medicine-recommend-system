@@ -13672,3 +13672,19 @@
 {"timestamp": "2026-08-02T02:26:29.664763", "event_type": "input_validation", "user_id": "ユーザー66", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "こんにちは"}}
 {"timestamp": "2026-08-02T02:26:35.380598", "original_length": 18, "sanitized_length": 18, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-08-02T02:26:35.380598", "event_type": "input_validation", "user_id": "ユーザー68", "input_length": 18, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "GitlabとGithubの違いは？"}}
+{"timestamp": "2026-08-03T01:06:09.574929", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-03T01:06:09.574929", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛く、\r\n熱があります。"}}
+{"timestamp": "2026-08-03T01:06:13.910650", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-03T01:09:42.826200", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-03T01:09:42.827199", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛く、\r\n熱があります。"}}
+{"timestamp": "2026-08-03T01:09:47.005190", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-03T01:14:05.269890", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-03T01:14:05.269890", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技前に\r\n飲めますか？"}}
+{"timestamp": "2026-08-03T01:22:43.810208", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-03T01:22:43.810208", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛く、\r\n熱があります。"}}
+{"timestamp": "2026-08-03T01:22:47.698918", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-03T01:31:49.870565", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-03T01:31:49.871570", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛く、熱があります。"}}
+{"timestamp": "2026-08-03T01:31:56.009774", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-03T01:32:45.953672", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-03T01:32:45.954668", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技前に飲めますか？"}}

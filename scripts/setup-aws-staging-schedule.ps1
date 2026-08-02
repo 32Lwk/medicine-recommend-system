@@ -20,6 +20,7 @@ else {
 }
 
 $Prefix = "MedicineRecommend-AWS-Staging"
+# 8/5 大会スケール専用スケジュールは setup-aws-contest-805-schedule.ps1 を使用
 $Events = @(
     @{
         Name = "$Prefix-0731-Resume"
@@ -34,20 +35,6 @@ $Events = @(
         Action = "stop"
         Label = "7/31 mentoring stop"
         Description = "Stop ECS after 7/31 mentoring (17:30 end)"
-    },
-    @{
-        Name = "$Prefix-0802-Resume"
-        At = "2026-08-02T23:00:00"
-        Action = "resume"
-        Label = "8/3 competition window resume (always-on until 8/6)"
-        Description = "Resume ECS for 8/3-8/6 always-on window"
-    },
-    @{
-        Name = "$Prefix-0807-Stop"
-        At = "2026-08-07T00:05:00"
-        Action = "stop"
-        Label = "Post-competition stop (after 8/6 23:59)"
-        Description = "Stop ECS after competition window"
     }
 )
 

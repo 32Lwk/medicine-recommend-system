@@ -76,9 +76,18 @@ def _augment_medicine_prompt_with_timeout(
     timeout_sec: float,
 ) -> str:
     """Medicine KB / Local RAG 追記。タイムアウト時は base_prompt のみ返す。"""
+    from config.aws_features import MEDICINE_RAG_LOCAL, get_medicine_rag_provider
     from src.services.bedrock_kb_retrieve import augment_medicine_prompt_with_kb
+    from src.services.local_rag_index import is_bm25_index_ready
 
-    with ThreadPoolExecutor(max_workers=1, thread_name_prefix="explain_kb") as pool:
+    if get_medicine_rag_provider() == MEDICINE_RAG_LOCAL and not is_bm25_index_ready("medicine"):
+        logger.info(
+            "Local RAG BM25 index not ready — skipping usage-notes KB augment"
+        )
+        return base_prompt
+
+    pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="explain_kb")
+    try:
         fut = pool.submit(
             augment_medicine_prompt_with_kb,
             user_text,
@@ -96,6 +105,9 @@ def _augment_medicine_prompt_with_timeout(
         except Exception as exc:
             logger.warning("Medicine KB augment failed: %s — using base prompt", exc)
             return base_prompt
+    finally:
+        # with ThreadPoolExecutor は shutdown(wait=True) でタイムアウト後も RAG を待つため使わない
+        pool.shutdown(wait=False, cancel_futures=True)
 
 
 def _fetch_batch_usage_notes_text(
