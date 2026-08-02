@@ -93,6 +93,69 @@ def test_brand_hint_detects_loxonin_and_ib():
     assert any("イブ" in n for n in names)
 
 
+def test_comparison_sections_include_traits_and_dosage_form():
+    msg = "ロキソニンとイブとバファリンの違いは？"
+    meds = [
+        {
+            "product_name": "ロキソニンＳ",
+            "ingredients": "ロキソプロフェンナトリウム",
+            "usage": "1錠",
+        },
+        {
+            "product_name": "イブ",
+            "ingredients": "イブプロフェン",
+            "usage": "2錠",
+        },
+        {
+            "product_name": "バファリンＡ",
+            "ingredients": "アスピリン",
+            "usage": "2錠",
+        },
+    ]
+    chat = build_focused_qa_sections(msg, meds)
+    pruned = prune_qa_response(chat, msg)
+    assert "剤形はこの情報" not in str(pruned.get("medicine_details") or "")
+    assert "錠剤" in str(pruned.get("medicine_details") or "")
+    assert "効き目" in str(pruned.get("medicine_details") or "")
+    assert "NSAIDs" not in str(pruned.get("medicine_details") or "")
+    pick = str(pruned.get("consultation_advice") or "")
+    assert "ui-qa-product-line" in pick
+    assert "効き目を優先" in pick or "ロキソプロフェン" in pick
+    assert pick.count("登録販売者") <= 2
+
+
+def test_merge_focused_qa_sections_overrides_llm_for_comparison():
+    from src.services.medicine_qa_routing import merge_focused_qa_sections
+
+    llm = {
+        "answer": "比較回答",
+        "medicine_details": "【ロキソニンS】剤形はこの情報では確認できません",
+        "interactions": "併用注意",
+        "side_effects": "副作用",
+        "consultation_advice": "医師に相談してください",
+    }
+    rule = {
+        "medicine_details": "<p class=\"ui-qa-product-line\"><strong>ロキソニンＳ</strong></p>",
+        "interactions": "ルール併用",
+        "side_effects": "ルール副作用",
+        "consultation_advice": "ルール選び方",
+    }
+    merged = merge_focused_qa_sections(llm, rule, ["comparison"])
+    assert merged["medicine_details"] == rule["medicine_details"]
+    assert merged["interactions"] == "ルール併用"
+    assert merged["answer"] == "比較回答"
+
+
+def test_prune_dedupes_interaction_from_side_effects():
+    chat = {
+        "answer": "主成分が異なる解熱鎮痛薬です。",
+        "interactions": "アスピリンとイブプロフェンの併用は避けてください。",
+        "side_effects": "アスピリンとイブプロフェンの併用は避けてください。胃腸障害に注意。",
+    }
+    pruned = prune_qa_response(chat, "ロキソニンとイブの違い")
+    assert pruned.get("side_effects") == "" or "併用" not in str(pruned.get("side_effects") or "")
+
+
 def test_pick_advice_differentiates_loxonin_and_ib():
     msg = "ロキソニンとイブどっちがいい？"
     meds = [
@@ -101,9 +164,8 @@ def test_pick_advice_differentiates_loxonin_and_ib():
     ]
     advice = _pick_advice_lines(meds, msg)
     assert "ui-qa-product-line" in advice
-    assert "効き目を重視" in advice
+    assert "優先" in advice
     assert "マイルド" in advice
-    assert advice.count("効き目重視向き") <= 1
 
 
 def test_product_image_focus_excludes_comparison():

@@ -17,3 +17,8 @@
 2026-07-31 18:00:04 [stop] 
 2026-07-31 18:00:04 [stop] Note: ALB / Managed Bedrock KB / Secrets / CodePipeline base fee still incur charges.
 2026-07-31 18:00:18 [stop] DONE 7/31 mentoring stop
+2026-08-02 23:00:01 [resume] START 8/3 competition window resume (always-on until 8/6) -> resume-aws-staging.sh
+2026-08-02 23:00:01 [resume] Traceback (most recent call last):
+2026-08-02 23:00:01 [resume]   File "<stdin>", line 2, in <module>
+2026-08-02 23:00:02 [resume] FileNotFoundError: [Errno 2] No such file or directory: '/d/Programing/medicine-recommend/scripts/.aws-staging-stop-state.json'
+2026-08-02 23:00:02 [resume] ERROR exit=1

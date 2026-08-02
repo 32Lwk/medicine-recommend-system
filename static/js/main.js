@@ -108,7 +108,7 @@
                         title: "チャット型医薬品相談ツール(β版)",
                         visual: "🤝💊",
                         visualAlt: "薬剤師がスマートフォン越しに相談を受けるイメージ",
-                        subtitle: "β版（安定運用）— GCP 本番環境（medicine.yutok.dev）",
+                        subtitle: "β版（安定運用）",
                         body: [
                             "症状を入力すると、市販薬の候補と受診の目安をAIが案内します。医療診断の代わりではありません。"
                         ],
@@ -478,7 +478,7 @@
                         title: "Welcome to the Chat-based OTC Assistant (Beta)",
                         visual: "🤝💊",
                         visualAlt: "Illustration of a pharmacist supporting via smartphone",
-                        subtitle: "Beta (stable) — GCP production (medicine.yutok.dev)",
+                        subtitle: "Beta (stable)",
                         body: [
                             "Describe your symptoms; the AI suggests OTC options and when to seek care. It is not a medical diagnosis."
                         ],
@@ -860,7 +860,7 @@
                         title: "채팅형 의약품 상담 도구(베타)에 오신 것을 환영합니다",
                         visual: "🤝💊",
                         visualAlt: "약사가 스마트폰으로 상담하는 모습을 나타내는 아이콘",
-                        subtitle: "베타(안정 운영) — GCP 운영 환경(medicine.yutok.dev)",
+                        subtitle: "베타(안정 운영)",
                         body: [
                             "증상을 알려주면 AI가 일반의약품 후보와 진료 시기를 안내합니다. 의료 진단을 대신하지 않습니다."
                         ],
@@ -1230,7 +1230,7 @@
                         title: "欢迎使用聊天式药品咨询工具（测试版）",
                         visual: "🤝💊",
                         visualAlt: "药师通过手机提供咨询的示意图",
-                        subtitle: "测试版（稳定运行）— GCP 生产环境（medicine.yutok.dev）",
+                        subtitle: "测试版（稳定运行）",
                         body: [
                             "描述症状后，AI 会提示非处方药候选与就医建议，不能替代医疗诊断。"
                         ],

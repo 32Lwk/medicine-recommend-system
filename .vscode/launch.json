@@ -9,10 +9,13 @@
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}",
       "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "envFile": "${workspaceFolder}/.env",
       "env": {
         "OPEN_BROWSER": "1",
-        "APP_ENV": "development"
+        "APP_ENV": "development",
+        "APP_PYTHON_REEXEC": "0"
       },
+      "purpose": ["debug-in-terminal"],
       "justMyCode": true
     }
   ]

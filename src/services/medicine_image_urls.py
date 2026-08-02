@@ -16,6 +16,7 @@ _SLUG_KEYS = ("image_slug", "product_image_slug")
 _JAN_KEYS = ("jan", "jan_code", "JAN", "product_id")
 _VERSIONS_PATH = Path(__file__).resolve().parents[2] / "data" / "otc_image_versions.json"
 _versions_cache: dict[str, str] | None = None
+_versions_cache_mtime: float | None = None
 
 # 通称・短い製品名 → R2 上の画像スラッグ（ブランド名と object key が異なる場合）
 OTC_IMAGE_SLUG_ALIASES: dict[str, str] = {
@@ -52,20 +53,41 @@ def slugify_product_name(name: str, manufacturer: str = "") -> str:
 
 
 def invalidate_otc_image_versions_cache() -> None:
-    global _versions_cache
+    global _versions_cache, _versions_cache_mtime
     _versions_cache = None
+    _versions_cache_mtime = None
+
+
+def _manifest_version_for_slug(slug: str) -> str:
+    if not slug:
+        return ""
+    return load_otc_image_versions().get(slug, "")
+
+
+def _resolve_image_version(slug: str, row_version: str = "") -> str:
+    """manifest の hash を優先（画像差し替え後もプロセス再起動なしで反映）。"""
+    manifest_version = _manifest_version_for_slug(slug)
+    if manifest_version:
+        return manifest_version
+    return (row_version or "").strip()
 
 
 def load_otc_image_versions() -> dict[str, str]:
     """slug -> content hash（キャッシュバスティング用）。"""
-    global _versions_cache
-    if _versions_cache is not None:
+    global _versions_cache, _versions_cache_mtime
+    try:
+        mtime = _VERSIONS_PATH.stat().st_mtime
+    except OSError:
+        mtime = None
+    if _versions_cache is not None and _versions_cache_mtime == mtime:
         return _versions_cache
     try:
         raw = json.loads(_VERSIONS_PATH.read_text(encoding="utf-8"))
         _versions_cache = {str(k): str(v) for k, v in raw.items() if v}
+        _versions_cache_mtime = mtime
     except (OSError, json.JSONDecodeError, TypeError, ValueError):
         _versions_cache = {}
+        _versions_cache_mtime = mtime
     return _versions_cache
 
 
@@ -149,7 +171,7 @@ def resolve_medicine_image_url(medicine: Mapping[str, Any] | None) -> str | None
     if not slug:
         return None
     ext = str(medicine.get("image_ext") or "webp").lstrip(".") or "webp"
-    version = _pick_str(medicine, ("image_version",))
+    version = _resolve_image_version(slug, _pick_str(medicine, ("image_version",)))
     return build_medicine_image_cdn_url(base, slug, ext, version=version or None)
 
 
@@ -177,7 +199,7 @@ def enrich_medicine_image_url(medicine: dict[str, Any]) -> dict[str, Any]:
     """image_url / product_image_url を CDN 規則で補完（外部 https は尊重）。"""
     row = dict(medicine)
     slug = resolve_medicine_image_slug(row)
-    version = _pick_str(row, ("image_version",)) or (load_otc_image_versions().get(slug) if slug else "")
+    version = _resolve_image_version(slug, _pick_str(row, ("image_version",)))
     if version:
         row["image_version"] = version
     else:
@@ -201,4 +223,6 @@ def enrich_medicine_image_url(medicine: dict[str, Any]) -> dict[str, Any]:
     url = build_medicine_image_cdn_url(base, slug, ext, version=version or None)
     row["image_url"] = url
     row["product_image_url"] = url
+    if slug:
+        row["image_slug"] = slug
     return row

@@ -197,7 +197,14 @@ _SIDE_EFFECT_NORMALCY_RE = re.compile(
 )
 _USAGE_DRINK_RE = re.compile(r"飲(?:め|み|ん|んで|む)|服用|摂取")
 _USAGE_FREQUENCY_RE = re.compile(r"頻度|何回|なん回|何度|どのくらい|一日|1日|毎日|回まで")
-_PICK_KEYWORDS = ("どっち", "どれが", "おすすめ", "選ぶ", "いい")
+_PICK_KEYWORDS = ("どっち", "どれが", "どれを", "どれ使", "おすすめ", "オススメ", "お勧め", "選ぶ", "選べ", "迷", "いい")
+_COMPARISON_INTENT_RE = re.compile(
+    r"どう違|何が違|使い分|選べな|迷っ|代わり|似て|別(?:物|の)?|"
+    r"強(?:い|め|さ)|弱(?:い|め|さ)|マイルド|効き目|効(?:き|く)|"
+    r"どれ(?:を|が)?(?:選|使|買|飲)|違う(?:の|ん)|同じ(?:なの|か)|"
+    r"比べ|対比|ベスト|おすす|オススメ|better|which|milder",
+    re.IGNORECASE,
+)
 
 _GENERIC_BOILERPLATE_MARKERS = (
     "詳細は登録販売者にご確認ください",
@@ -209,6 +216,20 @@ _GENERIC_BOILERPLATE_MARKERS = (
     "飲み合わせ情報を取得できませんでした",
     "ドーピング規制の確認ができませんでした",
     "副作用情報を取得できませんでした",
+)
+
+_QA_NOISE_PHRASE_RE = re.compile(
+    r"剤形(?:は|が)?(?:この情報(?:から|では|上)?)?(?:確認|明記)(?:でき|され)(?:ません|ない)"
+    r"|(?:この情報(?:から|では|上)?)?(?:確認|明記)(?:でき|され)(?:ません|ない)"
+)
+
+_GENERIC_CONSULTATION_ONLY_RE = re.compile(
+    r"^(?:胃潰瘍|出血|持病|他の(?:お)?薬|服用中|痛み|熱).{0,80}?"
+    r"(?:医師|登録販売者).{0,40}(?:相談|ご相談)(?:してください|ください)[。]?$"
+)
+
+_COMPARISON_RULE_SECTION_KEYS = frozenset(
+    {"medicine_details", "interactions", "side_effects", "consultation_advice"}
 )
 
 _QA_SECTION_KEYS = (
@@ -396,7 +417,20 @@ def _has_comparison_intent(
             "milder",
             "better",
         )
+    ) or bool(_COMPARISON_INTENT_RE.search(t))
+
+    suitability = any(
+        k in t
+        for k in ("平気", "大丈夫", "一緒", "同時", "併用", "同日", "飲み合わせ", "OK", "ok")
     )
+
+    rec_meds = [m for m in (recommended_medicines or []) if isinstance(m, dict)]
+    if len(rec_meds) >= 2:
+        if pick_or_diff and not (suitability and not pick_or_diff):
+            return True
+        if _is_anaphoric_reference(t) and _has_informational_intent(t) and not suitability:
+            return True
+
     brand_count = _distinct_brand_count(
         t,
         conversation_history=None,
@@ -405,10 +439,6 @@ def _has_comparison_intent(
     )
     # 現発話に2剤以上でも、併用・飲み合わせ確認は comparison ではない
     if brand_count >= 2:
-        suitability = any(
-            k in t
-            for k in ("平気", "大丈夫", "一緒", "同時", "併用", "同日", "飲み合わせ", "OK", "ok")
-        )
         if suitability and not pick_or_diff:
             return False
         return True
@@ -642,6 +672,8 @@ def _is_anaphoric_reference(text: str) -> bool:
 def _has_informational_intent(text: str) -> bool:
     t = (text or "").strip()
     if _QUESTION_INTENT_RE.search(t):
+        return True
+    if _COMPARISON_INTENT_RE.search(t):
         return True
     if any(k in t for k in _INFORMATIONAL_TOPIC_KEYWORDS()):
         return True
@@ -990,7 +1022,11 @@ def should_use_medicine_qa_unified(
 
 def is_comparison_pick_question(text: str) -> bool:
     t = (text or "").strip()
-    return any(k in t for k in _PICK_KEYWORDS) and "違い" not in t and "どう違" not in t
+    if "違い" in t or "どう違" in t or "何が違" in t:
+        return False
+    return any(k in t for k in _PICK_KEYWORDS) or bool(
+        re.search(r"どれ(?:を|が)?(?:選|使|買|飲)", t)
+    )
 
 
 def needs_medicine_clarification(
@@ -1044,19 +1080,77 @@ def _qa_product_line_html(name: str, description: str) -> str:
     )
 
 
-def _pick_hint_for_medicine(med: dict[str, Any]) -> str:
-    """選好質問向けの製品別選び方ヒント。"""
-    ing = str(med.get("ingredients") or "").lower()
+def _infer_dosage_form(med: dict[str, Any]) -> str:
+    """用法・製品名から剤形を推定（不明なら空）。"""
+    usage = str(med.get("usage") or "")
+    name = str(med.get("product_name") or "")
+    blob = f"{name} {usage}"
+    if "カプセル" in blob:
+        return "カプセル"
+    if "錠" in blob:
+        return "錠剤"
+    if "散" in name or "散剤" in blob:
+        return "散剤"
+    if "内服液" in blob or "ドリンク" in blob:
+        return "液剤"
+    if any(k in name for k in ("ゲル", "ローション", "クリーム", "テープ", "パップ", "スプレー")):
+        return "外用"
+    return ""
+
+
+def _ingredient_comparison_traits(ingredients: str) -> dict[str, str]:
+    """成分系統ごとの比較用メタ（効き目・胃負担・選び方）。"""
+    ing = (ingredients or "").lower()
     if "ロキソプロフェン" in ing:
-        return "効き目を重視する場面向き（胃に弱い方は食後・短期使用に注意）。"
-    if "イブプロフェン" in ing:
-        return "比較的マイルドさを重視する場面向き（製品により胃粘膜保護成分が含まれることもあります）。"
+        return {
+            "class_label": "NSAIDs",
+            "potency": "効き目が比較的早く・強めとされることが多い",
+            "gi": "胃腸への負担に注意（食後・短期使用が目安）",
+            "pick": "効き目を優先したい場面向き",
+        }
+    if "イブプロフェン" in ing and "アセトアミノフェン" not in ing:
+        return {
+            "class_label": "NSAIDs",
+            "potency": "バランス型で広く使われる",
+            "gi": "胃腸障害に注意（製品により胃粘膜保護成分あり）",
+            "pick": "比較的マイルドさを重視する場面向き",
+        }
+    if "アスピリン" in ing:
+        return {
+            "class_label": "NSAIDs",
+            "potency": "解熱鎮痛効果あり",
+            "gi": "胃腸障害・出血に注意（空腹時は避ける）",
+            "pick": "アスピリン系を選ぶ場合向き（抗凝固薬使用中は避ける）",
+        }
+    if "アセトアミノフェン" in ing and "イブプロフェン" not in ing:
+        return {
+            "class_label": "アセトアミノフェン",
+            "potency": "解熱鎮痛（炎症を伴う痛みはNSAIDsより弱いことが多い）",
+            "gi": "胃への負担は比較的少ないとされる",
+            "pick": "胃が弱い・NSAIDsが合わない方向き",
+        }
     cls = _ingredient_class_hint(ing)
     if "NSAIDs" in cls:
-        return "効き目重視向き（胃に弱い方は食後・短期使用に注意）。"
+        return {
+            "class_label": "NSAIDs",
+            "potency": "解熱鎮痛効果あり",
+            "gi": "胃腸障害に注意",
+            "pick": "効き目重視向き（胃に弱い方は食後・短期使用に注意）",
+        }
     if "アセトアミノフェン" in cls:
-        return "胃に比較的優しい選択肢になりやすい。"
-    return ""
+        return {
+            "class_label": "アセトアミノフェン",
+            "potency": "解熱鎮痛",
+            "gi": "過量服用に注意",
+            "pick": "胃に比較的優しい選択肢になりやすい",
+        }
+    return {"class_label": "", "potency": "", "gi": "", "pick": ""}
+
+
+def _pick_hint_for_medicine(med: dict[str, Any]) -> str:
+    """選好質問向けの製品別選び方ヒント。"""
+    traits = _ingredient_comparison_traits(str(med.get("ingredients") or ""))
+    return traits.get("pick") or ""
 
 
 def _ingredient_class_hint(ingredients: str) -> str:
@@ -1071,66 +1165,142 @@ def _ingredient_class_hint(ingredients: str) -> str:
 
 
 def _comparison_lines(medicines: list[dict[str, Any]], user_message: str) -> str:
-    from src.core.medicine.medicine_response_builder import _short_medicine_use_hint
-
     parts: list[str] = []
     for med in medicines[:4]:
         name = str(med.get("product_name") or "").strip()
         if not name:
             continue
         ingredients = _normalize_ws(str(med.get("ingredients") or ""), limit=120)
-        use_hint = _short_medicine_use_hint(med, user_message)
-        body = f"主成分は{ingredients or '要確認'}。{use_hint}"
+        traits = _ingredient_comparison_traits(ingredients)
+        form = _infer_dosage_form(med)
+        class_part = ""
+        if traits["class_label"] == "NSAIDs":
+            class_part = "解熱鎮痛薬、"
+        elif traits["class_label"] == "アセトアミノフェン":
+            class_part = "アセトアミノフェン系、"
+        form_part = f"{form}。" if form else ""
+        body = (
+            f"主成分は{ingredients or '要確認'}（{class_part}{traits['potency']}）。"
+            f"{form_part}{traits['gi']}"
+        )
         parts.append(_qa_product_line_html(name, body))
     return "".join(parts)
 
 
 def _comparison_interaction_note(medicines: list[dict[str, Any]]) -> str:
-    classes = {_ingredient_class_hint(str(m.get("ingredients") or "")) for m in medicines}
-    classes.discard("")
-    if "NSAIDs（非ステロイド性消炎鎮痛薬）系" in classes and len(medicines) >= 2:
+    names_by_class: dict[str, list[str]] = {}
+    for med in medicines:
+        name = str(med.get("product_name") or "").strip()
+        if not name:
+            continue
+        cls = _ingredient_class_hint(str(med.get("ingredients") or ""))
+        if cls:
+            names_by_class.setdefault(cls, []).append(name)
+
+    nsaid_names = names_by_class.get("NSAIDs（非ステロイド性消炎鎮痛薬）系", [])
+    if len(nsaid_names) >= 2:
+        joined = "・".join(nsaid_names[:3])
         return (
-            "ロキソプロフェン・イブプロフェンなど同系統の解熱鎮痛薬を同時期に重ねて使わないでください。"
-            "胃腸への負担が増えることがあります。"
+            f"{joined} はいずれも同系統の解熱鎮痛薬です。"
+            "同時期に重ねて使わないでください（胃腸障害・出血リスクが増えます）。"
+            "特にアスピリンとイブプロフェンの併用は避けてください。"
         )
+    classes = set(names_by_class)
     if len(classes) >= 2:
         return "成分系統が異なる製品です。併用の可否は症状・年齢・持病を踏まえ登録販売者にご確認ください。"
     return ""
 
 
 def _comparison_side_effect_note(medicines: list[dict[str, Any]]) -> str:
-    nsaid = any(
-        _ingredient_class_hint(str(m.get("ingredients") or "")).startswith("NSAIDs")
-        for m in medicines
-    )
-    acetaminophen = any(
-        "アセトアミノフェン系" == _ingredient_class_hint(str(m.get("ingredients") or ""))
-        for m in medicines
-    )
+    seen: set[str] = set()
     notes: list[str] = []
-    if nsaid:
-        notes.append("NSAIDs 系は胃腸障害（胃痛・胃もたれ等）に注意が必要です。")
-    if acetaminophen:
-        notes.append("アセトアミノフェン系は過量服用に注意が必要です。")
+    for med in medicines[:4]:
+        ingredients = str(med.get("ingredients") or "")
+        traits = _ingredient_comparison_traits(ingredients)
+        name = str(med.get("product_name") or "").strip()
+        if not name or not traits["gi"]:
+            continue
+        key = traits["class_label"] + traits["gi"]
+        if key in seen:
+            continue
+        seen.add(key)
+        notes.append(f"【{name}】{traits['gi']}")
     if not notes:
         return ""
-    notes.append("いずれも一般に強い眠気は主要副作用としては稀ですが、製品により成分追加があります。")
+    notes.append("服用後に胃痛・吐き気・黒い便・出血しやすい等があれば使用を中止して受診してください。")
     return " ".join(notes)
 
 
-def _pick_advice_lines(medicines: list[dict[str, Any]], user_message: str) -> str:
-    if len(medicines) != 2 or not is_comparison_pick_question(user_message):
+def _comparison_scenario_hints(medicines: list[dict[str, Any]]) -> list[str]:
+    """2〜4製品比較向けの状況別選び方（成分系統ベース）。"""
+    hints: list[str] = []
+    classes: list[str] = []
+    potency_strong: list[str] = []
+    potency_mild: list[str] = []
+    gi_gentle: list[str] = []
+
+    for med in medicines[:4]:
+        name = str(med.get("product_name") or "").strip()
+        ing = str(med.get("ingredients") or "").lower()
+        traits = _ingredient_comparison_traits(ing)
+        cls = traits.get("class_label") or _ingredient_class_hint(ing)
+        if cls:
+            classes.append(cls)
+        if "ロキソプロフェン" in ing and name:
+            potency_strong.append(name)
+        elif "イブプロフェン" in ing and "アセトアミノフェン" not in ing and name:
+            potency_mild.append(name)
+        if "アセトアミノフェン" in ing and "イブプロフェン" not in ing and name:
+            gi_gentle.append(name)
+
+    nsaid_count = sum(1 for c in classes if c == "NSAIDs")
+    has_acet = any(c == "アセトアミノフェン" for c in classes)
+
+    if potency_strong and potency_mild:
+        hints.append(
+            "効き目を優先するならロキソプロフェン系、"
+            "胃への負担を気にするならイブプロフェン系を検討する方が多いです。"
+        )
+    if nsaid_count >= 2:
+        hints.append(
+            "同系統の解熱鎮痛薬は同時期に重ねて使わないでください。"
+        )
+    if has_acet and nsaid_count >= 1:
+        hints.append(
+            "胃が弱い・NSAIDsが合わない場合はアセトアミノフェン系が候補になりやすいです。"
+        )
+    if len(medicines) >= 3 and not hints:
+        hints.append(
+            "まず主成分の系統（解熱鎮痛薬 / アセトアミノフェン）で絞り込むと選びやすくなります。"
+        )
+    return hints
+
+
+def _comparison_pick_advice(medicines: list[dict[str, Any]], user_message: str) -> str:
+    """比較質問（2〜4製品）向けの具体的な選び方。"""
+    if len(medicines) < 2:
         return ""
     blocks: list[str] = []
-    for med in medicines:
+    for med in medicines[:4]:
         name = str(med.get("product_name") or "").strip()
         hint = _pick_hint_for_medicine(med)
         if name and hint:
             blocks.append(_qa_product_line_html(name, hint))
+    for hint in _comparison_scenario_hints(medicines):
+        blocks.append(f'<p class="ui-qa-product-line ui-qa-product-line--scenario">{html.escape(hint)}</p>')
     if not blocks:
         return ""
-    footer = "個人差があります。持病・他のお薬・年齢を伝えて登録販売者に相談してください。"
-    return "".join(blocks) + f'<p class="ui-qa-product-line ui-qa-product-line--footnote">{html.escape(footer)}</p>'
+    footer = "持病・他のお薬・年齢によって最適な選択は変わります。迷ったら用途と成分を伝えて登録販売者に相談してください。"
+    blocks.append(
+        f'<p class="ui-qa-product-line ui-qa-product-line--footnote">{html.escape(footer)}</p>'
+    )
+    return "".join(blocks)
+
+
+def _pick_advice_lines(medicines: list[dict[str, Any]], user_message: str) -> str:
+    if len(medicines) >= 2:
+        return _comparison_pick_advice(medicines, user_message)
+    return ""
 
 
 def _age_restriction_lines(medicines: list[dict[str, Any]]) -> str:
@@ -1309,6 +1479,100 @@ def _allowed_sections_for_focuses(focuses: list[str]) -> set[str]:
     return allowed or set(_QA_SECTION_KEYS)
 
 
+def _clean_qa_text(text: str) -> str:
+    """QA 本文からノイズフレーズを除去。"""
+    cleaned = _QA_NOISE_PHRASE_RE.sub("", str(text or ""))
+    cleaned = re.sub(r"[、。]{2,}", "。", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned.replace("\n", " ")).strip()
+    return cleaned.strip("、")
+
+
+def _is_generic_consultation_only(text: str) -> bool:
+    s = _clean_qa_text(text)
+    if not s:
+        return True
+    if _GENERIC_CONSULTATION_ONLY_RE.match(s):
+        return True
+    if "ui-qa-product-line" in s:
+        return False
+    markers = ("登録販売者", "医師")
+    if any(m in s for m in markers) and len(s) < 90:
+        actionable = ("効き目", "胃", "マイルド", "向き", "優先", "併用", "NSAIDs", "アスピリン", "イブプロフェン")
+        if not any(a in s for a in actionable):
+            return True
+    return False
+
+
+def _text_overlaps(existing: str, candidate: str, *, min_len: int = 24) -> bool:
+    a = _normalize_ws(existing, limit=400).rstrip("。、")
+    b = _normalize_ws(candidate, limit=400).rstrip("。、")
+    if not a or not b or len(b) < min_len:
+        return False
+    if b in a or a in b:
+        return True
+    if len(b) >= 40 and b[:40] in a:
+        return True
+    return False
+
+
+def _dedupe_qa_sections(out: dict[str, Any], main_answer: str) -> dict[str, Any]:
+    """セクション間・主回答との重複を除去。"""
+    answer = _clean_qa_text(main_answer)
+    if answer:
+        out["answer"] = answer
+
+    priority = ("medicine_details", "interactions", "side_effects", "consultation_advice")
+    accumulated = answer
+    for key in priority:
+        val = _clean_qa_text(str(out.get(key) or ""))
+        if not val:
+            out[key] = ""
+            continue
+        if key == "consultation_advice" and "ui-qa-product-line" in val:
+            out[key] = val
+            accumulated = f"{accumulated} {val}".strip()
+            continue
+        if _is_generic_consultation_only(val) and key == "consultation_advice":
+            out[key] = ""
+            continue
+        if accumulated and _text_overlaps(accumulated, val):
+            out[key] = ""
+            continue
+        out[key] = val
+        accumulated = f"{accumulated} {val}".strip()
+
+    if str(out.get("interactions") or "").strip():
+        inter = str(out.get("interactions") or "")
+        side = _clean_qa_text(str(out.get("side_effects") or ""))
+        if side:
+            unique_sents: list[str] = []
+            for sent in re.split(r"(?<=[。!！?？])", side):
+                chunk = sent.strip()
+                if chunk and not _text_overlaps(inter, chunk, min_len=12):
+                    unique_sents.append(chunk)
+            out["side_effects"] = "".join(unique_sents).strip()
+    return out
+
+
+def merge_focused_qa_sections(
+    parsed: dict[str, Any],
+    focused: dict[str, str],
+    qa_focuses: list[str],
+) -> dict[str, Any]:
+    """ルールベース補足をマージ。comparison では LLM セクションを上書き。"""
+    out = dict(parsed)
+    prefer_rule = "comparison" in qa_focuses
+    for key in _QA_SECTION_KEYS:
+        rule_val = str(focused.get(key) or "").strip()
+        if not rule_val:
+            continue
+        if prefer_rule and key in _COMPARISON_RULE_SECTION_KEYS:
+            out[key] = rule_val
+        elif not str(out.get(key) or "").strip():
+            out[key] = rule_val
+    return out
+
+
 def prune_qa_response(
     chat_response: dict[str, Any],
     user_message: str,
@@ -1325,18 +1589,18 @@ def prune_qa_response(
     allowed = _allowed_sections_for_focuses(fs)
 
     for key in _QA_SECTION_KEYS:
-        val = str(out.get(key) or "").strip()
+        val = _clean_qa_text(str(out.get(key) or ""))
         if key not in allowed:
             out[key] = ""
             continue
         if not val or is_generic_qa_boilerplate(val):
             out[key] = ""
             continue
-        if main_answer and _normalize_ws(val, limit=120) in main_answer:
+        if main_answer and _text_overlaps(main_answer, val):
             out[key] = ""
             continue
-        if main_answer and len(val) > 20 and val[:40] in main_answer:
-            out[key] = ""
+
+    out = _dedupe_qa_sections(out, str(answer or out.get("answer") or ""))
 
     if not str(out.get("answer") or "").strip():
         for key in _QA_SECTION_KEYS:

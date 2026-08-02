@@ -173,15 +173,14 @@ OFFICIAL_IMAGE_URLS: dict[str, str] = {
     "救風": "https://shop.r10s.jp/doremi/cabinet/new3/4987438076035.jpg",
     "新エスタックイブエースカプセル": "https://shop.r10s.jp/koyamadrug/cabinet/12217305//p05/4987300069011-1.jpg",
     "新エスベナントローチ": "https://shop.r10s.jp/shiraishiyakuhin/cabinet/0103101.jpg",
-    "新スカイブブロンゴールド微粒": "https://shop.r10s.jp/doremi/cabinet/new3/4987299227829.jpg",
+    "新スカイブブロンゴールド微粒": "https://shop.r10s.jp/fines-f/cabinet/20/4954391105270.jpg",
+    "スカイブブロンEX": "https://shop.r10s.jp/doremi/cabinet/new3/4987299227829.jpg",
     "新スカイブブロンゴールド錠": "https://shop.r10s.jp/bloomgreen/cabinet/bz09436449/4987299227713.jpg",
     "新ストナエースＧ": "https://shop.r10s.jp/mprice-shop/cabinet/l/m2d/4987316014722.jpg",
     "東洋漢方の小青龍湯": "https://makeshop-multi-images.akamaized.net/5312/itemimages/000000001439_JZK4IKj.jpg",
     "第一三共胃腸薬コアブロック散剤": "https://shop.r10s.jp/aoki-industry/cabinet/05366027/item/imgrc0130541489.jpg",
     "胃健錠": "https://shop.r10s.jp/yotsubadrug/cabinet/09794708/4987306009776_1.jpg",
     "角野龍雲湯": "https://shop.r10s.jp/muraiyakuhin/cabinet/10858325/26/c66-1.jpg",
-    "高砂オウレン": "https://shop.r10s.jp/garou/cabinet/01204501/img57695140.jpg",
-    "高砂オウレン末": "https://shop.r10s.jp/garou/cabinet/01204501/img57695141.jpg",
 }
 
 

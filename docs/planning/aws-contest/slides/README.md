@@ -18,6 +18,7 @@ Google Slides / PowerPoint に **01〜09 の PNG を順番に取り込む**だ�
 |---------|---------|------|
 | `01-title.png` | タイトル | 15s |
 | `02-theme.png` | テーマ選択 | 20s |
+| `02-theme/` | テーマ選択 **10パターン**（A〜J） | — |
 | `03-seven-prefectures.png` | 7県の課題概要 | 45s |
 | `04-deep-dive.png` | 課題の深掘り | 40s |
 | `05-solution.png` | ソリューション | 40s |

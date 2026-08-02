@@ -348,6 +348,14 @@ def _finalize_structured_qa_response(
         user_attributes=user_attributes,
     )
     out = prune_qa_response(parsed, user_message, focuses=fs, answer=answer)
+    if "comparison" in fs and recommended_medicines:
+        from src.services.medicine_qa_comparison_quality import enrich_thin_comparison_answer
+
+        out = enrich_thin_comparison_answer(
+            out,
+            recommended_medicines,
+            user_message=user_message,
+        )
     if "product_image" in fs and recommended_medicines:
         out = attach_product_images_to_response(out, recommended_medicines)
         out = _apply_product_image_answer(
@@ -716,6 +724,18 @@ def chat_with_medicine_context(
 
     focus_note = f"\n- 検出された質問焦点: {', '.join(qa_focuses)}\n"
     focus_note += "- 質問に直接関係ない JSON フィールドは空文字 \"\" にしてください。\n"
+    is_comparison = "comparison" in qa_focuses
+    if is_comparison:
+        comparison_hint += (
+            "\n- 【比較質問】answer のみ記述してください。"
+            "medicine_details / interactions / side_effects / consultation_advice は必ず空文字 \"\" にしてください"
+            "（補足セクションはサーバー側で自動生成します）。\n"
+            "- answer では各製品の主成分の違いに加え、"
+            "効き目の強さ・胃への負担・使い分けの目安を2〜3文で簡潔に述べてください。\n"
+            "- 併用注意・副作用の詳細・登録販売者への相談勧告は answer に書かないでください"
+            "（補足セクションに任せます）。\n"
+            "- 剤形がデータ上不明な場合は「確認できません」と書かず省略してください。\n"
+        )
     prompt_body = f"""
 あなたは医薬品推奨システムです。ユーザーの医薬品に関する質問に、推奨医薬品の情報を基に回答してください。
 {memory_section}
@@ -729,7 +749,7 @@ def chat_with_medicine_context(
 {user_message}
 
 以下の点について回答してください：
-1. 医薬品の詳細：各医薬品について「製品名・主成分・剤形」と、質問に関連する用途を2〜3文で簡潔に。効能の全文羅列は避ける。
+1. 医薬品の詳細：各医薬品について「製品名・主成分」と、質問に関連する用途を2〜3文で簡潔に。効能の全文羅列は避ける。
 2. 他の医薬品との飲み合わせ（相互作用）
 3. スポーツ競技でのドーピング規制対象かどうか
 4. 副作用や注意点
@@ -749,10 +769,11 @@ def chat_with_medicine_context(
 - medicine_details では効能効果を箇条書きで羅列せず、質問に応じて「何に使えるか」を短くまとめてください。
 - 推奨医薬品の情報を基に具体的に回答してください
 - 質問に直接関係しない項目（interactions / doping_check / side_effects / consultation_advice / medicine_details）は空文字 "" にしてください。無関係な定型文は書かないでください。
-- 比較質問では answer に比較の要点を書き、medicine_details には製品ごとの成分・用途の違いを簡潔に書いてください。
+- 比較質問では answer に成分差・効き目・胃負担・使い分けの要点のみ書き、詳細セクションは空にしてください。
 - 飲み合わせについては、質問された場合のみ一般的な相互作用を説明してください
 - ドーピングについては、競技・ドーピングの文脈がある場合のみ説明してください
 - 安全性を最優先に考え、不明な点がある場合は医師相談を推奨してください
+- 剤形がデータ上不明な場合は「確認できません」と書かず省略してください
 - 質問の内容が推奨医薬品の情報では回答できない場合は、「お近くの登録販売者にご相談ください」と回答してください
 """
     from src.services.sse_emit import is_streaming_active
@@ -810,6 +831,14 @@ def chat_with_medicine_context(
 
 上記を踏まえ、ユーザーへの直接的な回答のみを200字以内で自然な日本語で書いてください。JSONや見出しは不要です。
 """
+            if "comparison" in qa_focuses:
+                answer_prompt += (
+                    "\n【比較質問】主成分の違いに加え、"
+                    "効き目の強さ・胃への負担・使い分けの目安を簡潔に述べてください。"
+                    "併用注意・副作用の詳細・登録販売者への相談勧告は書かないでください"
+                    "（補足セクションに自動表示されます）。"
+                    "剤形が不明な場合は触れないでください。\n"
+                )
             if "product_image" in qa_focuses:
                 answer_prompt += (
                     "\n【重要】パッケージ画像は回答の下に別セクションで表示されます。"
@@ -892,7 +921,10 @@ def chat_with_medicine_context(
                     }
                 if stream_active and session_id and streamed_answer:
                     parsed_result["answer"] = streamed_answer
-                from src.services.medicine_qa_routing import build_focused_qa_sections
+                from src.services.medicine_qa_routing import (
+                    build_focused_qa_sections,
+                    merge_focused_qa_sections,
+                )
 
                 focused = build_focused_qa_sections(
                     user_message,
@@ -900,9 +932,11 @@ def chat_with_medicine_context(
                     conversation_history=conversation_history,
                     user_attributes=user_attributes,
                 )
-                for key, val in focused.items():
-                    if val and not str(parsed_result.get(key) or "").strip():
-                        parsed_result[key] = val
+                parsed_result = merge_focused_qa_sections(
+                    parsed_result,
+                    focused,
+                    qa_focuses,
+                )
                 parsed_result = _finalize_structured_qa_response(
                     parsed_result,
                     user_message,

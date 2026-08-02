@@ -20,8 +20,19 @@ if [[ "$DESIRED" == "--desired-count" ]]; then
 elif [[ -z "$DESIRED" ]]; then
   if [[ -f "$STATE_FILE" ]]; then
     DESIRED="$(python3 - "$STATE_FILE" <<'PY'
-import json, sys
-with open(sys.argv[1]) as f:
+import json, os, subprocess, sys
+
+path = sys.argv[1]
+if not os.path.isfile(path):
+    cygpath = subprocess.run(
+        ["cygpath", "-w", path],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if cygpath.returncode == 0:
+        path = cygpath.stdout.strip()
+with open(path, encoding="utf-8") as f:
     print(json.load(f)["ecs"]["previous_desired_count"])
 PY
 )"

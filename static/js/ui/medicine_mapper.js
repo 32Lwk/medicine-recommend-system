@@ -138,21 +138,23 @@
     };
   }
 
-  function imageVersionForSlug(slug, med) {
-    if (med && med.image_version) return String(med.image_version);
-    var versions = (typeof window !== 'undefined' && window.OTC_IMAGE_VERSIONS) || null;
-    if (versions && slug && versions[slug]) return String(versions[slug]);
-    return '';
+  function managedCdnBaseNorm() {
+    var base = (typeof window !== 'undefined' && window.MEDICINE_IMAGE_CDN_BASE) || '';
+    return base ? String(base).replace(/\/?$/, '/') : '';
   }
 
-  function imageUrlFromMed(med) {
-    var keys = ['image_url', 'imageUrl', 'hero_url', 'product_image_url'];
-    for (var j = 0; j < keys.length; j++) {
-      var v = med[keys[j]];
-      if (v && String(v).trim()) return String(v).trim();
-    }
-    var base = (typeof window !== 'undefined' && window.MEDICINE_IMAGE_CDN_BASE) || '';
-    if (!base) return null;
+  function isManagedCdnUrl(url) {
+    var base = managedCdnBaseNorm();
+    return !!(base && url && String(url).indexOf(base) === 0);
+  }
+
+  function withManifestVersion(url, version) {
+    if (!url || !version) return url;
+    return String(url).split('?')[0] + '?v=' + encodeURIComponent(version);
+  }
+
+  function resolveImageSlug(med) {
+    med = med || {};
     var slug = med.image_slug || med.product_image_slug || '';
     if (!slug) {
       var name = med.product_name || med.name || '';
@@ -160,10 +162,41 @@
         slug = String(name).replace(/\s+/g, '-').replace(/[^\w\-一-龥ぁ-んァ-ヶ]/g, '').slice(0, 80);
       }
     }
-    if (!slug) return null;
-    var ext = med.image_ext || 'webp';
-    var url = String(base).replace(/\/?$/, '/') + encodeURIComponent(slug) + '.' + String(ext).replace(/^\./, '');
+    return slug;
+  }
+
+  function imageVersionForSlug(slug, med) {
+    var versions = (typeof window !== 'undefined' && window.OTC_IMAGE_VERSIONS) || null;
+    if (versions && slug && versions[slug]) return String(versions[slug]);
+    if (med && med.image_version) return String(med.image_version);
+    return '';
+  }
+
+  function imageUrlFromMed(med) {
+    med = med || {};
+    var keys = ['image_url', 'imageUrl', 'hero_url', 'product_image_url'];
+    var slug = resolveImageSlug(med);
     var version = imageVersionForSlug(slug, med);
+
+    var explicit = '';
+    for (var j = 0; j < keys.length; j++) {
+      var v = med[keys[j]];
+      if (v && String(v).trim()) {
+        explicit = String(v).trim();
+        break;
+      }
+    }
+    if (explicit) {
+      if (version && isManagedCdnUrl(explicit)) {
+        return withManifestVersion(explicit, version);
+      }
+      return explicit;
+    }
+
+    var base = managedCdnBaseNorm();
+    if (!base || !slug) return null;
+    var ext = med.image_ext || 'webp';
+    var url = base + encodeURIComponent(slug) + '.' + String(ext).replace(/^\./, '');
     if (version) url += '?v=' + encodeURIComponent(version);
     return url;
   }

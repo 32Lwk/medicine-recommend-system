@@ -84,6 +84,7 @@ def test_enrich_sets_image_url():
     row = enrich_medicine_image_url({"product_name": "カロナールA", "image_slug": "test"})
     assert row["image_url"] == "https://images.yutok.dev/otc/test.webp"
     assert row["product_image_url"] == row["image_url"]
+    assert row["image_slug"] == "test"
 
 
 def test_enrich_rewrites_stale_managed_cdn_url():
@@ -94,6 +95,26 @@ def test_enrich_rewrites_stale_managed_cdn_url():
     assert row["image_url"] != stale
     assert "%" in row["image_url"]
     assert "?v=" in row["image_url"]
+
+
+def test_enrich_prefers_manifest_over_stale_row_version(monkeypatch, tmp_path):
+    from src.services import medicine_image_urls as mod
+
+    manifest = tmp_path / "versions.json"
+    manifest.write_text('{"新スカイブブロンゴールド微粒": "26197a00"}\n', encoding="utf-8")
+    monkeypatch.setattr(mod, "_VERSIONS_PATH", manifest)
+    mod.invalidate_otc_image_versions_cache()
+
+    row = enrich_medicine_image_url(
+        {
+            "product_name": "新スカイブブロンゴールド微粒",
+            "manufacturer": "米田薬品工業",
+            "image_version": "4616cbf7",
+            "image_url": "https://images.yutok.dev/otc/%E6%96%B0%E3%82%B9%E3%82%AB%E3%82%A4%E3%83%96%E3%83%96%E3%83%AD%E3%83%B3%E3%82%B4%E3%83%BC%E3%83%AB%E3%83%89%E5%BE%AE%E7%B2%92.webp?v=4616cbf7",
+        }
+    )
+    assert row["image_version"] == "26197a00"
+    assert "26197a00" in row["image_url"]
 
 
 def test_no_cdn_when_env_unset(monkeypatch):

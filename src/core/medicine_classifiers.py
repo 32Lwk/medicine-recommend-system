@@ -7,6 +7,7 @@ candidate_scoring から分離（SRP改善）。
 
 import logging
 import os
+import re
 from typing import Dict
 
 from src.core.recommendation_constants import (
@@ -35,6 +36,35 @@ MOTION_SICKNESS_SYMPTOM_KEYWORDS = [
 MOTION_SICKNESS_MEDICINE_KEYWORDS = [
     "乗り物酔い", "乗物酔い", "乗り物酔い止め", "乗物酔い止め"
 ]
+
+# 製品名に単独で含まれる小児向けマーカー（「小児用」以外: 新小児ジキニンシロップ 等）
+PRODUCT_NAME_PEDIATRIC_MARKERS = (
+    "新小児",
+    "小児",
+    "こども",
+    "子ども",
+    "子供",
+    "キッズ",
+    "ジュニア",
+    "ベビー",
+    "幼児",
+    "乳児",
+)
+
+_ADULT_USAGE_MARKERS = ("成人", "15歳以上", "15才以上", "16歳以上", "16才以上")
+_USAGE_MAX_AGE_RE = re.compile(r"(\d+)\s*[歳才]\s*未満")
+
+
+def _usage_indicates_pediatric_only(usage: str) -> bool:
+    """用法に成人用量がなく、対象上限年齢が15歳未満のみの場合 True。"""
+    if not usage:
+        return False
+    if any(marker in usage for marker in _ADULT_USAGE_MARKERS):
+        return False
+    upper_ages = [int(match.group(1)) for match in _USAGE_MAX_AGE_RE.finditer(usage)]
+    if not upper_ages:
+        return False
+    return max(upper_ages) < 15
 
 
 def is_recommendation_excluded_product(candidate: Dict) -> bool:
@@ -90,6 +120,10 @@ def _is_pediatric_specific(candidate: Dict) -> bool:
     if any(kw in product_name for kw in pediatric_name_keywords):
         return True
 
+    # 製品名: 「新小児」「小児」等（「小児用」以外の小児ブランド表記）
+    if any(kw in product_name for kw in PRODUCT_NAME_PEDIATRIC_MARKERS):
+        return True
+
     # 製品名: PEDIATRIC_KEYWORDS の組み合わせ（「小児」「こども」等 + 用法）
     name_has_pediatric = any(kw in product_name for kw in PEDIATRIC_KEYWORDS)
     usage_has_pediatric_form = any(kw in usage_lower for kw in PEDIATRIC_USAGE_KEYWORDS)
@@ -98,6 +132,10 @@ def _is_pediatric_specific(candidate: Dict) -> bool:
 
     # 効能: 「小児の」「小児用」が含まれる場合は小児専用とみなす
     if "小児の" in efficacy or "小児用" in efficacy_lower:
+        return True
+
+    # 用法: 成人用量がなく対象が15歳未満のみ（シロップ等で製品名に小児が無い場合の保険）
+    if _usage_indicates_pediatric_only(usage):
         return True
 
     return False
