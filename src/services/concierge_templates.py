@@ -607,6 +607,103 @@ def _list_section(title: str, items: List[str]) -> str:
     )
 
 
+def build_line_account_intro_text(*, line_url: str) -> str:
+    if line_url:
+        return (
+            "LINE 公式アカウントからも、Web と同じ仕組みで市販薬の相談ができます。\n"
+            "下のリンクまたは QR コードから友だち追加のうえ、お困りの症状をメッセージでお送りください。"
+        )
+    return (
+        "LINE 連携は GCP 本番環境（medicine.yutok.dev）で提供しています。\n"
+        "現在の画面から LINE リンクを取得できない場合は、しばらくしてから再度お試しいただくか、"
+        "画面右上 ℹ️ のお問い合わせ窓口をご利用ください。"
+    )
+
+
+def _line_account_section_html(*, line_url: str, qr_url: str = "") -> str:
+    parts = [
+        "<p>スマートフォンの LINE アプリで友だち追加できます。</p>",
+        '<div class="ui-line-account__actions">',
+    ]
+    if qr_url:
+        parts.append(
+            f'<p class="ui-line-account__qr-wrap">'
+            f'<img src="{html.escape(qr_url, quote=True)}" alt="LINE QRコード" '
+            f'class="ui-crisis-resource__qr-img" width="120" height="120" loading="lazy" decoding="async" '
+            f"onerror=\"if(!this.dataset.fallback){{this.dataset.fallback='1';"
+            f"this.src='https://images.yutok.dev/line/line-official-qr.png';}}else{{"
+            f"this.style.display='none';"
+            f"this.closest('.ui-line-account__qr-wrap')?.classList.add('ui-line-account__qr-wrap--missing');}}\">"
+            f"</p>"
+        )
+    if line_url:
+        parts.append(
+            f'<p class="ui-line-account__link-wrap">'
+            f'<a href="{html.escape(line_url, quote=True)}" target="_blank" '
+            f'rel="noopener noreferrer">LINE 公式アカウントを開く</a></p>'
+        )
+    parts.append("</div>")
+    return "".join(parts)
+
+
+def build_line_account_line_flex(*, line_url: str, intro_text: str = "", qr_url: str = "") -> Dict[str, Any]:
+    body = [p.strip() for p in (intro_text or build_line_account_intro_text(line_url=line_url)).split("\n") if p.strip()]
+    if line_url:
+        body.append(f"友だち追加: {line_url}")
+    if qr_url:
+        body.append("QR コードは Web 画面の案内カードをご確認ください。")
+    body.append("Web ブラウザでも同じ相談ができます（現在ご覧の画面）。")
+    return {
+        "variant": "notice",
+        "title": "LINE で相談する",
+        "subtitle": "友だち追加してチャットを始められます",
+        "body_paragraphs": body,
+        "hints": ["症状やお薬について、具体的にお書きください。"],
+    }
+
+
+def format_line_account_card(
+    *,
+    line_url: str,
+    qr_url: str = "",
+    intro_text: str = "",
+    feedback_data: Optional[Dict[str, Any]] = None,
+) -> str:
+    intro = intro_text or build_line_account_intro_text(line_url=line_url)
+    body_parts = [_intro_paragraphs_html(intro)]
+    if line_url or qr_url:
+        body_parts.append(
+            '<section class="chat-status-card__section">'
+            '<h5 class="chat-status-card__section-title">友だち追加</h5>'
+            + _line_account_section_html(line_url=line_url, qr_url=qr_url)
+            + "</section>"
+        )
+    body_parts.append(
+        _list_section(
+            "ご案内",
+            [
+                "LINE でも Web と同じ市販薬相談フローが利用できます",
+                "長期記憶や Web 引き継ぎなど LINE 向け機能も提供しています",
+                "医療行為・診断・処方の代替ではありません",
+            ],
+        )
+    )
+    footer = ""
+    if feedback_data:
+        footer = format_feedback_buttons(
+            feedback_data,
+            question="このご案内は分かりやすかったですか？",
+        )
+    return format_status_card(
+        variant="notice",
+        title="LINE で相談する",
+        subtitle="友だち追加してチャットを始められます",
+        body_html="".join(body_parts),
+        hints=["症状やお薬について、具体的にお書きください。"],
+        footer_html=footer,
+    )
+
+
 def build_concierge_capabilities_line_flex() -> Dict[str, Any]:
     app = get_app_info()
     caps = get_capabilities()
@@ -798,15 +895,10 @@ def build_concierge_operator_line_flex(*, intro_text: str = "") -> Dict[str, Any
     }
 
 
-def format_concierge_operator_card(
-    *,
-    intro_text: str = "",
-    feedback_data: Optional[Dict[str, Any]] = None,
-) -> str:
-    """docs/concierge/お問い合わせ・試験運用.md に基づくカード（リンク付き・個人属性なし）。"""
+def build_operator_contact_sections_html() -> str:
+    """Sage status カード用 — お問い合わせ・サービス概要（個人属性なし）。"""
     email = _OPERATOR_EMAIL
-    body_parts = [_intro_paragraphs_html(intro_text)]
-    body_parts.append(
+    return (
         '<section class="chat-status-card__section">'
         '<h5 class="chat-status-card__section-title">このサービスについて</h5>'
         "<ul>"
@@ -815,8 +907,6 @@ def format_concierge_operator_card(
         "<li>運営は個人による開発・運用です</li>"
         "<li>運営者の<strong>氏名・所属・資格など個人を特定しうる情報は開示しません</strong></li>"
         "</ul></section>"
-    )
-    body_parts.append(
         '<section class="chat-status-card__section">'
         '<h5 class="chat-status-card__section-title">お問い合わせ</h5>'
         "<ul>"
@@ -826,9 +916,7 @@ def format_concierge_operator_card(
         f'{_external_link(_OPERATOR_BUG_FORM_URL, "不具合報告フォーム")}</li>'
         "<li>画面上の <strong>🐛</strong> ボタンからも同じフォームに進めます</li>"
         "</ul></section>"
-    )
-    body_parts.append(
-        _list_section(
+        + _list_section(
             "ご利用上の注意",
             [
                 "試験運用のため、動作・表示内容の正確性・安全性を保証しません",
@@ -837,6 +925,16 @@ def format_concierge_operator_card(
             ],
         )
     )
+
+
+def format_concierge_operator_card(
+    *,
+    intro_text: str = "",
+    feedback_data: Optional[Dict[str, Any]] = None,
+) -> str:
+    """docs/concierge/お問い合わせ・試験運用.md に基づくカード（リンク付き・個人属性なし）。"""
+    body_parts = [_intro_paragraphs_html(intro_text)]
+    body_parts.append(build_operator_contact_sections_html())
     footer = ""
     if feedback_data:
         footer = format_feedback_buttons(

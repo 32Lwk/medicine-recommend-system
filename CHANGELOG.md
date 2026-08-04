@@ -1,6 +1,73 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年7月28日**（Concierge Meta KB L3 安定化・Local RAG 固定・enterprise/legal FAQ）
+**最終更新日: 2026年8月5日**（連絡先・案内カード文脈ルーティング・operator カード同梱表示・UI 順序修正）
+
+---
+
+## 2026-08-05 — 連絡先・案内カード文脈ルーティング・operator カード同梱・UI 順序修正
+
+### 概要
+
+「運用者はだれ？」「案内カード見せて」等の **運営連絡先意図** が、支払い案内（`store_payment`）・医薬品 Q&A・商品画像に誤ルートする問題を、**特定フレーズ個別対応ではなく contact channel 一般分類**で修正。Web UI では連絡先を **同一 status カード内 sections** に同梱表示。ローカル E2E **23/23**（contact context シナリオ）。
+
+### ユーザー向け改善
+
+| 項目 | 内容 |
+|------|------|
+| operator カード | 初回応答にメール・不具合報告フォーム（forms.gle）を sections として同梱 |
+| intro 文言 | 「直後の案内カード」→「下記のお問い合わせ欄」に正規化（カード未表示の誤解を防止） |
+| 案内カード見せて | 文脈なしでも `doc_operator`（支払い・店舗ではない） |
+| フォローアップ | 「メールは？」「フォームどこ？」「もう一度」等を operator 文脈で継続 |
+| LINE | `LINE教えて` → `concierge_line_account`（kind 上書きバグ修正） |
+| UI 順序 | `/api/sessions` 同期時、サーバー反映済み user を楽観バブルで二重末尾追加しない |
+
+### バックエンド
+
+| モジュール | 変更 |
+|-----------|------|
+| `contact_channel_intent.py` | **新規** — 文脈付き分類、LLM 補助、`is_service_contact_ui_request` |
+| `status_diagnosis_builder.py` | `build_concierge_operator_status` に sections + `layout=card` |
+| `concierge_templates.py` | `build_operator_contact_sections_html` 抽出 |
+| `medicine_qa_eligibility.py` | contact channel 最優先、store 優先で medicine_qa 抑止 |
+| `medicine_qa_routing.py` | `get_medicine_qa_session_context` None 安全化、operator カード依頼除外 |
+| `routing_context.py` | store gate で contact channel 優先（履歴なし単独発話含む） |
+| `store_inquiry_handler.py` | 案内カード除外、支払い「カード」誤マッチ除外 |
+| `gate.py` | contact channel → Concierge 早期直行 |
+| `concierge_agent_history.py` | `resolve_prior_meta_intent` が session.messages を参照 |
+| `concierge_execution_sync.py` | `concierge_line_account` kind の上書き防止 |
+| `concierge_agent.py` | qa_gate contact channel で store gate スキップ |
+
+### フロントエンド
+
+| ファイル | 変更 |
+|---------|------|
+| `static/js/ui/status_renderer.js` | operator kind は plain 化しない |
+| `static/js/main.js` | `syncChatMessageOrder` — サーバー済み user の楽観再掲止 |
+
+### テスト・E2E
+
+| 種別 | 結果 |
+|------|------|
+| ユニット | `test_contact_channel_intent`, `test_contact_context_routing` 等 |
+| ローカル E2E | `scripts/concierge_contact_context_e2e.py` — **22/22 → 23/23**（`op-card-standalone-01` 追加） |
+| ログ | `log/analysis/2026-08-05_concierge_contact_context_e2e_*.md` |
+
+```bash
+python scripts/concierge_contact_context_e2e.py --report-suffix contact
+V2_TEST_BASE_URL=https://aws.medicine.yutok.dev/ python scripts/concierge_contact_context_e2e.py
+```
+
+### ドキュメント
+
+- [`docs/dev/CONTACT_CHANNEL_ROUTING.md`](docs/dev/CONTACT_CHANNEL_ROUTING.md) — **新規** SSOT
+- [`docs/dev/CHAT_ROUTE_EXPECTATIONS.md`](docs/dev/CHAT_ROUTE_EXPECTATIONS.md) — operator / 案内カード行追加
+- [`docs/concierge/technical/00-disclosure-policy.md`](docs/concierge/technical/00-disclosure-policy.md) — 同梱 sections 方針
+
+### その他（同コミット）
+
+- `config/line_config.py` — LINE 公式 URL / QR 正規化
+- `src/utils/port_utils.py` / `app.py` — ローカルポート競合検出・フォールバック
+- `scripts/stop_local_dev.py` / `stop-local-dev.ps1` — ローカル dev 停止ヘルパー
 
 ---
 

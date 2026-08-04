@@ -509,6 +509,27 @@ def test_doc_operator_returns_status_card_with_links(mock_chat):
     assert mock_chat.call_args.kwargs.get("allow_stream") is False
 
 
+@patch(
+    "config.line_config.get_line_official_account_url",
+    return_value="https://lin.ee/no4FYRe",
+)
+@patch(
+    "config.line_config.get_line_official_account_qr_url",
+    return_value="https://medicine.yutok.dev/static/line/line-official-qr.png",
+)
+def test_line_account_link_question_returns_line_card(_mock_qr, _mock_line_url):
+    client = MagicMock()
+    p = build_concierge_payload("doc_operator", "LINEを教えてください。", client)
+    assert p["llm_used"] is False
+    assert p["concierge_intent"] == "capabilities"
+    assert "LINE で相談する" in p["content"]
+    assert "https://lin.ee/no4FYRe" in p["content"]
+    assert "line-official-qr.png" in p["content"]
+    assert "開発者・運営者" not in p["content"]
+    assert "運営者は誰" not in p["sage_diagnosis"]["message"]
+    assert p["sage_diagnosis"]["title"] == "LINE で相談する"
+
+
 @patch("src.agents.concierge_agent.concierge_chat")
 def test_chitchat_uses_llm(mock_chat):
     mock_resp = MagicMock()

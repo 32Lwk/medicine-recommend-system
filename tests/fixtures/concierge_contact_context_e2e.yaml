@@ -1,0 +1,254 @@
+version: 1
+source: concierge contact context E2E
+count: 24
+scenarios:
+  # --- 初回: 運営者 / 連絡先（同一カードに連絡先セクション必須）---
+  - id: op-card-standalone-01
+    category: concierge_contact
+    wave: context
+    description: 文脈なし単独でも案内カードは支払いではない
+    input: 案内カード見せて
+    expect:
+      has_contact_sections: true
+      must_not_kind: store_payment
+      must_not_contain:
+        - "お支払い方法"
+        - "店内のスタッフ"
+
+  - id: op-who-01
+    category: concierge_contact
+    wave: context
+    input: 運用者はだれ？
+    expect:
+      diagnosis_kind: concierge_doc_operator
+      has_contact_sections: true
+      context_keywords:
+        - "forms.gle"
+        - "weary-scoots"
+      must_not_contain:
+        - "azのど"
+        - "商品画像"
+
+  - id: op-who-02
+    category: concierge_contact
+    wave: context
+    input: 運営者は誰ですか
+    expect:
+      has_contact_sections: true
+      context_keywords:
+        - "mailto:"
+
+  - id: op-who-03
+    category: concierge_contact
+    wave: context
+    input: 開発者だれ？
+    expect:
+      has_contact_sections: true
+      must_not_contain:
+        - "lin.ee"
+
+  - id: op-contact-01
+    category: concierge_contact
+    wave: context
+    input: 不具合報告したい
+    expect:
+      has_contact_sections: true
+      context_keywords:
+        - "不具合"
+
+  - id: op-contact-02
+    category: concierge_contact
+    wave: context
+    input: メールアドレス教えて
+    expect:
+      has_contact_sections: true
+      context_keywords:
+        - "@"
+
+  # --- フォローアップ: 案内カード / 連絡先（文脈依存）---
+  - id: op-follow-card-01
+    category: concierge_contact
+    wave: context
+    description: 運用者のあと案内カード依頼
+    setup:
+      - 運用者はだれ？
+    input: 案内カード見せて
+    expect:
+      min_turns: 2
+      has_contact_sections: true
+      must_not_kind: medicine_qa
+      must_not_contain:
+        - "商品画像"
+        - "azのど"
+        - "登録販売者"
+
+  - id: op-follow-card-02
+    category: concierge_contact
+    wave: context
+    setup:
+      - 運営者を教えてください
+    input: 連絡先見せて
+    expect:
+      min_turns: 2
+      has_contact_sections: true
+      must_not_kind: medicine_qa
+
+  - id: op-follow-card-03
+    category: concierge_contact
+    wave: context
+    setup:
+      - 誰が作ったの？
+    input: メールは？
+    expect:
+      min_turns: 2
+      has_contact_sections: true
+      must_not_kind: medicine_qa
+
+  - id: op-follow-card-04
+    category: concierge_contact
+    wave: context
+    setup:
+      - 運用者はだれ？
+    input: フォームどこ？
+    expect:
+      min_turns: 2
+      has_contact_sections: true
+      context_keywords:
+        - "forms.gle"
+
+  - id: op-follow-card-05
+    category: concierge_contact
+    wave: context
+    setup:
+      - 運用者はだれ？
+    input: もう一度
+    expect:
+      min_turns: 2
+      has_contact_sections: true
+      must_not_kind: medicine_qa
+
+  - id: op-follow-card-06
+    category: concierge_contact
+    wave: context
+    setup:
+      - 不具合報告したい
+    input: それ
+    expect:
+      min_turns: 2
+      has_contact_sections: true
+
+  - id: op-follow-card-07
+    category: concierge_contact
+    wave: context
+    setup:
+      - 運用者はだれ？
+    input: さっきのカード見せて
+    expect:
+      min_turns: 2
+      has_contact_sections: true
+      must_not_kind: medicine_qa
+
+  - id: op-follow-card-08
+    category: concierge_contact
+    wave: context
+    setup:
+      - 運用者はだれ？
+    input: 問い合わせ先は？
+    expect:
+      min_turns: 2
+      has_contact_sections: true
+
+  # --- 口語・日常表現 ---
+  - id: op-casual-01
+    category: concierge_contact
+    wave: context
+    input: 作った人誰？
+    expect:
+      has_contact_sections: true
+
+  - id: op-casual-02
+    category: concierge_contact
+    wave: context
+    setup:
+      - 作った人教えて
+    input: 連絡先ちょうだい
+    expect:
+      min_turns: 2
+      has_contact_sections: true
+      must_not_kind: medicine_qa
+
+  - id: op-casual-03
+    category: concierge_contact
+    wave: context
+    setup:
+      - 運営者は？
+    input: 載ってるメール見たい
+    expect:
+      min_turns: 2
+      has_contact_sections: true
+      must_not_kind: medicine_qa
+
+  # --- LINE（混同しない）---
+  - id: line-01
+    category: concierge_contact
+    wave: context
+    input: LINE教えて
+    expect:
+      diagnosis_kind: concierge_line_account
+      context_keywords:
+        - "line.me"
+      must_not_contain:
+        - "forms.gle"
+
+  - id: line-follow-01
+    category: concierge_contact
+    wave: context
+    setup:
+      - LINEで相談したい
+    input: リンクは？
+    expect:
+      min_turns: 2
+      context_keywords:
+        - "line"
+
+  # --- ネガティブ: 薬・店舗（誤ルートしない）---
+  - id: neg-medicine-01
+    category: concierge_contact
+    wave: context
+    input: 風邪薬教えて
+    expect:
+      must_not_kind: concierge_doc_operator
+
+  - id: neg-store-01
+    category: concierge_contact
+    wave: context
+    input: トイレどこ？
+    expect:
+      must_not_kind: medicine_qa
+
+  # --- GPT シミュレーション（文脈フォロー）---
+  - id: gpt-op-follow-01
+    category: concierge_contact
+    wave: context
+    description: GPT simulates natural follow-up after operator question
+    setup:
+      - このアプリの運用者って誰？
+    dynamic_turns: 2
+    dynamic_goal: 運営者の案内のあと、連絡先・案内カード・メール・フォームを自然な口語で尋ねる
+    persona_system: 一般利用者。丁寧だがカジュアル。1文ずつ短く。
+    expect:
+      min_turns: 3
+      must_not_kind: medicine_qa
+
+  - id: gpt-op-follow-02
+    category: concierge_contact
+    wave: context
+    description: GPT simulates bug report then contact request
+    setup:
+      - バグ見つけたんだけど
+    dynamic_turns: 2
+    dynamic_goal: 不具合報告の流れのあと、問い合わせ方法・連絡先を尋ねる
+    persona_system: 一般利用者。困っているが攻撃的ではない。
+    expect:
+      min_turns: 3
+      last_has_contact_or_concierge: true

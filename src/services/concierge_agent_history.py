@@ -14,6 +14,7 @@ _KIND_TO_AGENT: dict[str, str] = {
     "concierge_app_about": "ConciergeAgent",
     "concierge_medical_handoff": "ConciergeAgent",
     "concierge_operator": "ConciergeAgent",
+    "concierge_line_account": "ConciergeAgent",
     "counseling": "CounselingManager",
     "medicine_qa": "MedicineQAAgent",
     "emoji_offensive_ack": "ConciergeAgent",
@@ -169,6 +170,11 @@ def resolve_prior_meta_intent(
                 return last
         except Exception:
             pass
+        messages = session.get("messages") if hasattr(session, "get") else None
+        if messages:
+            from_history = resolve_last_concierge_intent(list(messages))
+            if from_history:
+                return from_history
     if conversation_history:
         return resolve_last_concierge_intent(conversation_history)
     return None

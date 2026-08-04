@@ -1486,6 +1486,28 @@ body[data-ui-variant="sage"].onboarding-open[data-onboarding-interaction="3"] #s
   border-radius: 8px;
 }
 
+[data-ui-variant="sage"] .ui-line-account__actions {
+  margin: 6px 0 0;
+}
+
+[data-ui-variant="sage"] .ui-line-account__actions p {
+  margin: 0;
+  line-height: 1.35;
+}
+
+[data-ui-variant="sage"] .ui-line-account__actions .ui-line-account__link-wrap {
+  margin-top: 4px;
+}
+
+[data-ui-variant="sage"] .ui-line-account__actions .ui-crisis-resource__qr-img {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+[data-ui-variant="sage"] .ui-line-account__actions .ui-line-account__qr-wrap--missing {
+  display: none;
+}
+
 [data-ui-variant="sage"] .ui-crisis-panel__emergency {
   margin: 14px 0 0;
   padding: 10px 12px;

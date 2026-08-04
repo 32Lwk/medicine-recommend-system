@@ -519,12 +519,54 @@ def build_concierge_capabilities_status() -> StatusDiagnosisV1:
 
 
 def build_concierge_operator_status(intro_text: str) -> StatusDiagnosisV1:
+    from src.services.concierge_templates import build_operator_contact_sections_html
+    from src.services.contact_channel_intent import normalize_operator_intro_for_inline_card
+
+    clean_intro = normalize_operator_intro_for_inline_card(intro_text)
+
+    return StatusDiagnosisV1(
+        render="sage_status",
+        layout="card",
+        variant="notice",
+        title="お問い合わせ・試験運用について",
+        subtitle="研究・検証目的の β 版（試験運用）",
+        message=clean_intro,
+        sections=[
+            StatusSection(
+                title="お問い合わせ",
+                items=[],
+                html=build_operator_contact_sections_html(),
+            )
+        ],
+        hints=[
+            "症状やお薬のことは、具体的にお書きください。",
+            "プライバシーポリシー等は画面右上 ℹ️ からご確認いただけます。",
+        ],
+        kind="concierge_operator",
+        show_feedback=True,
+    )
+
+
+def build_line_account_status(intro_text: str, *, line_url: str = "", qr_url: str = "") -> StatusDiagnosisV1:
+    from src.services.concierge_templates import _line_account_section_html
+
+    sections = []
+    if line_url or qr_url:
+        sections.append(
+            StatusSection(
+                title="友だち追加",
+                items=[],
+                html=_line_account_section_html(line_url=line_url, qr_url=qr_url),
+            )
+        )
     return StatusDiagnosisV1(
         render="sage_status",
         variant="notice",
-        title="開発者・運営者への連絡",
+        title="LINE で相談する",
+        subtitle="友だち追加してチャットを始められます",
         message=intro_text,
-        kind="concierge_operator",
+        sections=sections,
+        kind="concierge_line_account",
         show_feedback=True,
     )
 

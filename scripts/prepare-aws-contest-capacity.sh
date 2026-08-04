@@ -19,7 +19,9 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=lib/aws_common.sh
 source "$ROOT/scripts/lib/aws_common.sh"
 
+WEB_ACL_NAME="${WAF_WEB_ACL_NAME:-${PROJECT_PREFIX}-web-acl}"
 STATE_FILE="$ROOT/scripts/.aws-contest-capacity-state.json"
+PY_STATE_FILE="$(to_win_path "$STATE_FILE")"
 MODE="dry-run"
 
 # 1 vCPU + 2GB（Fargate 1024 CPU の最小 memory は 2048）
@@ -41,7 +43,7 @@ for arg in "$@"; do
 done
 
 save_state() {
-  python3 - "$STATE_FILE" "$@" <<'PY'
+  python3 - "$PY_STATE_FILE" "$@" <<'PY'
 import json, sys, datetime
 path = sys.argv[1]
 payload = json.loads(sys.argv[2])
@@ -55,21 +57,30 @@ PY
 
 capture_current() {
   SERVICE_ARN="arn:aws:ecs:${AWS_REGION}:${AWS_ACCOUNT_ID}:service/${ECS_CLUSTER}/${ECS_SERVICE}"
-  EXPRESS_JSON="$(aws ecs describe-express-gateway-service \
+  local tmp_express tmp_svc py_express py_svc
+  tmp_express="$ROOT/scripts/.tmp-contest-express.json"
+  tmp_svc="$ROOT/scripts/.tmp-contest-svc.json"
+  py_express="$(to_win_path "$tmp_express")"
+  py_svc="$(to_win_path "$tmp_svc")"
+  trap 'rm -f "$tmp_express" "$tmp_svc"' RETURN
+
+  aws ecs describe-express-gateway-service \
     --service-arn "$SERVICE_ARN" \
     --region "$AWS_REGION" \
-    --output json)"
-  SVC_JSON="$(aws ecs describe-services \
+    --output json >"$tmp_express"
+  aws ecs describe-services \
     --cluster "$ECS_CLUSTER" \
     --services "$ECS_SERVICE" \
     --region "$AWS_REGION" \
-    --output json)"
+    --output json >"$tmp_svc"
 
-  python3 - "$EXPRESS_JSON" "$SVC_JSON" "$WEB_ACL_NAME" "$AWS_REGION" <<'PY'
+  python3 - "$py_express" "$py_svc" "$WEB_ACL_NAME" "$AWS_REGION" <<'PY'
 import json, subprocess, sys
 
-express = json.loads(sys.argv[1])
-svc = json.loads(sys.argv[2])[0]
+with open(sys.argv[1], encoding="utf-8") as f:
+    express = json.load(f)
+with open(sys.argv[2], encoding="utf-8") as f:
+    svc = json.load(f)["services"][0]
 acl_name, region = sys.argv[3], sys.argv[4]
 cfg = express["service"]["activeConfigurations"][0]
 scaling = cfg.get("scalingTarget") or {}
@@ -157,7 +168,7 @@ restore_contest() {
   fi
   if [[ "$MODE" == "dry-run" ]]; then
     echo "[dry-run] would restore from ${STATE_FILE}"
-    python3 - "$STATE_FILE" <<'PY'
+    python3 - "$PY_STATE_FILE" <<'PY'
 import json, sys
 print(json.dumps(json.load(open(sys.argv[1], encoding="utf-8")), indent=2, ensure_ascii=False))
 PY
@@ -165,7 +176,7 @@ PY
   fi
 
   read -r RESTORE_CPU RESTORE_MEMORY RESTORE_DESIRED RESTORE_MIN RESTORE_MAX RESTORE_CPU_TARGET RESTORE_WORKERS <<EOF
-$(python3 - "$STATE_FILE" <<'PY'
+$(python3 - "$PY_STATE_FILE" <<'PY'
 import json, sys
 d = json.load(open(sys.argv[1], encoding="utf-8"))
 print(

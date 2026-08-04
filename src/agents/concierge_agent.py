@@ -16,7 +16,11 @@ from src.content.concierge_knowledge import (
     get_policy_snippet,
     get_service_identity_block,
 )
-from src.services.concierge_intent import ConciergeIntent, classify_concierge_intent
+from src.services.concierge_intent import (
+    ConciergeIntent,
+    classify_concierge_intent,
+    is_line_account_link_question,
+)
 from src.services.concierge_orchestrator import resolve_intent_from_triage
 from src.services.concierge_llm import concierge_chat
 from src.services.concierge_templates import (
@@ -24,6 +28,8 @@ from src.services.concierge_templates import (
     build_concierge_architecture_line_flex,
     build_concierge_capabilities_line_flex,
     build_concierge_operator_line_flex,
+    build_line_account_intro_text,
+    build_line_account_line_flex,
     build_dynamic_concierge_line_flex,
     structure_concierge_meta_display,
     split_dynamic_body_paragraphs,
@@ -36,6 +42,7 @@ from src.services.concierge_templates import (
     format_concierge_capabilities_card,
     format_dynamic_concierge_meta_card,
     format_concierge_operator_card,
+    format_line_account_card,
 )
 
 logger = logging.getLogger(__name__)
@@ -383,6 +390,22 @@ def resolve_concierge_intent(
     if not text:
         return None
 
+    from src.services.contact_channel_intent import (
+        classify_contact_channel_llm,
+        classify_contact_channel_question,
+        contact_channel_to_concierge_intent,
+        should_use_line_account_payload,
+    )
+
+    if should_use_line_account_payload(text, history=conversation_history):
+        return "capabilities"
+
+    channel = classify_contact_channel_question(text, history=conversation_history)
+    if channel:
+        mapped = contact_channel_to_concierge_intent(channel)
+        if mapped:
+            return mapped  # type: ignore[return-value]
+
     from src.services.routing_context import evaluate_store_gate
 
     router_dispatch = bool((triage_result or {}).get("_intent_router_dispatch"))
@@ -424,7 +447,12 @@ def resolve_concierge_intent(
             return follow  # type: ignore[return-value]
 
     orchestrated = resolve_intent_from_triage(
-        triage_result, session, text, sid=session_id, routing_ctx=routing_ctx
+        triage_result,
+        session,
+        text,
+        sid=session_id,
+        routing_ctx=routing_ctx,
+        conversation_history=conversation_history,
     )
     if orchestrated:
         return orchestrated
@@ -447,6 +475,18 @@ def resolve_concierge_intent(
     probed = probe_meta_concierge_intent(text)
     if probed:
         return probed
+
+    if client is not None:
+        llm_channel = classify_contact_channel_llm(
+            text,
+            client,
+            history=conversation_history,
+            session_id=session_id,
+        )
+        if llm_channel:
+            mapped = contact_channel_to_concierge_intent(llm_channel)
+            if mapped:
+                return mapped  # type: ignore[return-value]
 
     category = (triage_result or {}).get("category", "")
     if category == "Other" and client is not None and not (triage_result or {}).get("concierge_intent"):
@@ -912,6 +952,33 @@ def generate_doc_operator_intro(
     history: Optional[List[Dict[str, str]]] = None,
 ) -> str:
     """お問い合わせカード上部用の短い LLM 導入文（URL はカード側に任せる）。"""
+    if is_line_account_link_question(user_text, history=history):
+        from config.line_config import get_line_official_account_url
+
+        return build_line_account_intro_text(line_url=get_line_official_account_url())
+
+    from src.services.contact_channel_intent import (
+        is_operator_contact_question,
+        is_operator_identity_question,
+    )
+
+    if is_operator_identity_question(user_text, history=history):
+        return (
+            "お問い合わせありがとうございます。"
+            "本ツールは研究・検証目的の β 版（試験運用）として個人で開発・運用しています。"
+            "プライバシー保護のため、運営者の氏名・所属・大学など個人を特定しうる情報は"
+            "チャット上ではお伝えしておりません。"
+            "不具合報告やご意見は、下記のメールまたはフォームからお送りください。"
+        )
+
+    if is_operator_contact_question(user_text, history=history):
+        return (
+            "お問い合わせありがとうございます。"
+            "不具合のご報告やご意見・ご要望は、下記のメールアドレスまたは"
+            "不具合報告フォームからお送りいただけます。"
+            "内容を確認のうえ、可能な範囲で対応いたします。"
+        )
+
     title, doc_body = load_concierge_doc("doc_operator")
     hist = ""
     if history:
@@ -929,8 +996,9 @@ def generate_doc_operator_intro(
 - 冒頭で質問へのお礼（「お問い合わせありがとうございます」等）を述べる
 - 試験運用（β版）の位置づけと、個人開発・運用であることをやさしく説明する
 - 氏名・所属を開示しない理由は「プライバシー保護のため」等、利用者に配慮した表現で1文触れる
-- 「運営者は誰？」「大学はどこ？」などは、個人名・所属はお伝えできない旨を丁寧に述べ、**直後の案内カード**に連絡先があることを促す
-- **メールアドレス・URL・リンク・箇条書きは書かない**（直後のカードに記載される）
+- 「運営者は誰？」「大学はどこ？」など、**運営者の個人属性**を尋ねられた場合のみ、個人名・所属はお伝えできない旨を丁寧に述べ、**下記のお問い合わせ欄**から連絡できることを促す
+- **LINE 公式アカウント URL・友だち追加・QR コード**の質問には触れない（別カードで案内される）。その場合は運営者個人情報の説明を繰り返さない
+- **メールアドレス・URL・リンク・箇条書きは書かない**（下記の案内欄に記載される）
 - Markdown は使わずプレーンテキスト
 - 医療診断・処方は行わない
 """
@@ -976,6 +1044,40 @@ def generate_doc_operator_intro(
     return _DOC_OPERATOR_INTRO_FALLBACK
 
 
+def build_line_account_payload(
+    user_text: str,
+    *,
+    feedback_data: Optional[Dict[str, Any]] = None,
+) -> ResponsePayload:
+    from config.line_config import get_line_official_account_qr_url, get_line_official_account_url
+    from src.services.status_diagnosis_builder import build_line_account_status
+
+    line_url = get_line_official_account_url()
+    qr_url = get_line_official_account_qr_url()
+    intro = build_line_account_intro_text(line_url=line_url)
+    return {
+        "content": format_line_account_card(
+            line_url=line_url,
+            qr_url=qr_url,
+            intro_text=intro,
+            feedback_data=feedback_data,
+        ),
+        "content_format": "status_card",
+        "line_flex": build_line_account_line_flex(
+            line_url=line_url,
+            intro_text=intro,
+            qr_url=qr_url,
+        ),
+        "concierge_intent": "capabilities",
+        "llm_used": False,
+        "sage_diagnosis": build_line_account_status(
+            intro,
+            line_url=line_url,
+            qr_url=qr_url,
+        ).to_client_dict(),
+    }
+
+
 def build_doc_operator_payload(
     user_text: str,
     client: OpenAI,
@@ -990,7 +1092,10 @@ def build_doc_operator_payload(
         session_id=session_id,
         history=history,
     )
+    from src.services.contact_channel_intent import normalize_operator_intro_for_inline_card
     from src.services.status_diagnosis_builder import build_concierge_operator_status
+
+    intro = normalize_operator_intro_for_inline_card(intro)
 
     return {
         "content": format_concierge_operator_card(
@@ -2479,7 +2584,12 @@ def build_concierge_payload(
     session_id: Optional[str] = None,
     history: Optional[List[Dict[str, str]]] = None,
 ) -> ResponsePayload:
+    from src.services.contact_channel_intent import should_use_line_account_payload
+
     fb = _feedback_data(user_text, intent)
+
+    if should_use_line_account_payload(user_text, history=history):
+        return build_line_account_payload(user_text, feedback_data=fb)
 
     if intent == "greeting":
         from src.services.status_diagnosis_builder import build_concierge_text_status
@@ -2543,6 +2653,8 @@ def build_concierge_payload(
             session_id=session_id,
         )
     if intent == "doc_operator":
+        if should_use_line_account_payload(user_text, history=history):
+            return build_line_account_payload(user_text, feedback_data=fb)
         return build_doc_operator_payload(
             user_text,
             client,
@@ -2673,6 +2785,12 @@ def should_concierge_handle(
             ):
                 return False
             return _concierge_meta_allowed()
+
+    intent_source = str((triage_result or {}).get("concierge_intent_source") or "")
+    if intent_source.startswith("qa_gate:contact_channel") and (triage_result or {}).get(
+        "concierge_intent"
+    ):
+        return (triage_result or {}).get("category") != "Emergency"
 
     if triage_has_concierge_meta_intent(triage_result):
         if evaluate_store_gate(

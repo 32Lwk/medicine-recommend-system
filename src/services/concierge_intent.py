@@ -142,6 +142,17 @@ _LEGAL_CROSSDOC_COMPARE_RE = re.compile(
 )
 
 
+def is_line_account_link_question(
+    text: str,
+    *,
+    history: Optional[list] = None,
+) -> bool:
+    """本サービスの LINE 公式アカウント URL・友だち追加を尋ねる質問。"""
+    from src.services.contact_channel_intent import is_line_account_link_question as _classify
+
+    return _classify(text, history=history)
+
+
 def is_legal_crossdoc_comparison_question(text: str) -> bool:
     """プライバシーポリシー × 利用規約・免責の横断比較質問。"""
     t = (text or "").strip()
@@ -656,7 +667,11 @@ def probe_session_admin_intent(user_text: str) -> Optional[str]:
     return intent if intent else None
 
 
-def probe_meta_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
+def probe_meta_concierge_intent(
+    user_text: str,
+    *,
+    history: list | None = None,
+) -> Optional[ConciergeIntent]:
     """
     メタ質問のキーワードプローブ。LLM トリアージ・meta_triage を省略する高速パス用。
     構造パターン（architecture 等）を医薬品相談ヒューリスティックより先に評価する。
@@ -664,6 +679,16 @@ def probe_meta_concierge_intent(user_text: str) -> Optional[ConciergeIntent]:
     text = (user_text or "").strip()
     if not text or len(text) > 120:
         return None
+    from src.services.contact_channel_intent import (
+        classify_contact_channel_question,
+        contact_channel_to_concierge_intent,
+    )
+
+    channel = classify_contact_channel_question(text, history=history)
+    if channel:
+        mapped = contact_channel_to_concierge_intent(channel)
+        if mapped:
+            return mapped  # type: ignore[return-value]
     for pattern, intent in _META_PROBE_RULES:
         if pattern.search(text):
             if intent == "app_about" and is_excluded_service_app_about_request(text):

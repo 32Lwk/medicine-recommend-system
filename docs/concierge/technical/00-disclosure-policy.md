@@ -38,7 +38,7 @@ ConciergeAgent の intent 別に、上記原則から **意図的に異なる** 
 | `doc_privacy` | プライバシーポリシー md **のみ** を根拠。KB 横断 retrieve は meta 系補助のみ。条項 paraphrase 禁止 | `concierge_agent.py` — `_DOC_REFERENCE_ONLY_INTENTS` |
 | `doc_terms` | 利用規約 md のみ。薬機法「合法」等の断言禁止 | 同上 + faithfulness guard |
 | `doc_operator` | **氏名・所属・学年・資格はチャット上で開示しない**（ドキュメントに書いてあっても）。試験運用の個人開発 + 問い合わせ窓口を案内 | `generate_doc_answer_text` 要件 |
-| `doc_operator` 導入文 | メール・URL は書かない（直後のカードに記載）。PII 非開示理由を1文 | `generate_doc_operator_intro` |
+| `doc_operator` 導入文 | メール・フォームは **同一 status カードの sections** に記載。「直後の案内カード」表現は使わず「下記」に正規化 | `normalize_operator_intro_for_inline_card` / `build_concierge_operator_status` |
 | `architecture` / `capabilities` | env 名・内部パスをサニタイズ。公開ドキュメントに無い構成は推測しない | `concierge_output_sanitize.py` |
 | プライバシーポリシー第7条の連絡先 | **doc_privacy / doc_operator カード経由では正確に伝える**（チャット本文への PII 漏洩は sanitize で除去） | 公開 doc が正本 |
 | 運営者情報 md の個人名 | ℹ️ モーダル・doc 直接参照では表示可。**チャット LLM 生成文には含めない** | 開示境界の二層構造 |

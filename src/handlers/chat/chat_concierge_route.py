@@ -215,11 +215,17 @@ def try_concierge_response(
     alt_texts = [t for t in (user_message, processed_message, sanitized_message) if t]
     from src.services.routing_context import evaluate_store_gate
 
-    if routing_text and evaluate_store_gate(
-        routing_text,
-        *alt_texts,
-        triage_result=triage_result,
-        routing_ctx=routing_ctx,
+    intent_source = str((triage_result or {}).get("concierge_intent_source") or "")
+    skip_store_for_contact = intent_source.startswith("qa_gate:contact_channel")
+    if (
+        routing_text
+        and not skip_store_for_contact
+        and evaluate_store_gate(
+            routing_text,
+            *alt_texts,
+            triage_result=triage_result,
+            routing_ctx=routing_ctx,
+        )
     ):
         return None
     if not routing_text or not should_concierge_handle(

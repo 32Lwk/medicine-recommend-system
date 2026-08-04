@@ -93,6 +93,7 @@ def test_schedule_force_exit_starts_timer_once(monkeypatch):
 def test_schedule_force_exit_immediate_on_windows(monkeypatch):
     monkeypatch.setattr("src.utils.dev_server.os.name", "nt", raising=False)
     exits: list[str] = []
+    tree_stops: list[int] = []
     stop_once = __import__("threading").Event()
 
     monkeypatch.setattr(
@@ -111,6 +112,30 @@ def test_schedule_force_exit_immediate_on_windows(monkeypatch):
     )
 
     assert exits == ["SIGINT"]
+
+
+def test_dev_force_exit_stops_process_tree_on_windows(monkeypatch):
+    monkeypatch.setattr("src.utils.dev_server.os.name", "nt", raising=False)
+    calls: list[str] = []
+    stop_once = __import__("threading").Event()
+
+    monkeypatch.setattr(
+        "src.utils.dev_server.shutdown_background_executors",
+        lambda: calls.append("shutdown"),
+    )
+    monkeypatch.setattr(
+        "src.utils.port_utils.stop_local_dev_process_tree",
+        lambda start_pid=None: calls.append("tree") or True,
+    )
+    monkeypatch.setattr(
+        "src.utils.dev_server.os._exit",
+        lambda code: calls.append(f"exit:{code}"),
+    )
+
+    from src.utils.dev_server import _dev_force_exit
+
+    _dev_force_exit("SIGINT", stop_once=stop_once)
+    assert calls == ["shutdown", "tree", "exit:0"]
 
 
 def test_run_uvicorn_dev_wraps_handle_exit_and_force_exits(monkeypatch):

@@ -7,6 +7,7 @@
 `OPEN_BROWSER=1` で起動時にブラウザを自動オープン（既定はオフ — 二重タブによる SSE 競合を避ける）。
 `OPEN_BROWSER_WAIT_SEC`（既定 120）で /health 応答待ちの上限秒数を変更可能。
 `APP_PYTHON_REEXEC=0` で .venv への自動切替を無効化。
+ポート競合時は停止して終了（`python scripts/stop_local_dev.py`）。別ポート起動は `APP_PORT_FALLBACK=1`。
 """
 import os
 import sys
@@ -100,25 +101,39 @@ def _prepare_local_rag_warmup_async() -> None:
 
 
 def _resolve_port() -> int:
-    from src.utils.port_utils import find_free_port, is_port_in_use
+    from src.utils.port_utils import (
+        find_free_port,
+        format_port_conflict_message,
+        get_listening_pids,
+        is_port_in_use,
+    )
 
     requested_port = int(os.getenv('PORT', 5000))
-    if is_port_in_use(requested_port):
+    if not is_port_in_use(requested_port):
+        return requested_port
+
+    fallback = os.getenv('APP_PORT_FALLBACK', '0').strip().lower() in (
+        '1',
+        'true',
+        'yes',
+    )
+    if fallback:
         logger.warning(
-            "⚠️ Port %s is already in use (古い uvicorn が残っている可能性があります). "
-            "Finding alternative port...",
+            "⚠️ Port %s is already in use. APP_PORT_FALLBACK=1 — finding alternative port...",
             requested_port,
         )
         port = find_free_port(requested_port + 1)
         logger.info("✅ Found available port: %s", port)
         logger.warning(
-            "別ポートで起動しました。ブラウザは http://127.0.0.1:%s/ を開きます。"
-            " /about が古い表示のときは、ポート %s のプロセスを終了してから再起動してください。",
+            "別ポートで起動しました (http://127.0.0.1:%s/)。"
+            " 古いサーバーは python scripts/stop_local_dev.py で停止してください。",
             port,
-            requested_port,
         )
         return port
-    return requested_port
+
+    pids = get_listening_pids(requested_port)
+    logger.error(format_port_conflict_message(requested_port, pids))
+    raise SystemExit(1)
 
 
 def _open_browser_url(url: str) -> bool:

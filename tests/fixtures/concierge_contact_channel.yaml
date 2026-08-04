@@ -1,0 +1,235 @@
+# 連絡チャネル（LINE / 運営者）意図分類 — 多様な言い回し・口語・英語・文脈
+
+cases:
+  # --- LINE 公式アカウント（capabilities / line_account）---
+  - id: line-formal-1
+    text: "LINEを教えてください。"
+    expected_kind: line_account
+    expected_intent: capabilities
+
+  - id: line-formal-2
+    text: "本アプリケーションのLINEのリンクは？"
+    expected_kind: line_account
+    expected_intent: capabilities
+
+  - id: line-casual-katakana
+    text: "ラインの友だち追加したいんだけど"
+    expected_kind: line_account
+    expected_intent: capabilities
+
+  - id: line-casual-no-space
+    text: "line教えて"
+    expected_kind: line_account
+    expected_intent: capabilities
+
+  - id: line-english
+    text: "What's the LINE add friend link?"
+    expected_kind: line_account
+    expected_intent: capabilities
+
+  - id: line-app-context
+    text: "このアプリLINEある？"
+    expected_kind: line_account
+    expected_intent: capabilities
+
+  - id: line-consult-via
+    text: "スマホのLINEから相談できる？"
+    expected_kind: line_account
+    expected_intent: capabilities
+
+  - id: line-url-casual
+    text: "LINE url 欲しい"
+    expected_kind: line_account
+    expected_intent: capabilities
+
+  - id: line-qr-direct
+    text: "LINEのQRコード教えて"
+    expected_kind: line_account
+    expected_intent: capabilities
+
+  - id: line-official-account
+    text: "公式LINEアカウントは？"
+    expected_kind: line_account
+    expected_intent: capabilities
+
+  - id: line-followup-link
+    text: "リンクは？"
+    history:
+      - type: user
+        content: "LINEで相談したい"
+      - type: bot
+        content: "sage_status"
+        diagnosis:
+          kind: concierge_line_account
+          title: "LINE で相談する"
+    expected_kind: line_account
+    expected_intent: capabilities
+
+  - id: line-followup-qr
+    text: "QRもう一度"
+    history:
+      - type: user
+        content: "LINE教えて"
+      - type: bot
+        content: "sage_status"
+        diagnosis:
+          kind: concierge_line_account
+    expected_kind: line_account
+    expected_intent: capabilities
+
+  - id: line-context-friend-add
+    text: "友だち追加どうすれば？"
+    history:
+      - type: user
+        content: "LINEから使いたい"
+    expected_kind: line_account
+    expected_intent: capabilities
+
+  # --- 運営者個人属性（doc_operator / operator_identity）---
+  - id: op-identity-who
+    text: "運営者は誰？"
+    expected_kind: operator_identity
+    expected_intent: doc_operator
+
+  - id: op-identity-dev
+    text: "開発者誰ですか"
+    expected_kind: operator_identity
+    expected_intent: doc_operator
+
+  - id: op-identity-univ
+    text: "どこの大学の人が作ったの？"
+    expected_kind: operator_identity
+    expected_intent: doc_operator
+
+  - id: op-identity-creator
+    text: "作った人教えて"
+    expected_kind: operator_identity
+    expected_intent: doc_operator
+
+  - id: op-identity-affiliation
+    text: "運営者の所属は？"
+    expected_kind: operator_identity
+    expected_intent: doc_operator
+
+  # --- 運営連絡（doc_operator / operator_contact）---
+  - id: op-contact-bug
+    text: "不具合報告したい"
+    expected_kind: operator_contact
+    expected_intent: doc_operator
+
+  - id: op-contact-reach
+    text: "運営者に連絡したい"
+    expected_kind: operator_contact
+    expected_intent: doc_operator
+
+  - id: op-contact-email
+    text: "お問い合わせメール教えて"
+    expected_kind: operator_contact
+    expected_intent: doc_operator
+
+  - id: op-contact-form
+    text: "問い合わせ方法は？"
+    expected_kind: operator_contact
+    expected_intent: doc_operator
+
+  - id: op-contact-card-show
+    text: "案内カード見せて"
+    history:
+      - type: user
+        content: "運用者はだれ？"
+      - type: bot
+        content: "sage_status"
+        diagnosis:
+          kind: concierge_operator
+          title: "お問い合わせ・試験運用について"
+    expected_kind: operator_contact
+    expected_intent: doc_operator
+
+  - id: op-contact-card-standalone
+    text: "案内カード見せて"
+    expected_kind: operator_contact
+    expected_intent: doc_operator
+
+  - id: op-follow-show
+    text: "見せて"
+    history:
+      - type: user
+        content: "運用者はだれ？"
+      - type: bot
+        content: "sage_status"
+        diagnosis:
+          kind: concierge_doc_operator
+          message: "下記のお問い合わせ欄からご連絡ください。"
+    expected_kind: operator_contact
+    expected_intent: doc_operator
+
+  - id: op-follow-mail
+    text: "メールは？"
+    history:
+      - type: user
+        content: "運営者教えて"
+      - type: bot
+        content: "sage_status"
+        diagnosis:
+          kind: concierge_operator
+    expected_kind: operator_contact
+    expected_intent: doc_operator
+
+  - id: op-contact-report-how
+    text: "バグの報告方法"
+    expected_kind: operator_contact
+    expected_intent: doc_operator
+
+  # --- LINE 技術（architecture / line_technical）---
+  - id: line-tech-host
+    text: "LINEはどこで動いてる？"
+    expected_kind: line_technical
+    expected_intent: architecture
+
+  - id: line-tech-webhook
+    text: "LINE Webhookはどこ？"
+    expected_kind: line_technical
+    expected_intent: architecture
+
+  - id: line-tech-arch
+    text: "LINE連携の仕組みを教えて"
+    expected_kind: line_technical
+    expected_intent: architecture
+
+  - id: line-tech-data
+    text: "LINEのデータはどこに保存される？"
+    expected_kind: line_technical
+    expected_intent: architecture
+
+  # --- 該当なし（症状・薬相談）---
+  - id: negative-headache
+    text: "頭が痛い"
+    expected_kind: null
+    expected_intent: null
+
+  - id: negative-medicine
+    text: "風邪薬教えて"
+    expected_kind: null
+    expected_intent: null
+
+  - id: negative-greeting
+    text: "こんにちは"
+    expected_kind: null
+    expected_intent: null
+
+dialogue_scenarios:
+  - id: multi-line-then-link
+    turns:
+      - user: "スマホで続きたいんだけど"
+        expect_intent: null
+      - user: "LINEある？"
+        expect_intent: capabilities
+      - user: "そのリンク"
+        expect_intent: capabilities
+
+  - id: operator-then-contact
+    turns:
+      - user: "誰が作ったの？"
+        expect_intent: doc_operator
+      - user: "連絡先教えて"
+        expect_intent: doc_operator

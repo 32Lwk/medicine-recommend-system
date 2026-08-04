@@ -397,6 +397,17 @@ def _resolve_concierge_meta_intent(
     if probe_session_admin_intent(t):
         return "session_ops"
 
+    from src.services.contact_channel_intent import (
+        classify_contact_channel_question,
+        contact_channel_to_concierge_intent,
+    )
+
+    channel = classify_contact_channel_question(t, history=conversation_history)
+    if channel:
+        mapped = contact_channel_to_concierge_intent(channel)
+        if mapped:
+            return mapped
+
     prior = resolve_prior_meta_intent(
         session=session,
         conversation_history=conversation_history,
@@ -412,7 +423,7 @@ def _resolve_concierge_meta_intent(
     if fast in _CONCIERGE_META_INTENTS:
         return fast
 
-    probed = probe_meta_concierge_intent(t)
+    probed = probe_meta_concierge_intent(t, history=conversation_history)
     if probed:
         return probed
 
@@ -500,6 +511,21 @@ def resolve_medicine_qa_route(
     if not t:
         return MedicineQaRouteDecision(MedicineQaRoute.DEFER, "empty")
 
+    from src.services.contact_channel_intent import (
+        classify_contact_channel_question,
+        contact_channel_to_concierge_intent,
+    )
+
+    channel = classify_contact_channel_question(t, history=conversation_history)
+    if channel:
+        mapped = contact_channel_to_concierge_intent(channel)
+        if mapped:
+            return MedicineQaRouteDecision(
+                MedicineQaRoute.CONCIERGE,
+                "contact_channel_context",
+                concierge_intent=mapped,
+            )
+
     recs = recommended_medicines
     if recs is None:
         recs = _extract_recommended_medicines(session, conversation_history)
@@ -558,6 +584,10 @@ def resolve_medicine_qa_route(
         conversation_history=conversation_history,
         recommended_medicines=recs,
     ):
+        from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+
+        if is_probable_store_inquiry_any(t, triage_result=triage_result):
+            return MedicineQaRouteDecision(MedicineQaRoute.DEFER, "store_over_medicine_qa")
         return MedicineQaRouteDecision(MedicineQaRoute.MEDICINE_QA, "fast_medicine_signal")
 
     if has_explicit_symptom_signal(t) and not looks_like_inquiry(t):

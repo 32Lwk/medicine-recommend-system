@@ -495,8 +495,21 @@ def _ingredients_in_text(text: str) -> list[str]:
     return _extract_ingredients_from_text(text)
 
 
-def _has_product_image_intent(text: str) -> bool:
+def _is_concierge_operator_card_request(text: str, *, history: list | None = None) -> bool:
+    """本サービスのお問い合わせ案内カード依頼（商品画像・店舗案内ではない）。"""
+    from src.services.contact_channel_intent import is_service_contact_ui_request
+
+    return is_service_contact_ui_request(text, history=history)
+
+
+def _has_product_image_intent(
+    text: str,
+    *,
+    conversation_history: list | None = None,
+) -> bool:
     t = (text or "").strip()
+    if _is_concierge_operator_card_request(t, history=conversation_history):
+        return False
     if any(k in t for k in _PHOTO_KEYWORDS):
         return True
     # 「見た目どんな感じ」等、提示依頼語がなくても外観を問う形
@@ -737,7 +750,7 @@ def is_strict_medicine_side_effect_question(
         conversation_history=conversation_history,
         recommended_medicines=recommended_medicines,
     )
-    if _has_product_image_intent(t) or _distinct_brand_count(
+    if _has_product_image_intent(t, conversation_history=conversation_history) or _distinct_brand_count(
         t,
         conversation_history=conversation_history,
         recommended_medicines=recommended_medicines,
@@ -768,6 +781,8 @@ def is_medicine_information_question(
     """
     t = (text or "").strip()
     if not t:
+        return False
+    if _is_concierge_operator_card_request(t, history=conversation_history):
         return False
 
     from src.utils.input_helpers import has_explicit_symptom_signal
@@ -805,7 +820,7 @@ def is_medicine_information_question(
                     t,
                     conversation_history=conversation_history,
                     recommended_medicines=recommended_medicines,
-                )) >= 2 or _has_product_image_intent(t)
+                )) >= 2 or _has_product_image_intent(t, conversation_history=conversation_history)
             return True
         return False
 
@@ -820,7 +835,7 @@ def is_medicine_information_question(
             recommended_medicines=recommended_medicines,
             use_llm_enrichment=False,
         )
-        if len(focuses) >= 2 or _has_product_image_intent(t):
+        if len(focuses) >= 2 or _has_product_image_intent(t, conversation_history=conversation_history):
             return True
         if recommended_medicines and (
             _has_efficacy_concern_intent(t)
@@ -895,7 +910,7 @@ def _infer_medicine_qa_focuses_uncached(
 ) -> list[MedicineQaFocus]:
     focuses: list[MedicineQaFocus] = []
 
-    has_product_image = _has_product_image_intent(t)
+    has_product_image = _has_product_image_intent(t, conversation_history=conversation_history)
     if has_product_image:
         focuses.append("product_image")
     if not has_product_image and _has_comparison_intent(
@@ -975,7 +990,9 @@ def get_medicine_qa_session_context(
     """Medicine QA routing 用の session 文脈。"""
     from src.services.session_manager import get_session_from_db
 
-    session_data = get_session_from_db(sid) if sid else {}
+    session_data = get_session_from_db(sid) if sid else None
+    if not isinstance(session_data, dict):
+        session_data = {}
     messages = list(session_data.get("messages") or (session or {}).get("messages") or [])
     history = messages[-10:]
     recommended: list[dict[str, Any]] = []

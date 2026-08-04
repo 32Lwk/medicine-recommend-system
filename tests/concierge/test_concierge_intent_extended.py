@@ -140,10 +140,19 @@ def test_none_for_empty():
         ("プラポリは？", "doc_privacy"),
         ("薬機法上問題ないの？", "doc_terms"),
         ("利用規約は？", "doc_terms"),
+        ("LINEを教えてください。", "capabilities"),
+        ("本アプリケーションのLINEのリンクは？", "capabilities"),
     ],
 )
 def test_probe_meta_concierge_intent(text, expected):
     assert probe_meta_concierge_intent(text) == expected
+
+
+def test_probe_meta_line_architecture_not_line_link():
+    from src.services.concierge_intent import probe_meta_concierge_intent
+
+    assert probe_meta_concierge_intent("LINEはどこで動いてる？") == "architecture"
+    assert probe_meta_concierge_intent("LINE Webhookはどこ？") == "architecture"
 
 
 @pytest.mark.parametrize(

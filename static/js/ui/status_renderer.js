@@ -74,12 +74,18 @@
     attribute_update_confirmation: true
   };
 
+  var OPERATOR_CONTACT_KINDS = {
+    concierge_operator: true,
+    concierge_doc_operator: true
+  };
+
   function isPlainLayout(diag) {
     if (!diag) return false;
     if (isCompactLayout(diag)) return false;
     if (diag.layout === 'plain') return true;
     if (diag.layout === 'card') return false;
     var kind = diag.kind || '';
+    if (OPERATOR_CONTACT_KINDS[kind]) return false;
     if (PLAIN_LAYOUT_KINDS[kind]) return true;
     if (/^concierge_/.test(kind)) {
       var hasSections = diag.sections && diag.sections.length;

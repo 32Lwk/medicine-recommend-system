@@ -1,0 +1,83 @@
+version: 1
+source: contact_channel_intent expansion
+count: 12
+scenarios:
+  - id: contact-line-formal
+    category: concierge_contact
+    input: LINEを教えてください
+    expect:
+      primary_route: Concierge
+      diagnosis_kind: concierge_line_account
+      context_keywords:
+        - "lin.ee"
+        - "LINE で相談"
+      must_not_contain:
+        - "運営者は誰"
+        - "個人を特定"
+
+  - id: contact-line-casual
+    category: concierge_contact
+    input: ラインの友だち追加したい
+    expect:
+      primary_route: Concierge
+      diagnosis_kind: concierge_line_account
+      context_keywords:
+        - "lin.ee"
+
+  - id: contact-line-app
+    category: concierge_contact
+    input: このアプリLINEある？
+    expect:
+      primary_route: Concierge
+      diagnosis_kind: concierge_line_account
+      context_keywords:
+        - "lin.ee"
+
+  - id: contact-operator-identity
+    category: concierge_contact
+    input: 運営者は誰？
+    expect:
+      primary_route: Concierge
+      diagnosis_kind: concierge_operator
+      must_not_contain:
+        - "lin.ee/no4FYRe"
+      context_keywords:
+        - "お問い合わせ"
+
+  - id: contact-operator-bug
+    category: concierge_contact
+    input: 不具合報告したい
+    expect:
+      primary_route: Concierge
+      diagnosis_kind: concierge_operator
+      context_keywords:
+        - "お問い合わせ"
+
+  - id: contact-line-tech
+    category: concierge_contact
+    input: LINE Webhookはどこ？
+    expect:
+      primary_route: Concierge
+      must_not_contain:
+        - "lin.ee/no4FYRe"
+
+  - id: contact-negative-medicine
+    category: concierge_contact
+    input: 風邪薬教えて
+    expect:
+      primary_route: Physical
+      must_not:
+        - response_missing
+
+  - id: contact-line-followup
+    category: concierge_contact
+    description: multi-turn LINE link follow-up
+    setup:
+      - LINEで相談したい
+    input: リンクは？
+    expect:
+      primary_route: Concierge
+      diagnosis_kind: concierge_line_account
+      context_keywords:
+        - "lin.ee"
+      min_turns: 2

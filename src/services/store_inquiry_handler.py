@@ -362,6 +362,8 @@ def is_store_route_locked(triage_result: Optional[Dict] = None) -> bool:
 
 def has_unambiguous_store_intent(user_text: str) -> bool:
     """医療相談と競合しない、明確な店舗案内・遺失物・在庫（店舗文脈）意図。"""
+    if re.search(r"案内カード", user_text or ""):
+        return False
     try:
         from src.services.counseling_triage import classify_medicine_procurement_route
 
@@ -448,6 +450,14 @@ def is_probable_store_inquiry(
 
     if looks_like_service_identity_question(user_text):
         return False
+    try:
+        from src.services.contact_channel_intent import is_service_contact_ui_request
+
+        if is_service_contact_ui_request(user_text):
+            return False
+    except ImportError:
+        if re.search(r"案内カード", user_text or ""):
+            return False
     if _is_toilet_facility_request(user_text):
         return True
     if _is_ambiguous_facility_defer_only(user_text):
@@ -575,6 +585,9 @@ def _probe_store_inquiry_keywords(user_text: str) -> Tuple[bool, Optional[str]]:
     """
     キーワード候補のプローブ（店舗案内・遺失物）。最終判定は LLM + 文脈ゲート。
     """
+    if re.search(r"案内カード", user_text or ""):
+        return False, None
+
     user_text_lower = _store_match_text(user_text)
     
     # 遺失物関連のキーワードをチェック（優先度が高い）
@@ -1865,6 +1878,17 @@ def detect_business_hours_inquiry(user_text: str) -> bool:
 
 
 def detect_payment_inquiry(user_text: str) -> bool:
+    t = (user_text or "").strip()
+    if not t:
+        return False
+    try:
+        from src.services.contact_channel_intent import is_service_contact_ui_request
+
+        if is_service_contact_ui_request(t):
+            return False
+    except ImportError:
+        if re.search(r"案内カード", t):
+            return False
     return _detect_subtype_inquiry("payment", user_text)
 
 

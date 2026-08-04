@@ -9,6 +9,7 @@ Amazon Q 型の技術回答の**唯一の根拠**。Concierge architecture 深�
 | [00-disclosure-policy.md](00-disclosure-policy.md) | 開示ポリシー（公開 OK / 深掘りは聞かれたとき / env メタ禁止） |
 | [01-cross-cloud-architecture.md](01-cross-cloud-architecture.md) | GCP 本番 / AWS ステージング / R2 / LINE 概要 |
 | [02-chat-pipeline-agents.md](02-chat-pipeline-agents.md) | Chat Pipeline v2・エージェント役割 |
+| [`../../dev/CONTACT_CHANNEL_ROUTING.md`](../../dev/CONTACT_CHANNEL_ROUTING.md) | **連絡先・案内カード・LINE 文脈ルーティング**（2026-08-05） |
 | [03-deployment-operations.md](03-deployment-operations.md) | デプロイ・CI/CD・Bedrock KB・ロールバック |
 | [04-data-security.md](04-data-security.md) | データ保存・セキュリティ境界 |
 | [05-chat-pipeline-v2-flags.md](05-chat-pipeline-v2-flags.md) | v2 / RECO_* / AWS 機能フラグ |

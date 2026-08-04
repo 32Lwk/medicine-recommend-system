@@ -22,3 +22,13 @@
 2026-08-02 23:00:01 [resume]   File "<stdin>", line 2, in <module>
 2026-08-02 23:00:02 [resume] FileNotFoundError: [Errno 2] No such file or directory: '/d/Programing/medicine-recommend/scripts/.aws-staging-stop-state.json'
 2026-08-02 23:00:02 [resume] ERROR exit=1
+2026-08-05 00:00:00 [contest-apply] START 8/5 00:00 JST contest capacity apply -> contest-apply
+2026-08-05 00:00:03 [contest-apply] ==> Contest capacity prepare (mode=apply)
+2026-08-05 00:00:03 [contest-apply]     ECS: 1024 CPU / 2048 MiB
+2026-08-05 00:00:03 [contest-apply]     Tasks: desired=10 min=10 max=10
+2026-08-05 00:00:03 [contest-apply]     GUNICORN_WORKERS=3
+2026-08-05 00:00:03 [contest-apply]     WAF: 10000 req / 5min / IP
+2026-08-05 00:00:03 [contest-apply] ./scripts/prepare-aws-contest-capacity.sh: line 68: WEB_ACL_NAME: unbound variable
+2026-08-05 00:00:03 [contest-apply] ERROR exit=1
+2026-08-05 00:18:57 [contest-apply] START 8/5 contest scale up (retry) -> contest-apply
+2026-08-05 00:19:10 [contest-apply] START 8/5 contest scale up (retry) -> contest-apply

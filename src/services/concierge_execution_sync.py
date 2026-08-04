@@ -37,6 +37,9 @@ def sync_concierge_execution_metadata(
 
     diagnosis = last.get("diagnosis")
     if isinstance(diagnosis, dict):
+        pre_kind = str(diagnosis.get("kind") or "").strip()
+        if pre_kind == "concierge_line_account":
+            expected_kind = pre_kind
         diagnosis["kind"] = expected_kind
         fb = diagnosis.get("feedback_context")
         if isinstance(fb, dict):

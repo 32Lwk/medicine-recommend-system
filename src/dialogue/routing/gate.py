@@ -327,6 +327,29 @@ def run_deterministic_gate(
     if side_effect is not None:
         return side_effect
 
+    try:
+        from src.services.contact_channel_intent import (
+            classify_contact_channel_question,
+            contact_channel_to_concierge_intent,
+        )
+
+        history = None
+        if session is not None and hasattr(session, "get"):
+            history = list(session.get("messages") or [])
+        channel = classify_contact_channel_question(text, history=history)
+        if channel:
+            mapped = contact_channel_to_concierge_intent(channel)
+            if mapped:
+                return RouteDecision(
+                    primary_route="Concierge",
+                    sub_route=mapped,
+                    confidence=0.93,
+                    resolved_by="gate",
+                    source=f"contact_channel:{channel}",
+                )
+    except ImportError:
+        pass
+
     follow = _resolve_concierge_follow_up(text, session, sid)
     if follow is not None:
         return follow

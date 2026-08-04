@@ -46,6 +46,11 @@ def _dev_force_exit(reason: str, *, stop_once: threading.Event) -> None:
     stop_once.set()
     logger.info("停止 (%s)", reason)
     shutdown_background_executors()
+    if os.name == "nt":
+        # Windows: venv 親 + Store Python 子構成で Ctrl+C が子だけ終了する残留を防ぐ
+        from src.utils.port_utils import stop_local_dev_process_tree
+
+        stop_local_dev_process_tree()
     os._exit(0)
 
 

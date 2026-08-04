@@ -301,11 +301,23 @@ def resolve_intent_from_triage(
     sid: Optional[str] = None,
     routing_ctx: Optional[Any] = None,
     alt_texts: Optional[list] = None,
+    conversation_history: Optional[list] = None,
 ) -> Optional[ConciergeIntent]:
     """triage_result.concierge_intent を優先し、雑談連続時のみ redirect に昇格。"""
     from src.services.routing_context import evaluate_store_gate
 
     triage = triage_result or {}
+    from src.services.contact_channel_intent import (
+        classify_contact_channel_question,
+        contact_channel_to_concierge_intent,
+    )
+
+    channel = classify_contact_channel_question(user_text, history=conversation_history)
+    if channel:
+        mapped = contact_channel_to_concierge_intent(channel)
+        if mapped:
+            return mapped  # type: ignore[return-value]
+
     router_dispatch = bool(triage.get("_intent_router_dispatch"))
     if not router_dispatch and evaluate_store_gate(
         user_text,

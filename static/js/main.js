@@ -212,6 +212,11 @@
                                 ariaLabel: "本番環境(安定版)を新しいタブで開く"
                             },
                             {
+                                text: "💬 LINEで会話する",
+                                url: "https://lin.ee/no4FYRe",
+                                ariaLabel: "LINE公式アカウントで会話する"
+                            },
+                            {
                                 text: "📝 クレーム・ご意見",
                                 url: "https://forms.gle/UB8kZHd4VHenmRUN6",
                                 ariaLabel: "Googleフォームでクレーム・ご意見を送る"
@@ -256,6 +261,11 @@
                                 text: "🌐 本番環境(安定版)を開く",
                                 url: "https://medicine.yutok.dev/",
                                 ariaLabel: "本番環境(安定版)を新しいタブで開く"
+                            },
+                            {
+                                text: "💬 LINEで会話する",
+                                url: "https://lin.ee/no4FYRe",
+                                ariaLabel: "LINE公式アカウントで会話する"
                             },
                             {
                                 text: "📝 クレーム・ご意見",
@@ -581,6 +591,11 @@
                                 ariaLabel: "Open the production (stable) environment in a new tab"
                             },
                             {
+                                text: "💬 Chat on LINE",
+                                url: "https://lin.ee/no4FYRe",
+                                ariaLabel: "Chat on the LINE official account in a new tab"
+                            },
+                            {
                                 text: "📝 Feedback & claims",
                                 url: "https://forms.gle/UB8kZHd4VHenmRUN6",
                                 ariaLabel: "Submit feedback or claims via Google Forms"
@@ -625,6 +640,11 @@
                                 text: "🌐 Open production (stable)",
                                 url: "https://medicine.yutok.dev/",
                                 ariaLabel: "Open the production (stable) environment in a new tab"
+                            },
+                            {
+                                text: "💬 Chat on LINE",
+                                url: "https://lin.ee/no4FYRe",
+                                ariaLabel: "Chat on the LINE official account in a new tab"
                             },
                             {
                                 text: "📝 Feedback & claims",
@@ -962,6 +982,11 @@
                                 ariaLabel: "운영 환경(안정판)을 새 탭에서 엽니다"
                             },
                             {
+                                text: "💬 LINE에서 대화하기",
+                                url: "https://lin.ee/no4FYRe",
+                                ariaLabel: "LINE 공식 계정에서 대화합니다"
+                            },
+                            {
                                 text: "📝 클레임·의견",
                                 url: "https://forms.gle/UB8kZHd4VHenmRUN6",
                                 ariaLabel: "Google 양식으로 클레임·의견 제출"
@@ -1006,6 +1031,11 @@
                                 text: "🌐 운영 환경(안정판) 열기",
                                 url: "https://medicine.yutok.dev/",
                                 ariaLabel: "운영 환경(안정판)을 새 탭에서 엽니다"
+                            },
+                            {
+                                text: "💬 LINE에서 대화하기",
+                                url: "https://lin.ee/no4FYRe",
+                                ariaLabel: "LINE 공식 계정에서 대화합니다"
                             },
                             {
                                 text: "📝 클레임·의견",
@@ -1331,6 +1361,11 @@
                                 ariaLabel: "在新标签页中打开生产环境（稳定版）"
                             },
                             {
+                                text: "💬 在 LINE 上对话",
+                                url: "https://lin.ee/no4FYRe",
+                                ariaLabel: "在新标签页打开 LINE 官方账号进行对话"
+                            },
+                            {
                                 text: "📝 投诉与意见",
                                 url: "https://forms.gle/UB8kZHd4VHenmRUN6",
                                 ariaLabel: "通过 Google 表单提交投诉或意见"
@@ -1375,6 +1410,11 @@
                                 text: "🌐 打开生产环境（稳定版）",
                                 url: "https://medicine.yutok.dev/",
                                 ariaLabel: "在新标签页中打开生产环境（稳定版）"
+                            },
+                            {
+                                text: "💬 在 LINE 上对话",
+                                url: "https://lin.ee/no4FYRe",
+                                ariaLabel: "在新标签页打开 LINE 官方账号进行对话"
                             },
                             {
                                 text: "📝 投诉与意见",
@@ -14129,7 +14169,7 @@ function appendQaDelta(text, section) {
             const onServer = (messages || []).some(function (m) {
                 return m.type === 'user' && userMessageText(m) === text;
             });
-            if (!onServer || (lastUser && text === lastUser)) {
+            if (!onServer) {
                 ordered.push(node);
             }
         });

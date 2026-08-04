@@ -135,12 +135,24 @@ def evaluate_store_gate(
 
     if any(looks_like_service_identity_question(t) for t in variants):
         result = False
-    elif should_prioritize_medical_route_over_store(
-        triage_result, primary, session=session
-    ):
-        result = False
     else:
-        result = is_probable_store_inquiry_any(*variants, triage_result=triage_result)
+        from src.services.contact_channel_intent import classify_contact_channel_question
+
+        history = None
+        if routing_ctx is not None and routing_ctx.history_messages:
+            history = routing_ctx.history_messages
+        if any(
+            classify_contact_channel_question(t, history=history)
+            in ("operator_contact", "operator_identity", "line_account")
+            for t in variants
+        ):
+            result = False
+        elif should_prioritize_medical_route_over_store(
+            triage_result, primary, session=session
+        ):
+            result = False
+        else:
+            result = is_probable_store_inquiry_any(*variants, triage_result=triage_result)
 
     if routing_ctx is not None:
         routing_ctx.store_probable = result

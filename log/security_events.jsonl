@@ -13696,3 +13696,320 @@
 {"timestamp": "2026-08-04T16:25:13.417234", "event_type": "input_validation", "user_id": "ユーザー9", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとバファリンとカロナールでおすすめは？"}}
 {"timestamp": "2026-08-04T16:26:26.726609", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-08-04T16:26:26.727232", "event_type": "input_validation", "user_id": "ユーザー12", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとバファリンとカロナールでおすすめは？"}}
+{"timestamp": "2026-08-05T01:08:03.942684", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:08:03.944187", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINE教えてください。"}}
+{"timestamp": "2026-08-05T01:08:34.217692", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:08:34.217692", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINE教えてください。"}}
+{"timestamp": "2026-08-05T01:12:07.077436", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:12:07.077436", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINE教えてください。"}}
+{"timestamp": "2026-08-05T01:16:57.607180", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:16:57.608183", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINE教えてください。"}}
+{"timestamp": "2026-08-05T01:18:30.579050", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:18:30.580050", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者を教えてください。"}}
+{"timestamp": "2026-08-05T01:18:55.975485", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:18:55.976485", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:19:01.333924", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:19:01.351436", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:19:01.351436", "event_type": "input_validation", "user_id": "unknown", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:19:32.034986", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:19:32.035986", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:20:41.977824", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:20:41.978821", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:28:53.835821", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:28:53.836820", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:29:16.474085", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:29:16.475089", "event_type": "input_validation", "user_id": "ユーザー11", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:31:34.289588", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:34.289588", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:31:36.332386", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:36.333390", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運営者は誰ですか"}}
+{"timestamp": "2026-08-05T01:31:38.812275", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:38.813277", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "開発者だれ？"}}
+{"timestamp": "2026-08-05T01:31:40.748849", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:40.749849", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "不具合報告したい"}}
+{"timestamp": "2026-08-05T01:31:41.248647", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:41.249648", "event_type": "input_validation", "user_id": "ユーザー5", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "メールアドレス教えて"}}
+{"timestamp": "2026-08-05T01:31:41.780009", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:41.780009", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:31:43.437693", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:43.438695", "event_type": "input_validation", "user_id": "ユーザー7", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:31:44.024558", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:44.024558", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運営者を教えてください"}}
+{"timestamp": "2026-08-05T01:31:44.503373", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:44.503373", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先見せて"}}
+{"timestamp": "2026-08-05T01:31:45.067517", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:45.067517", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "誰が作ったの？"}}
+{"timestamp": "2026-08-05T01:31:46.662453", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:46.663455", "event_type": "input_validation", "user_id": "ユーザー9", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "メールは？"}}
+{"timestamp": "2026-08-05T01:31:48.228696", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:48.228696", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:31:50.042285", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:50.042285", "event_type": "input_validation", "user_id": "ユーザー10", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "フォームどこ？"}}
+{"timestamp": "2026-08-05T01:31:59.216816", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:31:59.217816", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:32:01.036410", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:01.036410", "event_type": "input_validation", "user_id": "ユーザー11", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "もう一度"}}
+{"timestamp": "2026-08-05T01:32:04.832878", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:04.833881", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "不具合報告したい"}}
+{"timestamp": "2026-08-05T01:32:05.323091", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:05.323091", "event_type": "input_validation", "user_id": "ユーザー12", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "それ"}}
+{"timestamp": "2026-08-05T01:32:08.600684", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:08.600684", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:32:10.160099", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:10.161098", "event_type": "input_validation", "user_id": "ユーザー13", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "さっきのカード見せて"}}
+{"timestamp": "2026-08-05T01:32:13.697317", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:13.698317", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:32:15.268395", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:15.268395", "event_type": "input_validation", "user_id": "ユーザー14", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "問い合わせ先は？"}}
+{"timestamp": "2026-08-05T01:32:15.779897", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:15.780898", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "作った人誰？"}}
+{"timestamp": "2026-08-05T01:32:17.668185", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:17.668185", "event_type": "input_validation", "user_id": "ユーザー15", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "作った人教えて"}}
+{"timestamp": "2026-08-05T01:32:18.143211", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:18.143211", "event_type": "input_validation", "user_id": "ユーザー16", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先ちょうだい"}}
+{"timestamp": "2026-08-05T01:32:18.711881", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:18.712881", "event_type": "input_validation", "user_id": "ユーザー15", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運営者は？"}}
+{"timestamp": "2026-08-05T01:32:20.337103", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:20.337103", "event_type": "input_validation", "user_id": "ユーザー17", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "載ってるメール見たい"}}
+{"timestamp": "2026-08-05T01:32:20.861181", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:20.861181", "event_type": "input_validation", "user_id": "ユーザー15", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINE教えて"}}
+{"timestamp": "2026-08-05T01:32:22.639873", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:22.640874", "event_type": "input_validation", "user_id": "ユーザー18", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINEで相談したい"}}
+{"timestamp": "2026-08-05T01:32:24.511134", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:24.511134", "event_type": "input_validation", "user_id": "ユーザー19", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "リンクは？"}}
+{"timestamp": "2026-08-05T01:32:29.957031", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:29.957031", "event_type": "input_validation", "user_id": "ユーザー18", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪薬教えて"}}
+{"timestamp": "2026-08-05T01:32:33.991073", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:33.991073", "event_type": "input_validation", "user_id": "ユーザー20", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "トイレどこ？"}}
+{"timestamp": "2026-08-05T01:32:47.204607", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:47.205606", "event_type": "input_validation", "user_id": "ユーザー21", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "このアプリの運用者って誰？"}}
+{"timestamp": "2026-08-05T01:32:49.769728", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:49.770728", "event_type": "input_validation", "user_id": "ユーザー22", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先教えて"}}
+{"timestamp": "2026-08-05T01:32:50.266235", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:50.267235", "event_type": "input_validation", "user_id": "ユーザー21", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先教えて"}}
+{"timestamp": "2026-08-05T01:32:50.756123", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:50.756123", "event_type": "input_validation", "user_id": "ユーザー22", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "バグ見つけたんだけど"}}
+{"timestamp": "2026-08-05T01:32:53.391605", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:53.393108", "event_type": "input_validation", "user_id": "ユーザー23", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先教えて"}}
+{"timestamp": "2026-08-05T01:32:53.887448", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:32:53.888447", "event_type": "input_validation", "user_id": "ユーザー22", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先教えて"}}
+{"timestamp": "2026-08-05T01:33:20.900965", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:33:20.901965", "event_type": "input_validation", "user_id": "ユーザー24", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:33:23.490670", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:33:23.490670", "event_type": "input_validation", "user_id": "ユーザー23", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "フォームどこ？"}}
+{"timestamp": "2026-08-05T01:33:41.711825", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:33:41.712825", "event_type": "input_validation", "user_id": "ユーザー25", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINE教えて"}}
+{"timestamp": "2026-08-05T01:33:49.612347", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:33:49.612347", "event_type": "input_validation", "user_id": "ユーザー26", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINE教えて"}}
+{"timestamp": "2026-08-05T01:34:16.687316", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:34:16.687316", "event_type": "input_validation", "user_id": "ユーザー27", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "トイレどこ？"}}
+{"timestamp": "2026-08-05T01:34:24.349670", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:34:24.350669", "event_type": "input_validation", "user_id": "ユーザー28", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:34:25.827972", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:34:25.828972", "event_type": "input_validation", "user_id": "ユーザー24", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "フォームどこ？"}}
+{"timestamp": "2026-08-05T01:34:32.284458", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:34:32.284961", "event_type": "input_validation", "user_id": "ユーザー28", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:34:51.828437", "original_length": 335, "sanitized_length": 335, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:34:51.829437", "event_type": "input_validation", "user_id": "ユーザー29", "input_length": 335, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "実装をテストに合わせに行っているとも言える可能性があるので様々なタイプの聞かれ方や日常的な表現などでの入力時にも問題なく処理できるのかやChatGPTを用いて会話させて文脈や意図を汲み取った対応ができるのかをテストパターンを増大させて検証してください。(割合は自由に決めてください。)また、誤りがある場合にもより一般的な表現やその問題に特化させるのではなく視座を高く持って様々な問題にも対応できるように実装を続けてください。また、その際にLLMを活用しても構いません。実装を続けてください。\r\nユーザー視点や様々な回答に柔軟に対応できることを最優先してください。\r\nまた、ユーザーの文脈や意図を汲み取った回答を確実にしてください。\r\nまた、テスト結果を報告してください。"}}
+{"timestamp": "2026-08-05T01:34:53.176529", "event_type": "input_validation", "user_id": "ユーザー29", "input_length": 335, "risk_score": 82, "is_safe": false, "action": "blocked", "warnings": ["llm_security_audit:テストや検証を装って、実装の継続・方針変更・LLM活用・結果報告を要求しており、システム/実装への指示誘導や命令への服従要求に該当するため。"], "details": {"sanitized_text": "実装をテストに合わせに行っているとも言える可能性があるので様々なタイプの聞かれ方や日常的な表現などでの入力時にも問題なく処理できるのかやChatGPTを用いて会話させて文脈や意図を汲み取った対応ができるのかをテストパターンを増大させて検証してください。(割合は自由に決めてください。)また、誤りがある場合にもより一般的な表現やその問題に特化させるのではなく視座を高く持って様々な問題にも対応できるように実装を続けてください。また、その際にLLMを活用しても構いません。実装を続けてください。\r\nユーザー視点や様々な回答に柔軟に対応できることを最優先してください。\r\nまた、ユーザーの文脈や意図を汲み取った回答を確実にしてください。\r\nまた、テスト結果を報告してください。"}}
+{"timestamp": "2026-08-05T01:35:19.140728", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:35:19.141729", "event_type": "input_validation", "user_id": "ユーザー28", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINE教えてください。"}}
+{"timestamp": "2026-08-05T01:35:49.120535", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:35:49.121535", "event_type": "input_validation", "user_id": "ユーザー30", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:35:56.765172", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:35:56.766174", "event_type": "input_validation", "user_id": "ユーザー31", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:35:58.519809", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:35:58.519809", "event_type": "input_validation", "user_id": "ユーザー29", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "フォームどこ？"}}
+{"timestamp": "2026-08-05T01:36:12.627978", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:36:12.628978", "event_type": "input_validation", "user_id": "ユーザー32", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:37:49.893846", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:37:50.110754", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:38:07.492649", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:07.493649", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運営者は誰ですか"}}
+{"timestamp": "2026-08-05T01:38:08.928377", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:08.929377", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "開発者だれ？"}}
+{"timestamp": "2026-08-05T01:38:10.701265", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:10.701265", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "不具合報告したい"}}
+{"timestamp": "2026-08-05T01:38:11.256202", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:11.256202", "event_type": "input_validation", "user_id": "ユーザー5", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "メールアドレス教えて"}}
+{"timestamp": "2026-08-05T01:38:11.818634", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:11.820154", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:38:13.404793", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:13.405793", "event_type": "input_validation", "user_id": "ユーザー7", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:38:14.020168", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:14.021168", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運営者を教えてください"}}
+{"timestamp": "2026-08-05T01:38:14.533484", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:14.534484", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先見せて"}}
+{"timestamp": "2026-08-05T01:38:15.135572", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:15.137076", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "誰が作ったの？"}}
+{"timestamp": "2026-08-05T01:38:16.612130", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:16.612130", "event_type": "input_validation", "user_id": "ユーザー9", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "メールは？"}}
+{"timestamp": "2026-08-05T01:38:19.043279", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:19.044279", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:38:20.763989", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:20.764988", "event_type": "input_validation", "user_id": "ユーザー10", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "フォームどこ？"}}
+{"timestamp": "2026-08-05T01:38:25.010209", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:25.010209", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:38:26.455526", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:26.455526", "event_type": "input_validation", "user_id": "ユーザー11", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "もう一度"}}
+{"timestamp": "2026-08-05T01:38:29.394095", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:29.395095", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "不具合報告したい"}}
+{"timestamp": "2026-08-05T01:38:29.909998", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:29.910998", "event_type": "input_validation", "user_id": "ユーザー12", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "それ"}}
+{"timestamp": "2026-08-05T01:38:33.149504", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:33.150504", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:38:35.087817", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:35.088819", "event_type": "input_validation", "user_id": "ユーザー13", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "さっきのカード見せて"}}
+{"timestamp": "2026-08-05T01:38:38.938489", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:38.939491", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:38:40.655608", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:40.655608", "event_type": "input_validation", "user_id": "ユーザー14", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "問い合わせ先は？"}}
+{"timestamp": "2026-08-05T01:38:41.168131", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:41.169133", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "作った人誰？"}}
+{"timestamp": "2026-08-05T01:38:42.922451", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:42.923451", "event_type": "input_validation", "user_id": "ユーザー15", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "作った人教えて"}}
+{"timestamp": "2026-08-05T01:38:43.435495", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:43.435495", "event_type": "input_validation", "user_id": "ユーザー16", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先ちょうだい"}}
+{"timestamp": "2026-08-05T01:38:44.036400", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:44.037397", "event_type": "input_validation", "user_id": "ユーザー15", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運営者は？"}}
+{"timestamp": "2026-08-05T01:38:46.058129", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:46.059131", "event_type": "input_validation", "user_id": "ユーザー17", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "載ってるメール見たい"}}
+{"timestamp": "2026-08-05T01:38:46.585310", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:46.585310", "event_type": "input_validation", "user_id": "ユーザー15", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINE教えて"}}
+{"timestamp": "2026-08-05T01:38:48.208235", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:48.209236", "event_type": "input_validation", "user_id": "ユーザー18", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINEで相談したい"}}
+{"timestamp": "2026-08-05T01:38:49.753525", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:49.754525", "event_type": "input_validation", "user_id": "ユーザー19", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "リンクは？"}}
+{"timestamp": "2026-08-05T01:38:56.504094", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:38:56.505091", "event_type": "input_validation", "user_id": "ユーザー18", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪薬教えて"}}
+{"timestamp": "2026-08-05T01:39:00.352197", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:39:00.353197", "event_type": "input_validation", "user_id": "ユーザー20", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "トイレどこ？"}}
+{"timestamp": "2026-08-05T01:39:05.998439", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:39:05.999441", "event_type": "input_validation", "user_id": "ユーザー21", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "このアプリの運用者って誰？"}}
+{"timestamp": "2026-08-05T01:39:07.489691", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:39:07.489691", "event_type": "input_validation", "user_id": "ユーザー22", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先教えて"}}
+{"timestamp": "2026-08-05T01:39:08.005061", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:39:08.005061", "event_type": "input_validation", "user_id": "ユーザー21", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先教えて"}}
+{"timestamp": "2026-08-05T01:39:08.548058", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:39:08.549061", "event_type": "input_validation", "user_id": "ユーザー22", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "バグ見つけたんだけど"}}
+{"timestamp": "2026-08-05T01:39:10.717946", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:39:10.718949", "event_type": "input_validation", "user_id": "ユーザー23", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先教えて"}}
+{"timestamp": "2026-08-05T01:39:11.238608", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:39:11.238608", "event_type": "input_validation", "user_id": "ユーザー22", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先教えて"}}
+{"timestamp": "2026-08-05T01:39:21.405605", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:39:21.406604", "event_type": "input_validation", "user_id": "ユーザー24", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:39:23.367811", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:39:23.367811", "event_type": "input_validation", "user_id": "ユーザー23", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "フォームどこ？"}}
+{"timestamp": "2026-08-05T01:39:47.311012", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:39:47.311012", "event_type": "input_validation", "user_id": "ユーザー25", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:40:25.897743", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:40:25.897743", "event_type": "input_validation", "user_id": "ユーザー26", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:40:34.294829", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:40:34.295829", "event_type": "input_validation", "user_id": "ユーザー27", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:40:35.514176", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:40:35.515176", "event_type": "input_validation", "user_id": "ユーザー24", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "フォームどこ？"}}
+{"timestamp": "2026-08-05T01:41:15.634771", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:41:15.635773", "event_type": "input_validation", "user_id": "ユーザー28", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:41:24.265693", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:41:24.267194", "event_type": "input_validation", "user_id": "ユーザー29", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:42:48.238153", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:42:48.397165", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:43:00.389660", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:00.390662", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運営者は誰ですか"}}
+{"timestamp": "2026-08-05T01:43:02.016626", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:02.017626", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "開発者だれ？"}}
+{"timestamp": "2026-08-05T01:43:04.063676", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:04.063676", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "不具合報告したい"}}
+{"timestamp": "2026-08-05T01:43:04.535564", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:04.535564", "event_type": "input_validation", "user_id": "ユーザー5", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "メールアドレス教えて"}}
+{"timestamp": "2026-08-05T01:43:05.038483", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:05.039988", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:43:06.559394", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:06.559394", "event_type": "input_validation", "user_id": "ユーザー7", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:43:07.147282", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:07.147282", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運営者を教えてください"}}
+{"timestamp": "2026-08-05T01:43:07.621897", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:07.621897", "event_type": "input_validation", "user_id": "ユーザー8", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先見せて"}}
+{"timestamp": "2026-08-05T01:43:08.154055", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:08.155055", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "誰が作ったの？"}}
+{"timestamp": "2026-08-05T01:43:10.516190", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:10.516190", "event_type": "input_validation", "user_id": "ユーザー9", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "メールは？"}}
+{"timestamp": "2026-08-05T01:43:12.106072", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:12.107072", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:43:14.905741", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:14.906741", "event_type": "input_validation", "user_id": "ユーザー10", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "フォームどこ？"}}
+{"timestamp": "2026-08-05T01:43:18.013359", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:18.013359", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:43:19.552312", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:19.553314", "event_type": "input_validation", "user_id": "ユーザー11", "input_length": 4, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "もう一度"}}
+{"timestamp": "2026-08-05T01:43:22.833660", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:22.833660", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "不具合報告したい"}}
+{"timestamp": "2026-08-05T01:43:23.295976", "original_length": 2, "sanitized_length": 2, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:23.295976", "event_type": "input_validation", "user_id": "ユーザー12", "input_length": 2, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "それ"}}
+{"timestamp": "2026-08-05T01:43:26.448909", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:26.448909", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:43:28.268464", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:28.269972", "event_type": "input_validation", "user_id": "ユーザー13", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "さっきのカード見せて"}}
+{"timestamp": "2026-08-05T01:43:31.550737", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:31.550737", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:43:32.981317", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:32.982320", "event_type": "input_validation", "user_id": "ユーザー14", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "問い合わせ先は？"}}
+{"timestamp": "2026-08-05T01:43:33.468305", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:33.469809", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "作った人誰？"}}
+{"timestamp": "2026-08-05T01:43:35.123021", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:35.123021", "event_type": "input_validation", "user_id": "ユーザー15", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "作った人教えて"}}
+{"timestamp": "2026-08-05T01:43:35.600727", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:35.600727", "event_type": "input_validation", "user_id": "ユーザー16", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先ちょうだい"}}
+{"timestamp": "2026-08-05T01:43:36.153632", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:36.153632", "event_type": "input_validation", "user_id": "ユーザー15", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運営者は？"}}
+{"timestamp": "2026-08-05T01:43:37.602590", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:37.603589", "event_type": "input_validation", "user_id": "ユーザー17", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "載ってるメール見たい"}}
+{"timestamp": "2026-08-05T01:43:38.088353", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:38.088353", "event_type": "input_validation", "user_id": "ユーザー15", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINE教えて"}}
+{"timestamp": "2026-08-05T01:43:39.668757", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:39.669759", "event_type": "input_validation", "user_id": "ユーザー18", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINEで相談したい"}}
+{"timestamp": "2026-08-05T01:43:45.225718", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:45.225718", "event_type": "input_validation", "user_id": "ユーザー19", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "リンクは？"}}
+{"timestamp": "2026-08-05T01:43:50.334259", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:50.334259", "event_type": "input_validation", "user_id": "ユーザー18", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "風邪薬教えて"}}
+{"timestamp": "2026-08-05T01:43:54.308774", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:54.310278", "event_type": "input_validation", "user_id": "ユーザー20", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "トイレどこ？"}}
+{"timestamp": "2026-08-05T01:43:59.173802", "original_length": 13, "sanitized_length": 13, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:43:59.173802", "event_type": "input_validation", "user_id": "ユーザー21", "input_length": 13, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "このアプリの運用者って誰？"}}
+{"timestamp": "2026-08-05T01:44:00.856974", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:44:00.857974", "event_type": "input_validation", "user_id": "ユーザー22", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先教えて"}}
+{"timestamp": "2026-08-05T01:44:01.341934", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:44:01.341934", "event_type": "input_validation", "user_id": "ユーザー21", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先教えて"}}
+{"timestamp": "2026-08-05T01:44:01.831859", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:44:01.832861", "event_type": "input_validation", "user_id": "ユーザー22", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "バグ見つけたんだけど"}}
+{"timestamp": "2026-08-05T01:44:07.901642", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:44:07.901642", "event_type": "input_validation", "user_id": "ユーザー23", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先教えて"}}
+{"timestamp": "2026-08-05T01:44:08.386881", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:44:08.387881", "event_type": "input_validation", "user_id": "ユーザー22", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "連絡先教えて"}}
+{"timestamp": "2026-08-05T01:44:51.067740", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:44:51.068740", "event_type": "input_validation", "user_id": "ユーザー23", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINE教えてください。"}}
+{"timestamp": "2026-08-05T01:44:59.854359", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:44:59.855359", "event_type": "input_validation", "user_id": "ユーザー24", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:45:10.379487", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:45:10.379487", "event_type": "input_validation", "user_id": "ユーザー23", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:45:26.726482", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:45:26.726482", "event_type": "input_validation", "user_id": "ユーザー24", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:45:40.308122", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:45:40.309122", "event_type": "input_validation", "user_id": "ユーザー25", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:46:28.400797", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:46:28.400797", "event_type": "input_validation", "user_id": "ユーザー26", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:49:03.364914", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:49:03.600654", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:49:17.639088", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:49:17.639088", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:52:54.649358", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:52:54.649358", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "LINE教えてください。"}}
+{"timestamp": "2026-08-05T01:53:02.289698", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:53:02.290698", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "案内カード見せて"}}
+{"timestamp": "2026-08-05T01:53:15.142039", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:53:15.143039", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 7, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "運用者はだれ？"}}
+{"timestamp": "2026-08-05T01:53:24.489353", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:53:24.490353", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "あなただれ？"}}
+{"timestamp": "2026-08-05T01:53:31.205102", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:53:31.222119", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T01:53:31.222119", "event_type": "input_validation", "user_id": "unknown", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "あなただれ？"}}
