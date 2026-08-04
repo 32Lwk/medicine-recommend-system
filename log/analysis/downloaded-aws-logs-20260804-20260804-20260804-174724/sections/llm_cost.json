@@ -1,0 +1,182 @@
+{
+  "llm_call_count": 11,
+  "total_cost_jpy": 1.5987,
+  "total_latency_ms": 15994.76,
+  "by_path": {
+    "medicine_qa/focus_llm": 5,
+    "concierge_agent.meta_architecture_deep": 3,
+    "concierge_agent.meta_app_about": 2,
+    "concierge_agent.greeting": 1
+  },
+  "by_model": {
+    "gpt-4o-mini": 6,
+    "gpt-5.4-mini": 5
+  },
+  "top_sessions_by_cost": [
+    {
+      "session_id": "1785865277170116343795",
+      "cost_jpy": 0.9376
+    },
+    {
+      "session_id": "1785859173672723596747",
+      "cost_jpy": 0.4873
+    },
+    {
+      "session_id": "1785864917189183459650",
+      "cost_jpy": 0.0677
+    },
+    {
+      "session_id": "1785865093668957864581",
+      "cost_jpy": 0.0666
+    },
+    {
+      "session_id": "1785865406686386620229",
+      "cost_jpy": 0.0395
+    }
+  ],
+  "recent_calls": [
+    {
+      "timestamp": "2026-08-04T17:42:15.024993",
+      "model": "gpt-4o-mini",
+      "path": "medicine_qa/focus_llm",
+      "latency_ms": 1403.64,
+      "prompt_tokens": 375,
+      "completion_tokens": 38,
+      "cost_jpy": 0.0124,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785865277170116343795",
+      "log_ts": "2026-08-04T17:42:25.593Z"
+    },
+    {
+      "timestamp": "2026-08-04T17:42:21.710231",
+      "model": "gpt-5.4-mini",
+      "path": "concierge_agent.meta_architecture_deep",
+      "latency_ms": 2662.68,
+      "prompt_tokens": 15239,
+      "completion_tokens": 150,
+      "cost_jpy": 0.4617,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785865277170116343795",
+      "log_ts": "2026-08-04T17:42:25.593Z"
+    },
+    {
+      "timestamp": "2026-08-04T17:42:24.478810",
+      "model": "gpt-5.4-mini",
+      "path": "concierge_agent.meta_architecture_deep",
+      "latency_ms": 2106.09,
+      "prompt_tokens": 15239,
+      "completion_tokens": 213,
+      "cost_jpy": 0.4636,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785865277170116343795",
+      "log_ts": "2026-08-04T17:42:25.593Z"
+    },
+    {
+      "timestamp": "2026-08-04T17:38:34.792729",
+      "model": "gpt-4o-mini",
+      "path": "medicine_qa/focus_llm",
+      "latency_ms": 1271.7,
+      "prompt_tokens": 367,
+      "completion_tokens": 37,
+      "cost_jpy": 0.0121,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785865093668957864581",
+      "log_ts": "2026-08-04T17:42:37.640Z"
+    },
+    {
+      "timestamp": "2026-08-04T17:42:36.491358",
+      "model": "gpt-5.4-mini",
+      "path": "concierge_agent.meta_app_about",
+      "latency_ms": 1421.07,
+      "prompt_tokens": 1763,
+      "completion_tokens": 53,
+      "cost_jpy": 0.0545,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785865093668957864581",
+      "log_ts": "2026-08-04T17:42:37.640Z"
+    },
+    {
+      "timestamp": "2026-08-04T17:35:58.155965",
+      "model": "gpt-4o-mini",
+      "path": "medicine_qa/focus_llm",
+      "latency_ms": 924.38,
+      "prompt_tokens": 367,
+      "completion_tokens": 37,
+      "cost_jpy": 0.0121,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785864917189183459650",
+      "log_ts": "2026-08-04T17:42:50.113Z"
+    },
+    {
+      "timestamp": "2026-08-04T17:42:49.003771",
+      "model": "gpt-5.4-mini",
+      "path": "concierge_agent.meta_app_about",
+      "latency_ms": 1319.87,
+      "prompt_tokens": 1763,
+      "completion_tokens": 91,
+      "cost_jpy": 0.0556,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785864917189183459650",
+      "log_ts": "2026-08-04T17:42:50.113Z"
+    },
+    {
+      "timestamp": "2026-08-04T17:43:14.375418",
+      "model": "gpt-4o-mini",
+      "path": "medicine_qa/focus_llm",
+      "latency_ms": 849.23,
+      "prompt_tokens": 396,
+      "completion_tokens": 32,
+      "cost_jpy": 0.0128,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785859173672723596747",
+      "log_ts": "2026-08-04T17:43:20.062Z"
+    },
+    {
+      "timestamp": "2026-08-04T17:43:18.956869",
+      "model": "gpt-5.4-mini",
+      "path": "concierge_agent.meta_architecture_deep",
+      "latency_ms": 1537.61,
+      "prompt_tokens": 15703,
+      "completion_tokens": 112,
+      "cost_jpy": 0.4744,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785859173672723596747",
+      "log_ts": "2026-08-04T17:43:20.062Z"
+    },
+    {
+      "timestamp": "2026-08-04T17:43:35.503459",
+      "model": "gpt-4o-mini",
+      "path": "medicine_qa/focus_llm",
+      "latency_ms": 1103.24,
+      "prompt_tokens": 363,
+      "completion_tokens": 28,
+      "cost_jpy": 0.0117,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785865406686386620229",
+      "log_ts": "2026-08-04T17:43:40.649Z"
+    },
+    {
+      "timestamp": "2026-08-04T17:43:39.514707",
+      "model": "gpt-4o-mini",
+      "path": "concierge_agent.greeting",
+      "latency_ms": 1395.25,
+      "prompt_tokens": 865,
+      "completion_tokens": 62,
+      "cost_jpy": 0.0278,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785865406686386620229",
+      "log_ts": "2026-08-04T17:43:40.649Z"
+    }
+  ]
+}

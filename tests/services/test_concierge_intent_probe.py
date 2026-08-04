@@ -14,3 +14,7 @@ def test_probe_rule_based_scoring() -> None:
 
 def test_probe_data_storage() -> None:
     assert probe_meta_concierge_intent("データはどこに保存される？") == "architecture"
+
+
+def test_probe_codepipeline_not_line_account() -> None:
+    assert probe_meta_concierge_intent("CodePipeline のデプロイフローを教えて") == "architecture"

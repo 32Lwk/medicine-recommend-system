@@ -1,0 +1,41 @@
+{
+  "eval": "concierge_line_smoke",
+  "fixture": "tests\\fixtures\\concierge_line_smoke.yaml",
+  "timestamp": "2026-08-04T18:03:29.473268+00:00",
+  "total": 5,
+  "passed": 5,
+  "pass_pct": 100.0,
+  "go": true,
+  "results": [
+    {
+      "id": "line-architecture-probe",
+      "message": "GCP と AWS の違いは？",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "line-capabilities-probe",
+      "message": "何ができる？",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "line-legal-privacy",
+      "message": "プラポリは？",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "line-mission-overview",
+      "message": "なぜ作ったの？",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "line-medicine-boundary",
+      "message": "風邪薬教えて",
+      "pass": true,
+      "failures": []
+    }
+  ]
+}

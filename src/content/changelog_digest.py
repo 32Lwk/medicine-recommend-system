@@ -386,12 +386,6 @@ def _strip_infra_noise(text: str) -> str:
     line = re.sub(r"`?(?:data|src|static|scripts)/[^\s`、。]+`?", "", line)
     line = re.sub(r"（\d+\s*件）", "", line)
     line = re.sub(r"\s+", " ", line).strip(" 、。")
-    try:
-        from src.services.concierge_aws_content import strip_gcp_mentions
-
-        line = strip_gcp_mentions(line)
-    except Exception:
-        pass
     return line
 
 

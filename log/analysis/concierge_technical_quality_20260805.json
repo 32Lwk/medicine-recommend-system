@@ -1,0 +1,252 @@
+{
+  "eval": "concierge_technical_quality",
+  "fixture": "tests\\fixtures\\concierge_technical_quality.yaml",
+  "timestamp": "2026-08-04T18:03:28.231678+00:00",
+  "total": 30,
+  "passed": 30,
+  "pass_pct": 100.0,
+  "min_pass_pct": 90.0,
+  "go": true,
+  "results": [
+    {
+      "id": "qual-arch-cross-cloud",
+      "message": "GCP と AWS の構成の違いを詳しく教えて",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-arch-local-rag",
+      "message": "Local RAG はどう動く？",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-arch-intent-router",
+      "message": "IntentRouter の役割は？",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-arch-sse",
+      "message": "SSE とは？",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-arch-neon",
+      "message": "Neon とは何に使ってる？",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-arch-rule-based",
+      "message": "ルールベースで薬はどう選ぶ？",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-arch-translate",
+      "message": "AWS では翻訳は何を使ってる？",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-arch-security",
+      "message": "データ保存とセキュリティ",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-arch-decisions",
+      "message": "Local RAG を選んだ技術的理由は？",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-arch-agents",
+      "message": "マルチエージェント構成を教えて",
+      "expected_intent": "architecture",
+      "actual_intent": "architecture",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-cap-otc",
+      "message": "OTCってなに？",
+      "expected_intent": "capabilities",
+      "actual_intent": "capabilities",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-capabilities",
+      "message": "何ができる？",
+      "expected_intent": "capabilities",
+      "actual_intent": "capabilities",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-app-about",
+      "message": "あなたについて教えて",
+      "expected_intent": "app_about",
+      "actual_intent": "app_about",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-mission-why",
+      "message": "なぜ作ったの？",
+      "expected_intent": "doc_app_overview",
+      "actual_intent": "doc_app_overview",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-mission-beta",
+      "message": "β版の現状は？",
+      "expected_intent": "doc_app_overview",
+      "actual_intent": "doc_app_overview",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-legal-privacy",
+      "message": "プライバシーポリシーは？",
+      "expected_intent": "doc_privacy",
+      "actual_intent": "doc_privacy",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-legal-terms",
+      "message": "利用規約",
+      "expected_intent": "doc_terms",
+      "actual_intent": "doc_terms",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-legal-yakki",
+      "message": "薬機法大丈夫？",
+      "expected_intent": "doc_terms",
+      "actual_intent": "doc_terms",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-legal-consultation",
+      "message": "相談窓口 #7119",
+      "expected_intent": "doc_consultation",
+      "actual_intent": "doc_consultation",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-legal-operator",
+      "message": "お問い合わせ",
+      "expected_intent": "doc_operator",
+      "actual_intent": "doc_operator",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-legal-disclaimer",
+      "message": "免責事項",
+      "expected_intent": "doc_terms",
+      "actual_intent": "doc_terms",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-legal-cross-privacy",
+      "message": "チャットデータ プライバシー",
+      "expected_intent": "doc_privacy",
+      "actual_intent": "doc_privacy",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-legal-app-overview",
+      "message": "アプリの概要",
+      "expected_intent": "doc_app_overview",
+      "actual_intent": "doc_app_overview",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-boundary-headache",
+      "message": "頭痛がします",
+      "expected_intent": null,
+      "actual_intent": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-boundary-cold",
+      "message": "風邪薬教えて",
+      "expected_intent": null,
+      "actual_intent": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-boundary-fever",
+      "message": "熱がある",
+      "expected_intent": null,
+      "actual_intent": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-boundary-dosing",
+      "message": "1日何錠飲めばいい？",
+      "expected_intent": null,
+      "actual_intent": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-boundary-interaction",
+      "message": "この薬と併用していい？",
+      "expected_intent": null,
+      "actual_intent": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-changelog-recent",
+      "message": "最近の更新",
+      "expected_intent": "doc_changelog",
+      "actual_intent": "doc_changelog",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "qual-changelog-release",
+      "message": "リリース履歴",
+      "expected_intent": "doc_changelog",
+      "actual_intent": "doc_changelog",
+      "pass": true,
+      "failures": []
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "timestamp": "2026-08-04T17:59:26.362261+00:00",
+  "provider": "local_rag",
+  "http_enabled": true,
+  "base_url": "http://127.0.0.1:5000/",
+  "summary": {
+    "total": 15,
+    "retrieve_total": 5,
+    "retrieve_pass": 5,
+    "retrieve_pass_pct": 100.0,
+    "http_total": 10,
+    "http_pass": 8,
+    "http_pass_pct": 80.0,
+    "pass_all": 13
+  },
+  "results": [
+    {
+      "id": "e2e-med-interaction-loxo",
+      "mode": "retrieve",
+      "namespace": "medicine",
+      "query": "ロキソプロフェンとワーファリンを一緒に飲んでも大丈夫？",
+      "top_score": 0.92,
+      "source_uris": [
+        "local/medicine/interactions/ロキソプロフェン-ワーファリン.md"
+      ],
+      "kb_retrieve_ms": 47965.53,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true
+    },
+    {
+      "id": "e2e-med-sideeffect-loxo",
+      "mode": "retrieve",
+      "namespace": "medicine",
+      "query": "ロキソプロフェンで眠くなる？",
+      "top_score": 0.88,
+      "source_uris": [
+        "local/medicine/side_effects/ロキソプロフェン.md"
+      ],
+      "kb_retrieve_ms": 2.73,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true
+    },
+    {
+      "id": "e2e-med-usage-interval",
+      "mode": "retrieve",
+      "namespace": "medicine",
+      "query": "解熱鎮痛薬は何時間おきに飲める？",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/topics/usage-dose-interval.md"
+      ],
+      "kb_retrieve_ms": 2.21,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true
+    },
+    {
+      "id": "e2e-med-doping-pseudo",
+      "mode": "retrieve",
+      "namespace": "medicine",
+      "query": "プソイドエフェドリンはドーピング禁止？",
+      "top_score": 0.86,
+      "source_uris": [
+        "local/medicine/doping/pseudoephedrine.md"
+      ],
+      "kb_retrieve_ms": 1.45,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true
+    },
+    {
+      "id": "e2e-med-age-child",
+      "mode": "retrieve",
+      "namespace": "medicine",
+      "query": "小児用の風邪薬の年齢制限",
+      "top_score": 0.85,
+      "source_uris": [
+        "local/medicine/topics/age-restriction-guide.md"
+      ],
+      "kb_retrieve_ms": 1.09,
+      "score_pass": true,
+      "prefix_pass": true,
+      "pass": true
+    },
+    {
+      "id": "e2e-concierge-cross-cloud",
+      "mode": "http",
+      "namespace": "concierge",
+      "session_id": "1785866240263187389987",
+      "intent": "architecture",
+      "text_len": 103,
+      "pass": false,
+      "failures": [
+        "missing keywords ['GCP', 'AWS', 'Cloud Run', 'ECS', 'ステージング']"
+      ]
+    },
+    {
+      "id": "e2e-concierge-codepipeline",
+      "mode": "http",
+      "namespace": "concierge",
+      "session_id": "1785866248935888897894",
+      "intent": "capabilities",
+      "text_len": 104,
+      "pass": false,
+      "failures": [
+        "missing keywords ['CodePipeline', 'CodeBuild', 'ECR', 'デプロイ']"
+      ]
+    },
+    {
+      "id": "e2e-concierge-capabilities",
+      "mode": "http",
+      "namespace": "concierge",
+      "session_id": "1785866250944306608935",
+      "intent": "capabilities",
+      "text_len": 123,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "e2e-concierge-changelog",
+      "mode": "http",
+      "namespace": "concierge",
+      "session_id": "1785866254662312601988",
+      "intent": "doc_changelog",
+      "text_len": 298,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "e2e-concierge-public",
+      "mode": "http",
+      "namespace": "concierge",
+      "session_id": "1785866257961547188451",
+      "intent": "greeting",
+      "text_len": 87,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "e2e-med-qa-side-effect",
+      "mode": "http",
+      "namespace": "medicine",
+      "session_id": "1785866264189913652836",
+      "last_render": "sage_qa",
+      "text_len": 169,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "e2e-med-qa-doping",
+      "mode": "http",
+      "namespace": "medicine",
+      "session_id": "1785866315362037358315",
+      "last_render": "sage_qa",
+      "text_len": 141,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "e2e-med-qa-interaction-single",
+      "mode": "http",
+      "namespace": "medicine",
+      "session_id": "1785866356384976406174",
+      "last_render": "sage_qa",
+      "text_len": 142,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "e2e-med-qa-comparison",
+      "mode": "http",
+      "namespace": "medicine",
+      "session_id": "1785866359671561983255",
+      "last_render": "sage_qa",
+      "text_len": 162,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "id": "e2e-med-qa-photo",
+      "mode": "http",
+      "namespace": "medicine",
+      "session_id": "1785866363966676895635",
+      "last_render": "sage_qa",
+      "text_len": 83,
+      "pass": true,
+      "failures": []
+    }
+  ]
+}

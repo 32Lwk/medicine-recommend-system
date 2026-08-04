@@ -32,7 +32,10 @@ ContactChannelKind = Literal[
 
 
 
-_LINE_TOKEN_RE = re.compile(r"line|ライン|ＬＩＮＥ", re.I)
+_LINE_TOKEN_RE = re.compile(
+    r"(?:\bLINE\b|ライン|ＬＩＮＥ|(?<![a-zA-Z])line(?![a-zA-Z]))",
+    re.I,
+)
 
 
 

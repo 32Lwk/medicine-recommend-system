@@ -1,0 +1,243 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 14,
+    "by_status": {
+      "404": 14
+    },
+    "by_path": {
+      "UNKNOWN /static/line/line-official-qr.png (404)": 12,
+      "UNKNOWN /apple-touch-icon.png (404)": 1,
+      "UNKNOWN /apple-touch-icon-precomposed.png (404)": 1
+    },
+    "slow_endpoints_ge_5s": {},
+    "samples": [
+      {
+        "timestamp": "2026-08-04T07:49:28.279Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/apple-touch-icon.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T07:49:28.299Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T16:08:06.630Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/static/line/line-official-qr.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T16:08:08.083Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/static/line/line-official-qr.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T16:08:09.014Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/static/line/line-official-qr.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T16:08:36.926Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/static/line/line-official-qr.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T16:08:52.471Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/static/line/line-official-qr.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T16:12:08.860Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/static/line/line-official-qr.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T16:12:09.679Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/static/line/line-official-qr.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T16:12:09.992Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/static/line/line-official-qr.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T16:12:10.383Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/static/line/line-official-qr.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T16:16:45.731Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/static/line/line-official-qr.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T16:18:14.443Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/static/line/line-official-qr.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T16:45:34.303Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/static/line/line-official-qr.png",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 8,
+    "top_patterns": [
+      {
+        "message": "2026-08-04 07:29:25,053 - ERROR - medicine_information_qa timeout after 120s sid=1785827858215313801801",
+        "count": 1
+      },
+      {
+        "message": "2026-08-04 07:29:49,063 - ERROR - medicine_information_qa timeout after 120s sid=1785828107476186710616",
+        "count": 1
+      },
+      {
+        "message": "2026-08-04 07:29:52,099 - ERROR - medicine_information_qa timeout after 120s sid=1785827858215313801801",
+        "count": 1
+      },
+      {
+        "message": "2026-08-04 07:50:37,672 - ERROR - Pipeline end guard: response_missing sid=1785829785856485259251 user_input='ロキソニンとバファリ",
+        "count": 1
+      },
+      {
+        "message": "2026-08-04 07:55:01,366 - ERROR - Pipeline end guard: response_missing sid=1785830037656139194784 user_input='ロキソニンとイブの違",
+        "count": 1
+      },
+      {
+        "message": "2026-08-04 07:55:35,366 - ERROR - Pipeline end guard: response_missing sid=1785830107176714677095 user_input='ロキソニンとイブ、バ",
+        "count": 1
+      },
+      {
+        "message": "2026-08-04 07:56:10,756 - ERROR - Pipeline end guard: response_missing sid=1785830140776689396321 user_input='ロキソニンとバファリ",
+        "count": 1
+      },
+      {
+        "message": "2026-08-04 07:56:55,377 - ERROR - Pipeline end guard: response_missing sid=1785830182188003159239 user_input='ロキソニンとイブの違",
+        "count": 1
+      }
+    ],
+    "samples": [
+      {
+        "timestamp": "2026-08-04T07:29:25.053Z",
+        "severity": "ERROR",
+        "message": "2026-08-04 07:29:25,053 - ERROR - medicine_information_qa timeout after 120s sid=1785827858215313801801",
+        "revision": null
+      },
+      {
+        "timestamp": "2026-08-04T07:29:49.063Z",
+        "severity": "ERROR",
+        "message": "2026-08-04 07:29:49,063 - ERROR - medicine_information_qa timeout after 120s sid=1785828107476186710616",
+        "revision": null
+      },
+      {
+        "timestamp": "2026-08-04T07:29:52.099Z",
+        "severity": "ERROR",
+        "message": "2026-08-04 07:29:52,099 - ERROR - medicine_information_qa timeout after 120s sid=1785827858215313801801",
+        "revision": null
+      },
+      {
+        "timestamp": "2026-08-04T07:50:37.672Z",
+        "severity": "ERROR",
+        "message": "2026-08-04 07:50:37,672 - ERROR - Pipeline end guard: response_missing sid=1785829785856485259251 user_input='ロキソニンとバファリンとカロナールどれがいい？'",
+        "revision": null
+      },
+      {
+        "timestamp": "2026-08-04T07:55:01.366Z",
+        "severity": "ERROR",
+        "message": "2026-08-04 07:55:01,366 - ERROR - Pipeline end guard: response_missing sid=1785830037656139194784 user_input='ロキソニンとイブの違いって何？'",
+        "revision": null
+      },
+      {
+        "timestamp": "2026-08-04T07:55:35.366Z",
+        "severity": "ERROR",
+        "message": "2026-08-04 07:55:35,366 - ERROR - Pipeline end guard: response_missing sid=1785830107176714677095 user_input='ロキソニンとイブ、バファリンの違いって何？'",
+        "revision": null
+      },
+      {
+        "timestamp": "2026-08-04T07:56:10.756Z",
+        "severity": "ERROR",
+        "message": "2026-08-04 07:56:10,756 - ERROR - Pipeline end guard: response_missing sid=1785830140776689396321 user_input='ロキソニンとバファリンとカロナールでおすすめは？'",
+        "revision": null
+      },
+      {
+        "timestamp": "2026-08-04T07:56:55.377Z",
+        "severity": "ERROR",
+        "message": "2026-08-04 07:56:55,377 - ERROR - Pipeline end guard: response_missing sid=1785830182188003159239 user_input='ロキソニンとイブの違いって何？'",
+        "revision": null
+      }
+    ]
+  }
+}

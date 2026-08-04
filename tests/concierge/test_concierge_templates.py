@@ -77,3 +77,33 @@ def test_deep_architecture_promotes_codepipeline_answer_to_intro():
     )
     assert "CodePipeline" in intro
     assert "smoke" not in intro.split("\n\n")[0]
+
+
+def test_aws_architecture_keeps_gcp_and_aws_in_intro(monkeypatch):
+    monkeypatch.setenv("AWS_STAGING", "1")
+    body = (
+        "つまり、どちらも同じ相談ツールですが、置いているクラウドに合わせて翻訳と読み上げのサービスが分かれています。"
+        "\n\n"
+        "GCP 本番は Cloud Run と DeepL、AWS ステージングは ECS と Translate/Polly です。"
+        "\n\n"
+        "もし必要なら、次に「本番とAWSで何が共通か」も短く説明できます。"
+        "\n\n"
+        "症状やお薬の選び方については、具体的な症状を入力していただければ別途ご案内します。"
+    )
+    intro, sections = structure_concierge_meta_display(
+        "architecture",
+        body,
+        deep=True,
+        user_text="GCPとAWSの違い",
+    )
+    first_para = intro.split("\n\n")[0]
+    assert "もし必要なら" not in first_para
+    assert "GCP" in intro or "Cloud Run" in intro
+    assert "AWS" in intro or "ECS" in intro or "Translate" in intro
+    offer_sections = [
+        item
+        for sec in sections
+        for item in sec.get("items", [])
+        if "もし必要なら" in item
+    ]
+    assert offer_sections

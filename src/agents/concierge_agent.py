@@ -2055,27 +2055,30 @@ def _meta_reference_block(intent: str) -> str:
         try:
             from config.aws_features import is_aws_staging_site
 
-            if is_aws_staging_site():
-                lines.append("")
-                lines.append("【AWS ステージング環境（参照）】")
-                lines.append("- URL: aws.medicine.yutok.dev（ECS Express Gateway + ALB + WAF）")
-                lines.append("- static アセット: S3 + CloudFront CDN")
-                lines.append("- 翻訳: Amazon Translate")
-                lines.append("- 読み上げ: Amazon Polly（POST /api/tts）")
-                lines.append("- Concierge ナレッジ: Bedrock Knowledge Base")
-                lines.append("- 医薬品画像: Cloudflare R2（images.yutok.dev/otc/）")
-                lines.append("- セッションキャッシュ: ElastiCache Serverless")
-                lines.append("- 推奨ランキング補助: Amazon Personalize（イベント蓄積中、campaign はデータ待ち）")
-            else:
-                lines.append("")
-                lines.append("【GCP 本番・dev（参照）】")
-                lines.append("- URL: medicine.yutok.dev（本番）/ medicine-recommend-dev（dev）")
-                lines.append("- ホスティング: Google Cloud Run（asia-northeast1）")
-                lines.append("- 翻訳: DeepL")
-                lines.append("- 読み上げ: Google Cloud Text-to-Speech（POST /api/tts）")
-                lines.append("- 医薬品画像: Cloudflare R2（images.yutok.dev/otc/）")
+            on_aws_staging = is_aws_staging_site()
         except Exception:
-            pass
+            on_aws_staging = False
+
+        lines.append("")
+        lines.append("【GCP 本番・dev（参照）】")
+        lines.append("- URL: medicine.yutok.dev（本番）/ medicine-recommend-dev（dev）")
+        lines.append("- ホスティング: Google Cloud Run（asia-northeast1）")
+        lines.append("- 翻訳: DeepL")
+        lines.append("- 読み上げ: Google Cloud Text-to-Speech（POST /api/tts）")
+        lines.append("- 医薬品画像: Cloudflare R2（images.yutok.dev/otc/）")
+        lines.append("")
+        lines.append("【AWS ステージング環境（参照）】")
+        lines.append("- URL: aws.medicine.yutok.dev（ECS Express Gateway + ALB + WAF）")
+        lines.append("- static アセット: S3 + CloudFront CDN")
+        lines.append("- 翻訳: Amazon Translate")
+        lines.append("- 読み上げ: Amazon Polly（POST /api/tts）")
+        lines.append("- Concierge ナレッジ: Local RAG（公開ドキュメント参照）")
+        lines.append("- 医薬品画像: Cloudflare R2（images.yutok.dev/otc/）")
+        lines.append("- セッションキャッシュ: ElastiCache Serverless")
+        if on_aws_staging:
+            lines.append("- 現在アクセス中の環境: AWS ステージング")
+        else:
+            lines.append("- 現在アクセス中の環境: GCP 本番またはローカル dev")
     else:
         lines.append(f"【ツール概要（参照）】")
         lines.append(f"名称: {app.get('name')}")
@@ -2210,37 +2213,18 @@ def _invoke_meta_concierge_llm(
         "ユーザーの意図と会話の文脈を優先し、直前トピックに引きずられて別の質問に答えない。"
     )
     if intent == "architecture":
-        try:
-            from config.aws_features import is_aws_staging_site
-
-            aws_only = is_aws_staging_site()
-        except Exception:
-            aws_only = False
         system_content += (
             " 参照ドキュメントと運用事実に忠実に、ユーザーの質問の主題から答える。"
             "ドキュメントに無い構成・URL・サービス名は推測で補わない。"
-        )
-        if aws_only:
-            system_content += (
-                " この環境は AWS ステージングのみを説明対象とし、GCP や他クラウドの構成には触れない。"
-            )
-        else:
-            system_content += (
-                " GCP 本番と AWS ステージングの役割は参照に従い、混同しない。"
-            )
-        system_content += (
+            " GCP 本番と AWS ステージングの役割は参照に従い、比較質問では両方を説明する。"
             " 聞かれていない一般論や更新履歴の羅列から始めない。"
             " 医療診断や症状への具体助言は行わない。"
         )
-    elif (
-        intent == "architecture"
-        and not deep
-        and session_id
-    ):
-        from src.services.concierge_channel import is_concierge_line_channel
+        if not deep and session_id:
+            from src.services.concierge_channel import is_concierge_line_channel
 
-        if is_concierge_line_channel(session_id):
-            system_content += " LINE 向けの概要回答とし、4文以内で要点だけ述べる。"
+            if is_concierge_line_channel(session_id):
+                system_content += " LINE 向けの概要回答とし、4文以内で要点だけ述べる。"
 
     max_tokens = 520
     if intent == "architecture":

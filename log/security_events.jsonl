@@ -14013,3 +14013,35 @@
 {"timestamp": "2026-08-05T01:53:31.205102", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-08-05T01:53:31.222119", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-08-05T01:53:31.222119", "event_type": "input_validation", "user_id": "unknown", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "あなただれ？"}}
+{"timestamp": "2026-08-05T02:57:20.406045", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:57:20.407045", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 23, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "GCP 本番と AWS ステージングの違いは？"}}
+{"timestamp": "2026-08-05T02:57:29.034893", "original_length": 25, "sanitized_length": 25, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:57:29.034893", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 25, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "CodePipeline のデプロイフローを教えて"}}
+{"timestamp": "2026-08-05T02:57:30.970306", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:57:30.971306", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "このツールでできること"}}
+{"timestamp": "2026-08-05T02:57:34.763818", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:57:34.764821", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "最近の AWS 関連更新は？"}}
+{"timestamp": "2026-08-05T02:57:37.988547", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:57:37.988547", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "企業向け概要"}}
+{"timestamp": "2026-08-05T02:57:44.212913", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:57:44.213913", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭が痛いです"}}
+{"timestamp": "2026-08-05T02:57:47.774267", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:58:23.104363", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:58:23.105368", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "副作用はありますか？"}}
+{"timestamp": "2026-08-05T02:58:35.462592", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:58:35.463598", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛がします"}}
+{"timestamp": "2026-08-05T02:58:40.667892", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:59:05.702731", "original_length": 20, "sanitized_length": 20, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:59:05.703730", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 20, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ドーピング検査で問題ないのはどれですか？"}}
+{"timestamp": "2026-08-05T02:59:16.488483", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:59:16.489484", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンって眠くなる？"}}
+{"timestamp": "2026-08-05T02:59:19.694561", "original_length": 15, "sanitized_length": 15, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:59:19.695561", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 15, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとイブの違いって何？"}}
+{"timestamp": "2026-08-05T02:59:23.991679", "original_length": 11, "sanitized_length": 11, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:59:23.991679", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 11, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンの写真見せて"}}
+{"timestamp": "2026-08-05T02:59:41.972690", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:59:41.972690", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 23, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "GCP 本番と AWS ステージングの違いは？"}}
+{"timestamp": "2026-08-05T02:59:46.161923", "original_length": 10, "sanitized_length": 10, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:59:46.161923", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 10, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "GCPとAWSの違い"}}
+{"timestamp": "2026-08-05T02:59:52.318426", "original_length": 25, "sanitized_length": 25, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-05T02:59:52.319427", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 25, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "CodePipeline のデプロイフローを教えて"}}

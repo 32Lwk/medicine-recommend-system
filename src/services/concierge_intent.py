@@ -679,6 +679,13 @@ def probe_meta_concierge_intent(
     text = (user_text or "").strip()
     if not text or len(text) > 120:
         return None
+    for pattern, intent in _META_PROBE_RULES:
+        if pattern.search(text):
+            if intent == "app_about" and is_excluded_service_app_about_request(text):
+                continue
+            if intent == "doc_changelog" and is_excluded_doc_changelog_probe(text):
+                continue
+            return intent
     from src.services.contact_channel_intent import (
         classify_contact_channel_question,
         contact_channel_to_concierge_intent,
@@ -689,13 +696,6 @@ def probe_meta_concierge_intent(
         mapped = contact_channel_to_concierge_intent(channel)
         if mapped:
             return mapped  # type: ignore[return-value]
-    for pattern, intent in _META_PROBE_RULES:
-        if pattern.search(text):
-            if intent == "app_about" and is_excluded_service_app_about_request(text):
-                continue
-            if intent == "doc_changelog" and is_excluded_doc_changelog_probe(text):
-                continue
-            return intent
     if _is_concierge_intent_routing_enabled():
         for pattern, intent in _META_PROBE_RULES_EXTENDED:
             if pattern.search(text):

@@ -1,0 +1,1188 @@
+{
+  "counseling_detail_count": 5,
+  "counseling_dedup_removed": 0,
+  "counseling_details_exported": 5,
+  "counseling_details": [
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-08-04T17:42:25.038988",
+      "session_id": "1785865277170116343795",
+      "user_input": "GCPとAWSの違い",
+      "response": "<div class=\"chat-status-card chat-status-card--notice\" role=\"alert\" aria-label=\"仕組み・技術\"><div class=\"chat-status-card__header\"><span class=\"chat-status-card__icon\" aria-hidden=\"true\">ℹ️</span><h4 class=\"chat-status-card__title\">仕組み・技術</h4></div><div class=\"chat-status-card__body\"><p>つまり、違いの中心は「どこで動くか」と「翻訳・読み上げのサービス」です。</p><p>市販薬の候補選定そのものはどちらでもルールベースで行われ、LLM が薬名を自由に作る方式ではありません。</p><p>症状やお薬の選び方については、具体的な症状を入力していただければ別途ご案内します。</p><ul class=\"chat-status-card__hints\"><li>公開されている資料をもとにお伝えしています</li><li>",
+      "conversation_history": [
+        {
+          "type": "user",
+          "uuid": "6cfc3baf-d7b6-4322-b508-d47f0f803779",
+          "content": "自己紹介して",
+          "timestamp": "2026-08-05T02:41:34+09:00"
+        },
+        {
+          "type": "user",
+          "content": "GCPとAWSの違い",
+          "timestamp": "2026-08-05T02:42:11+09:00",
+          "uuid": "60d88d27-563d-45f0-bbab-f872bb916fc9"
+        }
+      ],
+      "concierge_intent": "architecture",
+      "concierge_intent_source": "execution_sync",
+      "llm_used": true
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-08-04T17:42:37.061273",
+      "session_id": "1785865093668957864581",
+      "user_input": "自己紹介して",
+      "response": "<div class=\"chat-status-card chat-status-card--notice\" role=\"alert\" aria-label=\"このツールについて\"><div class=\"chat-status-card__header\"><span class=\"chat-status-card__icon\" aria-hidden=\"true\">ℹ️</span><h4 class=\"chat-status-card__title\">このツールについて</h4></div><div class=\"chat-status-card__body\"><p>TriageAgentです。</p><p>いまの返答はAIが生成しています。</p><p>私は、このチャットで受けた内容を整理して、必要に応じて市販薬の案内や安全確認につなぐ役割です。</p></div><div class=\"chat-status-card__footer\"><div class=\"feedback-buttons chat-status-card__feedback\"><p class=\"feed",
+      "conversation_history": [
+        {
+          "type": "user",
+          "content": "自己紹介して",
+          "timestamp": "2026-08-05T02:38:32+09:00",
+          "uuid": "5eceb1aa-4642-466d-b74f-2f42aebd5eaf"
+        }
+      ],
+      "concierge_intent": "app_about",
+      "concierge_intent_source": "execution_sync",
+      "llm_used": true
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-08-04T17:42:49.564721",
+      "session_id": "1785864917189183459650",
+      "user_input": "自己紹介して",
+      "response": "<div class=\"chat-status-card chat-status-card--notice\" role=\"alert\" aria-label=\"このツールについて\"><div class=\"chat-status-card__header\"><span class=\"chat-status-card__icon\" aria-hidden=\"true\">ℹ️</span><h4 class=\"chat-status-card__title\">このツールについて</h4></div><div class=\"chat-status-card__body\"><p>いま返答しているのは、チャット型医薬品相談ツールの案内役として動いているAIです。</p><p>症状や状況をうかがって、市販薬の候補や注意点をわかりやすく案内する役割です。</p><p>必要に応じて、薬の飲み合わせや受診の目安も一緒に確認できます。</p></div><div class=\"chat-status-card__footer\"><div class=\"feedback-buttons chat-statu",
+      "conversation_history": [
+        {
+          "type": "user",
+          "content": "自己紹介して",
+          "timestamp": "2026-08-05T02:35:55+09:00",
+          "uuid": "9f232c99-b49e-4ae4-b9f6-a68382ea2a59"
+        }
+      ],
+      "concierge_intent": "app_about",
+      "concierge_intent_source": "execution_sync",
+      "llm_used": true
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-08-04T17:43:19.514131",
+      "session_id": "1785859173672723596747",
+      "user_input": "GCPとAWSの違い",
+      "response": "<div class=\"chat-status-card chat-status-card--notice\" role=\"alert\" aria-label=\"仕組み・技術\"><div class=\"chat-status-card__header\"><span class=\"chat-status-card__icon\" aria-hidden=\"true\">ℹ️</span><h4 class=\"chat-status-card__title\">仕組み・技術</h4></div><div class=\"chat-status-card__body\"><p>もし必要なら、次に「本番とAWSで何が共通か」も短く説明できます。</p><section class=\"chat-status-card__section\"><h5 class=\"chat-status-card__section-title\">その他</h5><ul><li>つまり、どちらも同じ相談ツールですが、置いているクラウドに合わせて翻訳と読み上げのサービスが分かれています。</li><li>市販薬の候補選定はどちらでも",
+      "conversation_history": [
+        {
+          "type": "user",
+          "uuid": "2312bde7-46d2-4738-b656-2d99e0bb3561",
+          "content": "hello",
+          "timestamp": "2026-08-05T02:25:38+09:00"
+        },
+        {
+          "type": "bot",
+          "uuid": "4fe8fda2-5331-41d7-ae41-a239aa910b23",
+          "content": "sage_status",
+          "greeting": true,
+          "concierge": true,
+          "diagnosis": {
+            "kind": "concierge_greeting",
+            "hints": [],
+            "title": "Greetings",
+            "layout": "plain",
+            "render": "sage_status",
+            "actions": [],
+            "message": "Hello! This is our consultation service for over-the-counter medications. You can talk to us about any symptoms that concern you, such as headaches or sore throats. If you have any concerns, please feel free to let us know.",
+            "variant": "notice",
+            "sections": [],
+            "subtitle": "",
+            "show_feedback": false,
+            "schema_version": 1,
+            "show_bug_report": false,
+            "crisis_resources": [],
+            "feedback_context": {
+              "ai_response": "concierge:greeting",
+              "user_message": "hello",
+              "concierge_intent": "greeting"
+            },
+            "emergency_message": "",
+            "suggested_symptoms": []
+          },
+          "line_flex": {
+            "hints": [],
+            "title": "Greetings",
+            "variant": "notice",
+            "subtitle": "",
+            "body_paragraphs": [
+              "Hello!",
+              "This is our consultation service for over-the-counter medications. You can talk to us about any symptoms that concern you, such as headaches or sore throats. If you have any concerns, please feel free to let us know."
+            ]
+          },
+          "timestamp": "2026-08-05T02:25:47+09:00",
+          "content_format": "text",
+          "concierge_intent": "greeting"
+        },
+        {
+          "type": "user",
+          "uuid": "4f79ff63-2738-4d79-8daf-0db9251e80c9",
+          "content": "What do you use for translate",
+          "timestamp": "2026-08-05T02:26:14+09:00"
+        },
+        {
+          "type": "bot",
+          "uuid": "aad99dab-9438-4c24-b6f6-d92f40b83292",
+          "content": "sage_status",
+          "concierge": true,
+          "diagnosis": {
+            "kind": "concierge_architecture",
+            "hints": [
+              "This information is based on publicly available materials.",
+              "The technical explanations are based on publicly available materials and the knowledge base.",
+              "Public Technical Documentation"
+            ],
+            "title": "Mechanisms and Technologies",
+            "layout": "card",
+            "render": "sage_status",
+            "actions": [],
+            "message": "For AWS Staging, we use Amazon Translate for translations. As far as we know, we use different cloud-native services for translation, and Amazon Translate is the one used in this environment.",
+            "variant": "notice",
+            "sections": [
+              {
+                "items": [
+                  "If necessary, I can go on to explain the differences between text-to-speech and other features.",
+                  "Regarding symptoms and how to choose medications, we will provide separate guidance once you enter your specific symptoms."
+                ],
+                "title": "Other",
+                "commit": ""
+              }
+            ],
+            "subtitle": "",
+            "show_feedback": true,
+            "schema_version": 1,
+            "show_bug_report": false,
+            "crisis_resources": [],
+            "feedback_context": {
+              "ai_response": "concierge:architecture",
+              "user_message": "What do you use for translate",
+              "concierge_intent": "architecture",
+              "response_preview": "<div class=\"chat-status-card chat-status-card--notice\" role=\"alert\" aria-label=\"仕組み・技術\"><div class=\"chat-status-card__header\"><span class=\"chat-status-card__icon\" aria-hidden=\"true\">ℹ️</span><h4 class=\"chat-status-card__title\">仕組み・技術</h4></div><div class=\"chat-status-card__body\"><p>AWS ステージングでは、翻訳に Amazon Translate を使っています。</p><p>公開されている範囲では、翻訳はクラウドのネイティブサービスを使い分けていて、この環境では Amazon Translate が担当です。</p><section class=\"chat-status-card__section\"><h5 class=\"chat-status-card__section-title\">その他</h5><"
+            },
+            "emergency_message": "",
+            "suggested_symptoms": []
+          },
+          "line_flex": {
+            "hints": [
+              "This information is based on publicly available materials.",
+              "The technical explanations are based on publicly available materials and the knowledge base.",
+              "Public Technical Documentation"
+            ],
+            "title": "Mechanisms and Technologies",
+            "variant": "notice",
+            "subtitle": "",
+            "body_paragraphs": [
+              "For AWS Staging, we use Amazon Translate for translations. As far as we know, we use different cloud-native services for translation, and Amazon Translate is the one used in this environment."
+            ]
+          },
+          "timestamp": "2026-08-05T02:26:42+09:00",
+          "content_format": "status_card",
+          "concierge_intent": "architecture"
+        },
+        {
+          "type": "user",
+          "content": "GCPとAWSの違い",
+          "timestamp": "2026-08-05T02:43:11+09:00",
+          "uuid": "171ba3ea-2742-4855-bf5c-7c923d04ed83"
+        }
+      ],
+      "concierge_intent": "architecture",
+      "concierge_intent_source": "execution_sync",
+      "llm_used": true
+    },
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-08-04T17:43:40.083259",
+      "session_id": "1785865406686386620229",
+      "user_input": "こんにちは",
+      "response": "こんにちは！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話ししていただければ、適切な市販薬をご案内しますよ。何かお困りのことはありますか？",
+      "conversation_history": [
+        {
+          "type": "user",
+          "content": "こんにちは",
+          "timestamp": "2026-08-05T02:43:32+09:00",
+          "uuid": "2d0b9ecc-12c5-45bf-a594-2c18f7b1b52f"
+        }
+      ],
+      "concierge_intent": "greeting",
+      "concierge_intent_source": "execution_sync",
+      "llm_used": true
+    }
+  ],
+  "security_flags": [
+    {
+      "timestamp": "2026-08-04T17:43:10.525Z",
+      "message": "2026-08-04 17:43:10,525 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-04T17:43:30.913Z",
+      "message": "2026-08-04 17:43:30,912 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-04T17:43:47.430Z",
+      "message": "2026-08-04 17:43:47,430 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-04T17:44:11.500Z",
+      "message": "2026-08-04 17:44:11,500 - INFO - Security validation: score=0, safe=True, warnings=0"
+    }
+  ],
+  "session_conversations": {
+    "session_count": 5,
+    "exported_session_count": 5,
+    "counseling_session_count": 5,
+    "trace_only_session_count": 0,
+    "chat_flow_trace_count": 3,
+    "sessions": [
+      {
+        "session_id": "1785859173672723596747",
+        "channel": "web",
+        "time_range": {
+          "start": null,
+          "end": "2026-08-04T17:43:19.514131"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "hello"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_status"
+          },
+          {
+            "role": "user",
+            "content": "What do you use for translate"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_status"
+          },
+          {
+            "role": "user",
+            "content": "GCPとAWSの違い"
+          },
+          {
+            "role": "assistant",
+            "content": "ℹ️ 仕組み・技術 もし必要なら、次に「本番とAWSで何が共通か」も短く説明できます。 その他 つまり、どちらも同じ相談ツールですが、置いているクラウドに合わせて翻訳と読み上げのサービスが分かれています。 市販薬の候補選定はどちらでも"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": null,
+            "user_input": "hello",
+            "response_preview": "sage_status",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "conversation_history",
+            "input_labels": [
+              "greeting"
+            ],
+            "routing": {},
+            "timing": {
+              "user_message_at": null,
+              "response_at": "",
+              "e2e_ms": null,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": null,
+              "phase_summary_ms": {},
+              "breakdown_ms": {},
+              "llm_call_count": 0,
+              "llm_total_latency_ms": null,
+              "llm_session_cost_jpy": null,
+              "llm_calls": []
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": null,
+            "user_input": "What do you use for translate",
+            "response_preview": "sage_status",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "conversation_history",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {},
+            "timing": {
+              "user_message_at": null,
+              "response_at": "",
+              "e2e_ms": null,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": null,
+              "phase_summary_ms": {},
+              "breakdown_ms": {},
+              "llm_call_count": 0,
+              "llm_total_latency_ms": null,
+              "llm_session_cost_jpy": null,
+              "llm_calls": []
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "hello"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_status"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-08-04T17:43:19.514131",
+            "user_input": "GCPとAWSの違い",
+            "response_preview": "ℹ️ 仕組み・技術 もし必要なら、次に「本番とAWSで何が共通か」も短く説明できます。 その他 つまり、どちらも同じ相談ツールですが、置いているクラウドに合わせて翻訳と読み上げのサービスが分かれています。 市販薬の候補選定はどちらでも",
+            "response_html": true,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {
+              "trace_id": "d90d6e1f-1de6-4a6a-9d28-7129044f6f59",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 1.0
+              },
+              "concierge_intent": "architecture",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 10759.46,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 216.5,
+                "triage_ms": 4.9,
+                "post_to_security_ms": 1321.6,
+                "safety_gate_ms": 1342.1,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 2642.3,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 2
+            },
+            "timing": {
+              "user_message_at": "2026-08-04T17:43:09.303Z",
+              "response_at": "2026-08-04T17:43:19.514131",
+              "e2e_ms": 10211.1,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 10759.46,
+              "phase_summary_ms": {
+                "security_ms": 216.5,
+                "triage_ms": 4.9,
+                "post_to_security_ms": 1321.6,
+                "safety_gate_ms": 1342.1,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 2642.3,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 1.24,
+                "parsed_message": 1.37,
+                "session_db_read": 1.6,
+                "after_get_session_db": 274.49,
+                "before_llm_setup": 559.46,
+                "before_security": 1106.35,
+                "after_security": 1322.81,
+                "before_emoji_route": 1331.36,
+                "before_triage": 1332.23,
+                "after_triage": 1337.12,
+                "safety_gate_done": 2664.86,
+                "after_triage_follow_ups": 2670.0,
+                "after_counseling_flow": 3513.6,
+                "moderation_done": 3513.64,
+                "before_medicine_qa_route": 4219.7,
+                "after_medicine_qa_route": 4220.16,
+                "concierge_resolve_intent_start": 7567.06,
+                "concierge_resolve_intent_end": 7567.23,
+                "concierge_build_payload_start": 7567.47,
+                "concierge_build_payload_end": 10209.81
+              },
+              "llm_call_count": 2,
+              "llm_total_latency_ms": 2386.84,
+              "llm_session_cost_jpy": 0.4873,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-04T17:43:14.375418",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 849.23,
+                  "prompt_tokens": 396,
+                  "completion_tokens": 32,
+                  "cost_jpy": 0.0128,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-04T17:43:18.956869",
+                  "model": "gpt-5.4-mini",
+                  "path": "concierge_agent.meta_architecture_deep",
+                  "latency_ms": 1537.61,
+                  "prompt_tokens": 15703,
+                  "completion_tokens": 112,
+                  "cost_jpy": 0.4744,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "hello"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_status"
+              },
+              {
+                "role": "user",
+                "content": "What do you use for translate"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_status"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 3,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1785859173672723596747 turns=3 grade=good first='hello' last='GCPとAWSの違い'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "conversation_history": 2,
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1785864917189183459650",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-04T17:42:49.564721",
+          "end": "2026-08-04T17:42:49.564721"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "自己紹介して"
+          },
+          {
+            "role": "assistant",
+            "content": "ℹ️ このツールについて いま返答しているのは、チャット型医薬品相談ツールの案内役として動いているAIです。 症状や状況をうかがって、市販薬の候補や注意点をわかりやすく案内する役割です。 必要に応じて、薬の飲み合わせや受診の目安も一緒に確認できます。 <div class=\"feedback-buttons chat-statu"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-04T17:42:49.564721",
+            "user_input": "自己紹介して",
+            "response_preview": "ℹ️ このツールについて いま返答しているのは、チャット型医薬品相談ツールの案内役として動いているAIです。 症状や状況をうかがって、市販薬の候補や注意点をわかりやすく案内する役割です。 必要に応じて、薬の飲み合わせや受診の目安も一緒に確認できます。 <div class=\"feedback-buttons chat-statu",
+            "response_html": true,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {},
+            "timing": {
+              "user_message_at": null,
+              "response_at": "2026-08-04T17:42:49.564721",
+              "e2e_ms": null,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": null,
+              "phase_summary_ms": {},
+              "breakdown_ms": {},
+              "llm_call_count": 0,
+              "llm_total_latency_ms": null,
+              "llm_session_cost_jpy": null,
+              "llm_calls": []
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 1,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1785864917189183459650 turns=1 grade=good first='自己紹介して' last='自己紹介して'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1785865093668957864581",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-04T17:42:37.061273",
+          "end": "2026-08-04T17:42:37.061273"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "自己紹介して"
+          },
+          {
+            "role": "assistant",
+            "content": "ℹ️ このツールについて TriageAgentです。 いまの返答はAIが生成しています。 私は、このチャットで受けた内容を整理して、必要に応じて市販薬の案内や安全確認につなぐ役割です。 <p class=\"feed"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-04T17:42:37.061273",
+            "user_input": "自己紹介して",
+            "response_preview": "ℹ️ このツールについて TriageAgentです。 いまの返答はAIが生成しています。 私は、このチャットで受けた内容を整理して、必要に応じて市販薬の案内や安全確認につなぐ役割です。 <p class=\"feed",
+            "response_html": true,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {},
+            "timing": {
+              "user_message_at": null,
+              "response_at": "2026-08-04T17:42:37.061273",
+              "e2e_ms": null,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": null,
+              "phase_summary_ms": {},
+              "breakdown_ms": {},
+              "llm_call_count": 0,
+              "llm_total_latency_ms": null,
+              "llm_session_cost_jpy": null,
+              "llm_calls": []
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 1,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1785865093668957864581 turns=1 grade=good first='自己紹介して' last='自己紹介して'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1785865277170116343795",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-04T17:42:25.038988",
+          "end": "2026-08-04T17:42:25.038988"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "GCPとAWSの違い"
+          },
+          {
+            "role": "assistant",
+            "content": "ℹ️ 仕組み・技術 つまり、違いの中心は「どこで動くか」と「翻訳・読み上げのサービス」です。 市販薬の候補選定そのものはどちらでもルールベースで行われ、LLM が薬名を自由に作る方式ではありません。 症状やお薬の選び方については、具体的な症状を入力していただければ別途ご案内します。 公開されている資料をもとにお伝えしています"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-04T17:42:25.038988",
+            "user_input": "GCPとAWSの違い",
+            "response_preview": "ℹ️ 仕組み・技術 つまり、違いの中心は「どこで動くか」と「翻訳・読み上げのサービス」です。 市販薬の候補選定そのものはどちらでもルールベースで行われ、LLM が薬名を自由に作る方式ではありません。 症状やお薬の選び方については、具体的な症状を入力していただければ別途ご案内します。 公開されている資料をもとにお伝えしています",
+            "response_html": true,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {},
+            "timing": {
+              "user_message_at": null,
+              "response_at": "2026-08-04T17:42:25.038988",
+              "e2e_ms": null,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": null,
+              "phase_summary_ms": {},
+              "breakdown_ms": {},
+              "llm_call_count": 0,
+              "llm_total_latency_ms": null,
+              "llm_session_cost_jpy": null,
+              "llm_calls": []
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 1,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1785865277170116343795 turns=1 grade=good first='GCPとAWSの違い' last='GCPとAWSの違い'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1785865406686386620229",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-04T17:43:40.083259",
+          "end": "2026-08-04T17:43:40.083259"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "こんにちは"
+          },
+          {
+            "role": "assistant",
+            "content": "こんにちは！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話ししていただければ、適切な市販薬をご案内しますよ。何かお困りのことはありますか？"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-04T17:43:40.083259",
+            "user_input": "こんにちは",
+            "response_preview": "こんにちは！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状についてお話ししていただければ、適切な市販薬をご案内しますよ。何かお困りのことはありますか？",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "greeting"
+            ],
+            "routing": {
+              "trace_id": "e9c61968-e624-4681-806a-c49adc7bf85c",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 1.0
+              },
+              "concierge_intent": "greeting",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 11057.23,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 214.9,
+                "triage_ms": 914.9,
+                "post_to_security_ms": 1331.6,
+                "safety_gate_ms": 1830.4,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 1961.6,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 2
+            },
+            "timing": {
+              "user_message_at": "2026-08-04T17:43:29.592Z",
+              "response_at": "2026-08-04T17:43:40.083259",
+              "e2e_ms": 10491.3,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 11057.23,
+              "phase_summary_ms": {
+                "security_ms": 214.9,
+                "triage_ms": 914.9,
+                "post_to_security_ms": 1331.6,
+                "safety_gate_ms": 1830.4,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 1961.6,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.51,
+                "parsed_message": 0.69,
+                "session_db_read": 0.77,
+                "after_get_session_db": 282.08,
+                "before_llm_setup": 560.81,
+                "before_security": 1117.22,
+                "after_security": 1332.15,
+                "before_emoji_route": 1334.06,
+                "before_triage": 1334.08,
+                "after_triage": 2248.97,
+                "safety_gate_done": 3162.54,
+                "after_triage_follow_ups": 3167.5,
+                "after_counseling_flow": 4521.11,
+                "moderation_done": 4521.15,
+                "before_medicine_qa_route": 4802.5,
+                "after_medicine_qa_route": 4803.23,
+                "concierge_resolve_intent_start": 8526.21,
+                "concierge_resolve_intent_end": 8526.44,
+                "concierge_build_payload_start": 8526.79,
+                "concierge_build_payload_end": 10488.44
+              },
+              "llm_call_count": 2,
+              "llm_total_latency_ms": 2498.49,
+              "llm_session_cost_jpy": 0.0395,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-04T17:43:35.503459",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1103.24,
+                  "prompt_tokens": 363,
+                  "completion_tokens": 28,
+                  "cost_jpy": 0.0117,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-04T17:43:39.514707",
+                  "model": "gpt-4o-mini",
+                  "path": "concierge_agent.greeting",
+                  "latency_ms": 1395.25,
+                  "prompt_tokens": 865,
+                  "completion_tokens": 62,
+                  "cost_jpy": 0.0278,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 1,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1785865406686386620229 turns=1 grade=good first='こんにちは' last='こんにちは'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      }
+    ],
+    "intent_mismatches": [],
+    "mismatch_count": 0,
+    "sessions_by_grade": {
+      "good": 5
+    },
+    "physical_recommendation_events": [
+      {
+        "timestamp": "2026-08-04T17:43:12.750Z",
+        "trace_id": "d90d6e1f-1de6-4a6a-9d28-7129044f6f59",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-08-04T17:43:13.527Z",
+        "trace_id": "d90d6e1f-1de6-4a6a-9d28-7129044f6f59",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: hello\\nuser: sage_status\\nuser: What do you use for translate\\nuser: sage_status\\nuser: GCPとAWSの違い\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: hello\\nuser: sage_status\\nuser: What do you use for translate\\nuser: sage_status\\nuser: GCPとAWSの違い\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回"
+      },
+      {
+        "timestamp": "2026-08-04T17:43:33.691Z",
+        "trace_id": "e9c61968-e624-4681-806a-c49adc7bf85c",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-08-04T17:43:34.402Z",
+        "trace_id": "e9c61968-e624-4681-806a-c49adc7bf85c",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: こんにちは\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: こんにちは\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか"
+      },
+      {
+        "timestamp": "2026-08-04T17:43:52.718Z",
+        "trace_id": "d6a7dda6-9875-4543-923d-fa8879655105",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 頭痛がします\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 頭痛がします\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよい"
+      },
+      {
+        "timestamp": "2026-08-04T17:44:03.125Z",
+        "trace_id": "d6a7dda6-9875-4543-923d-fa8879655105",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 頭痛がします\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 頭痛がします\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよい"
+      }
+    ]
+  },
+  "intent_mismatches": [],
+  "intent_review_queue": [],
+  "sessions_by_grade": {
+    "good": 5
+  },
+  "intent_router": {
+    "rows": [
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-08-04T17:42:18.349596",
+        "session_id": "1785865277170116343795",
+        "user_input": "GCPとAWSの違い",
+        "mismatch": false,
+        "primary_route": "Concierge",
+        "sub_route": "architecture",
+        "resolved_by": "llm",
+        "confidence": 0.98,
+        "source": "intent_router_llm",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other"
+      },
+      {
+        "log_type": "dialogue_route_execution",
+        "timestamp": "2026-08-04T17:42:25.036413",
+        "session_id": "1785865277170116343795",
+        "user_input": "GCPとAWSの違い",
+        "dispatch_sub_route": "architecture",
+        "resolved_concierge_intent": "architecture",
+        "resolved_execution_intent": "architecture",
+        "llm_path": null,
+        "layer_used": null,
+        "mismatch": false,
+        "handler": "concierge_agent",
+        "sync": "concierge_execution_metadata"
+      },
+      {
+        "log_type": "dialogue_route_execution",
+        "timestamp": "2026-08-04T17:42:37.059320",
+        "session_id": "1785865093668957864581",
+        "user_input": "自己紹介して",
+        "dispatch_sub_route": "app_about",
+        "resolved_concierge_intent": "app_about",
+        "resolved_execution_intent": "app_about",
+        "llm_path": null,
+        "layer_used": null,
+        "mismatch": false,
+        "handler": "concierge_agent",
+        "sync": "concierge_execution_metadata"
+      },
+      {
+        "log_type": "dialogue_route_execution",
+        "timestamp": "2026-08-04T17:42:49.562436",
+        "session_id": "1785864917189183459650",
+        "user_input": "自己紹介して",
+        "dispatch_sub_route": "app_about",
+        "resolved_concierge_intent": "app_about",
+        "resolved_execution_intent": "app_about",
+        "llm_path": null,
+        "layer_used": null,
+        "mismatch": false,
+        "handler": "concierge_agent",
+        "sync": "concierge_execution_metadata"
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-08-04T17:43:14.335398",
+        "session_id": "1785859173672723596747",
+        "user_input": "GCPとAWSの違い",
+        "mismatch": false,
+        "primary_route": "Concierge",
+        "sub_route": "architecture",
+        "resolved_by": "gate",
+        "confidence": 0.92,
+        "source": "concierge_follow_up",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other"
+      },
+      {
+        "log_type": "dialogue_route_execution",
+        "timestamp": "2026-08-04T17:43:19.512892",
+        "session_id": "1785859173672723596747",
+        "user_input": "GCPとAWSの違い",
+        "dispatch_sub_route": "architecture",
+        "resolved_concierge_intent": "architecture",
+        "resolved_execution_intent": "architecture",
+        "llm_path": null,
+        "layer_used": null,
+        "mismatch": false,
+        "handler": "concierge_agent",
+        "sync": "concierge_execution_metadata"
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-08-04T17:43:36.171541",
+        "session_id": "1785865406686386620229",
+        "user_input": "こんにちは",
+        "mismatch": false,
+        "primary_route": "Concierge",
+        "sub_route": "greeting",
+        "resolved_by": "gate",
+        "confidence": 0.95,
+        "source": "concierge_fast_path",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other"
+      },
+      {
+        "log_type": "dialogue_route_execution",
+        "timestamp": "2026-08-04T17:43:40.081031",
+        "session_id": "1785865406686386620229",
+        "user_input": "こんにちは",
+        "dispatch_sub_route": "greeting",
+        "resolved_concierge_intent": "greeting",
+        "resolved_execution_intent": "greeting",
+        "llm_path": null,
+        "layer_used": null,
+        "mismatch": false,
+        "handler": "concierge_agent",
+        "sync": "concierge_execution_metadata"
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-08-04T17:43:58.628355",
+        "session_id": "1785865424017862296857",
+        "user_input": "頭痛がします",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "resolved_by": "guard",
+        "confidence": 0.94,
+        "source": "medicine_context_cold_start_guard",
+        "triage_category": "Physical",
+        "triage_subcategory": "headache"
+      }
+    ],
+    "shadow_total": 4,
+    "shadow_mismatch": 0,
+    "shadow_mismatch_rate_pct": 0.0,
+    "shadow_improvement_mismatch": 0,
+    "shadow_improvement_mismatch_rate_pct": 0.0,
+    "shadow_regression_mismatch": 0,
+    "shadow_regression_mismatch_rate_pct": 0.0,
+    "shadow_exempt": 0,
+    "shadow_exempt_rate_pct": 0.0,
+    "shadow_by_mismatch_kind": {
+      "agree": 4
+    },
+    "shadow_by_primary_route": {
+      "Concierge": 3,
+      "Physical": 1
+    },
+    "shadow_by_resolved_by": {
+      "llm": 1,
+      "gate": 2,
+      "guard": 1
+    },
+    "shadow_with_fever_context_flag": 0,
+    "shadow_with_pending_cancelled_flag": 0,
+    "dispatch_with_fever_context_flag": 0,
+    "dispatch_with_pending_cancelled_flag": 0,
+    "dispatch_total": 0,
+    "dispatch_handled": 0,
+    "dispatch_unhandled": 0,
+    "dispatch_success_rate_pct": 0.0,
+    "dispatch_by_handler": {},
+    "execution_total": 5,
+    "execution_mismatch": 0,
+    "execution_mismatch_rate_pct": 0.0,
+    "execution_by_layer_used": {
+      "unknown": 5
+    },
+    "execution_side_effect_qa": 0,
+    "mismatch_samples": []
+  }
+}

@@ -2778,29 +2778,7 @@
 
     /** AWS ステージングでは GCP 関連の HTML 表記を除去・AWS 向けに差し替える */
     function adaptAwsStagingHtml(html) {
-        if (!html || !isAwsStagingEnv()) {
-            return html;
-        }
-        let out = String(html);
-        const replacements = [
-            [/Google Cloud Build（GCP）/g, 'AWS CodePipeline / CodeBuild'],
-            [/Google Cloud Build/g, 'AWS CodePipeline / CodeBuild'],
-            [/Google Cloud（Cloud Run 等）/g, 'AWS ECS（Fargate）'],
-            [/Google Cloud \(e\.g\. Cloud Run\)/gi, 'AWS ECS (Fargate)'],
-            [/Google Cloud\(Cloud Run 등\)/g, 'AWS ECS(Fargate)'],
-            [/DeepL API/g, 'Amazon Translate'],
-            [/DeepL/g, 'Amazon Translate'],
-            [/GCP Cloud Run/gi, 'AWS ECS'],
-            [/Cloud Run/gi, 'AWS ECS'],
-            [/Google Cloud/gi, 'AWS'],
-            [/GCP/g, ''],
-        ];
-        for (const [pattern, replacement] of replacements) {
-            out = out.replace(pattern, replacement);
-        }
-        out = out.replace(/<li[^>]*>[^<]*(?:GCP|Google Cloud|Cloud Run|cloudbuild)[^<]*<\/li>/gi, '');
-        out = out.replace(/\s{2,}/g, ' ');
-        return out;
+        return html;
     }
 
     // 開発環境かどうかを判定する

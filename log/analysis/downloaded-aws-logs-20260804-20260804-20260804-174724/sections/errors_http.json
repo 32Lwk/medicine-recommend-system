@@ -1,0 +1,51 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 2,
+    "by_status": {
+      "400": 2
+    },
+    "by_path": {
+      "UNKNOWN /v1/speech (400)": 2
+    },
+    "slow_endpoints_ge_5s": {},
+    "samples": [
+      {
+        "timestamp": "2026-08-04T17:42:43.596Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-04T17:42:43.606Z",
+        "status": 400,
+        "method": "UNKNOWN",
+        "path": "/v1/speech",
+        "latency_s": null,
+        "severity": "DEBUG",
+        "revision": null,
+        "commit_sha": null
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 1,
+    "top_patterns": [
+      {
+        "message": "2026-08-04 17:42:23,018 - ERROR - SSE orphan worker exceeded 120s sid=1785865093668957864581",
+        "count": 1
+      }
+    ],
+    "samples": [
+      {
+        "timestamp": "2026-08-04T17:42:23.019Z",
+        "severity": "ERROR",
+        "message": "2026-08-04 17:42:23,018 - ERROR - SSE orphan worker exceeded 120s sid=1785865093668957864581",
+        "revision": null
+      }
+    ]
+  }
+}

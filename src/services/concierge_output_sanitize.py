@@ -118,12 +118,6 @@ def sanitize_concierge_meta_output(
 
     result = _collapse_whitespace(result)
     result = strip_concierge_prompt_leakage(result)
-    try:
-        from src.services.concierge_aws_content import strip_gcp_mentions
-
-        result = strip_gcp_mentions(result)
-    except Exception:
-        pass
     return apply_concierge_faithfulness_guard(result, intent=intent)
 
 

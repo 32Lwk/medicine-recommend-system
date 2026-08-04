@@ -162,6 +162,101 @@ _DEEP_ARCH_TOPIC_RULES: list[tuple[str, re.Pattern[str]]] = [
 ]
 
 
+def _is_follow_up_offer_paragraph(paragraph: str) -> bool:
+    text = (paragraph or "").strip()
+    if not text or not _FOLLOW_UP_OFFER_RE.search(text):
+        return False
+    sentences = [
+        part.strip()
+        for part in re.split(r"(?<=[。．!！?？])\s*", text)
+        if part.strip()
+    ]
+    non_offer = [
+        sentence
+        for sentence in sentences
+        if not _FOLLOW_UP_OFFER_RE.search(sentence)
+    ]
+    return len(non_offer) == 0
+
+
+def _split_message_paragraphs(message: str) -> List[str]:
+    return [part.strip() for part in (message or "").split("\n\n") if part.strip()]
+
+
+def _is_weak_architecture_intro(intro_parts: List[str]) -> bool:
+    substantive = [
+        part
+        for part in intro_parts
+        if not _is_follow_up_offer_paragraph(part)
+        and not _GENERIC_ARCHITECTURE_BOILERPLATE_RE.search(part)
+    ]
+    return len(substantive) == 0
+
+
+def _append_other_section_items(
+    sections: List[Dict[str, Any]],
+    items: List[str],
+) -> List[Dict[str, Any]]:
+    extra = [item.strip() for item in items if item.strip()]
+    if not extra:
+        return sections
+    for sec in sections:
+        if sec.get("title") == "その他":
+            sec["items"] = list(sec.get("items") or []) + extra
+            return sections
+    return [*sections, {"title": "その他", "items": extra}]
+
+
+def _repair_architecture_intro_if_weak(
+    user_text: str,
+    message: str,
+    sections: List[Dict[str, Any]],
+) -> tuple[str, List[Dict[str, Any]]]:
+    """intro がフォローアップ提案だけ等で弱いとき、セクションから本文を復元する。"""
+    intro_parts = _split_message_paragraphs(message)
+    offer_parts = [part for part in intro_parts if _is_follow_up_offer_paragraph(part)]
+    intro_parts = [part for part in intro_parts if not _is_follow_up_offer_paragraph(part)]
+
+    if _is_weak_architecture_intro(intro_parts):
+        priority_titles = _priority_section_titles_for_question(user_text)
+        promoted: List[str] = []
+        new_sections: List[Dict[str, Any]] = []
+        for sec in sections:
+            title = str(sec.get("title") or "")
+            items = [
+                str(item).strip()
+                for item in (sec.get("items") or [])
+                if str(item).strip() and not _is_follow_up_offer_paragraph(str(item))
+            ]
+            if not items:
+                continue
+            should_promote = (
+                not priority_titles
+                or title in priority_titles
+                or title == "その他"
+            )
+            if should_promote:
+                if title == "その他":
+                    limit = 4
+                elif priority_titles and title == priority_titles[0]:
+                    limit = 3
+                else:
+                    limit = 2
+                promoted.extend(items[:limit])
+                remainder = items[limit:]
+                if remainder:
+                    new_sections.append({"title": title, "items": remainder})
+            else:
+                new_sections.append({**sec, "items": items})
+        if promoted:
+            intro_parts = promoted
+            sections = new_sections
+
+    sections = _append_other_section_items(sections, offer_parts)
+    message = "\n\n".join(intro_parts)
+    return message, sections
+
+
 def _bucket_architecture_deep_paragraphs(
     paragraphs: List[str],
 ) -> tuple[List[str], List[Dict[str, Any]]]:
@@ -170,6 +265,9 @@ def _bucket_architecture_deep_paragraphs(
     intro: List[str] = []
 
     for para in paragraphs:
+        if _is_follow_up_offer_paragraph(para):
+            intro.append(para)
+            continue
         assigned = False
         for title, pattern in _DEEP_ARCH_TOPIC_RULES:
             if pattern.search(para):
@@ -193,6 +291,16 @@ _GENERIC_ARCHITECTURE_BOILERPLATE_RE = re.compile(
     r"ルールベース(?:のスコアリング|のアルゴリズム)?|"
     r"専門担当|役割分担|振り分け|"
     r"症状やお薬の選び方については、具体的な症状"
+    r")",
+    re.I,
+)
+
+_FOLLOW_UP_OFFER_RE = re.compile(
+    r"(?:"
+    r"もし必要なら|"
+    r"必要なら(?:、|,)?次に|"
+    r"次に[「『].+[」』].*(?:説明|お伝え)(?:できます|可能です)|"
+    r"(?:もう少し|さらに).*(?:説明|お伝え)(?:できます|可能です)"
     r")",
     re.I,
 )
@@ -256,7 +364,7 @@ def _is_generic_architecture_intro(intro_parts: List[str]) -> bool:
 def _paragraph_matches_question(user_text: str, paragraph: str) -> bool:
     text = (user_text or "").strip()
     para = (paragraph or "").strip()
-    if not text or not para:
+    if not text or not para or _is_follow_up_offer_paragraph(para):
         return False
     for title in _priority_section_titles_for_question(text):
         for rule_title, pattern in _DEEP_ARCH_TOPIC_RULES:
@@ -297,7 +405,11 @@ def _rebalance_architecture_deep_display(
             continue
         if title in priority_titles:
             limit = 3 if title == priority_titles[0] else 2
-            promoted.extend(items[:limit])
+            promoted.extend(
+                item
+                for item in items[:limit]
+                if not _is_follow_up_offer_paragraph(item)
+            )
             remainder = items[limit:]
             if remainder:
                 demoted_sections.append({"title": title, "items": remainder})
@@ -406,17 +518,12 @@ def structure_concierge_meta_display(
             sections = topic_sections + sections
 
     message = "\n\n".join(prose_parts) if prose_parts else (body_text or "").strip()
-    try:
-        from src.services.concierge_aws_content import (
-            filter_architecture_sections_for_aws,
-            strip_gcp_mentions,
+    if intent == "architecture" and deep:
+        message, sections = _repair_architecture_intro_if_weak(
+            user_text,
+            message,
+            sections,
         )
-
-        if intent == "architecture":
-            sections = filter_architecture_sections_for_aws(sections)
-            message = strip_gcp_mentions(message)
-    except Exception:
-        pass
     return message, sections
 
 

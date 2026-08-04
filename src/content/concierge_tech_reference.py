@@ -176,12 +176,6 @@ def format_concierge_technical_reference_block(
     docs = list(_load_technical_documents())
     if not include_ops_docs:
         docs = [(name, body) for name, body in docs if not name.startswith("AWS_")]
-    try:
-        from src.services.concierge_aws_content import skip_gcp_technical_doc
-
-        docs = [(name, body) for name, body in docs if not skip_gcp_technical_doc(name)]
-    except Exception:
-        pass
     docs = _sort_docs_by_query(docs, user_text)
 
     lines = [
