@@ -1,0 +1,75 @@
+{
+  "timestamp": "2026-08-04T07:53:57.592854+00:00",
+  "base_url": "https://aws.medicine.yutok.dev/",
+  "git_commit": "43722e4",
+  "scenarios": [
+    {
+      "id": "comparison_side_effect_regression",
+      "pass": false,
+      "turns": [
+        {
+          "user": "ロキソニンって眠くなる？",
+          "status": 200,
+          "elapsed_s": 35.33,
+          "render": "sage_qa",
+          "text_len": 142,
+          "text_preview": "「ロキソニンS」（ロキソプロフェン系）では、一般に強い眠気は主要な副作用として挙げられていません。ただし個人差や他の成分・併用薬により眠気を感じる場合があります。運転前や重要な作業前は注意し、気になる症状が続く場合は薬剤師・医師に相談してください。\n医薬品相談回答\n参考：添付文書抜粋",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "user": "ロキソニンとイブの違いって何？",
+          "status": 200,
+          "elapsed_s": 28.06,
+          "render": "sage_status",
+          "text_len": 53,
+          "text_preview": "処理中に問題が発生しました。しばらく時間をおいてからもう一度お試しください。\n一時的なエラーが発生しました",
+          "pass": false,
+          "failures": [
+            "render 'sage_status' != 'sage_qa'",
+            "missing keywords ['ロキソ', 'イブ', '違い', '成分']"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "comparison_three_products",
+      "pass": false,
+      "turns": [
+        {
+          "user": "ロキソニンとイブ、バファリンの違いって何？",
+          "status": 200,
+          "elapsed_s": 28.88,
+          "render": "sage_status",
+          "text_len": 53,
+          "text_preview": "処理中に問題が発生しました。しばらく時間をおいてからもう一度お試しください。\n一時的なエラーが発生しました",
+          "pass": false,
+          "failures": [
+            "render 'sage_status' != 'sage_qa'",
+            "missing keywords ['ロキソ', 'イブ', 'バファリン', '違い']"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "comparison_pick_question",
+      "pass": false,
+      "turns": [
+        {
+          "user": "ロキソニンとバファリンとカロナールでおすすめは？",
+          "status": 200,
+          "elapsed_s": 30.87,
+          "render": "sage_status",
+          "text_len": 53,
+          "text_preview": "処理中に問題が発生しました。しばらく時間をおいてからもう一度お試しください。\n一時的なエラーが発生しました",
+          "pass": false,
+          "failures": [
+            "render 'sage_status' != 'sage_qa'",
+            "missing keywords ['ロキソ', 'バファリン', 'カロナール']"
+          ]
+        }
+      ]
+    }
+  ],
+  "pass": false
+}

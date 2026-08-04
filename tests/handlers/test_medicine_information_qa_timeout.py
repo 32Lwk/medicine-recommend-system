@@ -22,6 +22,16 @@ def test_medicine_qa_generation_cancel_marks_stale():
     assert is_medicine_qa_generation_stale(session, None, gen)
 
 
+def test_medicine_qa_generation_request_safe_session():
+    from src.utils.request_safe_session import RequestSafeSession
+
+    session = RequestSafeSession()
+    gen = begin_medicine_qa_generation(session)
+    assert session.get("_medicine_qa_generation") == gen
+    assert not is_medicine_qa_generation_stale(session, None, gen)
+    cancel_medicine_qa_generation(session)
+    assert is_medicine_qa_generation_stale(session, None, gen)
+
 @patch("src.services.pipeline_perf.mark_pipeline_step")
 @patch("concurrent.futures.ThreadPoolExecutor")
 def test_handle_medicine_information_qa_timeout_returns_quickly(
@@ -67,6 +77,24 @@ def test_handle_medicine_information_qa_success(mock_run_qa, _mock_mark):
     )
     assert status == 200
     assert body["message_count"] == 3
+
+
+@patch("src.services.pipeline_perf.mark_pipeline_step")
+@patch("src.handlers.chat.chat_medicine_qa_html.run_medicine_question_qa")
+def test_handle_medicine_information_qa_success_request_safe_session(mock_run_qa, _mock_mark):
+    from src.utils.request_safe_session import RequestSafeSession
+
+    mock_run_qa.return_value = (3, {"answer": "ok"})
+    session = RequestSafeSession()
+    body, status = handle_medicine_information_qa(
+        session,
+        client_info=type("C", (), {"client_ip": "127.0.0.1", "user_agent": "test"})(),
+        sid="sid-ok-rss",
+        user_message="ロキソニンとイブの違いって何？",
+    )
+    assert status == 200
+    assert body["message_count"] == 3
+    assert session.get("_medicine_qa_generation") == 1
 
 
 def test_try_fast_comparison_qa_response_builds_sections():

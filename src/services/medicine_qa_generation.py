@@ -1,11 +1,13 @@
 """medicine_information_qa タイムアウト後の世代トークン（バックグラウンド応答の無効化）。"""
 from __future__ import annotations
 
+from collections.abc import MutableMapping
 from typing import Any, Optional
 
 
-def _session_store(session: Any, sid: Optional[str]) -> dict[str, Any]:
-    if isinstance(session, dict):
+def _session_store(session: Any, sid: Optional[str]) -> Any:
+    """Web/FastAPI の RequestSafeSession（MutableMapping）も dict と同様に扱う。"""
+    if isinstance(session, (dict, MutableMapping)):
         return session
     return {}
 
