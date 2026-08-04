@@ -49,7 +49,8 @@
 | 種別 | 結果 |
 |------|------|
 | ユニット | `test_contact_channel_intent`, `test_contact_context_routing` 等 |
-| ローカル E2E | `scripts/concierge_contact_context_e2e.py` — **22/22 → 23/23**（`op-card-standalone-01` 追加） |
+| ローカル E2E | `scripts/concierge_contact_context_e2e.py` — **23/23**（`op-card-standalone-01` 含む） |
+| AWS ステージング E2E | 同上 `--base-url https://aws.medicine.yutok.dev/` — **23/23**（`cc15310` デプロイ後） |
 | ログ | `log/analysis/2026-08-05_concierge_contact_context_e2e_*.md` |
 
 ```bash

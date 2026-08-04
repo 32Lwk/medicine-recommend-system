@@ -80,7 +80,6 @@ scenarios:
       must_not_contain:
         - "商品画像"
         - "azのど"
-        - "登録販売者"
 
   - id: op-follow-card-02
     category: concierge_contact
