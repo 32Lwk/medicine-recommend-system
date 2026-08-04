@@ -1,0 +1,65 @@
+{
+  "timestamp": "2026-08-04T18:22:51.582643+00:00",
+  "base_url": "https://aws.medicine.yutok.dev/",
+  "git_commit": "7de029f",
+  "summary": {
+    "total": 6,
+    "pass": 6
+  },
+  "results": [
+    {
+      "id": "greeting",
+      "pass": true,
+      "failures": [],
+      "elapsed_s": 13.5,
+      "http_status": 200,
+      "intent": "greeting",
+      "text_preview": "こんにちは！こちらは市販薬の相談窓口です。頭痛やのどの痛みなどの症状について、適切な市販薬をお探しするお手伝いをいたします。何か気になる症状があれば、お気軽にご相談くださいね。\nご挨拶"
+    },
+    {
+      "id": "cross-cloud-short-fail",
+      "pass": true,
+      "failures": [],
+      "elapsed_s": 62.6,
+      "http_status": 200,
+      "intent": "architecture",
+      "text_preview": "GCP 本番は medicine.yutok.dev を Google Cloud Run で動かし、翻訳は DeepL、読み上げは Google Cloud Text-to-Speech を使っています。\n\nAWS ステージングは aws.medicine.yutok.dev で、ECS Express Gateway + ALB + WAF 構成、翻訳は Amazon Translate、読み上げは Amazon Polly です。\n\n両方とも市販薬の案内を行いますが、本番は安定運用を重視し、ステージングは AWS の機能を試験しやすいように分けています。\n仕組み・技術\n画像・CDN\n医薬"
+    },
+    {
+      "id": "cross-cloud-long-fail",
+      "pass": true,
+      "failures": [],
+      "elapsed_s": 14.2,
+      "http_status": 200,
+      "intent": "architecture",
+      "text_preview": "GCP 本番は medicine.yutok.dev の本番環境で、Cloud Run 上で動き、翻訳は DeepL、読み上げは Google Cloud Text-to-Speech を使います。\n\nAWS ステージングは aws.medicine.yutok.dev の試験環境で、ECS Express Gateway + ALB + WAF 上で動き、翻訳は Amazon Translate、読み上げは Amazon Polly です。\n仕組み・技術\n画像・CDN\n共通しているのは医薬品画像の CDN だけです。\nその他\n利用者データは共有されず、保存先のデータベースやログ基盤も別です。"
+    },
+    {
+      "id": "codepipeline-fail",
+      "pass": true,
+      "failures": [],
+      "elapsed_s": 16.1,
+      "http_status": 200,
+      "intent": "architecture",
+      "text_preview": "AWS ステージングでは Amazon Translate と Amazon Polly を使い、反映後の smoke チェックも自動で走ります。\n\n手動で流すこともでき、その場合は CodePipeline を起動する方法か、Pipeline を使わずに手動デプロイする方法があります。\n仕組み・技術\nGCP 本番\nGitHub の main ブランチに push すると、CodeStar Connection 経由で CodePipeline「medicine-recommend-main」が起動し、CodeBuild「medicine-recommend-build」で Docker イメ"
+    },
+    {
+      "id": "capabilities",
+      "pass": true,
+      "failures": [],
+      "elapsed_s": 14.6,
+      "http_status": 200,
+      "intent": "capabilities",
+      "text_preview": "市販薬の相談・提案ができ、症状や年齢、持病、服薬状況をふまえて候補を案内できます。\n\nあわせて、飲み合わせやアレルギー、受診の目安の確認もできます。\n\n日本語のほか、英語・中国語・韓国語でも相談できます。\n\n処方や診断は行いませんが、店舗内の場所や遺失物などの案内にも対応できます。\nできること"
+    },
+    {
+      "id": "changelog",
+      "pass": true,
+      "failures": [],
+      "elapsed_s": 14.9,
+      "http_status": 200,
+      "intent": "doc_changelog",
+      "text_preview": "最近の更新では、運営への連絡や案内カードの表示がより自然につながるようになり、画面の見え方も整って、使いやすくなりました。あわせて、返信の流れや文脈の受け取り方も見直され、よりスムーズに案内できるよう改善されています。\n最近の更新\n更新\n「運用者はだれ？」「案内カード見せて」等の 運営連絡先意図 が\n支払い案内（store_payment）・医薬品 Q&A・商品画像に誤ルートする問題を\n更新\n技術的な質問への案内が厚くなりました"
+    }
+  ]
+}
