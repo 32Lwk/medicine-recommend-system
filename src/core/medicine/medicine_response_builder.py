@@ -367,6 +367,43 @@ def _finalize_structured_qa_response(
     return _sanitize_qa_result(out)
 
 
+def _try_fast_comparison_qa_response(
+    user_message: str,
+    recommended_medicines: list,
+    *,
+    qa_focuses: list[str] | None = None,
+    conversation_history: list | None = None,
+    user_attributes: dict[str, Any] | None = None,
+    session_id: str | None = None,
+) -> dict | None:
+    """2〜4製品比較は CSV メタ + ルールベースセクションで即応答（KB/重い JSON LLM を省略）。"""
+    focuses = list(qa_focuses or [])
+    if "comparison" not in focuses or len(recommended_medicines or []) < 2:
+        return None
+    from src.services.medicine_qa_comparison_quality import build_comparison_answer_scaffold
+
+    answer = build_comparison_answer_scaffold(recommended_medicines, user_message)
+    if not answer:
+        return None
+    if session_id:
+        try:
+            from src.services.processing_status import mark_processing_step, set_processing_flow
+
+            set_processing_flow(session_id, "ask_qa")
+            mark_processing_step(session_id, "medicine_qa", detail_code="answer_compose")
+            mark_processing_step(session_id, "medicine_qa", detail_code="format_response")
+        except Exception:
+            pass
+    return _build_structured_qa_from_stream(
+        user_message,
+        recommended_medicines,
+        answer,
+        qa_focuses=focuses,
+        conversation_history=conversation_history,
+        user_attributes=user_attributes,
+    )
+
+
 def _try_fast_product_image_qa_response(
     user_message: str,
     recommended_medicines: list,
@@ -687,6 +724,17 @@ def chat_with_medicine_context(
     )
     if fast_product_image is not None:
         return fast_product_image
+
+    fast_comparison = _try_fast_comparison_qa_response(
+        user_message,
+        recommended_medicines,
+        qa_focuses=qa_focuses,
+        conversation_history=conversation_history,
+        user_attributes=user_attributes,
+        session_id=session_id,
+    )
+    if fast_comparison is not None:
+        return fast_comparison
 
     drug_entities = extract_drug_entities(user_message)
     comparison_hint = ""

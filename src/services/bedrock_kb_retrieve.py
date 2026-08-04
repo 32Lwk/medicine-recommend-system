@@ -683,6 +683,10 @@ def augment_medicine_prompt_with_kb(
     if provider not in (MEDICINE_RAG_LOCAL, MEDICINE_RAG_BEDROCK):
         return base_prompt
 
+    fs = [f for f in (qa_focuses or []) if f and f != "general"]
+    if "comparison" in fs and recommended_medicines and len(recommended_medicines) >= 2:
+        return base_prompt
+
     result = retrieve_medicine_context(
         query,
         recommended_medicines=recommended_medicines,

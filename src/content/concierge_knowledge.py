@@ -76,7 +76,19 @@ def get_handoff_intro_physical() -> str:
 
 def get_technical_details() -> Dict[str, str]:
     """Phase 3 (p3-concierge): API/SSE/rule_based の技術詳細（development 限定開示用）。"""
-    return dict(load_concierge_knowledge().get("technical_details") or {})
+    details = dict(load_concierge_knowledge().get("technical_details") or {})
+    try:
+        from config.aws_features import is_aws_staging_site
+
+        if is_aws_staging_site():
+            details["tts_description"] = (
+                "AWS ステージングでは Amazon Polly でサーバー側合成し、"
+                "POST /api/tts から MP3 を返します。"
+                "ローカル開発の既定は Web Speech API（ブラウザ）です。"
+            )
+    except Exception:
+        pass
+    return details
 
 
 def key_facts_for_sync_test() -> Dict[str, bool]:

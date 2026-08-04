@@ -121,11 +121,17 @@ def run_medicine_question_qa(
     client_info: Any,
     sid: Optional[str],
     user_message: str,
+    *,
+    qa_generation: Optional[int] = None,
 ) -> Tuple[int, Dict[str, Any]]:
     """推奨履歴付きで chat_with_medicine_context を呼び、応答を保存する。"""
     from src.core.medicine_logic import chat_with_medicine_context
+    from src.services.medicine_qa_generation import is_medicine_qa_generation_stale
     from src.services.session_manager import get_session_from_db
     from src.utils.structured_logger import log_medicine_question_detail
+
+    def _stale() -> bool:
+        return is_medicine_qa_generation_stale(session, sid, qa_generation)
 
     session_data = get_session_from_db(sid) if sid else {}
     latest_recommended_medicines = []
@@ -180,6 +186,14 @@ def run_medicine_question_qa(
         session_id=sid,
         session=session,
     )
+    if _stale():
+        logger.info(
+            "medicine_qa generation stale — skip persist sid=%s gen=%s",
+            sid,
+            qa_generation,
+        )
+        count = len((get_session_from_db(sid) if sid else session or {}).get("messages") or [])
+        return count, chat_response
     if latest_recommended_medicines and not str(chat_response.get("answer") or "").strip():
         from src.core.medicine.medicine_response_builder import (
             _build_structured_qa_from_stream,

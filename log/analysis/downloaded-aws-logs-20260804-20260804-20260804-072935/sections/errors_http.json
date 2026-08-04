@@ -1,0 +1,26 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 0,
+    "by_status": {},
+    "by_path": {},
+    "slow_endpoints_ge_5s": {},
+    "samples": []
+  },
+  "text_errors": {
+    "count": 1,
+    "top_patterns": [
+      {
+        "message": "2026-08-04 07:29:25,053 - ERROR - medicine_information_qa timeout after 120s sid=1785827858215313801801",
+        "count": 1
+      }
+    ],
+    "samples": [
+      {
+        "timestamp": "2026-08-04T07:29:25.053Z",
+        "severity": "ERROR",
+        "message": "2026-08-04 07:29:25,053 - ERROR - medicine_information_qa timeout after 120s sid=1785827858215313801801",
+        "revision": null
+      }
+    ]
+  }
+}

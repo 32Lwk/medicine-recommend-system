@@ -1,0 +1,63 @@
+{
+  "count": 7,
+  "top_patterns": [
+    {
+      "message": "2026-08-04 07:29:18,455 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 't",
+      "count": 1
+    },
+    {
+      "message": "2026-08-04 07:29:18,458 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=N",
+      "count": 1
+    },
+    {
+      "message": "2026-08-04 07:29:18,555 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f7687b4",
+      "count": 1
+    },
+    {
+      "message": "2026-08-04 07:29:22,758 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, ",
+      "count": 1
+    },
+    {
+      "message": "2026-08-04 07:29:22,849 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"20",
+      "count": 1
+    },
+    {
+      "message": "2026-08-04 07:29:25,053 - ERROR - medicine_information_qa timeout after 120s sid=1785827858215313801",
+      "count": 1
+    },
+    {
+      "message": "2026-08-04 07:29:25,455 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785827858215313801801'",
+      "count": 1
+    }
+  ],
+  "samples": [
+    {
+      "timestamp": "2026-08-04T07:29:18.456Z",
+      "message": "2026-08-04 07:29:18,455 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 60.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは医薬品推奨システムです。医薬品の安全性と効果について正確な情報を提供してください。医薬品の詳細（medicine_details）は、効能の全文羅列ではなく、製品名・主成分・質問に関係する用途を2〜3文で簡潔に書いてください。推奨医薬品の情報で回答できない質問については、お近くの登録販売者にご相談するよう推奨してください。'}, {'role': 'user', 'content': '\\nあなたは医薬品推奨シス"
+    },
+    {
+      "timestamp": "2026-08-04T07:29:18.458Z",
+      "message": "2026-08-04 07:29:18,458 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=60.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-08-04T07:29:18.555Z",
+      "message": "2026-08-04 07:29:18,555 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7f7687b46600> server_hostname='api.openai.com' timeout=60.0"
+    },
+    {
+      "timestamp": "2026-08-04T07:29:22.758Z",
+      "message": "2026-08-04 07:29:22,758 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Tue, 04 Aug 2026 07:29:22 GMT'), (b'Content-Type', b'application/json'), (b'Transfer-Encoding', b'chunked'), (b'Connection', b'keep-alive'), (b'CF-Ray', b'a25bd9ab0cf519c3-NRT'), (b'CF-Cache-Status', b'DYNAMIC'), (b'Server', b'cloudflare'), (b'Strict-Transport-Security', b'max-ag"
+    },
+    {
+      "timestamp": "2026-08-04T07:29:22.850Z",
+      "message": "2026-08-04 07:29:22,849 - DEBUG - HTTP Response: POST https://api.openai.com/v1/chat/completions \"200 OK\" Headers([('date', 'Tue, 04 Aug 2026 07:29:22 GMT'), ('content-type', 'application/json'), ('transfer-encoding', 'chunked'), ('connection', 'keep-alive'), ('cf-ray', 'a25bd9ab0cf519c3-NRT'), ('cf-cache-status', 'DYNAMIC'), ('server', 'cloudflare'), ('strict-transport-security', 'max-age=3153600"
+    },
+    {
+      "timestamp": "2026-08-04T07:29:25.053Z",
+      "message": "2026-08-04 07:29:25,053 - ERROR - medicine_information_qa timeout after 120s sid=1785827858215313801801"
+    },
+    {
+      "timestamp": "2026-08-04T07:29:25.455Z",
+      "message": "2026-08-04 07:29:25,455 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785827858215313801801', 'total_ms': 525189.0, 'breakdown': {'post_start': 1.78, 'parsed_message': 2.02, 'session_db_read': 2.33, 'after_get_session_db': 381.44, 'before_llm_setup': 989.88, 'before_security': 1786.79, 'after_security': 7687.52, 'before_emoji_route': 7883.51, 'before_triage': 7885.14, 'after_triage': 10290"
+    }
+  ]
+}

@@ -406,6 +406,17 @@ def structure_concierge_meta_display(
             sections = topic_sections + sections
 
     message = "\n\n".join(prose_parts) if prose_parts else (body_text or "").strip()
+    try:
+        from src.services.concierge_aws_content import (
+            filter_architecture_sections_for_aws,
+            strip_gcp_mentions,
+        )
+
+        if intent == "architecture":
+            sections = filter_architecture_sections_for_aws(sections)
+            message = strip_gcp_mentions(message)
+    except Exception:
+        pass
     return message, sections
 
 

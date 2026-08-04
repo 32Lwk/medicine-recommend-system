@@ -1958,10 +1958,9 @@ def _meta_reference_block(intent: str) -> str:
                 lines.append("- 翻訳: Amazon Translate")
                 lines.append("- 読み上げ: Amazon Polly（POST /api/tts）")
                 lines.append("- Concierge ナレッジ: Bedrock Knowledge Base")
-                lines.append("- 医薬品画像: Cloudflare R2（images.yutok.dev/otc/）— GCP/AWS 共通 CDN")
+                lines.append("- 医薬品画像: Cloudflare R2（images.yutok.dev/otc/）")
                 lines.append("- セッションキャッシュ: ElastiCache Serverless")
                 lines.append("- 推奨ランキング補助: Amazon Personalize（イベント蓄積中、campaign はデータ待ち）")
-                lines.append("- 本番 GCP（medicine.yutok.dev）は Cloud Run + DeepL + Google Cloud Text-to-Speech（POST /api/tts）")
             else:
                 lines.append("")
                 lines.append("【GCP 本番・dev（参照）】")
@@ -2106,12 +2105,27 @@ def _invoke_meta_concierge_llm(
         "ユーザーの意図と会話の文脈を優先し、直前トピックに引きずられて別の質問に答えない。"
     )
     if intent == "architecture":
+        try:
+            from config.aws_features import is_aws_staging_site
+
+            aws_only = is_aws_staging_site()
+        except Exception:
+            aws_only = False
         system_content += (
             " 参照ドキュメントと運用事実に忠実に、ユーザーの質問の主題から答える。"
             "ドキュメントに無い構成・URL・サービス名は推測で補わない。"
-            "GCP 本番と AWS ステージングの役割は参照に従い、混同しない。"
-            "聞かれていない一般論や更新履歴の羅列から始めない。"
-            "医療診断や症状への具体助言は行わない。"
+        )
+        if aws_only:
+            system_content += (
+                " この環境は AWS ステージングのみを説明対象とし、GCP や他クラウドの構成には触れない。"
+            )
+        else:
+            system_content += (
+                " GCP 本番と AWS ステージングの役割は参照に従い、混同しない。"
+            )
+        system_content += (
+            " 聞かれていない一般論や更新履歴の羅列から始めない。"
+            " 医療診断や症状への具体助言は行わない。"
         )
     elif (
         intent == "architecture"

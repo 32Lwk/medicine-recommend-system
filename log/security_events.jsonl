@@ -13688,3 +13688,11 @@
 {"timestamp": "2026-08-03T01:31:56.009774", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-08-03T01:32:45.953672", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-08-03T01:32:45.954668", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "陸上競技前に飲めますか？"}}
+{"timestamp": "2026-08-04T15:35:21.006650", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-04T15:35:21.007074", "event_type": "input_validation", "user_id": "ユーザー5", "input_length": 8, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "やあ、こんにちは"}}
+{"timestamp": "2026-08-04T16:20:19.719525", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-04T16:20:19.722237", "event_type": "input_validation", "user_id": "ユーザー11", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとバファリンとカロナールでおすすめは？"}}
+{"timestamp": "2026-08-04T16:25:13.416749", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-04T16:25:13.417234", "event_type": "input_validation", "user_id": "ユーザー9", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとバファリンとカロナールでおすすめは？"}}
+{"timestamp": "2026-08-04T16:26:26.726609", "original_length": 24, "sanitized_length": 24, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-04T16:26:26.727232", "event_type": "input_validation", "user_id": "ユーザー12", "input_length": 24, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "ロキソニンとバファリンとカロナールでおすすめは？"}}

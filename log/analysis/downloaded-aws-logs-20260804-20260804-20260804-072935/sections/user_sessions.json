@@ -1,0 +1,345 @@
+{
+  "counseling_detail_count": 1,
+  "counseling_dedup_removed": 0,
+  "counseling_details_exported": 1,
+  "counseling_details": [
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-08-04T07:29:25.349912",
+      "session_id": "1785827858215313801801",
+      "user_input": "ロキソニンとバファリンとカロナールでおすすめは？",
+      "response": "おすすめは、痛み止めとしての効き目をやや重視するならロキソニンS、胃への負担の少なさを重視するならカロナールA、バランスを見て選ぶならバファリンAが候補です。主成分は、ロキソニンSがロキソプロフェンナトリウム水和物、バファリンAがアスピリン、カロナールAがアセトアミノフェンで、それぞれ痛みや熱への効き方と胃への負担感が異なります。 一般に、効き目の強さはロキソニンSが比較的しっかりしている一方、胃への負担はNSAIDs系のロキソニンSやアスピリンを含むバファリンAのほうが出やすく、カロナールAは比較的胃にやさしい選択肢です。使い分けの目安としては、つらい頭痛・生理痛・歯痛などでしっかり抑えたいならロキソニンS、胃が弱い・刺激が気になるならカロナールA、アスピリン製剤を選びたい場合はバファリンA、という考え方になります。",
+      "conversation_history": [
+        {
+          "type": "user",
+          "uuid": "93910d8c-8832-4681-a9c5-1af34cc998fe",
+          "content": "ロキソニンの写真見せて",
+          "timestamp": "2026-08-04T16:17:59+09:00"
+        },
+        {
+          "type": "bot",
+          "content": "sage_qa",
+          "diagnosis": {
+            "kind": "medicine_qa",
+            "hints": [],
+            "title": "医薬品相談回答",
+            "layout": "card",
+            "render": "sage_qa",
+            "actions": [],
+            "message": "ロキソニンSのパッケージ画像です。ロキソニンSは主成分ロキソプロフェンナトリウム水和物の解熱鎮痛薬で、頭痛・生理痛・歯痛などに用いられます。",
+            "variant": "notice",
+            "sections": [
+              {
+                "html": "<div class=\"ui-qa-product-images app-scrollbar ui-qa-product-images--count-1\"><figure class=\"ui-qa-product-images__item\"><div class=\"ui-med-image ui-med-image--card\"><img src=\"https://images.yutok.dev/otc/%E3%83%AD%E3%82%AD%E3%82%BD%E3%83%8B%E3%83%B3S.webp?v=7ab95406\" alt=\"ロキソニンS\" loading=\"lazy\" decoding=\"async\" onerror=\"this.onerror=null;this.src='/static/line/medicine-noimage-hero.png';this.closest('.ui-med-image').classList.add('ui-med-image--placeholder');\"></div><figcaption class=\"ui-qa-product-images__caption\">ロキソニンS</figcaption></figure></div>",
+                "items": [],
+                "title": "製品画像",
+                "commit": ""
+              }
+            ],
+            "subtitle": "",
+            "show_feedback": true,
+            "schema_version": 1,
+            "show_bug_report": false,
+            "crisis_resources": [],
+            "feedback_context": {
+              "ai_response": "ロキソニンSのパッケージ画像です。ロキソニンSは主成分ロキソプロフェンナトリウム水和物の解熱鎮痛薬で、頭痛・生理痛・歯痛などに用いられます。",
+              "user_message": "ロキソニンの写真見せて"
+            },
+            "emergency_message": "",
+            "suggested_symptoms": []
+          },
+          "timestamp": "2026-08-04T16:18:02+09:00",
+          "message_id": "msg_1785827882344_4638"
+        },
+        {
+          "type": "user",
+          "uuid": "20bc1779-a51e-4f15-9126-e4d6bf5a8383",
+          "content": "ロキソニンとバファリンとカロナールでおすすめは？",
+          "timestamp": "2026-08-04T16:18:53+09:00"
+        },
+        {
+          "type": "bot",
+          "content": "sage_qa",
+          "diagnosis": {
+            "kind": "medicine_qa",
+            "hints": [],
+            "title": "医薬品相談回答",
+            "layout": "card",
+            "render": "sage_qa",
+            "actions": [],
+            "message": "おすすめは、痛み止めとしての効き目をやや重視するならロキソニンS、胃への負担の少なさを重視するならカロナールA、バランスを見て選ぶならバファリンAが候補です。主成分は、ロキソニンSがロキソプロフェンナトリウム水和物、バファリンAがアスピリン、カロナールAがアセトアミノフェンで、それぞれ痛みや熱への効き方と胃への負担感が異なります。 一般に、効き目の強さはロキソニンSが比較的しっかりしている一方、胃への負担はNSAIDs系のロキソニンSやアスピリンを含むバファリンAのほうが出やすく、カロナールAは比較的胃にやさしい選択肢です。使い分けの目安としては、つらい頭痛・生理痛・歯痛などでしっかり抑えたいならロキソニンS、胃が弱い・刺激が気になるならカロナールA、アスピリン製剤を選びたい場合はバファリンA、という考え方になります。",
+            "variant": "notice",
+            "sections": [
+              {
+                "html": "<p class=\"ui-qa-product-line\"><span class=\"ui-qa-product-line__lead\"><strong>ロキソニンS</strong>：</span><span class=\"ui-qa-product-line__body\">主成分はロキソプロフェンナトリウム水和物（解熱鎮痛薬、効き目が比較的早く・強めとされることが多い）。錠剤。胃腸への負担に注意（食後・短期使用が目安）</span></p><p class=\"ui-qa-product-line\"><span class=\"ui-qa-product-line__lead\"><strong>バファリンA</strong>：</span><span class=\"ui-qa-product-line__body\">主成分はアスピリン 合成ヒドロタルサイト（解熱鎮痛薬、解熱鎮痛効果あり）。錠剤。胃腸障害・出血に注意（空腹時は避ける）</span></p><p class=\"ui-qa-product-line\"><span class=\"ui-qa-product-line__lead\"><strong>カロナールA</strong>：</span><span class=\"ui-qa-product-line__body\">主成分はアセトアミノフェン（アセトアミノフェン系、解熱鎮痛（炎症を伴う痛みはNSAIDsより弱いことが多い））。錠剤。胃への負担は比較的少ないとされる</span></p>",
+                "items": [],
+                "title": "製品比較",
+                "commit": ""
+              },
+              {
+                "html": "ロキソニンS・バファリンA はいずれも同系統の解熱鎮痛薬です。同時期に重ねて使わないでください（胃腸障害・出血リスクが増えます）。特にアスピリンとイブプロフェンの併用は避けてください。",
+                "items": [],
+                "title": "併用・重複の注意",
+                "commit": ""
+              },
+              {
+                "html": "【ロキソニンS】胃腸への負担に注意（食後・短期使用が目安） 【バファリンA】胃腸障害・出血に注意（空腹時は避ける） 【カロナールA】胃への負担は比較的少ないとされる 服用後に胃痛・吐き気・黒い便・出血しやすい等があれば使用を中止して受診してください。",
+                "items": [],
+                "title": "副作用の違い",
+                "commit": ""
+              },
+              {
+                "html": "<p class=\"ui-qa-product-line\"><span class=\"ui-qa-product-line__lead\"><strong>ロキソニンS</strong>：</span><span class=\"ui-qa-product-line__body\">効き目を優先したい場面向き</span></p><p class=\"ui-qa-product-line\"><span class=\"ui-qa-product-line__lead\"><strong>バファリンA</strong>：</span><span class=\"ui-qa-product-line__body\">アスピリン系を選ぶ場合向き（抗凝固薬使用中は避ける）</span></p><p class=\"ui-qa-product-line\"><span class=\"ui-qa-product-line__lead\"><strong>カロナールA</strong>：</span><span class=\"ui-qa-product-line__body\">胃が弱い・NSAIDsが合わない方向き</span></p><p class=\"ui-qa-product-line ui-qa-product-line--scenario\">同系統の解熱鎮痛薬は同時期に重ねて使わないでください。</p><p class=\"ui-qa-product-line ui-qa-product-line--scenario\">胃が弱い・NSAIDsが合わない場合はアセトアミノフェン系が候補になりやすいです。</p><p class=\"ui-qa-product-line ui-qa-product-line--footnote\">持病・他のお薬・年齢によって最適な選択は変わります。迷ったら用途と成分を伝えて登録販売者に相談してください。</p>",
+                "items": [],
+                "title": "選び方のポイント",
+                "commit": ""
+              }
+            ],
+            "subtitle": "",
+            "show_feedback": true,
+            "schema_version": 1,
+            "show_bug_report": false,
+            "crisis_resources": [],
+            "feedback_context": {
+              "ai_response": "おすすめは、痛み止めとしての効き目をやや重視するならロキソニンS、胃への負担の少なさを重視するならカロナールA、バランスを見て選ぶならバファリンAが候補です。主成分は、ロキソニンSがロキソプロフェンナトリウム水和物、バファリンAがアスピリン、カロナールAがアセトアミノフェンで、それぞれ痛みや熱への効き方と胃への負担感が異なります。 一般に、効き目の強さはロキソニンSが比較的しっかりしている一方、胃への負担はNSAIDs系のロキソニンSやアスピリンを含むバファリンAのほうが出やすく、カロナールAは比較的胃にやさしい選択肢です。使い分けの目安としては、つらい頭痛・生理痛・歯痛などでしっかり抑えたいならロキソニンS、胃が弱い・刺激が気になるならカロナールA、アスピリン製剤を選びたい場合はバファリンA、という考え方になります。",
+              "user_message": "ロキソニンとバファリンとカロナールでおすすめは？"
+            },
+            "emergency_message": "",
+            "suggested_symptoms": []
+          },
+          "timestamp": "2026-08-04T16:29:23+09:00",
+          "message_id": "msg_1785828563862_9878"
+        }
+      ]
+    }
+  ],
+  "security_flags": [],
+  "session_conversations": {
+    "session_count": 1,
+    "exported_session_count": 1,
+    "counseling_session_count": 1,
+    "trace_only_session_count": 0,
+    "chat_flow_trace_count": 0,
+    "sessions": [
+      {
+        "session_id": "1785827858215313801801",
+        "channel": "web",
+        "time_range": {
+          "start": null,
+          "end": "2026-08-04T07:29:25.349912"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "ロキソニンの写真見せて"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_qa"
+          },
+          {
+            "role": "user",
+            "content": "ロキソニンとバファリンとカロナールでおすすめは？"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_qa"
+          },
+          {
+            "role": "user",
+            "content": "ロキソニンとバファリンとカロナールでおすすめは？"
+          },
+          {
+            "role": "assistant",
+            "content": "おすすめは、痛み止めとしての効き目をやや重視するならロキソニンS、胃への負担の少なさを重視するならカロナールA、バランスを見て選ぶならバファリンAが候補です。主成分は、ロキソニンSがロキソプロフェンナトリウム水和物、バファリンAがアスピリン、カロナールAがアセトアミノフェンで、それぞれ痛みや熱への効き方と胃への負担感が異なります。 一般に、効き目の強さはロキソニンSが比較的しっかりしている一方、胃への負担はNSAIDs系のロキソニンSやアスピリンを含むバファリンAのほうが出やすく、カロナールAは比較的胃にやさしい選択肢です。使い分けの目安としては、つらい頭痛・生理痛・歯痛などでしっかり抑えたいならロキソニンS、胃が弱い・刺激が気になるならカロナールA、アスピリン製剤を選びたい場合はバファリンA、という考え方になります。"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": null,
+            "user_input": "ロキソニンの写真見せて",
+            "response_preview": "sage_qa",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "conversation_history",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {},
+            "timing": {
+              "user_message_at": null,
+              "response_at": "",
+              "e2e_ms": null,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": null,
+              "phase_summary_ms": {},
+              "breakdown_ms": {},
+              "llm_call_count": 0,
+              "llm_total_latency_ms": null,
+              "llm_session_cost_jpy": null,
+              "llm_calls": []
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": null,
+            "user_input": "ロキソニンとバファリンとカロナールでおすすめは？",
+            "response_preview": "sage_qa",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "conversation_history",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {},
+            "timing": {
+              "user_message_at": null,
+              "response_at": "",
+              "e2e_ms": null,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": null,
+              "phase_summary_ms": {},
+              "breakdown_ms": {},
+              "llm_call_count": 0,
+              "llm_total_latency_ms": null,
+              "llm_session_cost_jpy": null,
+              "llm_calls": []
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "ロキソニンの写真見せて"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_qa"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-08-04T07:29:25.349912",
+            "user_input": "ロキソニンとバファリンとカロナールでおすすめは？",
+            "response_preview": "おすすめは、痛み止めとしての効き目をやや重視するならロキソニンS、胃への負担の少なさを重視するならカロナールA、バランスを見て選ぶならバファリンAが候補です。主成分は、ロキソニンSがロキソプロフェンナトリウム水和物、バファリンAがアスピリン、カロナールAがアセトアミノフェンで、それぞれ痛みや熱への効き方と胃への負担感が異なります。 一般に、効き目の強さはロキソニンSが比較的しっかりしている一方、胃への負担はNSAIDs系のロキソニンSやアスピリンを含むバファリンAのほうが出やすく、カロナールAは比較的胃にやさしい選択肢です。使い分けの目安としては、つらい頭痛・生理痛・歯痛などでしっかり抑えたいならロキソニンS、胃が弱い・刺激が気になるならカロナールA、アスピリン製剤を選びたい場合はバファリンA、という考え方になります。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {},
+            "timing": {
+              "user_message_at": null,
+              "response_at": "2026-08-04T07:29:25.349912",
+              "e2e_ms": null,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": null,
+              "phase_summary_ms": {},
+              "breakdown_ms": {},
+              "llm_call_count": 0,
+              "llm_total_latency_ms": null,
+              "llm_session_cost_jpy": null,
+              "llm_calls": []
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "ロキソニンの写真見せて"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_qa"
+              },
+              {
+                "role": "user",
+                "content": "ロキソニンとバファリンとカロナールでおすすめは？"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_qa"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 3,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1785827858215313801801 turns=3 grade=good first='ロキソニンの写真見せて' last='ロキソニンとバファリンとカロナールでおすすめは？'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "conversation_history": 2,
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      }
+    ],
+    "intent_mismatches": [],
+    "mismatch_count": 0,
+    "sessions_by_grade": {
+      "good": 1
+    },
+    "physical_recommendation_events": []
+  },
+  "intent_mismatches": [],
+  "intent_review_queue": [],
+  "sessions_by_grade": {
+    "good": 1
+  },
+  "intent_router": {
+    "rows": [],
+    "shadow_total": 0,
+    "shadow_mismatch": 0,
+    "shadow_mismatch_rate_pct": 0.0,
+    "shadow_improvement_mismatch": 0,
+    "shadow_improvement_mismatch_rate_pct": 0.0,
+    "shadow_regression_mismatch": 0,
+    "shadow_regression_mismatch_rate_pct": 0.0,
+    "shadow_exempt": 0,
+    "shadow_exempt_rate_pct": 0.0,
+    "shadow_by_mismatch_kind": {},
+    "shadow_by_primary_route": {},
+    "shadow_by_resolved_by": {},
+    "shadow_with_fever_context_flag": 0,
+    "shadow_with_pending_cancelled_flag": 0,
+    "dispatch_with_fever_context_flag": 0,
+    "dispatch_with_pending_cancelled_flag": 0,
+    "dispatch_total": 0,
+    "dispatch_handled": 0,
+    "dispatch_unhandled": 0,
+    "dispatch_success_rate_pct": 0.0,
+    "dispatch_by_handler": {},
+    "execution_total": 0,
+    "execution_mismatch": 0,
+    "execution_mismatch_rate_pct": 0.0,
+    "execution_by_layer_used": {},
+    "execution_side_effect_qa": 0,
+    "mismatch_samples": []
+  }
+}

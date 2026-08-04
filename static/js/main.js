@@ -226,12 +226,12 @@
                         visualAlt: "AWS 上で試験運用中の薬剤師相談ツール",
                         subtitle: '<span class="onboarding-env-badge onboarding-env-badge--aws">☁️ ここは AWS ステージングです</span>',
                         body: [
-                            '<span class="onboarding-env-here">AWS ECS 上のステージング環境</span>で、Amazon Translate・Polly・Bedrock Knowledge Base など GCP 本番とは異なる AWS 向け機能を試験できます。'
+                            '<span class="onboarding-env-here">AWS ECS 上のステージング環境</span>で、Amazon Translate・Polly・Bedrock Knowledge Base などの AWS 向け機能を試験できます。'
                         ],
                         details: [
                             {
                                 summary: "この環境で試せる AWS 機能",
-                                description: "GCP 本番・GCP dev と共通の改善に加え、AWS ステージングで有効化されている機能です。",
+                                description: "AWS ステージングで有効化されている機能です。",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Chat Pipeline v2（IntentRouter PRIMARY・dispatch 最適化）", defaultChecked: true },
@@ -247,7 +247,6 @@
                                     { text: "ElastiCache / Redis キャッシュ", defaultChecked: true },
                                     { text: "Concierge 更新履歴・技術 Q&A", defaultChecked: true },
                                     { text: "Personalize ランキング（試験）" },
-                                    { text: "GCP 本番への AWS 機能反映検討" },
                                     { text: "応答速度・デプロイ時間の最適化" }
                                 ]
                             }
@@ -601,7 +600,7 @@
                         details: [
                             {
                                 summary: "AWS features enabled here",
-                                description: "Shared improvements with GCP production/dev, plus features enabled on AWS staging.",
+                                description: "Features enabled on AWS staging.",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Chat Pipeline v2 (IntentRouter PRIMARY, dispatch optimization)", defaultChecked: true },
@@ -617,7 +616,6 @@
                                     { text: "ElastiCache / Redis cache", defaultChecked: true },
                                     { text: "Concierge changelog & technical Q&A", defaultChecked: true },
                                     { text: "Personalize ranking (trial)" },
-                                    { text: "Evaluate AWS features for GCP production" },
                                     { text: "Response latency & deploy time optimization" }
                                 ]
                             }
@@ -978,12 +976,12 @@
                         visualAlt: "AWS에서 시험 운영 중인 의약품 상담 도구",
                         subtitle: '<span class="onboarding-env-badge onboarding-env-badge--aws">☁️ 여기는 AWS 스테이징입니다</span>',
                         body: [
-                            '<span class="onboarding-env-here">AWS ECS 스테이징 환경</span>에서 Amazon Translate·Polly·Bedrock Knowledge Base 등 GCP 운영과 다른 AWS 기능을 시험할 수 있습니다.'
+                            '<span class="onboarding-env-here">AWS ECS 스테이징 환경</span>에서 Amazon Translate·Polly·Bedrock Knowledge Base 등 AWS 기능을 시험할 수 있습니다.'
                         ],
                         details: [
                             {
                                 summary: "이 환경에서 시험 가능한 AWS 기능",
-                                description: "GCP 운영·GCP dev와 공통 개선에 더해 AWS 스테이징에서 활성화된 기능입니다.",
+                                description: "AWS 스테이징에서 활성화된 기능입니다.",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Chat Pipeline v2(IntentRouter PRIMARY·dispatch 최적화)", defaultChecked: true },
@@ -999,7 +997,6 @@
                                     { text: "ElastiCache / Redis 캐시", defaultChecked: true },
                                     { text: "Concierge 업데이트 이력·기술 Q&A", defaultChecked: true },
                                     { text: "Personalize 랭킹(시험)" },
-                                    { text: "GCP 운영으로 AWS 기능 반영 검토" },
                                     { text: "응답 속도·배포 시간 최적화" }
                                 ]
                             }
@@ -1348,12 +1345,12 @@
                         visualAlt: "AWS 上试运行中的药品咨询工具",
                         subtitle: '<span class="onboarding-env-badge onboarding-env-badge--aws">☁️ 这里是 AWS 预发环境</span>',
                         body: [
-                            '可在 <span class="onboarding-env-here">AWS ECS 预发环境</span> 试验 Amazon Translate、Polly、Bedrock Knowledge Base 等与 GCP 生产环境不同的 AWS 功能。'
+                            '可在 <span class="onboarding-env-here">AWS ECS 预发环境</span> 试验 Amazon Translate、Polly、Bedrock Knowledge Base 等 AWS 功能。'
                         ],
                         details: [
                             {
                                 summary: "本环境可试用的 AWS 功能",
-                                description: "与 GCP 生产/dev 共通的改进，以及 AWS 预发环境启用的功能。",
+                                description: "AWS 预发环境已启用的功能。",
                                 itemsChecklist: true,
                                 items: [
                                     { text: "Chat Pipeline v2（IntentRouter PRIMARY、dispatch 优化）", defaultChecked: true },
@@ -1369,7 +1366,6 @@
                                     { text: "ElastiCache / Redis 缓存", defaultChecked: true },
                                     { text: "Concierge 更新记录与技术 Q&A", defaultChecked: true },
                                     { text: "Personalize 排序（试验）" },
-                                    { text: "评估 AWS 功能接入 GCP 生产" },
                                     { text: "响应速度与部署时间优化" }
                                 ]
                             }
@@ -2738,6 +2734,33 @@
             return getOnboardingEnvKind() === 'aws_staging';
         }
         return isAwsStagingEnvCore();
+    }
+
+    /** AWS ステージングでは GCP 関連の HTML 表記を除去・AWS 向けに差し替える */
+    function adaptAwsStagingHtml(html) {
+        if (!html || !isAwsStagingEnv()) {
+            return html;
+        }
+        let out = String(html);
+        const replacements = [
+            [/Google Cloud Build（GCP）/g, 'AWS CodePipeline / CodeBuild'],
+            [/Google Cloud Build/g, 'AWS CodePipeline / CodeBuild'],
+            [/Google Cloud（Cloud Run 等）/g, 'AWS ECS（Fargate）'],
+            [/Google Cloud \(e\.g\. Cloud Run\)/gi, 'AWS ECS (Fargate)'],
+            [/Google Cloud\(Cloud Run 등\)/g, 'AWS ECS(Fargate)'],
+            [/DeepL API/g, 'Amazon Translate'],
+            [/DeepL/g, 'Amazon Translate'],
+            [/GCP Cloud Run/gi, 'AWS ECS'],
+            [/Cloud Run/gi, 'AWS ECS'],
+            [/Google Cloud/gi, 'AWS'],
+            [/GCP/g, ''],
+        ];
+        for (const [pattern, replacement] of replacements) {
+            out = out.replace(pattern, replacement);
+        }
+        out = out.replace(/<li[^>]*>[^<]*(?:GCP|Google Cloud|Cloud Run|cloudbuild)[^<]*<\/li>/gi, '');
+        out = out.replace(/\s{2,}/g, ' ');
+        return out;
     }
 
     // 開発環境かどうかを判定する
@@ -5671,7 +5694,7 @@
             if (typeof content === 'object' && content[currentLanguage]) {
                 content = content[currentLanguage];
             }
-            document.getElementById('detailContent').innerHTML = content;
+            document.getElementById('detailContent').innerHTML = adaptAwsStagingHtml(content);
         }
         
         // スクロール位置を一番上にリセット

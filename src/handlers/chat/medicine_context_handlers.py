@@ -61,27 +61,38 @@ def handle_medicine_information_qa(
     from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
 
     from src.handlers.chat.chat_medicine_qa_html import run_medicine_question_qa
+    from src.services.medicine_qa_generation import (
+        begin_medicine_qa_generation,
+        cancel_medicine_qa_generation,
+    )
     from src.services.medicine_qa_routing import _has_product_image_intent
     from src.services.pipeline_perf import mark_pipeline_step
 
+    mark_pipeline_step("medicine_information_qa_start")
     mark_pipeline_step("product_image_fast_path_start")
     timeout_sec = 30.0 if _has_product_image_intent(user_message) else 120.0
+    generation = begin_medicine_qa_generation(session, sid)
+    executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="medicine_info_qa")
+    future = executor.submit(
+        run_medicine_question_qa,
+        session,
+        client_info,
+        sid,
+        user_message,
+        qa_generation=generation,
+    )
     try:
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(
-                run_medicine_question_qa,
-                session,
-                client_info,
-                sid,
-                user_message,
-            )
-            count, _ = future.result(timeout=timeout_sec)
+        count, _ = future.result(timeout=timeout_sec)
     except FuturesTimeout:
         logger.error(
             "medicine_information_qa timeout after %.0fs sid=%s",
             timeout_sec,
             sid,
         )
+        cancel_medicine_qa_generation(session, sid)
+        # wait=True だとタイムアウト後もワーカー完了まで HTTP がブロックされる
+        executor.shutdown(wait=False, cancel_futures=True)
+        mark_pipeline_step("medicine_information_qa_timeout")
         mark_pipeline_step("product_image_fast_path_timeout")
         return (
             {
@@ -91,6 +102,12 @@ def handle_medicine_information_qa(
             },
             504,
         )
+    except Exception:
+        executor.shutdown(wait=True, cancel_futures=False)
+        raise
+    else:
+        executor.shutdown(wait=True, cancel_futures=False)
+    mark_pipeline_step("medicine_information_qa_end")
     mark_pipeline_step("product_image_fast_path_end")
     return {"status": "ok", "message_count": count}, 200
 

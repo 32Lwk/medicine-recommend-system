@@ -29,16 +29,16 @@
 
 ---
 
-## Q: GCP 本番と AWS ステージングを分けた理由
+## Q: 本番環境と AWS ステージングを分けた理由
 
-<!-- rag-keywords: クロスクラウド GCP AWS ステージング 本番 分けた 理由 なぜ -->
+<!-- rag-keywords: クロスクラウド 本番 AWS ステージング 本番 分けた 理由 なぜ -->
 
 **回答要点**
 
-- **What**: 本番 = GCP Cloud Run（medicine.yutok.dev）、ステージング = AWS ECS（aws.medicine.yutok.dev）
+- **What**: 本番 = コンテナ基盤（medicine.yutok.dev）、ステージング = AWS ECS（aws.medicine.yutok.dev）
 - **Why**: 本番の安定性を保ちつつ、AWS 固有機能（Translate / Polly / Bedrock KB / ElastiCache / Personalize / Comprehend Medical）を試験
-- **共通**: 医薬品画像 CDN（Cloudflare R2 / images.yutok.dev）は GCP/AWS 共通
-- **原則**: GCP 本番では AWS 専用機能を有効にしない（DeepL + Cloud TTS + Local RAG）
+- **共通**: 医薬品画像 CDN（Cloudflare R2 / images.yutok.dev）は 全環境 共通
+- **原則**: 本番環境では AWS 専用機能を有効にしない（DeepL + サーバー側 TTS + Local RAG）
 
 **この場合は別 doc を参照**
 
@@ -53,16 +53,16 @@
 
 ---
 
-## Q: GCP と AWS で翻訳サービスが違う理由
+## Q: 本番と AWS で翻訳サービスが違う理由
 
-<!-- rag-keywords: 翻訳 DeepL Amazon Translate GCP AWS 違う 理由 Translate -->
+<!-- rag-keywords: 翻訳 DeepL Amazon Translate 本番 AWS 違う 理由 Translate -->
 
 **回答要点**
 
-- **GCP 本番**: DeepL（既存契約・品質）
+- **本番環境**: DeepL（既存契約・品質）
 - **AWS ステージング**: Amazon Translate（AWS ネイティブ統合・Translate/Polly 試験）
 - **Why**: 各クラウドでネイティブサービスを使い、クロスクラウド試験と本番安定を両立
-- **TTS も同様**: GCP = Google Cloud Text-to-Speech、AWS = Amazon Polly
+- **TTS も同様**: 本番 = サーバー側音声合成、AWS = Amazon Polly
 
 **この場合は別 doc を参照**
 
@@ -105,7 +105,7 @@
 **回答要点**
 
 - **保存先**: チャットセッション・メッセージ履歴は **PostgreSQL**（本番 Neon / ローカル Docker Postgres）
-- **ログ**: GCP = Cloud Logging、AWS = CloudWatch Logs（実行ログ・障害調査）
+- **ログ**: 本番 = 本番ログ基盤、AWS = CloudWatch Logs（実行ログ・障害調査）
 - **プライバシー**: 症状・属性（年齢・妊娠等）は推奨精度のためセッション保持
 - **公開 API**: `/health`（稼働・git_commit）、`/health/aws`（Translate/TTS/KB 等の**利用有無**のみ）
 
@@ -127,9 +127,9 @@
 
 **回答要点**
 
-- Secrets（API キー・DB URL）は GCP Secret Manager / AWS Secrets Manager 経由で注入
+- Secrets（API キー・DB URL）は 本番 Secret Manager / AWS Secrets Manager 経由で注入
 - 入力ブロック: 脅迫・違法薬物・ abuse 等はカテゴリ別応答
-- GCP 本番 DB と AWS ステージング DB は別インスタンス（データ混在しない）
+- 本番環境 DB と AWS ステージング DB は別インスタンス（データ混在しない）
 
 **この場合は別 doc を参照**
 
@@ -172,9 +172,9 @@
 **回答要点**
 
 - **What**: リポジトリ内 Markdown/JSON を BM25 + OpenAI embedding ハイブリッドで検索
-- **Why**: Bedrock Managed KB の OpenSearch OCU コスト回避、**GCP/AWS で同一実装**
+- **Why**: Bedrock Managed KB の OpenSearch OCU コスト回避、**全環境 で同一実装**
 - **Trade-off**: embedding index のビルド・運用が必要（月 ~$6–9 vs OpenSearch OCU $0）
-- **現状**: GCP 本番・AWS ステージングとも Local RAG が既定
+- **現状**: 本番環境・AWS ステージングとも Local RAG が既定
 
 **この場合は別 doc を参照**
 
@@ -197,8 +197,8 @@
 
 - **既定**: 両環境とも **Local RAG**（Concierge / Medicine とも `local`）
 - **Bedrock KB を選ぶ場合**: AWS ステージングで Managed retrieve の A/B 比較、旧 KB 復旧検証
-- **GCP 本番**: Bedrock KB は利用不可（AWS 専用）。Local RAG のみ
-- **切替**: 運用者が provider を `bedrock_kb` に変更可能だが、本番 GCP では非推奨・未サポート
+- **本番環境**: Bedrock KB は利用不可（AWS 専用）。Local RAG のみ
+- **切替**: 運用者が provider を `bedrock_kb` に変更可能だが、本番 本番 では非推奨・未サポート
 
 **この場合は別 doc を参照**
 
@@ -241,7 +241,7 @@
 **回答要点**
 
 - **What**: サーバーレス PostgreSQL（Neon）でセッション・メッセージ履歴を保存
-- **Why**: Cloud Run との相性、スケール-to-zero、運用負荷の低さ
+- **Why**: コンテナ基盤 との相性、スケール-to-zero、運用負荷の低さ
 - **ローカル**: Docker Postgres で同等スキーマ
 - **分離**: AWS ステージング DB は別インスタンス（Neon 本番と混在しない）
 
@@ -262,7 +262,7 @@
 **回答要点**
 
 - **What**: `https://images.yutok.dev/otc/{slug}.webp` で OTC 画像を配信
-- **Why**: GCP/AWS 共通 CDN、低コスト、S3+CloudFront（static）と役割分担
+- **Why**: 全環境 共通 CDN、低コスト、S3+CloudFront（static）と役割分担
 - **アプリ**: 製品名・JAN から slug 解決。未配置はプレースホルダー
 - **共通**: 本番・ステージング同一 URL
 
@@ -304,7 +304,7 @@
 **回答要点**
 
 - **What**: AWS 医療 NLP で症状・薬剤エンティティ抽出（Medicine QA クエリ拡張・ログ分析）
-- **Where**: AWS ステージングのみ任意。GCP 本番は **router + ルールベース NER** で代替
+- **Where**: AWS ステージングのみ任意。本番環境は **router + ルールベース NER** で代替
 - **Why**: 口語症状の構造化、retrieve クエリ enriched
 - **失敗時**: None を返しパイプライン継続（推奨スコアリングには影響しない）
 
@@ -431,17 +431,17 @@
 
 ## Q: LINE 連携はどのクラウド経由か
 
-<!-- rag-keywords: LINE Messaging API GCP Cloud Run Webhook 連携 -->
+<!-- rag-keywords: LINE Messaging API コンテナ基盤 Webhook 連携 -->
 
 **回答要点**
 
-- **What**: LINE Messaging API は **GCP Cloud Run 上の本番アプリ**と同一経路
-- **Why**: 本番安定性。LINE も DeepL + Cloud TTS + Local RAG（GCP 本番と同じ）
+- **What**: LINE Messaging API は **コンテナ基盤 上の本番アプリ**と同一経路
+- **Why**: 本番安定性。LINE も DeepL + サーバー側 TTS + Local RAG（本番環境と同じ）
 - **Webhook**: 本番 URL 経由（ステージング AWS とは別）
 
 **この場合は別 doc を参照**
 
-- 詳細経路 → `06-line-gcp-path.md`
+- 詳細経路 → `06-line-本番-path.md`
 
 **答えないこと**
 
@@ -517,7 +517,7 @@
 **回答要点**
 
 - **What**: AWS ステージングの Redis キャッシュ（Translate 結果・KB retrieve 等）
-- **Where**: AWS ステージングのみ。GCP 本番は別キャッシュ戦略（Local RAG retrieve cache 等）
+- **Where**: AWS ステージングのみ。本番環境は別キャッシュ戦略（Local RAG retrieve cache 等）
 - **Why**: 繰り返しクエリのレイテンシ・コスト削減
 
 **この場合は別 doc を参照**
@@ -581,7 +581,7 @@
 **回答要点**
 
 - **CloudFront + S3（AWS）**: JS/CSS 等 static アセット（ステージング）。push 毎 CodeBuild 同期
-- **Cloudflare R2**: OTC **医薬品画像**のみ（GCP/AWS 共通 URL）
+- **Cloudflare R2**: OTC **医薬品画像**のみ（全環境 共通 URL）
 - **Why 分離**: 画像はクロスクラウド共通、static は AWS ステージングデプロイに紐づく
 
 **この場合は別 doc を参照**

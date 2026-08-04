@@ -176,6 +176,12 @@ def format_concierge_technical_reference_block(
     docs = list(_load_technical_documents())
     if not include_ops_docs:
         docs = [(name, body) for name, body in docs if not name.startswith("AWS_")]
+    try:
+        from src.services.concierge_aws_content import skip_gcp_technical_doc
+
+        docs = [(name, body) for name, body in docs if not skip_gcp_technical_doc(name)]
+    except Exception:
+        pass
     docs = _sort_docs_by_query(docs, user_text)
 
     lines = [
@@ -249,13 +255,9 @@ def augment_architecture_reference(
             )
         except Exception:
             pass
-    grounding = (
-        "\n\n【回答の根拠ルール】\n"
-        "- 上記ドキュメントとランタイム情報に無いサービス名・URL・構成は推測で補わない。\n"
-        "- GCP 本番と AWS ステージングの役割分担はドキュメントの記載に従う。\n"
-        "- 不明な点は「公開ドキュメントに記載がありません」と述べ、創作しない。\n"
-    )
-    parts.append(grounding)
+    from src.services.concierge_aws_content import cross_cloud_grounding_rule
+
+    parts.append(cross_cloud_grounding_rule())
     merged = "\n\n".join(p for p in parts if p)
     from src.content.concierge_runtime_reference import augment_with_runtime_reference
 
