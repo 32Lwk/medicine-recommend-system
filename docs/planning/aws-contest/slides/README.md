@@ -21,13 +21,17 @@ Google Slides / PowerPoint に **01〜09 の PNG を順番に取り込む**だ�
 | `02-theme/` | テーマ選択 **10パターン**（A〜J） | — |
 | `03-seven-prefectures.png` | 7県の課題概要 | 45s |
 | `04-deep-dive.png` | 課題の深掘り | 40s |
-| `05-solution.png` | ソリューション | 40s |
-| `05-multiagent/` | マルチエージェント（セージグリーン和風 A〜E + **PDF続き pdf-style/**） | 30〜40s |
+| `05-solution.png` | ソリューション（旧） | 40s |
+| `05-ai-roles/integrated/` | **スライド5統合** AI役割分担 5パターン | 20s |
+| `05-ai-roles/standalone/` | **独立 5+** AI役割分担 5パターン | 25s |
+| `05-multiagent/` | マルチエージェント（和風 / pdf-style / **accurate-flow 正本準拠**） | 30〜40s |
 | `06-aws-architecture.png` | AWS アーキテクチャ | 40s |
 | `07-live-demo.png` | ライブデモ導入 | 15s |
 | — | **ライブデモ**（[`03-demo-script.md`](../03-demo-script.md)） | 90〜120s |
 | `08-impact.png` | インパクト・展開 | 30s |
-| `09-summary.png` | まとめ | 15s |
+| `11-impact/` | **page11 期待される効果** 5パターン | 22s |
+| `10-thanks/` | **ご清聴ありがとうございました** 5パターン | 5s |
+| `appendix-admin-legal/` | **附記** 行政ヒアリング・法規制 5パターン | 質疑・別冊 |
 
 ## 本番前チェック
 
