@@ -3,10 +3,8 @@
 #
 # - Fargate 最小スペック（512/1024, maxTasks=1）
 # - CloudWatch Logs 保持 7 日
-# - ECS desiredCount=0 + CodePipeline 自動デプロイ停止（停止がデフォルト）
-#
-# 利用時: ./scripts/resume-aws-staging.sh  → 3–6 分で /health 200
-# 停止時: ./scripts/stop-aws-staging.sh
+# - ECS desiredCount=0 + Auto Scaling min/max=0 + Pipeline 停止（停止がデフォルト）
+# - resume 時に min/max/desired を復元（3–6 分で /health 200）
 #
 # Usage:
 #   AWS_PROFILE=default ./scripts/setup-aws-staging-cold-start.sh
@@ -78,7 +76,9 @@ cat > "$ROOT/scripts/.aws-staging-cold-start.json" <<EOF
     "min_tasks": 1,
     "max_tasks": 1,
     "gunicorn_workers": 1,
-    "default_desired_count": 0
+    "default_desired_count": 0,
+    "stopped_scaling": {"min_capacity": 0, "max_capacity": 0},
+    "running_scaling": {"min_capacity": 1, "max_capacity": 1}
   },
   "logs_retention_days": ${LOG_RETENTION_DAYS},
   "resume": "./scripts/resume-aws-staging.sh",

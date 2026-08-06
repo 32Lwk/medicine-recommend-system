@@ -113,7 +113,9 @@ AWS_PROFILE=default ./scripts/setup-aws-custom-domain.sh
 aws.medicine.yutok.dev → ecs-express-gateway-alb-7a197fcf-1310163209.ap-northeast-1.elb.amazonaws.com
 ```
 
-**再発防止**: `wait-staging-health-commit.sh` に Express 既定 URL フォールバックを追加（カスタムドメイン TLS 未設定時もデプロイ確認可能）。
+**再発防止**: `stop-aws-staging.sh` が Auto Scaling **min/max=0** まで下げる（MinCapacity=1 のままだと desired=0 でも復帰しうる）。`resume-aws-staging.sh` で min/max/desired を復元。
+
+**503 について**: 停止中は ALB にターゲットがなく **503 が正常**。利用前に `./scripts/resume-aws-staging.sh`（3–6 分待ち）。
 
 ### 2. CodeStar GitHub OAuth — **完了**
 
