@@ -11,6 +11,7 @@ scripts/.aws-bedrock-medicine-kb-id
 scripts/.aws-bedrock-kb-env
 scripts/.aws-redis-url
 scripts/.aws-personalize-env
+scripts/.aws-wake-staging.json
 *.log
 !log/
 !log/**

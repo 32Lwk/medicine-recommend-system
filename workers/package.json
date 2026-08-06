@@ -1,0 +1,13 @@
+{
+  "name": "aws-staging-wake",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Cloudflare Worker — wake AWS staging ECS on 503",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^4.14.0"
+  }
+}

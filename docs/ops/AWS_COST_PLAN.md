@@ -252,3 +252,15 @@ aws wafv2 delete-web-acl \
 - **残す**: 設定・イメージの参照用
 - **必須**: ECS `desiredCount=0`、CodePipeline 停止（稼働中タスクがあると **二重で Fargate 課金**）
 - 新アカウント安定後（目安 30 日）に再評価
+
+## 9. アクセス時自動起動（Wake on Access）
+
+**Lambda + Cloudflare Worker** で 503 時に ECS を自動起動。詳細: [AWS_WAKE_ON_ACCESS.md](./AWS_WAKE_ON_ACCESS.md)
+
+| 項目 | コスト |
+|------|--------|
+| Lambda / Worker | **ほぼ $0**（無料枠内） |
+| 起動後 Fargate | **~$0.03/時**（手動 resume と同じ） |
+| 放置すると | 24h 稼働で **~+$23/月** → 終了後 `stop-aws-staging.sh` |
+
+**Cloudflare DNS を Proxied（オレンジ雲）にする必要あり** — 未設定なら Worker は動きません。
