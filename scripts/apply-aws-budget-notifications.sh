@@ -84,10 +84,21 @@ EOF
     rm -f "$budget_json"
     return 0
   fi
-  aws budgets update-budget \
+  if aws budgets describe-budget \
     --account-id "$ACCOUNT_ID" \
-    --new-budget "file://${budget_json}" \
-    --region "$BUDGET_REGION"
+    --budget-name "$BUDGET_NAME" \
+    --region "$BUDGET_REGION" >/dev/null 2>&1; then
+    aws budgets update-budget \
+      --account-id "$ACCOUNT_ID" \
+      --new-budget "$(aws_file_arg "$budget_json")" \
+      --region "$BUDGET_REGION"
+  else
+    echo "    creating budget: ${BUDGET_NAME} (\$${limit})"
+    aws budgets create-budget \
+      --account-id "$ACCOUNT_ID" \
+      --budget "$(aws_file_arg "$budget_json")" \
+      --region "$BUDGET_REGION"
+  fi
   rm -f "$budget_json"
 }
 

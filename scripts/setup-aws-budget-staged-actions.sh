@@ -116,7 +116,7 @@ EOFPOL
 aws iam put-role-policy \
   --role-name "$LAMBDA_ROLE" \
   --policy-name medicine-recommend-budget-action \
-  --policy-document "file://${INLINE_POLICY}"
+  --policy-document "$(aws_file_arg "$INLINE_POLICY")"
 rm -f "$INLINE_POLICY"
 echo "Attached inline policy medicine-recommend-budget-action"
 
@@ -173,24 +173,42 @@ topic_arn_for_stage() {
 }
 
 # --- Lambda package ---
-ZIP_DIR="$(mktemp -d)"
-ZIP_FILE="${ZIP_DIR}/bundle.zip"
-(
-  cd "$HANDLER_DIR"
-  zip -q "$ZIP_FILE" handler.py
-)
+ZIP_FILE="${HANDLER_DIR}/.lambda-budget-bundle.zip"
+PY_HANDLER="$(to_win_path "$HANDLER_DIR")"
+PY_ZIP="$(to_win_path "$ZIP_FILE")"
+python3 - "$PY_HANDLER" "$PY_ZIP" <<'PY'
+import sys, zipfile
+from pathlib import Path
+handler_dir = Path(sys.argv[1])
+zip_path = Path(sys.argv[2])
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+    zf.write(handler_dir / "handler.py", "handler.py")
+PY
+ZIP_ARG="fileb://${ZIP_FILE}"
+if command -v cygpath >/dev/null 2>&1; then
+  ZIP_ARG="fileb://$(cygpath -w "$ZIP_FILE")"
+fi
 
 if aws lambda get-function --function-name "$LAMBDA_NAME" --region "$AWS_REGION" >/dev/null 2>&1; then
   aws lambda update-function-code \
     --function-name "$LAMBDA_NAME" \
-    --zip-file "fileb://${ZIP_FILE}" \
+    --zip-file "$ZIP_ARG" \
     --region "$AWS_REGION" \
     --query 'FunctionArn' --output text >/dev/null
-  aws lambda update-function-configuration \
-    --function-name "$LAMBDA_NAME" \
-    --environment "Variables={AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID},ECS_CLUSTER=${ECS_CLUSTER},ECS_SERVICE=${ECS_SERVICE},PROJECT_PREFIX=${PROJECT_PREFIX},PIPELINE_NAME=${PIPELINE_NAME},BUILD_PROJECT=${BUILD_PROJECT},LOG_GROUP=${LOG_GROUP}}" \
-    --timeout 120 \
-    --region "$AWS_REGION" >/dev/null
+  for attempt in 1 2 3 4 5 6; do
+    if aws lambda update-function-configuration \
+      --function-name "$LAMBDA_NAME" \
+      --environment "Variables={AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID},ECS_CLUSTER=${ECS_CLUSTER},ECS_SERVICE=${ECS_SERVICE},PROJECT_PREFIX=${PROJECT_PREFIX},PIPELINE_NAME=${PIPELINE_NAME},BUILD_PROJECT=${BUILD_PROJECT},LOG_GROUP=${LOG_GROUP}}" \
+      --timeout 120 \
+      --region "$AWS_REGION" >/dev/null 2>&1; then
+      break
+    fi
+    if (( attempt == 6 )); then
+      echo "WARN: update-function-configuration skipped (update in progress)" >&2
+    else
+      sleep 5
+    fi
+  done
   echo "Updated Lambda: $LAMBDA_NAME"
 else
   aws lambda create-function \
@@ -198,14 +216,14 @@ else
     --runtime python3.12 \
     --role "$ROLE_ARN" \
     --handler handler.lambda_handler \
-    --zip-file "fileb://${ZIP_FILE}" \
+    --zip-file "$ZIP_ARG" \
     --timeout 120 \
     --environment "Variables={AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID},ECS_CLUSTER=${ECS_CLUSTER},ECS_SERVICE=${ECS_SERVICE},PROJECT_PREFIX=${PROJECT_PREFIX},PIPELINE_NAME=${PIPELINE_NAME},BUILD_PROJECT=${BUILD_PROJECT},LOG_GROUP=${LOG_GROUP}}" \
     --region "$AWS_REGION" \
     --query 'FunctionArn' --output text >/dev/null
   echo "Created Lambda: $LAMBDA_NAME"
 fi
-rm -rf "$ZIP_DIR"
+rm -f "$ZIP_FILE"
 
 LAMBDA_ARN="$(aws lambda get-function --function-name "$LAMBDA_NAME" --region "$AWS_REGION" --query Configuration.FunctionArn --output text)"
 
@@ -273,8 +291,9 @@ data = {
         {"alert": 2, "threshold": "60%", "type": "予測", "note": "stage1 SNS を設定"},
     ],
 }
-with open(out_file, "w") as f:
+with open(out_file, "w", encoding="utf-8") as f:
     json.dump(data, f, indent=2, ensure_ascii=False)
+    f.write("\n")
 print(out_file)
 PY
 

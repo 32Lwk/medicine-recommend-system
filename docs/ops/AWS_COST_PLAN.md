@@ -152,10 +152,10 @@ GitHub push 後の確認が必要な日
 
 ## 5. 新アカウントで未実施のコスト関連タスク
 
-- [ ] `setup-aws-budget-staged-actions.sh`（SNS + Lambda）
-- [ ] `apply-aws-budget-notifications.sh`（予算 SNS を `620992446973` ARN に）
-- [ ] `ECS_MIN_TASKS=1 ECS_MAX_TASKS=2 ECS_CPU=512 ECS_MEMORY=1024 tune-aws-ecs-capacity.sh`
-- [ ] 個人用 stop/resume スケジュール（Task Scheduler）の再登録
+- [x] WAF 削除 — `./scripts/remove-aws-waf.sh`（2026-08-06）
+- [x] Budget $30 + 段階 Lambda — `setup-aws-budget-staged-actions.sh` + `BUDGET_LIMIT=30 apply-aws-budget-notifications.sh`
+- [x] コールドスタート — `./scripts/setup-aws-staging-cold-start.sh`（512/1024, maxTasks=1, ECS=0 既定）
+- [ ] 個人用 stop/resume スケジュール（Task Scheduler）の再登録（任意）
 - [ ] 旧アカウントリソース停止確認
 
 ---
@@ -210,7 +210,7 @@ aws ce get-cost-and-usage \
 | 優先度 | アクション | 効果 |
 |--------|-----------|------|
 | **P0** | 使わない日は常に `stop-aws-staging.sh` | ECS $0。実効 ~$30–40/月 → 利用週のみ +$1–2 |
-| **P0** | **WAF 削除** | **-$6–10/月**（`scripts/setup-aws-waf.sh` 逆操作 or Console で Web ACL デタッチ→削除） |
+| **P0** | **WAF 削除** | **-$6–10/月** | `./scripts/remove-aws-waf.sh`（**2026-08-06 実施済み**） |
 | **P0** | ECS は **512/1024 × 1 タスク**のみ、maxTasks=1 | 起動中でも ~$0.03/h（週 5h ≈ **+$0.6/月**） |
 | **P1** | Budget **$30** + stage4 で自動停止 | 超過前に ECS 0 |
 | **P1** | CloudWatch Logs **7 日保持** | -$1–5/月 |

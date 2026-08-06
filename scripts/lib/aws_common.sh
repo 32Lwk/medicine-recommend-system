@@ -39,6 +39,10 @@ to_win_path() {
   fi
 }
 
+aws_file_arg() {
+  printf 'file://%s' "$(to_win_path "$1")"
+}
+
 resolve_alb_arn() {
   if [[ -n "${ALB_ARN:-}" ]]; then
     echo "$ALB_ARN"

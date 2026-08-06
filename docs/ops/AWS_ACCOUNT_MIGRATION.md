@@ -136,15 +136,21 @@ AWS_PROFILE=admin ./scripts/create-aws-bedrock-kb.sh
 
 移行直後は `CONCIERGE_RAG_PROVIDER=local` で運用可。
 
-### 4. WAF（任意）
+### 4. WAF — **削除済み（2026-08-06）**
 
-Express Gateway の ALB が `elbv2 describe-load-balancers` に表示された後:
+個人 $30/月方針のため `medicine-recommend-web-acl` を削除。再作成: `./scripts/setup-aws-waf.sh`
+
+### 5. コールドスタート + Budget — **設定済み**
 
 ```bash
-./scripts/setup-aws-waf.sh
+./scripts/setup-aws-staging-cold-start.sh   # 512/1024, maxTasks=1, ECS=0 既定
+./scripts/resume-aws-staging.sh             # 利用時
+BUDGET_LIMIT=30 ./scripts/apply-aws-budget-notifications.sh
 ```
 
-### 5. 旧アカウント整理（移行確認後 30 日）
+詳細: [AWS_COST_PLAN.md](./AWS_COST_PLAN.md) / [AWS_BUDGET_STAGED_ACTIONS.md](./AWS_BUDGET_STAGED_ACTIONS.md)
+
+### 6. 旧アカウント整理（移行確認後 30 日）
 
 - 旧 CodePipeline 停止
 - 旧 ECS `desiredCount=0`
