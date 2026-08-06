@@ -178,6 +178,12 @@ else
     --principal "*" \
     --function-url-auth-type NONE \
     --region "$AWS_REGION" 2>/dev/null || true
+  aws lambda add-permission \
+    --function-name "$LAMBDA_NAME" \
+    --statement-id FunctionURLAllowPublicAccessInvoke \
+    --action lambda:InvokeFunction \
+    --principal "*" \
+    --region "$AWS_REGION" 2>/dev/null || true
 fi
 
 LAMBDA_ARN="$(aws lambda get-function --function-name "$LAMBDA_NAME" --region "$AWS_REGION" --query Configuration.FunctionArn --output text)"
