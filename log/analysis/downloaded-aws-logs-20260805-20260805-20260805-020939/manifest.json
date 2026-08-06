@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-08-05T11:11:33",
+  "metadata_path": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020939\\metadata.json",
+  "sections": {
+    "metadata": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020939\\metadata.json",
+    "errors_http": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020939\\sections\\errors_http.json",
+    "pipeline_perf": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020939\\sections\\pipeline_perf.json",
+    "llm_cost": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020939\\sections\\llm_cost.json",
+    "deploy_revision": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020939\\sections\\deploy_revision.json",
+    "db_neon": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020939\\sections\\db_neon.json",
+    "line_webhook": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020939\\sections\\line_webhook.json",
+    "chat_flow": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020939\\sections\\chat_flow.json",
+    "user_sessions": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020939\\sections\\user_sessions.json",
+    "misc_signals": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020939\\sections\\misc_signals.json",
+    "manifest": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020939\\manifest.json"
+  },
+  "analysis_groups": {
+    "infra_errors": [
+      "errors_http",
+      "deploy_revision"
+    ],
+    "performance_cost": [
+      "pipeline_perf",
+      "llm_cost"
+    ],
+    "conversation_quality": [
+      "chat_flow",
+      "user_sessions"
+    ],
+    "integrations": [
+      "line_webhook",
+      "db_neon",
+      "misc_signals"
+    ]
+  },
+  "conversation_quality_focus": {
+    "session_timelines": "user_sessions.session_conversations.sessions",
+    "conversation_history": "sessions[].conversation_history / turns[].conversation_history",
+    "heuristic_hints": "user_sessions.intent_mismatches (LLM must re-judge)",
+    "physical_advisor": "sessions[].physical_recommendation_summary",
+    "quality_summary": "quality_metrics.json"
+  },
+  "session_transcripts": {},
+  "platform": "aws"
+}

@@ -1,0 +1,38 @@
+{
+  "webhook_request_stats": {
+    "count": 0,
+    "min": null,
+    "max": null,
+    "avg": null,
+    "median": null,
+    "p95": null
+  },
+  "webhook_status_counts": {},
+  "job_lock_events": [
+    {
+      "timestamp": "2026-08-05T01:04:50.613Z",
+      "message": "[2026-08-05 01:04:50 +0000] [10] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-05T01:04:52.631Z",
+      "message": "[2026-08-05 01:04:52 +0000] [30] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-08-05T01:13:17.613Z",
+      "message": "2026-08-05 01:13:17,613 - INFO - SSE stream begin sid=1785892380409230461341 inflight=False active_sink=False last_event_id=None"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:21.128Z",
+      "message": "2026-08-05 01:13:21,128 - INFO - SSE stream begin sid=1785892370895690177498 inflight=False active_sink=False last_event_id=None"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:21.746Z",
+      "message": "2026-08-05 01:13:21,746 - INFO - SSE stream begin sid=1785892374721038147507 inflight=False active_sink=False last_event_id=None"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:35.053Z",
+      "message": "2026-08-05 01:13:35,053 - INFO - SSE stream begin sid=1785892367772563828651 inflight=False active_sink=False last_event_id=None"
+    }
+  ],
+  "line_text_messages": []
+}

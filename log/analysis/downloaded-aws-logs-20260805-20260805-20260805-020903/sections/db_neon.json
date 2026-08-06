@@ -1,0 +1,31 @@
+{
+  "count": 3,
+  "top_patterns": [
+    {
+      "message": "2026-08-05 01:13:54,894 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 't",
+      "count": 1
+    },
+    {
+      "message": "2026-08-05 01:13:54,895 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=N",
+      "count": 1
+    },
+    {
+      "message": "2026-08-05 01:13:54,898 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fa567dc",
+      "count": 1
+    }
+  ],
+  "samples": [
+    {
+      "timestamp": "2026-08-05T01:13:54.894Z",
+      "message": "2026-08-05 01:13:54,894 - DEBUG - Request options: {'method': 'post', 'url': '/chat/completions', 'timeout': 15.0, 'files': None, 'json_data': {'messages': [{'role': 'system', 'content': 'あなたは医薬品の専門家です。症状に適した医薬品を推奨してください。'}, {'role': 'user', 'content': '\\nあなたは医薬品推奨システムです。ユーザーの症状文を分析して、該当する症状と適する医薬品の種類を選択してください。\\n\\n【ユーザーの症状文】\\n熱っぽい\\n\\n【選択可能な症状リスト】\\n頭痛, 発熱, 咳, 鼻水, 鼻づまり, のどの痛み, くしゃみ, 寒気, 悪寒, 腹痛, 下痢, "
+    },
+    {
+      "timestamp": "2026-08-05T01:13:54.895Z",
+      "message": "2026-08-05 01:13:54,895 - DEBUG - connect_tcp.started host='api.openai.com' port=443 local_address=None timeout=15.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:54.898Z",
+      "message": "2026-08-05 01:13:54,898 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7fa567dcdc70> server_hostname='api.openai.com' timeout=15.0"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "source_path": "D:\\Programing\\medicine-recommend\\log\\raw\\downloaded-aws-logs-20260805-20260805-20260805-020903.json",
+  "source_name": "downloaded-aws-logs-20260805-20260805-20260805-020903.json",
+  "entry_count": 10000,
+  "time_range": {
+    "start": "2026-08-05T01:13:54.000Z",
+    "end": "2026-08-05T01:13:54.944Z"
+  },
+  "services": {
+    "/ecs/medicine-recommend": 10000
+  },
+  "primary_service": "/ecs/medicine-recommend",
+  "revisions": {},
+  "commit_shas": {},
+  "severity_counts": {
+    "DEBUG": 9886,
+    "INFO": 114
+  },
+  "platform": "aws",
+  "log_group": "/ecs/medicine-recommend",
+  "region": "ap-northeast-1",
+  "ecs_service": "medicine-recommend",
+  "log_streams": {
+    "ecs/Main/cc6bcacd45ab420cbcc0881ca8c60bb7": 8117,
+    "ecs/Main/b68ee51f1bf746ee8079eafe31e2da65": 1856,
+    "ecs/Main/7c0717a055f04ce38f06f95c1fa0ae61": 27
+  },
+  "task_definitions": {}
+}

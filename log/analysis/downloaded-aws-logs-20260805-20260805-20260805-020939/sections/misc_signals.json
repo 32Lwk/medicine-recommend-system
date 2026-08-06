@@ -1,0 +1,48 @@
+{
+  "duplicate_triage": [
+    {
+      "timestamp": "2026-08-05T01:13:52.859Z",
+      "message": "2026-08-05 01:13:52,858 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785892380409230461341', 'total_ms': 35237.77, 'breakdown': {'post_start': 2.25, 'parsed_message': 2.42, 'session_db_read': 2.64, 'after_get_session_db': 280.72, 'before_llm_setup': 696.24, 'before_security': 1249.91, 'after_security': 1487.59, 'before_emoji_route': 1519.3"
+    },
+    {
+      "timestamp": "2026-08-05T01:14:12.846Z",
+      "message": "2026-08-05 01:14:12,846 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785892370895690177498', 'total_ms': 51710.15, 'breakdown': {'post_start': 2.04, 'parsed_message': 2.58, 'session_db_read': 3.27, 'after_get_session_db': 290.45, 'before_llm_setup': 600.17, 'before_security': 1165.14, 'after_security': 1417.37, 'before_emoji_route': 1458.3"
+    },
+    {
+      "timestamp": "2026-08-05T01:14:14.821Z",
+      "message": "2026-08-05 01:14:14,821 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785892374721038147507', 'total_ms': 53070.41, 'breakdown': {'post_start': 0.55, 'parsed_message': 0.89, 'session_db_read': 1.05, 'after_get_session_db': 278.93, 'before_llm_setup': 569.52, 'before_security': 1129.69, 'after_security': 1343.0, 'before_emoji_route': 1351.21"
+    },
+    {
+      "timestamp": "2026-08-05T01:14:22.664Z",
+      "message": "2026-08-05 01:14:22,664 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785892367772563828651', 'total_ms': 47607.71, 'breakdown': {'post_start': 0.87, 'parsed_message': 1.26, 'session_db_read': 1.72, 'after_get_session_db': 279.81, 'before_llm_setup': 571.05, 'before_security': 1126.75, 'after_security': 1343.45, 'before_emoji_route': 1473.8"
+    },
+    {
+      "timestamp": "2026-08-05T01:14:38.944Z",
+      "message": "2026-08-05 01:14:38,944 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785892365553487814128', 'total_ms': 28282.76, 'breakdown': {'post_start': 3.92, 'parsed_message': 4.29, 'session_db_read': 4.73, 'after_get_session_db': 278.63, 'before_llm_setup': 600.91, 'before_security': 1154.76, 'after_security': 1649.9, 'before_emoji_route': 1698.72"
+    },
+    {
+      "timestamp": "2026-08-05T01:15:16.450Z",
+      "message": "2026-08-05 01:15:16,450 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785892363748640562488', 'total_ms': 13385.99, 'breakdown': {'post_start': 1.56, 'parsed_message': 1.72, 'session_db_read': 1.93, 'after_get_session_db': 277.64, 'before_llm_setup': 565.9, 'before_security': 1118.45, 'after_security': 1334.97, 'before_emoji_route': 1343.37"
+    },
+    {
+      "timestamp": "2026-08-05T01:15:30.667Z",
+      "message": "2026-08-05 01:15:30,667 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785892380409230461341', 'total_ms': 33313.2, 'breakdown': {'post_start': 3.05, 'parsed_message': 4.59, 'session_db_read': 4.93, 'after_get_session_db': 283.39, 'before_llm_setup': 605.26, 'before_security': 1162.87, 'after_security': 2302.69, 'before_emoji_route': 2355.87"
+    },
+    {
+      "timestamp": "2026-08-05T01:16:05.850Z",
+      "message": "2026-08-05 01:16:05,850 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785892416886105725292', 'total_ms': 34848.81, 'breakdown': {'post_start': 1.48, 'parsed_message': 1.6, 'session_db_read': 1.9, 'after_get_session_db': 276.05, 'before_llm_setup': 563.92, 'before_security': 1113.81, 'after_security': 1331.05, 'before_emoji_route': 1339.55,"
+    },
+    {
+      "timestamp": "2026-08-05T01:16:20.895Z",
+      "message": "2026-08-05 01:16:20,895 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785892376941414913484', 'total_ms': 53905.56, 'breakdown': {'post_start': 1.16, 'parsed_message': 1.29, 'session_db_read': 1.65, 'after_get_session_db': 285.26, 'before_llm_setup': 578.1, 'before_security': 1138.38, 'after_security': 1356.81, 'before_emoji_route': 1365.25"
+    },
+    {
+      "timestamp": "2026-08-05T01:21:29.988Z",
+      "message": "2026-08-05 01:21:29,988 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785892798329357348510', 'total_ms': 50281.46, 'breakdown': {'post_start': 0.28, 'parsed_message': 0.58, 'session_db_read': 0.64, 'after_get_session_db': 280.67, 'before_llm_setup': 562.9, 'before_security': 1124.51, 'after_security': 1214.36, 'before_emoji_route': 1215.01"
+    },
+    {
+      "timestamp": "2026-08-05T01:28:06.561Z",
+      "message": "2026-08-05 01:28:06,561 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785890421194005681438', 'total_ms': 57520.79, 'breakdown': {'post_start': 0.29, 'parsed_message': 1.36, 'session_db_read': 1.45, 'after_get_session_db': 280.14, 'before_llm_setup': 559.5, 'before_security': 1119.27, 'after_security': 1313.26, 'before_emoji_route': 1315.1,"
+    }
+  ]
+}

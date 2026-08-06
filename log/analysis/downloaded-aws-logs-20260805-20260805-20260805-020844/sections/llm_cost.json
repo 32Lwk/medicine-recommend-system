@@ -1,0 +1,74 @@
+{
+  "llm_call_count": 4,
+  "total_cost_jpy": 0.1363,
+  "total_latency_ms": 6357.74,
+  "by_path": {
+    "medicine_qa/focus_llm": 2,
+    "llm_triage.stage1": 1,
+    "missing_info_service": 1
+  },
+  "by_model": {
+    "gpt-5.4-mini": 2,
+    "gpt-4o-mini": 2
+  },
+  "top_sessions_by_cost": [
+    {
+      "session_id": "1785892380409230461341",
+      "cost_jpy": 0.1363
+    }
+  ],
+  "recent_calls": [
+    {
+      "timestamp": "2026-08-05T01:13:22.462219",
+      "model": "gpt-5.4-mini",
+      "path": "llm_triage.stage1",
+      "latency_ms": 2218.4,
+      "prompt_tokens": 3105,
+      "completion_tokens": 90,
+      "cost_jpy": 0.0958,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785892380409230461341",
+      "log_ts": "2026-08-05T01:13:52.859Z"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:26.750423",
+      "model": "gpt-4o-mini",
+      "path": "medicine_qa/focus_llm",
+      "latency_ms": 1447.74,
+      "prompt_tokens": 371,
+      "completion_tokens": 36,
+      "cost_jpy": 0.0122,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785892380409230461341",
+      "log_ts": "2026-08-05T01:13:52.859Z"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:37.278522",
+      "model": "gpt-4o-mini",
+      "path": "medicine_qa/focus_llm",
+      "latency_ms": 888.2,
+      "prompt_tokens": 371,
+      "completion_tokens": 36,
+      "cost_jpy": 0.0122,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785892380409230461341",
+      "log_ts": "2026-08-05T01:13:52.859Z"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:50.306306",
+      "model": "gpt-5.4-mini",
+      "path": "missing_info_service",
+      "latency_ms": 1803.4,
+      "prompt_tokens": 302,
+      "completion_tokens": 234,
+      "cost_jpy": 0.0161,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1785892380409230461341",
+      "log_ts": "2026-08-05T01:13:52.859Z"
+    }
+  ]
+}

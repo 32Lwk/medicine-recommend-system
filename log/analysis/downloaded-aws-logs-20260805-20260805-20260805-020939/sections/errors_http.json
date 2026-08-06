@@ -1,0 +1,14 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 0,
+    "by_status": {},
+    "by_path": {},
+    "slow_endpoints_ge_5s": {},
+    "samples": []
+  },
+  "text_errors": {
+    "count": 0,
+    "top_patterns": [],
+    "samples": []
+  }
+}

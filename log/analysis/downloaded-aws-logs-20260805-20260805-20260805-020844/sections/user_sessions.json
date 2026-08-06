@@ -1,0 +1,822 @@
+{
+  "counseling_detail_count": 1,
+  "counseling_dedup_removed": 0,
+  "counseling_details_exported": 1,
+  "counseling_details": [
+    {
+      "log_type": "counseling_detail",
+      "timestamp": "2026-08-05T01:13:52.856616",
+      "session_id": "1785892380409230461341",
+      "user_input": "肌がかゆい",
+      "response": "sage_reco",
+      "conversation_history": [
+        {
+          "type": "user",
+          "uuid": "4f76dae0-c9e1-4c4b-8694-bc1c32a84c31",
+          "content": "肌がかゆい",
+          "timestamp": "2026-08-05T10:13:24+09:00"
+        },
+        {
+          "type": "bot",
+          "content": "sage_reco",
+          "diagnosis": {
+            "error": {
+              "type": "no_candidates",
+              "title": "医薬品が見つかりませんでした",
+              "message": "該当する医薬品が見つかりませんでした",
+              "severity": "warn",
+              "recommendations": [
+                "症状をより具体的に記述してください（例：痛みの部位、程度、継続期間など）",
+                "症状が1週間以上続いている場合は、医療機関を受診することをお勧めします",
+                "重症の症状がある場合は、速やかに医師の診察を受けてください"
+              ]
+            },
+            "render": "sage_reco",
+            "symptoms": [],
+            "show_feedback": true,
+            "influenza_risk": false,
+            "schema_version": 1,
+            "usage_sections": [],
+            "feedback_context": {
+              "ai_response": "該当する医薬品が見つかりませんでした",
+              "user_message": "肌がかゆい"
+            },
+            "influenza_reason": "",
+            "missing_priority": "critical",
+            "age_policy_notice": "",
+            "critical_questions": [],
+            "doctor_consultation": "",
+            "personalized_advice": "",
+            "severity_escalation": "",
+            "additional_questions": [
+              "年齢を教えてください。（医薬品の適切な選択に必要です）",
+              "性別を教えてください。（男性/女性）",
+              "症状はいつ頃から続いていますか？（例：昨日から、3日前から）",
+              "アレルギーはありますか？（薬物アレルギー、食物アレルギーなど）",
+              "現在服用中の薬はありますか？",
+              "持病や既往歴はありますか？"
+            ],
+            "recommended_medicines": []
+          },
+          "timestamp": "2026-08-05T01:13:51.161471"
+        }
+      ]
+    }
+  ],
+  "security_flags": [
+    {
+      "timestamp": "2026-08-05T01:13:19.009Z",
+      "message": "2026-08-05 01:13:19,009 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:22.447Z",
+      "message": "2026-08-05 01:13:22,447 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:22.995Z",
+      "message": "2026-08-05 01:13:22,995 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:36.300Z",
+      "message": "2026-08-05 01:13:36,299 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:44.662Z",
+      "message": "2026-08-05 01:13:44,662 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:47.287Z",
+      "message": "2026-08-05 01:13:47,287 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:47.794Z",
+      "message": "2026-08-05 01:13:47,794 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-05T01:13:54.396Z",
+      "message": "2026-08-05 01:13:54,396 - INFO - Security validation: score=0, safe=True, warnings=0"
+    }
+  ],
+  "session_conversations": {
+    "session_count": 1,
+    "exported_session_count": 1,
+    "counseling_session_count": 1,
+    "trace_only_session_count": 0,
+    "chat_flow_trace_count": 4,
+    "sessions": [
+      {
+        "session_id": "1785892380409230461341",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-05T01:13:52.856616",
+          "end": "2026-08-05T01:14:10.293770Z"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "肌がかゆい"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_reco"
+          },
+          {
+            "role": "user",
+            "content": "熱っぽい"
+          },
+          {
+            "role": "assistant",
+            "content": ""
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-05T01:13:52.856616",
+            "user_input": "肌がかゆい",
+            "response_preview": "sage_reco",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {
+              "trace_id": "3ce73b04-a302-4dc9-8c25-70825281840d",
+              "triage": {
+                "category": "Physical",
+                "subcategory": "feverish",
+                "confidence": 0.96
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 35237.77,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 237.7,
+                "triage_ms": 4170.0,
+                "post_to_security_ms": 1485.3,
+                "safety_gate_ms": 5107.3,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 4
+            },
+            "timing": {
+              "user_message_at": "2026-08-05T01:13:35.056Z",
+              "response_at": "2026-08-05T01:13:52.856616",
+              "e2e_ms": 17800.6,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 35237.77,
+              "phase_summary_ms": {
+                "security_ms": 237.7,
+                "triage_ms": 4170.0,
+                "post_to_security_ms": 1485.3,
+                "safety_gate_ms": 5107.3,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 2.25,
+                "parsed_message": 2.42,
+                "session_db_read": 2.64,
+                "after_get_session_db": 280.72,
+                "before_llm_setup": 696.24,
+                "before_security": 1249.91,
+                "after_security": 1487.59,
+                "before_emoji_route": 1519.33,
+                "before_triage": 1522.5,
+                "after_triage": 5692.46,
+                "safety_gate_done": 6594.89,
+                "after_triage_follow_ups": 6600.39,
+                "after_counseling_flow": 7394.57,
+                "moderation_done": 7394.61,
+                "before_medicine_qa_route": 7677.35,
+                "after_medicine_qa_route": 9814.07,
+                "before_orchestrator": 12234.62,
+                "nlu_batch_start": 27038.54,
+                "nlu_batch_done": 30315.55,
+                "rule_based_start": 30880.99,
+                "rb_missing_info_done": 33252.56,
+                "rule_based_scoring_only_done": 33258.79
+              },
+              "llm_call_count": 4,
+              "llm_total_latency_ms": 6357.74,
+              "llm_session_cost_jpy": 0.1363,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-05T01:13:22.462219",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 2218.4,
+                  "prompt_tokens": 3105,
+                  "completion_tokens": 90,
+                  "cost_jpy": 0.0958,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T01:13:26.750423",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1447.74,
+                  "prompt_tokens": 371,
+                  "completion_tokens": 36,
+                  "cost_jpy": 0.0122,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T01:13:37.278522",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 888.2,
+                  "prompt_tokens": 371,
+                  "completion_tokens": 36,
+                  "cost_jpy": 0.0122,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T01:13:50.306306",
+                  "model": "gpt-5.4-mini",
+                  "path": "missing_info_service",
+                  "latency_ms": 1803.4,
+                  "prompt_tokens": 302,
+                  "completion_tokens": 234,
+                  "cost_jpy": 0.0161,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok",
+            "medicine_recommendation_review": {
+              "eligible_for_advisor": true,
+              "advisor_skill": "medicine-recommendation-advisor",
+              "triage": {
+                "category": "Physical",
+                "subcategory": "feverish",
+                "confidence": 0.96
+              },
+              "recommendation_events": [],
+              "has_medicine_list": false
+            }
+          },
+          {
+            "timestamp": "2026-08-05T01:14:10.293770Z",
+            "user_input": "熱っぽい",
+            "response_preview": "",
+            "response_html": false,
+            "response_missing": true,
+            "turn_source": "chat_flow",
+            "input_labels": [
+              "physical_symptom"
+            ],
+            "routing": {
+              "trace_id": "3ce73b04-a302-4dc9-8c25-70825281840d",
+              "triage": {
+                "category": "Physical",
+                "subcategory": "feverish",
+                "confidence": 0.96
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 35237.77,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 237.7,
+                "triage_ms": 4170.0,
+                "post_to_security_ms": 1485.3,
+                "safety_gate_ms": 5107.3,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 4
+            },
+            "timing": {
+              "user_message_at": "2026-08-05T01:13:35.056Z",
+              "response_at": "2026-08-05T01:14:10.293770Z",
+              "e2e_ms": 35237.8,
+              "since_previous_turn_ms": 17437.2,
+              "pipeline_total_ms": 35237.77,
+              "phase_summary_ms": {
+                "security_ms": 237.7,
+                "triage_ms": 4170.0,
+                "post_to_security_ms": 1485.3,
+                "safety_gate_ms": 5107.3,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 2.25,
+                "parsed_message": 2.42,
+                "session_db_read": 2.64,
+                "after_get_session_db": 280.72,
+                "before_llm_setup": 696.24,
+                "before_security": 1249.91,
+                "after_security": 1487.59,
+                "before_emoji_route": 1519.33,
+                "before_triage": 1522.5,
+                "after_triage": 5692.46,
+                "safety_gate_done": 6594.89,
+                "after_triage_follow_ups": 6600.39,
+                "after_counseling_flow": 7394.57,
+                "moderation_done": 7394.61,
+                "before_medicine_qa_route": 7677.35,
+                "after_medicine_qa_route": 9814.07,
+                "before_orchestrator": 12234.62,
+                "nlu_batch_start": 27038.54,
+                "nlu_batch_done": 30315.55,
+                "rule_based_start": 30880.99,
+                "rb_missing_info_done": 33252.56,
+                "rule_based_scoring_only_done": 33258.79
+              },
+              "llm_call_count": 4,
+              "llm_total_latency_ms": 6357.74,
+              "llm_session_cost_jpy": 0.1363,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-05T01:13:22.462219",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 2218.4,
+                  "prompt_tokens": 3105,
+                  "completion_tokens": 90,
+                  "cost_jpy": 0.0958,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T01:13:26.750423",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1447.74,
+                  "prompt_tokens": 371,
+                  "completion_tokens": 36,
+                  "cost_jpy": 0.0122,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T01:13:37.278522",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 888.2,
+                  "prompt_tokens": 371,
+                  "completion_tokens": 36,
+                  "cost_jpy": 0.0122,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T01:13:50.306306",
+                  "model": "gpt-5.4-mini",
+                  "path": "missing_info_service",
+                  "latency_ms": 1803.4,
+                  "prompt_tokens": 302,
+                  "completion_tokens": 234,
+                  "cost_jpy": 0.0161,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "肌がかゆい"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_reco"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok",
+            "medicine_recommendation_review": {
+              "eligible_for_advisor": true,
+              "advisor_skill": "medicine-recommendation-advisor",
+              "triage": {
+                "category": "Physical",
+                "subcategory": "feverish",
+                "confidence": 0.96
+              },
+              "recommendation_events": [],
+              "has_medicine_list": false
+            }
+          }
+        ],
+        "evaluation": {
+          "turn_count": 2,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1785892380409230461341 turns=2 grade=good first='肌がかゆい' last='熱っぽい'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "counseling_detail": 1,
+          "chat_flow": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 2,
+          "recommendation_event_count": 0,
+          "turns": [
+            {
+              "timestamp": "2026-08-05T01:13:52.856616",
+              "user_input": "肌がかゆい",
+              "review": {
+                "eligible_for_advisor": true,
+                "advisor_skill": "medicine-recommendation-advisor",
+                "triage": {
+                  "category": "Physical",
+                  "subcategory": "feverish",
+                  "confidence": 0.96
+                },
+                "recommendation_events": [],
+                "has_medicine_list": false
+              }
+            },
+            {
+              "timestamp": "2026-08-05T01:14:10.293770Z",
+              "user_input": "熱っぽい",
+              "review": {
+                "eligible_for_advisor": true,
+                "advisor_skill": "medicine-recommendation-advisor",
+                "triage": {
+                  "category": "Physical",
+                  "subcategory": "feverish",
+                  "confidence": 0.96
+                },
+                "recommendation_events": [],
+                "has_medicine_list": false
+              }
+            }
+          ],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      }
+    ],
+    "intent_mismatches": [],
+    "mismatch_count": 0,
+    "sessions_by_grade": {
+      "good": 1
+    },
+    "physical_recommendation_events": [
+      {
+        "timestamp": "2026-08-05T01:13:25.304Z",
+        "trace_id": "3a7c74e4-6ae8-46c9-85bb-e7f23b512a6e",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 肌がかゆい\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 肌がかゆい\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか"
+      },
+      {
+        "timestamp": "2026-08-05T01:13:28.069Z",
+        "trace_id": "3a7c74e4-6ae8-46c9-85bb-e7f23b512a6e",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 頭痛がする\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 頭痛がする\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか"
+      },
+      {
+        "timestamp": "2026-08-05T01:13:28.863Z",
+        "trace_id": "3a7c74e4-6ae8-46c9-85bb-e7f23b512a6e",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 頭痛い\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 頭痛い\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか →"
+      },
+      {
+        "timestamp": "2026-08-05T01:13:36.392Z",
+        "trace_id": "3ce73b04-a302-4dc9-8c25-70825281840d",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 肌がかゆい\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 肌がかゆい\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか"
+      },
+      {
+        "timestamp": "2026-08-05T01:13:38.978Z",
+        "trace_id": "3ce73b04-a302-4dc9-8c25-70825281840d",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 頭痛がする\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 頭痛がする\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか"
+      },
+      {
+        "timestamp": "2026-08-05T01:13:39.288Z",
+        "trace_id": "3ce73b04-a302-4dc9-8c25-70825281840d",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 頭痛い\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 頭痛い\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか →"
+      },
+      {
+        "timestamp": "2026-08-05T01:13:41.577Z",
+        "trace_id": "3ce73b04-a302-4dc9-8c25-70825281840d",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-08-05T01:13:41.925Z",
+        "trace_id": "3ce73b04-a302-4dc9-8c25-70825281840d",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 熱っぽい\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 熱っぽい\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか "
+      },
+      {
+        "timestamp": "2026-08-05T01:13:46.056Z",
+        "trace_id": "3ce73b04-a302-4dc9-8c25-70825281840d",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 熱っぽい\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 熱っぽい\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか "
+      }
+    ]
+  },
+  "intent_mismatches": [],
+  "intent_review_queue": [],
+  "sessions_by_grade": {
+    "good": 1
+  },
+  "intent_router": {
+    "rows": [
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-08-05T01:13:30.876551",
+        "session_id": "1785892380409230461341",
+        "user_input": "肌がかゆい",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "resolved_by": "guard",
+        "confidence": 0.94,
+        "source": "medicine_context_cold_start_guard",
+        "triage_category": "Physical",
+        "triage_subcategory": "itching"
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-08-05T01:13:33.249172",
+        "session_id": "1785892370895690177498",
+        "user_input": "頭痛がする",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "resolved_by": "guard",
+        "confidence": 0.94,
+        "source": "medicine_context_cold_start_guard",
+        "triage_category": "Physical",
+        "triage_subcategory": "headache"
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-08-05T01:13:33.576506",
+        "session_id": "1785892374721038147507",
+        "user_input": "頭痛い",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "resolved_by": "guard",
+        "confidence": 0.94,
+        "source": "medicine_context_cold_start_guard",
+        "triage_category": "Physical",
+        "triage_subcategory": "headache"
+      },
+      {
+        "log_type": "dialogue_route_shadow",
+        "timestamp": "2026-08-05T01:13:43.290933",
+        "session_id": "1785892367772563828651",
+        "user_input": "熱っぽい",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "sub_route": "fever_flow",
+        "resolved_by": "gate",
+        "confidence": 0.95,
+        "source": "fever_or_symptom_signal",
+        "triage_category": "Physical",
+        "triage_subcategory": "feverish",
+        "dialogue_flags": {
+          "fever_context": true
+        }
+      },
+      {
+        "log_type": "dialogue_route_dispatch",
+        "timestamp": "2026-08-05T01:13:52.568777",
+        "session_id": "1785892380409230461341",
+        "user_input": "肌がかゆい",
+        "handler": "physical_agent",
+        "handled": true,
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "resolved_by": "guard",
+        "confidence": 0.94,
+        "source": "medicine_context_cold_start_guard"
+      },
+      {
+        "log_type": "dialogue_route_execution",
+        "timestamp": "2026-08-05T01:13:52.568907",
+        "session_id": "1785892380409230461341",
+        "user_input": "肌がかゆい",
+        "dispatch_sub_route": "rule_based_recommend",
+        "resolved_concierge_intent": null,
+        "resolved_execution_intent": null,
+        "llm_path": null,
+        "layer_used": "layer2",
+        "mismatch": false,
+        "handler": "physical_agent",
+        "execution_lock": false,
+        "handled": true
+      }
+    ],
+    "shadow_total": 4,
+    "shadow_mismatch": 0,
+    "shadow_mismatch_rate_pct": 0.0,
+    "shadow_improvement_mismatch": 0,
+    "shadow_improvement_mismatch_rate_pct": 0.0,
+    "shadow_regression_mismatch": 0,
+    "shadow_regression_mismatch_rate_pct": 0.0,
+    "shadow_exempt": 0,
+    "shadow_exempt_rate_pct": 0.0,
+    "shadow_by_mismatch_kind": {
+      "agree": 4
+    },
+    "shadow_by_primary_route": {
+      "Physical": 4
+    },
+    "shadow_by_resolved_by": {
+      "guard": 3,
+      "gate": 1
+    },
+    "shadow_with_fever_context_flag": 1,
+    "shadow_with_pending_cancelled_flag": 0,
+    "dispatch_with_fever_context_flag": 0,
+    "dispatch_with_pending_cancelled_flag": 0,
+    "dispatch_total": 1,
+    "dispatch_handled": 1,
+    "dispatch_unhandled": 0,
+    "dispatch_success_rate_pct": 100.0,
+    "dispatch_by_handler": {
+      "physical_agent": 1
+    },
+    "execution_total": 1,
+    "execution_mismatch": 0,
+    "execution_mismatch_rate_pct": 0.0,
+    "execution_by_layer_used": {
+      "layer2": 1
+    },
+    "execution_side_effect_qa": 0,
+    "mismatch_samples": []
+  }
+}

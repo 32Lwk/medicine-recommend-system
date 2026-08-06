@@ -32,3 +32,115 @@
 2026-08-05 00:00:03 [contest-apply] ERROR exit=1
 2026-08-05 00:18:57 [contest-apply] START 8/5 contest scale up (retry) -> contest-apply
 2026-08-05 00:19:10 [contest-apply] START 8/5 contest scale up (retry) -> contest-apply
+2026-08-06 00:00:00 [contest-restore] START 8/6 00:00 JST contest capacity restore (end of 8/5 window) -> contest-restore
+2026-08-06 00:00:08 [contest-restore] ==> Restore contest capacity from /d/Programing/medicine-recommend/scripts/.aws-contest-capacity-state.json
+2026-08-06 00:00:08 [contest-restore] ==> Target: cpu=512 memory=1024 minTasks=1 maxTasks=10 cpuTarget=70%
+2026-08-06 00:00:08 [contest-restore] ==> Describe Express service: medicine-recommend
+2026-08-06 00:00:08 [contest-restore] ==> update-express-gateway-service (cpu/memory/scaling)
+2026-08-06 00:00:08 [contest-restore] -----------------------------
+2026-08-06 00:00:08 [contest-restore] |UpdateExpressGatewayService|
+2026-08-06 00:00:08 [contest-restore] +-----------+---------------+
+2026-08-06 00:00:08 [contest-restore] |    cpu    |    status     |
+2026-08-06 00:00:08 [contest-restore] +-----------+---------------+
+2026-08-06 00:00:08 [contest-restore] |  None     |  ACTIVE       |
+2026-08-06 00:00:08 [contest-restore] +-----------+---------------+
+2026-08-06 00:00:08 [contest-restore] ==> Application Auto Scaling: MinCapacity=1
+2026-08-06 00:00:08 [contest-restore] --------------------------------
+2026-08-06 00:00:08 [contest-restore] |    RegisterScalableTarget    |
+2026-08-06 00:00:08 [contest-restore] +--------------+---------------+
+2026-08-06 00:00:08 [contest-restore] |  MaxCapacity |  MinCapacity  |
+2026-08-06 00:00:08 [contest-restore] +--------------+---------------+
+2026-08-06 00:00:08 [contest-restore] |  None        |  None         |
+2026-08-06 00:00:08 [contest-restore] +--------------+---------------+
+2026-08-06 00:00:08 [contest-restore] 
+2026-08-06 00:00:08 [contest-restore] Done. Wait 3-6 min for 2 tasks on 512/1024.
+2026-08-06 00:00:09 [contest-restore]   aws ecs describe-services --cluster default --services medicine-recommend --query 'services[0].{desired:desiredCount,running:runningCount}'
+2026-08-06 00:00:09 [contest-restore]   curl -s https://aws.medicine.yutok.dev/health
+2026-08-06 00:00:09 [contest-restore] Traceback (most recent call last):
+2026-08-06 00:00:09 [contest-restore]   File "<stdin>", line 2, in <module>
+2026-08-06 00:00:09 [contest-restore] FileNotFoundError: [Errno 2] No such file or directory: '/d/Programing/medicine-recommend/scripts/.aws-contest-capacity-state.json'
+2026-08-06 00:00:09 [contest-restore] ERROR exit=1
+2026-08-06 00:25:29 [contest-restore] START manual diagnostic test -> contest-restore
+2026-08-06 00:25:36 [contest-restore] ==> Restore contest capacity from /d/Programing/medicine-recommend/scripts/.aws-contest-capacity-state.json
+2026-08-06 00:25:36 [contest-restore] ==> Target: cpu=512 memory=1024 minTasks=1 maxTasks=10 cpuTarget=70%
+2026-08-06 00:25:36 [contest-restore] ==> Describe Express service: medicine-recommend
+2026-08-06 00:25:36 [contest-restore] ==> update-express-gateway-service (cpu/memory/scaling)
+2026-08-06 00:25:36 [contest-restore] -----------------------------
+2026-08-06 00:25:36 [contest-restore] |UpdateExpressGatewayService|
+2026-08-06 00:25:36 [contest-restore] +-----------+---------------+
+2026-08-06 00:25:36 [contest-restore] |    cpu    |    status     |
+2026-08-06 00:25:36 [contest-restore] +-----------+---------------+
+2026-08-06 00:25:36 [contest-restore] |  None     |  ACTIVE       |
+2026-08-06 00:25:36 [contest-restore] +-----------+---------------+
+2026-08-06 00:25:36 [contest-restore] ==> Application Auto Scaling: MinCapacity=1
+2026-08-06 00:25:36 [contest-restore] --------------------------------
+2026-08-06 00:25:36 [contest-restore] |    RegisterScalableTarget    |
+2026-08-06 00:25:36 [contest-restore] +--------------+---------------+
+2026-08-06 00:25:36 [contest-restore] |  MaxCapacity |  MinCapacity  |
+2026-08-06 00:25:36 [contest-restore] +--------------+---------------+
+2026-08-06 00:25:36 [contest-restore] |  None        |  None         |
+2026-08-06 00:25:36 [contest-restore] +--------------+---------------+
+2026-08-06 00:25:36 [contest-restore] 
+2026-08-06 00:25:36 [contest-restore] Done. Wait 3-6 min for 2 tasks on 512/1024.
+2026-08-06 00:25:36 [contest-restore]   aws ecs describe-services --cluster default --services medicine-recommend --query 'services[0].{desired:desiredCount,running:runningCount}'
+2026-08-06 00:25:36 [contest-restore]   curl -s https://aws.medicine.yutok.dev/health
+2026-08-06 00:25:36 [contest-restore] Traceback (most recent call last):
+2026-08-06 00:25:36 [contest-restore]   File "<stdin>", line 2, in <module>
+2026-08-06 00:25:36 [contest-restore] FileNotFoundError: [Errno 2] No such file or directory: '/d/Programing/medicine-recommend/scripts/.aws-contest-capacity-state.json'
+2026-08-06 00:25:36 [contest-restore] ERROR exit=1
+2026-08-06 00:28:24 [contest-restore] START manual restore after path fix -> contest-restore
+2026-08-06 00:28:35 [contest-restore] ==> Restore contest capacity from /d/Programing/medicine-recommend/scripts/.aws-contest-capacity-state.json
+2026-08-06 00:28:35 [contest-restore] ==> Target: cpu=512 memory=1024 minTasks=1 maxTasks=10 cpuTarget=70%
+2026-08-06 00:28:35 [contest-restore] ==> Describe Express service: medicine-recommend
+2026-08-06 00:28:35 [contest-restore] ==> update-express-gateway-service (cpu/memory/scaling)
+2026-08-06 00:28:35 [contest-restore] -----------------------------
+2026-08-06 00:28:35 [contest-restore] |UpdateExpressGatewayService|
+2026-08-06 00:28:35 [contest-restore] +-----------+---------------+
+2026-08-06 00:28:35 [contest-restore] |    cpu    |    status     |
+2026-08-06 00:28:35 [contest-restore] +-----------+---------------+
+2026-08-06 00:28:35 [contest-restore] |  None     |  ACTIVE       |
+2026-08-06 00:28:35 [contest-restore] +-----------+---------------+
+2026-08-06 00:28:35 [contest-restore] ==> Application Auto Scaling: MinCapacity=1
+2026-08-06 00:28:35 [contest-restore] --------------------------------
+2026-08-06 00:28:35 [contest-restore] |    RegisterScalableTarget    |
+2026-08-06 00:28:35 [contest-restore] +--------------+---------------+
+2026-08-06 00:28:35 [contest-restore] |  MaxCapacity |  MinCapacity  |
+2026-08-06 00:28:35 [contest-restore] +--------------+---------------+
+2026-08-06 00:28:35 [contest-restore] |  None        |  None         |
+2026-08-06 00:28:35 [contest-restore] +--------------+---------------+
+2026-08-06 00:28:35 [contest-restore] 
+2026-08-06 00:28:35 [contest-restore] Done. Wait 3-6 min for 2 tasks on 512/1024.
+2026-08-06 00:28:35 [contest-restore]   aws ecs describe-services --cluster default --services medicine-recommend --query 'services[0].{desired:desiredCount,running:runningCount}'
+2026-08-06 00:28:35 [contest-restore]   curl -s https://aws.medicine.yutok.dev/health
+2026-08-06 00:28:35 [contest-restore] ==> WAF medicine-recommend-web-acl: 10000 -> 2000 req / 5min / IP
+2026-08-06 00:28:35 [contest-restore] ------------------
+2026-08-06 00:28:35 [contest-restore] |  UpdateWebACL  |
+2026-08-06 00:28:35 [contest-restore] +-------+--------+
+2026-08-06 00:28:35 [contest-restore] |  ARN  | Name   |
+2026-08-06 00:28:35 [contest-restore] +-------+--------+
+2026-08-06 00:28:35 [contest-restore] |  None |  None  |
+2026-08-06 00:28:35 [contest-restore] +-------+--------+
+2026-08-06 00:28:35 [contest-restore] Done. WAF rate limit is now 2000/5min/IP.
+2026-08-06 00:28:35 [contest-restore] ------------------------
+2026-08-06 00:28:35 [contest-restore] |     UpdateService    |
+2026-08-06 00:28:35 [contest-restore] +----------+-----------+
+2026-08-06 00:28:35 [contest-restore] |  desired |  running  |
+2026-08-06 00:28:35 [contest-restore] +----------+-----------+
+2026-08-06 00:28:35 [contest-restore] |  1       |  20       |
+2026-08-06 00:28:35 [contest-restore] +----------+-----------+
+2026-08-06 00:28:35 [contest-restore] Restored.
+2026-08-06 00:33:40 [stop] START 8/6 post-contest stop -> stop
+2026-08-06 00:33:44 [stop] ==> AWS staging stop (reversible)
+2026-08-06 00:33:44 [stop]     cluster=default service=medicine-recommend region=ap-northeast-1
+2026-08-06 00:33:44 [stop]     current desiredCount=1
+2026-08-06 00:33:44 [stop] {
+2026-08-06 00:33:44 [stop]     "desired": 0,
+2026-08-06 00:33:44 [stop]     "running": 1
+2026-08-06 00:33:44 [stop] }
+2026-08-06 00:33:44 [stop] 
+2026-08-06 00:33:44 [stop] Stopped. State saved: scripts/.aws-staging-stop-state.json
+2026-08-06 00:33:44 [stop] Resume: ./scripts/resume-aws-staging.sh
+2026-08-06 00:33:44 [stop] 
+2026-08-06 00:33:44 [stop] Note: ALB / Managed Bedrock KB / Secrets / CodePipeline base fee still incur charges.
+2026-08-06 00:40:05 [contest-restore] DONE manual restore after path fix
+2026-08-06 00:40:07 [stop] DONE 8/6 post-contest stop

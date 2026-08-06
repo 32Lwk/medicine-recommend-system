@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-08-05T11:09:59",
+  "metadata_path": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\metadata.json",
+  "sections": {
+    "metadata": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\metadata.json",
+    "errors_http": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sections\\errors_http.json",
+    "pipeline_perf": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sections\\pipeline_perf.json",
+    "llm_cost": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sections\\llm_cost.json",
+    "deploy_revision": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sections\\deploy_revision.json",
+    "db_neon": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sections\\db_neon.json",
+    "line_webhook": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sections\\line_webhook.json",
+    "chat_flow": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sections\\chat_flow.json",
+    "user_sessions": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sections\\user_sessions.json",
+    "misc_signals": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sections\\misc_signals.json",
+    "manifest": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\manifest.json"
+  },
+  "analysis_groups": {
+    "infra_errors": [
+      "errors_http",
+      "deploy_revision"
+    ],
+    "performance_cost": [
+      "pipeline_perf",
+      "llm_cost"
+    ],
+    "conversation_quality": [
+      "chat_flow",
+      "user_sessions"
+    ],
+    "integrations": [
+      "line_webhook",
+      "db_neon",
+      "misc_signals"
+    ]
+  },
+  "conversation_quality_focus": {
+    "session_timelines": "user_sessions.session_conversations.sessions",
+    "conversation_history": "sessions[].conversation_history / turns[].conversation_history",
+    "heuristic_hints": "user_sessions.intent_mismatches (LLM must re-judge)",
+    "physical_advisor": "sessions[].physical_recommendation_summary",
+    "quality_summary": "quality_metrics.json"
+  },
+  "session_transcripts": {
+    "1785892363748640562488": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sessions\\1785892363748640562488.md",
+    "1785890421194005681438": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sessions\\1785890421194005681438.md",
+    "1785892365553487814128": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sessions\\1785892365553487814128.md",
+    "1785892367772563828651": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sessions\\1785892367772563828651.md",
+    "1785892370895690177498": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sessions\\1785892370895690177498.md",
+    "1785892374721038147507": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sessions\\1785892374721038147507.md",
+    "1785892376941414913484": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sessions\\1785892376941414913484.md",
+    "1785892380409230461341": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sessions\\1785892380409230461341.md",
+    "1785892416886105725292": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sessions\\1785892416886105725292.md",
+    "1785892798329357348510": "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-aws-logs-20260805-20260805-20260805-020929\\sessions\\1785892798329357348510.md"
+  },
+  "platform": "aws"
+}
