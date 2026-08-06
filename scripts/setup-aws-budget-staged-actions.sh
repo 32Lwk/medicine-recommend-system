@@ -259,7 +259,7 @@ done
 
 # --- Output for console setup ---
 OUT_FILE="$ROOT/scripts/.aws-budget-staged-actions.json"
-python3 - "${OUT_FILE}" "${LAMBDA_ARN}" "${STAGES[@]}" <<'PY'
+AWS_ACCOUNT_ID="$AWS_ACCOUNT_ID" AWS_REGION="$AWS_REGION" python3 - "${OUT_FILE}" "${LAMBDA_ARN}" "${STAGES[@]}" <<'PY'
 import json, sys, os
 
 out_file = sys.argv[1]
