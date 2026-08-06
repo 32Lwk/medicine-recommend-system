@@ -77,3 +77,19 @@ resolve_target_group_arn() {
     --query 'services[0].loadBalancers[0].targetGroupArn' \
     --output text 2>/dev/null || true
 }
+
+# ECS Express 既定 HTTPS エンドポイント（カスタムドメイン TLS 未設定時のフォールバック）
+resolve_express_staging_url() {
+  local service_arn endpoint
+  service_arn="arn:aws:ecs:${AWS_REGION}:${AWS_ACCOUNT_ID}:service/${ECS_CLUSTER}/${ECS_SERVICE}"
+  endpoint="$(aws ecs describe-express-gateway-service \
+    --service-arn "$service_arn" \
+    --region "$AWS_REGION" \
+    --query 'service.activeConfigurations[0].ingressPaths[0].endpoint' \
+    --output text 2>/dev/null || true)"
+  if [[ -n "$endpoint" && "$endpoint" != "None" ]]; then
+    printf '%s' "${endpoint%/}"
+    return 0
+  fi
+  return 1
+}

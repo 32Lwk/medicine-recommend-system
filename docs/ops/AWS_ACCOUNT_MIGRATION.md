@@ -87,31 +87,33 @@ runtime critical（`620992446973` に更新済み）:
 
 ## 未完了（手動作業）
 
-### 1. DNS + TLS（必須 — 一部完了）
+### 1. DNS + TLS — **完了（2026-08-06）**
 
-**ルーティング**: ALB リスナールールに `aws.medicine.yutok.dev` を追加済み。
-`curl -sk https://aws.medicine.yutok.dev/health` → 200 を確認。
+| 項目 | 状態 |
+|------|------|
+| ACM 証明書 | **ISSUED** — `arn:aws:acm:ap-northeast-1:620992446973:certificate/149784c5-8abc-4a09-85b7-7c3b47390061` |
+| ALB HTTPS リスナー | カスタム証明書アタッチ済み |
+| Host ヘッダールール | `aws.medicine.yutok.dev` + Express 既定 URL |
+| HTTPS 検証 | `curl -s https://aws.medicine.yutok.dev/health` → 200 |
 
-**HTTPS 証明書**: ACM 証明書をリクエスト済み（`PENDING_VALIDATION`）。
-Cloudflare DNS に以下の **検証用 CNAME** を追加してください:
+**原因（HTTPS 証明書エラー / post_build 失敗）**
 
-| 名前 | 種別 | 値 |
-|------|------|-----|
-| `_0dfb8f7f451aaeade6991e4766110019.aws.medicine` | CNAME | `_39a5751a02c24342241bd6e36aa285ba.jkddzztszm.acm-validations.aws.` |
+1. ACM は **ISSUED** だったが、ALB 443 リスナーに **未アタッチ**（`InUseBy: []`）
+2. CodeBuild の `wait-staging-health-commit.sh` が `https://aws.medicine.yutok.dev/health` に `curl -sf` するが、TLS 検証失敗で 420 秒タイムアウト → post_build Failed
 
-（Cloudflare では `_0dfb8f7f451aaeade6991e4766110019.aws.medicine.yutok.dev` として追加）
-
-ISSUED になったら:
+**実施した対処**
 
 ```bash
 AWS_PROFILE=default ./scripts/setup-aws-custom-domain.sh
 ```
 
-**推奨 DNS（最終形）**: CNAME を Express 既定 URL ではなく **ALB DNS** へ:
+**推奨 DNS（任意）** — 現状 Express CNAME でも TLS は動作するが、ALB 直 CNAME が推奨:
 
 ```
 aws.medicine.yutok.dev → ecs-express-gateway-alb-7a197fcf-1310163209.ap-northeast-1.elb.amazonaws.com
 ```
+
+**再発防止**: `wait-staging-health-commit.sh` に Express 既定 URL フォールバックを追加（カスタムドメイン TLS 未設定時もデプロイ確認可能）。
 
 ### 2. CodeStar GitHub OAuth — **完了**
 
@@ -156,6 +158,8 @@ Express Gateway の ALB が `elbv2 describe-load-balancers` に表示された�
 | `exec ./start.sh: no such file` | Windows CRLF | Dockerfile の `sed -i 's/\r$//'` + `CMD ["bash","./start.sh"]` |
 | CodePipeline setup 失敗（Windows） | `/tmp` パス | `setup-aws-codepipeline.sh` の `aws_file_arg()` 使用 |
 | 503（CANARY 中） | デプロイ bake 3+3 分 | 数分待って `/health` 再確認 |
+| HTTPS 証明書エラー（`SEC_E_WRONG_PRINCIPAL`） | ACM が ISSUED でも ALB リスナー未アタッチ | `./scripts/setup-aws-custom-domain.sh` を再実行 |
+| post_build Failed（`/health` 420s タイムアウト） | 上記 TLS 未設定で `curl -sf` 失敗 | カスタムドメイン TLS 設定後に Pipeline 再実行 |
 
 ## 検証
 

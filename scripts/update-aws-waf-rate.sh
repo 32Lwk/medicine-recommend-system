@@ -13,6 +13,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 source "$ROOT/scripts/lib/aws_common.sh"
 
 STATE_FILE="$ROOT/scripts/.aws-contest-capacity-state.json"
+PY_STATE_FILE="$(to_win_path "$STATE_FILE")"
 WEB_ACL_NAME="${WAF_WEB_ACL_NAME:-${PROJECT_PREFIX}-web-acl}"
 DRY_RUN=false
 RESTORE=false
@@ -30,7 +31,7 @@ if [[ "$RESTORE" == true && -z "$RATE_LIMIT" ]]; then
     echo "ERROR: $STATE_FILE not found (run prepare-aws-contest-capacity.sh --apply first)" >&2
     exit 1
   fi
-  RATE_LIMIT="$(python3 - "$STATE_FILE" <<'PY'
+  RATE_LIMIT="$(python3 - "$PY_STATE_FILE" <<'PY'
 import json, sys
 with open(sys.argv[1], encoding="utf-8") as f:
     d = json.load(f)

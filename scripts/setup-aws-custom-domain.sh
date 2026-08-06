@@ -128,6 +128,18 @@ aws elbv2 modify-rule \
 echo "    rule updated: ${EXPRESS_HOST}, ${CUSTOM_DOMAIN}"
 
 echo ""
+echo "==> Verify HTTPS (custom domain)"
+if curl -sf "https://${CUSTOM_DOMAIN}/health" >/dev/null 2>&1; then
+  echo "    OK https://${CUSTOM_DOMAIN}/health"
+else
+  echo "WARN: https://${CUSTOM_DOMAIN}/health failed (TLS or DNS not ready yet)" >&2
+  echo "      Ensure ACM is ISSUED and DNS CNAME points to ALB or Express URL:" >&2
+  echo "        ${CUSTOM_DOMAIN} -> ${ALB_DNS}" >&2
+  echo "      Re-run after DNS/TLS propagation." >&2
+  exit 1
+fi
+
+echo ""
 echo "=== Done ==="
-echo "DNS (Cloudflare): ${CUSTOM_DOMAIN} CNAME -> ${ALB_DNS}"
+echo "DNS (Cloudflare): ${CUSTOM_DOMAIN} CNAME -> ${ALB_DNS} (or Express host ${EXPRESS_HOST})"
 echo "Verify: curl -s https://${CUSTOM_DOMAIN}/health"
