@@ -1,121 +1,69 @@
-# AWS ステージング — アクセス時自動起動（Wake on Access）
+# AWS ステージング — Cloud Run 型運用（Wake + 自動 Stop）
 
-> **前提**: ECS コールド停止中（`stop-aws-staging.sh`）  
-> **方式**: Cloudflare Worker → Lambda Function URL → ECS 起動
+> **入口 URL（これだけブックマーク）**: `https://aws-medicine.yutok.dev`  
+> **方式**: Cloudflare Worker → Lambda wake / touch → ECS。アイドル 30 分で自動停止。
 
-## URL の使い分け
+## Cloud Run との対応
 
-| URL | DNS | 用途 |
-|-----|-----|------|
-| `https://aws.medicine.yutok.dev` | **DNS only（灰色雲）** | 通常のステージング URL（CI/CD・E2E・本番同等）。ECS 稼働中のみ利用 |
-| `https://aws-medicine.yutok.dev` | **Proxied（オレンジ雲）** | **Wake on Access** — 停止中にアクセスすると自動起動 |
+| Cloud Run | AWS ステージング（本構成） |
+|-----------|---------------------------|
+| アクセスで自動起動 | ✅ Worker → wake Lambda |
+| 同じ URL で待機→表示 | ✅ `/health` ポーリング後に同一 URL で UI |
+| アイドルで自動 0 | ✅ EventBridge + idle-stop Lambda（30 分） |
+| 手動 stop / resume 不要 | ✅ 不要 |
+| 固定費ゼロ | ❌ ALB ~$18–28/月 は残る |
 
-`aws.medicine.yutok.dev` は 2 段サブドメインのため Cloudflare 無料 Universal SSL の対象外。**Worker + Proxied は `aws-medicine.yutok.dev`（1 段）を使う。**
+`aws.medicine.yutok.dev` は **CI/E2E 用レガシー URL**（DNS only）。日常利用は **`aws-medicine.yutok.dev` のみ**。
 
 ## 仕組み
 
 ```
-ユーザー → aws-medicine.yutok.dev (Cloudflare Worker, Proxied)
-              ↓ Express origin が 503 / 接続失敗
-              ↓ Lambda wake（非同期）
-              ↓ 「起動中」HTML（15秒ごと自動更新）
-         3〜6 分後 → 通常のステージング UI
+https://aws-medicine.yutok.dev (Worker, Proxied)
+    ↓ origin 503 → wake Lambda（ECS 起動）
+    ↓ 「起動中」→ /health ポーリング → 同一 URL でアプリ表示
+    ↓ 利用中 → touch Lambda（SSM last-activity 更新）
+    ↓ 30 分アイドル → idle-stop Lambda（ECS desired=0）
 ```
 
 | コンポーネント | 役割 |
 |----------------|------|
-| `workers/src/index.js` | 503 検知 → wake API 呼び出し → 待機ページ |
-| Lambda `medicine-recommend-wake-staging` | ECS min/max/desired 復元 + タスク起動 |
-| `scripts/setup-aws-wake-staging.sh` | Lambda / IAM / Function URL 作成 |
+| `workers/src/index.js` | プロキシ・wake・touch・Legacy Host リダイレクト書換 |
+| Lambda `medicine-recommend-wake-staging` | wake / touch / SSM activity |
+| Lambda `medicine-recommend-idle-stop-staging` | 10 分毎チェック → 30 分アイドルで stop |
+| SSM `/medicine-recommend/staging/last-activity` | 最終アクセス時刻 |
 
-## 1. AWS 側セットアップ
+## セットアップ
+
+### AWS
 
 ```bash
 AWS_PROFILE=default ./scripts/setup-aws-wake-staging.sh
+AWS_PROFILE=default ./scripts/setup-aws-idle-stop-staging.sh
+# IDLE_MINUTES=45 ./scripts/setup-aws-idle-stop-staging.sh  # 任意
 ```
 
-生成物:
-
-- Lambda + Function URL
-- `scripts/.aws-wake-staging.json`（**WAKE_TOKEN 含む — Git にコミットしない**）
-
-## 2. Cloudflare DNS（`aws-medicine.yutok.dev`）
-
-**DNS** → `yutok.dev` でレコード追加:
+### Cloudflare
 
 | 項目 | 値 |
 |------|-----|
-| Type | CNAME |
-| Name | `aws-medicine` |
-| Target | ALB DNS（`aws.medicine` と同じ。例: `ecs-express-gateway-alb-....elb.amazonaws.com`） |
-| Proxy | **Proxied（オレンジ雲）** |
+| DNS `aws-medicine` | CNAME → ALB、**Proxied** |
+| Worker Route | `aws-medicine.yutok.dev/*` |
+| Runtime Secret | `WAKE_TOKEN` のみ（`ORIGIN_URL`/`WAKE_API_URL` は wrangler.toml） |
 
-`aws.medicine` は **DNS only のまま**変更不要。
+Git デプロイ: Root `workers`, Deploy `npm install && npx wrangler deploy`
 
-## 3. Cloudflare Worker デプロイ
+## 使い方
 
-### 方式 A — Dashboard（Git 連携・推奨）
-
-| 項目 | 値 |
-|------|-----|
-| Project name | `aws-staging-wake` |
-| Root directory | `workers` |
-| Production branch | `main` |
-| Deploy command | `npm install && npx wrangler deploy` |
-
-**Secrets** — **Settings ページ上部**の **Variables and secrets**（**Build 内ではない**）:
-
-| Variable name | Type | Value |
-|---------------|------|-------|
-| `WAKE_TOKEN` | Secret | Lambda の WAKE_TOKEN |
-
-`ORIGIN_URL` と `WAKE_API_URL` は `workers/wrangler.toml` の `[vars]` に含まれ Git デプロイで自動設定。
-
-> **注意**: Build → Variables and secrets は **ビルド時のみ** で runtime には渡りません（[Cloudflare 公式](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/)）。
-
-Route `aws-medicine.yutok.dev/*` は `workers/wrangler.toml` で設定。**main push 後に再デプロイ**。
-
-### 方式 B — エディタ直接
-
-1. Workers & Pages → `aws-staging-wake` → コードを `workers/src/index.js` で置換
-2. Runtime Secret: `WAKE_TOKEN` のみ（Settings 上部の Variables and secrets）
-3. **Triggers → Routes**: `aws-medicine.yutok.dev/*`（旧 `aws.medicine.yutok.dev/*` は削除）
-
-## 4. 動作確認
+1. ブラウザで `https://aws-medicine.yutok.dev` を開く（停止中でも OK）
+2. 起動中ページ → 数分後 **同じ URL** でアプリが表示される
+3. 30 分操作がなければ **自動停止**（次回アクセスで再 wake）
 
 ```bash
+# 手動 stop（通常不要）
 ./scripts/stop-aws-staging.sh
-
-# Wake URL（停止中にこちらを開く）
-open https://aws-medicine.yutok.dev
-# → 「起動中」ページ → 数分後に通常表示
-
-curl -s https://aws-medicine.yutok.dev/health
-# {"status":"starting","eta_seconds":180} → ok
-
-# 従来 URL（ECS 稼働中のみ）
-curl -s https://aws.medicine.yutok.dev/health
 ```
-
-手動 wake（Worker なし）:
-
-```bash
-# scripts/.aws-wake-staging.json の function_url / wake_token を使用
-curl -s -X POST "$WAKE_API_URL" -H "X-Wake-Token: $WAKE_TOKEN"
-```
-
-## コスト
-
-| 項目 | 停止中 | アクセス後（タスク稼働中） |
-|------|--------|---------------------------|
-| **Lambda wake** | $0 | 約 **$0**（月数百回まで無料枠内） |
-| **Cloudflare Worker** | $0 | 無料枠 10万 req/日 |
-| **Fargate 512/1024 ×1** | $0 | **~$0.03/時** |
-| **ALB 固定** | ~$18–28/月 | 同左 |
-
-終了後は `./scripts/stop-aws-staging.sh`。
 
 ## 関連
 
-- [AWS_COST_PLAN.md](./AWS_COST_PLAN.md) — 月次試算
-- [AWS_ACCOUNT_MIGRATION.md](./AWS_ACCOUNT_MIGRATION.md) — コールドスタート運用
+- [AWS_COST_PLAN.md](./AWS_COST_PLAN.md)
+- [AWS_ACCOUNT_MIGRATION.md](./AWS_ACCOUNT_MIGRATION.md)

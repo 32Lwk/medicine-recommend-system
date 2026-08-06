@@ -253,14 +253,12 @@ aws wafv2 delete-web-acl \
 - **必須**: ECS `desiredCount=0`、CodePipeline 停止（稼働中タスクがあると **二重で Fargate 課金**）
 - 新アカウント安定後（目安 30 日）に再評価
 
-## 9. アクセス時自動起動（Wake on Access）
+## 9. アクセス時自動起動 + アイドル自動停止
 
-**Lambda + Cloudflare Worker** で 503 時に ECS を自動起動。詳細: [AWS_WAKE_ON_ACCESS.md](./AWS_WAKE_ON_ACCESS.md)
+**Cloud Run 型運用** — 入口は `https://aws-medicine.yutok.dev` のみ。詳細: [AWS_WAKE_ON_ACCESS.md](./AWS_WAKE_ON_ACCESS.md)
 
 | 項目 | コスト |
 |------|--------|
-| Lambda / Worker | **ほぼ $0**（無料枠内） |
-| 起動後 Fargate | **~$0.03/時**（手動 resume と同じ） |
-| 放置すると | 24h 稼働で **~+$23/月** → 終了後 `stop-aws-staging.sh` |
-
-**Cloudflare DNS**: Wake URL は **`aws-medicine.yutok.dev`（Proxied）**。従来の `aws.medicine.yutok.dev` は DNS only のまま。詳細: [AWS_WAKE_ON_ACCESS.md](./AWS_WAKE_ON_ACCESS.md)
+| Lambda wake / idle-stop / Worker | **ほぼ $0** |
+| 起動後 Fargate | **~$0.03/時**（アイドル 30 分で自動 stop） |
+| ALB 固定 | **~$18–28/月**（ECS=0 でも残る） |

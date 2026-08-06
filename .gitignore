@@ -12,6 +12,7 @@ scripts/.aws-bedrock-kb-env
 scripts/.aws-redis-url
 scripts/.aws-personalize-env
 scripts/.aws-wake-staging.json
+scripts/.aws-idle-stop-staging.json
 *.log
 !log/
 !log/**

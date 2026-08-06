@@ -10,6 +10,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=lib/aws_common.sh
 source "$ROOT/scripts/lib/aws_common.sh"
+# shellcheck source=lib/bundle_lambda.sh
+source "$ROOT/scripts/lib/bundle_lambda.sh"
 
 DRY_RUN=false
 [[ "${1:-}" == "--dry-run" ]] && DRY_RUN=true
@@ -74,6 +76,11 @@ cat > "$INLINE_POLICY" <<EOFPOL
       "Effect": "Allow",
       "Action": ["codepipeline:EnableStageTransition"],
       "Resource": "arn:aws:codepipeline:${AWS_REGION}:${AWS_ACCOUNT_ID}:${PIPELINE_NAME}"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["ssm:PutParameter", "ssm:GetParameter"],
+      "Resource": "arn:aws:ssm:${AWS_REGION}:${AWS_ACCOUNT_ID}:parameter/medicine-recommend/staging/*"
     }
   ]
 }
@@ -107,16 +114,7 @@ PY
 fi
 
 ZIP_FILE="${HANDLER_DIR}/.lambda-wake-bundle.zip"
-PY_HANDLER="$(to_win_path "$HANDLER_DIR")"
-PY_ZIP="$(to_win_path "$ZIP_FILE")"
-python3 - "$PY_HANDLER" "$PY_ZIP" <<'PY'
-import sys, zipfile
-from pathlib import Path
-handler_dir = Path(sys.argv[1])
-zip_path = Path(sys.argv[2])
-with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-    zf.write(handler_dir / "handler.py", "handler.py")
-PY
+bundle_lambda_zip "$HANDLER_DIR" "$ZIP_FILE"
 ZIP_ARG="fileb://${ZIP_FILE}"
 if command -v cygpath >/dev/null 2>&1; then
   ZIP_ARG="fileb://$(cygpath -w "$ZIP_FILE")"

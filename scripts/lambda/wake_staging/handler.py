@@ -1,14 +1,9 @@
 """
 Wake medicine-recommend AWS staging (ECS Express) on demand.
 
-Invoked by Cloudflare Worker when origin returns 503. Idempotent: if tasks
-are already running, returns ready immediately.
-
-Env:
-  WAKE_TOKEN          — shared secret (required for Function URL calls)
-  ENABLE_PIPELINE_ON_WAKE — "true" to re-enable CodePipeline Source transition
-  ECS_CLUSTER, ECS_SERVICE, AWS_REGION, AWS_ACCOUNT_ID
-  WAKE_MIN_CAPACITY, WAKE_MAX_CAPACITY, WAKE_DESIRED_COUNT (defaults 1/1/1)
+Actions (JSON body):
+  wake  — default; scale ECS up if stopped
+  touch — update last-activity timestamp only (idle auto-stop)
 """
 from __future__ import annotations
 
@@ -18,6 +13,7 @@ import os
 from typing import Any
 
 import boto3
+from common.staging_activity import touch_activity
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -65,10 +61,27 @@ def _extract_token(event: dict[str, Any]) -> str:
     return token.strip()
 
 
+def _parse_body(event: dict[str, Any]) -> dict[str, Any]:
+    raw = event.get("body")
+    if not raw:
+        return {}
+    try:
+        return json.loads(raw) if isinstance(raw, str) else {}
+    except json.JSONDecodeError:
+        return {}
+
+
 def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     if WAKE_TOKEN and _extract_token(event) != WAKE_TOKEN:
         logger.warning("wake rejected: bad token")
         return _unauthorized()
+
+    body = _parse_body(event)
+    action = (body.get("action") or "wake").lower()
+
+    if action == "touch":
+        ts = touch_activity()
+        return _response(200, {"status": "touched", "last_activity": ts})
 
     ecs = boto3.client("ecs", region_name=REGION)
     autoscaling = boto3.client("application-autoscaling", region_name=REGION)
@@ -82,11 +95,13 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
     running = int(service.get("runningCount", 0))
 
     if desired >= DESIRED and running >= 1:
+        ts = touch_activity()
         return _response(200, {
             "status": "ready",
             "desired": desired,
             "running": running,
             "eta_seconds": 0,
+            "last_activity": ts,
         })
 
     logger.info("wake start desired=%s running=%s target=%s", desired, running, DESIRED)
@@ -116,10 +131,12 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
         desiredCount=DESIRED,
     )
 
+    ts = touch_activity()
     return _response(202, {
         "status": "starting",
         "desired": DESIRED,
         "running": running,
         "eta_seconds": 180,
+        "last_activity": ts,
         "message": "ECS tasks starting — retry /health in 3–6 minutes",
     })
