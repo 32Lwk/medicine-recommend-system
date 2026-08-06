@@ -63,22 +63,22 @@ AWS_PROFILE=default ./scripts/setup-aws-wake-staging.sh
 | Production branch | `main` |
 | Deploy command | `npm install && npx wrangler deploy` |
 
-**Secrets**（3 つ）:
+**Secrets** — **Settings ページ上部**の **Variables and secrets**（**Build 内ではない**）:
 
-| Variable name | Value |
-|---------------|-------|
-| `WAKE_API_URL` | Lambda Function URL |
-| `WAKE_TOKEN` | Lambda の WAKE_TOKEN |
-| `ORIGIN_URL` | Express 直 URL（Worker ホスト名ではない） |
+| Variable name | Type | Value |
+|---------------|------|-------|
+| `WAKE_TOKEN` | Secret | Lambda の WAKE_TOKEN |
 
-`ORIGIN_URL` 例: `https://me-9585b72a360742069939f7e74bb4bb46.ecs.ap-northeast-1.on.aws`
+`ORIGIN_URL` と `WAKE_API_URL` は `workers/wrangler.toml` の `[vars]` に含まれ Git デプロイで自動設定。
+
+> **注意**: Build → Variables and secrets は **ビルド時のみ** で runtime には渡りません（[Cloudflare 公式](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/)）。
 
 Route `aws-medicine.yutok.dev/*` は `workers/wrangler.toml` で設定。**main push 後に再デプロイ**。
 
 ### 方式 B — エディタ直接
 
 1. Workers & Pages → `aws-staging-wake` → コードを `workers/src/index.js` で置換
-2. Secrets 3 つ（上記）
+2. Runtime Secret: `WAKE_TOKEN` のみ（Settings 上部の Variables and secrets）
 3. **Triggers → Routes**: `aws-medicine.yutok.dev/*`（旧 `aws.medicine.yutok.dev/*` は削除）
 
 ## 4. 動作確認
