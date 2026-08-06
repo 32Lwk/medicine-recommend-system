@@ -259,14 +259,15 @@ done
 
 # --- Output for console setup ---
 OUT_FILE="$ROOT/scripts/.aws-budget-staged-actions.json"
-AWS_ACCOUNT_ID="$AWS_ACCOUNT_ID" AWS_REGION="$AWS_REGION" python3 - "${OUT_FILE}" "${LAMBDA_ARN}" "${STAGES[@]}" <<'PY'
-import json, sys, os
+PY_OUT="$(to_win_path "$OUT_FILE")"
+python3 - "$PY_OUT" "$LAMBDA_ARN" "$AWS_ACCOUNT_ID" "$AWS_REGION" "${STAGES[@]}" <<'PY'
+import json, sys
 
 out_file = sys.argv[1]
 lambda_arn = sys.argv[2]
-stages = sys.argv[3:]
-region = os.environ.get("AWS_REGION", "ap-northeast-1")
-account = os.environ.get("AWS_ACCOUNT_ID", "620992446973")
+account = sys.argv[3]
+region = sys.argv[4]
+stages = sys.argv[5:]
 
 labels = {
     "stage1": {"threshold": "60%", "type": "予測", "actions": "Fargate 512/1024"},

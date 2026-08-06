@@ -1,33 +1,33 @@
 {
-  "lambda_arn": "arn:aws:lambda:ap-northeast-1:290780119994:function:medicine-recommend-budget-action",
+  "lambda_arn": "arn:aws:lambda:ap-northeast-1:620992446973:function:medicine-recommend-budget-action",
   "lambda_name": "medicine-recommend-budget-action",
   "stages": {
     "stage1": {
-      "sns_topic_arn": "arn:aws:sns:ap-northeast-1:290780119994:medicine-recommend-budget-stage1",
+      "sns_topic_arn": "arn:aws:sns:ap-northeast-1:620992446973:medicine-recommend-budget-stage1",
       "threshold": "60%",
       "type": "予測",
       "actions": "Fargate 512/1024"
     },
     "stage2": {
-      "sns_topic_arn": "arn:aws:sns:ap-northeast-1:290780119994:medicine-recommend-budget-stage2",
+      "sns_topic_arn": "arn:aws:sns:ap-northeast-1:620992446973:medicine-recommend-budget-stage2",
       "threshold": "75%",
       "type": "実際",
       "actions": "minimal env"
     },
     "stage3": {
-      "sns_topic_arn": "arn:aws:sns:ap-northeast-1:290780119994:medicine-recommend-budget-stage3",
+      "sns_topic_arn": "arn:aws:sns:ap-northeast-1:620992446973:medicine-recommend-budget-stage3",
       "threshold": "80%",
       "type": "実際",
       "actions": "KB sync 停止 + log 7日"
     },
     "stage4": {
-      "sns_topic_arn": "arn:aws:sns:ap-northeast-1:290780119994:medicine-recommend-budget-stage4",
+      "sns_topic_arn": "arn:aws:sns:ap-northeast-1:620992446973:medicine-recommend-budget-stage4",
       "threshold": "90%",
       "type": "実際",
       "actions": "ECS 停止 + Pipeline 停止"
     },
     "stage5": {
-      "sns_topic_arn": "arn:aws:sns:ap-northeast-1:290780119994:medicine-recommend-budget-stage5",
+      "sns_topic_arn": "arn:aws:sns:ap-northeast-1:620992446973:medicine-recommend-budget-stage5",
       "threshold": "100%",
       "type": "実際",
       "actions": "同上"
