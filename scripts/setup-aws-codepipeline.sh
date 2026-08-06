@@ -8,7 +8,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=lib/aws_common.sh
 source "$ROOT/scripts/lib/aws_common.sh"
 
-ACCOUNT_ID="${AWS_ACCOUNT_ID:-290780119994}"
+ACCOUNT_ID="${AWS_ACCOUNT_ID:-620992446973}"
 REGION="${AWS_REGION:-ap-northeast-1}"
 GITHUB_REPO="${GITHUB_REPO:-32Lwk/medicine-recommend-system}"
 GITHUB_BRANCH="${GITHUB_BRANCH:-main}"
@@ -21,6 +21,15 @@ CB_ROLE="${CB_ROLE:-medicine-recommend-codebuild-role}"
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+
+aws_file_arg() {
+  local p="$1"
+  if command -v cygpath >/dev/null 2>&1; then
+    printf 'file://%s' "$(cygpath -m "$p")"
+  else
+    printf 'file://%s' "$p"
+  fi
+}
 
 echo "Account: $ACCOUNT_ID Region: $REGION"
 
@@ -54,7 +63,7 @@ done
 CONN_ARN_EARLY="$(aws codestar-connections list-connections --region "$REGION" \
   --query "Connections[?ConnectionName=='${CONNECTION_NAME}'].ConnectionArn | [0]" --output text 2>/dev/null || echo pending)"
 if [[ "$CONN_ARN_EARLY" != "None" && "$CONN_ARN_EARLY" != "pending" && -n "$CONN_ARN_EARLY" ]]; then
-  EXTRA_POLICY="$(mktemp)"
+  EXTRA_POLICY="$(mktemp -t cpextra.XXXXXX)"
   cat > "$EXTRA_POLICY" <<EOFPOL
 {
   "Version": "2012-10-17",
@@ -87,7 +96,7 @@ if [[ "$CONN_ARN_EARLY" != "None" && "$CONN_ARN_EARLY" != "pending" && -n "$CONN
 EOFPOL
   aws iam put-role-policy --role-name "$CP_ROLE" \
     --policy-name medicine-recommend-codepipeline-extra \
-    --policy-document "file://${EXTRA_POLICY}"
+    --policy-document "$(aws_file_arg "$EXTRA_POLICY")"
   rm -f "$EXTRA_POLICY"
   echo "Attached inline policy medicine-recommend-codepipeline-extra"
 fi
@@ -96,7 +105,7 @@ for pol in AmazonEC2ContainerRegistryPowerUser AmazonECS_FullAccess CloudWatchLo
   aws iam attach-role-policy --role-name "$CB_ROLE" --policy-arn "arn:aws:iam::aws:policy/${pol}" 2>/dev/null || true
 done
 
-CB_EXTRA_POLICY="$(mktemp)"
+CB_EXTRA_POLICY="$(mktemp -t cbextra.XXXXXX)"
 cat > "$CB_EXTRA_POLICY" <<EOFCB
 {
   "Version": "2012-10-17",
@@ -115,7 +124,7 @@ cat > "$CB_EXTRA_POLICY" <<EOFCB
 EOFCB
 aws iam put-role-policy --role-name "$CB_ROLE" \
   --policy-name medicine-recommend-codebuild-extra \
-  --policy-document "file://${CB_EXTRA_POLICY}"
+  --policy-document "$(aws_file_arg "$CB_EXTRA_POLICY")"
 rm -f "$CB_EXTRA_POLICY"
 echo "Attached inline policy medicine-recommend-codebuild-extra (CloudFront invalidation)"
 
@@ -138,6 +147,63 @@ fi
 CONN_ARN="$(aws codestar-connections list-connections --region "$REGION" \
   --query "Connections[?ConnectionName=='${CONNECTION_NAME}'].ConnectionArn | [0]" --output text 2>/dev/null || echo None)"
 
+if [[ "$CONN_ARN" != "None" && -n "$CONN_ARN" ]]; then
+  CONN_POLICY="$(mktemp -t connextra.XXXXXX)"
+  cat > "$CONN_POLICY" <<EOFCONN
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codestar-connections:UseConnection",
+        "codeconnections:UseConnection",
+        "codestar-connections:PassConnection",
+        "codeconnections:PassConnection"
+      ],
+      "Resource": "${CONN_ARN}"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["codebuild:BatchGetBuilds", "codebuild:StartBuild"],
+      "Resource": "arn:aws:codebuild:${REGION}:${ACCOUNT_ID}:project/${BUILD_PROJECT}"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:GetObjectVersion", "s3:PutObject", "s3:GetBucketLocation", "s3:ListBucket"],
+      "Resource": [
+        "arn:aws:s3:::${ARTIFACT_BUCKET}",
+        "arn:aws:s3:::${ARTIFACT_BUCKET}/*"
+      ]
+    }
+  ]
+}
+EOFCONN
+  aws iam put-role-policy --role-name "$CP_ROLE" \
+    --policy-name medicine-recommend-codepipeline-extra \
+    --policy-document "$(aws_file_arg "$CONN_POLICY")"
+  cat > "$CONN_POLICY" <<EOFCONN2
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "codestar-connections:UseConnection",
+      "codeconnections:UseConnection",
+      "codestar-connections:GetConnection",
+      "codeconnections:GetConnection"
+    ],
+    "Resource": "${CONN_ARN}"
+  }]
+}
+EOFCONN2
+  aws iam put-role-policy --role-name "$CB_ROLE" \
+    --policy-name medicine-recommend-codebuild-connection \
+    --policy-document "$(aws_file_arg "$CONN_POLICY")"
+  rm -f "$CONN_POLICY"
+  echo "Attached CodeStar connection policies to pipeline + codebuild roles"
+fi
+
 if [[ "$CONN_ARN" == "None" || -z "$CONN_ARN" ]]; then
   CONN_ARN="$(aws codestar-connections create-connection \
     --provider-type GitHub \
@@ -152,7 +218,7 @@ fi
 CONN_STATUS="$(aws codestar-connections get-connection --connection-arn "$CONN_ARN" --region "$REGION" --query ConnectionStatus --output text)"
 echo "Connection status: $CONN_STATUS"
 
-CB_SPEC="$(mktemp)"
+CB_SPEC="$(mktemp -t cbspec.XXXXXX)"
 cat > "$CB_SPEC" <<EOF
 {
   "name": "${BUILD_PROJECT}",
@@ -189,15 +255,15 @@ cat > "$CB_SPEC" <<EOF
 EOF
 
 if aws codebuild batch-get-projects --names "$BUILD_PROJECT" --region "$REGION" --query 'projects[0]' --output text 2>/dev/null | grep -q "$BUILD_PROJECT"; then
-  aws codebuild update-project --cli-input-json "file://${CB_SPEC}" --region "$REGION" >/dev/null
+  aws codebuild update-project --cli-input-json "$(aws_file_arg "$CB_SPEC")" --region "$REGION" >/dev/null
   echo "Updated CodeBuild project: $BUILD_PROJECT"
 else
-  aws codebuild create-project --cli-input-json "file://${CB_SPEC}" --region "$REGION" >/dev/null
+  aws codebuild create-project --cli-input-json "$(aws_file_arg "$CB_SPEC")" --region "$REGION" >/dev/null
   echo "Created CodeBuild project: $BUILD_PROJECT"
 fi
 rm -f "$CB_SPEC"
 
-PIPE_SPEC="$(mktemp)"
+PIPE_SPEC="$(mktemp -t pipespec.XXXXXX)"
 cat > "$PIPE_SPEC" <<EOF
 {
   "pipeline": {
@@ -256,10 +322,10 @@ cat > "$PIPE_SPEC" <<EOF
 EOF
 
 if aws codepipeline get-pipeline --name "$PIPELINE_NAME" --region "$REGION" >/dev/null 2>&1; then
-  aws codepipeline update-pipeline --cli-input-json "file://${PIPE_SPEC}" --region "$REGION" >/dev/null
+  aws codepipeline update-pipeline --cli-input-json "$(aws_file_arg "$PIPE_SPEC")" --region "$REGION" >/dev/null
   echo "Updated CodePipeline: $PIPELINE_NAME"
 else
-  aws codepipeline create-pipeline --cli-input-json "file://${PIPE_SPEC}" --region "$REGION" >/dev/null
+  aws codepipeline create-pipeline --cli-input-json "$(aws_file_arg "$PIPE_SPEC")" --region "$REGION" >/dev/null
   echo "Created CodePipeline: $PIPELINE_NAME"
 fi
 rm -f "$PIPE_SPEC"

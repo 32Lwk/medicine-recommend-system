@@ -24,9 +24,9 @@
         "iam:ListAttachedRolePolicies"
       ],
       "Resource": [
-        "arn:aws:iam::290780119994:role/medicine-recommend-*",
-        "arn:aws:iam::290780119994:role/ecsTaskExecutionRole",
-        "arn:aws:iam::290780119994:role/ecsTaskRole"
+        "arn:aws:iam::620992446973:role/medicine-recommend-*",
+        "arn:aws:iam::620992446973:role/ecsTaskExecutionRole",
+        "arn:aws:iam::620992446973:role/ecsTaskRole"
       ]
     },
     {
@@ -87,7 +87,7 @@
         "secretsmanager:TagResource",
         "secretsmanager:ListSecrets"
       ],
-      "Resource": "arn:aws:secretsmanager:ap-northeast-1:290780119994:secret:medicine-recommend/*"
+      "Resource": "arn:aws:secretsmanager:ap-northeast-1:620992446973:secret:medicine-recommend/*"
     },
     {
       "Sid": "S3ProjectBuckets",

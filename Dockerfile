@@ -77,7 +77,7 @@ ENV PORT=8080 \
     GUNICORN_WORKER_CLASS=uvicorn.workers.UvicornWorker \
     GUNICORN_WORKERS=1
 
-RUN chmod +x start.sh
+RUN sed -i 's/\r$//' start.sh && chmod +x start.sh
 
-# FastAPI（main:app）を Gunicorn + UvicornWorker で起動
-CMD ["./start.sh"]
+# bash 明示 — Windows 由来 CRLF で exec ./start.sh が失敗するのを回避
+CMD ["bash", "./start.sh"]

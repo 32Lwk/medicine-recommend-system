@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Build linux/amd64 image, push to ECR, force ECS Express redeploy.
-# Prerequisites: aws CLI configured, docker, account 290780119994
+# Prerequisites: aws CLI configured, docker, account 620992446973
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=lib/aws_common.sh
 source "$ROOT/scripts/lib/aws_common.sh"
 
-ACCOUNT_ID="${AWS_ACCOUNT_ID:-290780119994}"
+ACCOUNT_ID="${AWS_ACCOUNT_ID:-620992446973}"
 REGION="${AWS_REGION:-ap-northeast-1}"
 REPO="${ECR_REPO:-medicine-recommend}"
 CLUSTER="${ECS_CLUSTER:-default}"

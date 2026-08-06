@@ -22,7 +22,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 REGION = os.environ.get("AWS_REGION", "ap-northeast-1")
-ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID", "290780119994")
+ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID", "620992446973")
 ECS_CLUSTER = os.environ.get("ECS_CLUSTER", "default")
 ECS_SERVICE = os.environ.get("ECS_SERVICE", "medicine-recommend")
 PROJECT_PREFIX = os.environ.get("PROJECT_PREFIX", "medicine-recommend")

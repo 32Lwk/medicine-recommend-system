@@ -50,6 +50,11 @@ allowed_env = {
     "REDIS_URL", "PERSONALIZE_CAMPAIGN_ARN", "PERSONALIZE_TRACKING_ID", "BEDROCK_KB_ID",
     "R2_S3_ENDPOINT",
 }
+secret_keys = [
+    "OPENAI_API_KEY", "DATABASE_URL", "SECRET_KEY", "ADMIN_PASSWORD",
+    "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "DEEPL_API_KEY",
+    "LINE_CHANNEL_ACCESS_TOKEN", "LINE_CHANNEL_SECRET",
+]
 file_map = {}
 if env_file.is_file():
     for line in env_file.read_text(encoding="utf-8").splitlines():
@@ -58,14 +63,9 @@ if env_file.is_file():
             continue
         k, v = s.split("=", 1)
         k, v = k.strip(), v.strip().strip('"').strip("'")
-        if k in allowed_env:
+        if k in allowed_env or k in secret_keys:
             file_map[k] = v
 
-secret_keys = [
-    "OPENAI_API_KEY", "DATABASE_URL", "SECRET_KEY", "ADMIN_PASSWORD",
-    "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "DEEPL_API_KEY",
-    "LINE_CHANNEL_ACCESS_TOKEN", "LINE_CHANNEL_SECRET",
-]
 secrets_out = {}
 for sk in secret_keys:
     val = file_map.pop(sk, None) or ecs_map.get(sk) or os.environ.get(sk)

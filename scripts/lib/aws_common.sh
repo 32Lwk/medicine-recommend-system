@@ -15,7 +15,7 @@ if [[ -z "${AWS_PROFILE:-}" ]]; then
   fi
 fi
 
-AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:-290780119994}"
+AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:-620992446973}"
 AWS_REGION="${AWS_REGION:-ap-northeast-1}"
 ECS_CLUSTER="${ECS_CLUSTER:-default}"
 ECS_SERVICE="${ECS_SERVICE:-medicine-recommend}"

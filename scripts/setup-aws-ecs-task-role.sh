@@ -11,7 +11,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=lib/aws_common.sh
 source "$ROOT/scripts/lib/aws_common.sh"
 
-ACCOUNT_ID="${AWS_ACCOUNT_ID:-290780119994}"
+ACCOUNT_ID="${AWS_ACCOUNT_ID:-620992446973}"
 REGION="${AWS_REGION:-ap-northeast-1}"
 ROLE_NAME="${ECS_TASK_ROLE_NAME:-medicine-recommend-ecs-task-role}"
 TASK_FAMILY="${ECS_TASK_FAMILY:-default-medicine-recommend}"

@@ -248,7 +248,7 @@ out_file = sys.argv[1]
 lambda_arn = sys.argv[2]
 stages = sys.argv[3:]
 region = os.environ.get("AWS_REGION", "ap-northeast-1")
-account = os.environ.get("AWS_ACCOUNT_ID", "290780119994")
+account = os.environ.get("AWS_ACCOUNT_ID", "620992446973")
 
 labels = {
     "stage1": {"threshold": "60%", "type": "予測", "actions": "Fargate 512/1024"},

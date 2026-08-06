@@ -12,7 +12,7 @@
         "iam:AttachRolePolicy",
         "iam:PassRole"
       ],
-      "Resource": "arn:aws:iam::290780119994:role/medicine-recommend-*"
+      "Resource": "arn:aws:iam::620992446973:role/medicine-recommend-*"
     },
     {
       "Sid": "BedrockKb",

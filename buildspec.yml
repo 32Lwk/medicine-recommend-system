@@ -4,7 +4,7 @@ version: 0.2
 
 env:
   variables:
-    AWS_ACCOUNT_ID: "290780119994"
+    AWS_ACCOUNT_ID: "620992446973"
     AWS_DEFAULT_REGION: "ap-northeast-1"
     IMAGE_REPO_NAME: "medicine-recommend"
     ECS_CLUSTER: "default"
