@@ -14,18 +14,37 @@ GCP 本番 `medicine.yutok.dev` には影響なし。AWS ステージング `aws
 | CloudFront static | `https://dnv1ek9xdguhs.cloudfront.net/static` |
 | ECR | `620992446973.dkr.ecr.ap-northeast-1.amazonaws.com/medicine-recommend` |
 | CodePipeline | `medicine-recommend-main` |
-| CodeStar Connection | `medicine-recommend-github`（**PENDING — OAuth 要**） |
+| CodeStar Connection | `medicine-recommend-github`（**AVAILABLE**） |
 | IAM ユーザー | `Admin`, `medicine-recommend-dev` |
 
 ## CLI ログイン
 
-```powershell
-# root / Admin Console セッション（初回セットアップ済み）
-aws login --profile default
+旧プロファイル `admin` / `medicine-recommend-dev` には**旧アカウントのアクセスキー**が残っています。
+`aws login` する前に、どちらかを選んでください。
 
-# IAM ユーザー作成後
-aws login --profile medicine-recommend-dev
+### 方法 A: 新プロファイル名で login（推奨）
+
+```powershell
+aws login --profile admin-620992446973
+aws login --profile medicine-recommend-dev-620992446973
+```
+
+### 方法 B: 旧キーを削除して同名プロファイルで login
+
+`~/.aws/credentials` から `[admin]` と `[medicine-recommend-dev]` の
+`aws_access_key_id` / `aws_secret_access_key` 行を削除してから:
+
+```powershell
 aws login --profile admin
+aws login --profile medicine-recommend-dev
+```
+
+### 方法 C: 移行作業中は default（root login）を使用
+
+```powershell
+aws login
+aws sts get-caller-identity
+# Account: 620992446973
 ```
 
 ## 初回構築手順（新アカウント向け）
@@ -68,23 +87,41 @@ runtime critical（`620992446973` に更新済み）:
 
 ## 未完了（手動作業）
 
-### 1. DNS 切替（必須）
+### 1. DNS + TLS（必須 — 一部完了）
 
-Cloudflare / 外部 DNS で `aws.medicine.yutok.dev` の CNAME を新 Express エンドポイントへ:
+**ルーティング**: ALB リスナールールに `aws.medicine.yutok.dev` を追加済み。
+`curl -sk https://aws.medicine.yutok.dev/health` → 200 を確認。
+
+**HTTPS 証明書**: ACM 証明書をリクエスト済み（`PENDING_VALIDATION`）。
+Cloudflare DNS に以下の **検証用 CNAME** を追加してください:
+
+| 名前 | 種別 | 値 |
+|------|------|-----|
+| `_0dfb8f7f451aaeade6991e4766110019.aws.medicine` | CNAME | `_39a5751a02c24342241bd6e36aa285ba.jkddzztszm.acm-validations.aws.` |
+
+（Cloudflare では `_0dfb8f7f451aaeade6991e4766110019.aws.medicine.yutok.dev` として追加）
+
+ISSUED になったら:
+
+```bash
+AWS_PROFILE=default ./scripts/setup-aws-custom-domain.sh
+```
+
+**推奨 DNS（最終形）**: CNAME を Express 既定 URL ではなく **ALB DNS** へ:
 
 ```
-aws.medicine.yutok.dev → me-9585b72a360742069939f7e74bb4bb46.ecs.ap-northeast-1.on.aws
+aws.medicine.yutok.dev → ecs-express-gateway-alb-7a197fcf-1310163209.ap-northeast-1.elb.amazonaws.com
 ```
 
-切替前に新 URL で `/health` が 200 であることを確認。
+### 2. CodeStar GitHub OAuth — **完了**
 
-### 2. CodeStar GitHub OAuth（CI/CD 自動デプロイ）
+Connection status: `AVAILABLE`
 
-1. [Connections Console](https://ap-northeast-1.console.aws.amazon.com/codesuite/settings/connections)
-2. `medicine-recommend-github` → **Update pending connection**
-3. GitHub で `32Lwk/medicine-recommend-system` を Authorize
-4. リポジトリの `buildspec.yml`（新アカウント ID）を `main` に push
-5. `aws codepipeline start-pipeline-execution --name medicine-recommend-main --region ap-northeast-1`
+push 後の Pipeline 手動実行:
+
+```bash
+aws codepipeline start-pipeline-execution --name medicine-recommend-main --region ap-northeast-1
+```
 
 ### 3. Bedrock KB（任意 — Phase 3）
 
