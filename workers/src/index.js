@@ -1,6 +1,6 @@
 /**
  * Cloudflare Worker — wake AWS staging on 503, then poll until ready.
- * Canonical entry: workers/src/index.js (wrangler main)
+ * Route: aws-medicine.yutok.dev/* (Proxied; Universal SSL covers 1-level subdomain)
  */
 const STARTING_HTML = `<!DOCTYPE html>
 <html lang="ja">

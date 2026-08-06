@@ -42,7 +42,8 @@ data = {
     "account_id": account,
     "region": region,
     "cloudflare_worker": "workers/cloudflare-aws-staging-wake.js",
-    "cloudflare_route": "aws.medicine.yutok.dev/*",
+    "cloudflare_route": "aws-medicine.yutok.dev/*",
+    "wake_url": "https://aws-medicine.yutok.dev",
 }
 with open(path, "w", encoding="utf-8") as f:
     json.dump(data, f, indent=2, ensure_ascii=False)

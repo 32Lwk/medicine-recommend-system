@@ -263,4 +263,4 @@ aws wafv2 delete-web-acl \
 | 起動後 Fargate | **~$0.03/時**（手動 resume と同じ） |
 | 放置すると | 24h 稼働で **~+$23/月** → 終了後 `stop-aws-staging.sh` |
 
-**Cloudflare DNS を Proxied（オレンジ雲）にする必要あり** — 未設定なら Worker は動きません。
+**Cloudflare DNS**: Wake URL は **`aws-medicine.yutok.dev`（Proxied）**。従来の `aws.medicine.yutok.dev` は DNS only のまま。詳細: [AWS_WAKE_ON_ACCESS.md](./AWS_WAKE_ON_ACCESS.md)
