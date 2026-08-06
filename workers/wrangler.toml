@@ -1,0 +1,16 @@
+# Secrets at runtime (Dashboard → Settings → Variables and secrets, NOT Build section):
+#   WAKE_TOKEN
+# Build variables are NOT available at runtime (Cloudflare Workers Builds docs).
+
+name = "aws-staging-wake"
+main = "src/index.js"
+compatibility_date = "2024-08-01"
+account_id = "2a1ac0678cd0b207ca4fa5681a9a0690"
+
+routes = [
+  { pattern = "aws-medicine.yutok.dev/*", zone_name = "yutok.dev" }
+]
+
+[vars]
+ORIGIN_URL = "https://me-9585b72a360742069939f7e74bb4bb46.ecs.ap-northeast-1.on.aws"
+WAKE_API_URL = "https://ixd7ulmasbky6puy2xc4r2bssy0nhwom.lambda-url.ap-northeast-1.on.aws"
