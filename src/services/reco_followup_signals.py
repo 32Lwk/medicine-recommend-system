@@ -194,6 +194,29 @@ def message_warrants_reco_rescore(
     if is_bot_echo_symptom_interview(text):
         return True
 
+    if recommended_medicines or conversation_history:
+        try:
+            from src.services.conversation_followup_resolver import (
+                followup_intent_warrants_rescore,
+                resolve_ambiguous_followup_intent,
+            )
+
+            intent = resolve_ambiguous_followup_intent(
+                text,
+                conversation_history=conversation_history,
+                recommended_medicines=recommended_medicines,
+            )
+            if followup_intent_warrants_rescore(intent):
+                return True
+            if intent is not None and intent.value in (
+                "medicine_qa",
+                "continue_thread",
+                "travel",
+            ):
+                return True
+        except ImportError:
+            pass
+
     return False
 
 

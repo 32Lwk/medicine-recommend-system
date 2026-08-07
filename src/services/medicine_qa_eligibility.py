@@ -959,6 +959,39 @@ def resolve_medicine_qa_route(
             "symptom_thread_recommendation",
         )
 
+    if (recs or active_products) and client is not None:
+        try:
+            from src.services.conversation_followup_resolver import (
+                FollowupIntent,
+                resolve_ambiguous_followup_intent,
+            )
+
+            intent = resolve_ambiguous_followup_intent(
+                t,
+                session=session,
+                sid=sid,
+                conversation_history=llm_history or raw_messages,
+                recommended_medicines=recs,
+                client=client,
+            )
+            if intent == FollowupIntent.RESCORE:
+                return MedicineQaRouteDecision(
+                    MedicineQaRoute.PHYSICAL,
+                    "llm_followup_rescore",
+                )
+            if intent in (FollowupIntent.MEDICINE_QA, FollowupIntent.CONTINUE_THREAD):
+                return MedicineQaRouteDecision(
+                    MedicineQaRoute.MEDICINE_QA,
+                    "llm_followup_medicine_qa",
+                )
+            if intent == FollowupIntent.TRAVEL:
+                return MedicineQaRouteDecision(
+                    MedicineQaRoute.MEDICINE_QA,
+                    "llm_followup_travel",
+                )
+        except ImportError:
+            pass
+
     if (
         _THREAD_INVENTORY_FOLLOWUP_RE.search(t)
         and active_products

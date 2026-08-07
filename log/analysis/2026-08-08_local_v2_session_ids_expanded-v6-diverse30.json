@@ -1,0 +1,287 @@
+{
+  "meta": {
+    "date": "2026-08-08",
+    "report_suffix": "expanded-v6-diverse30",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-07T15:49:44.256279+00:00",
+    "elapsed_sec": 1722.3,
+    "scenario_count": 30,
+    "total_turns": 120,
+    "auto_pass": 27,
+    "use_gpt_user": true,
+    "gpt_scale": true,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "gpt-gpt-casual-headache-thread",
+      "session_id": "1786117784301748209490",
+      "category": "gpt_context",
+      "persona_id": "gpt-casual-headache-thread",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-correction-user",
+      "session_id": "1786117899534502680648",
+      "category": "gpt_context",
+      "persona_id": "gpt-correction-user",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-elderly-polite-mix",
+      "session_id": "1786117975152358462792",
+      "category": "gpt_context",
+      "persona_id": "gpt-elderly-polite-mix",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-kansai-dialect",
+      "session_id": "1786118036368163690838",
+      "category": "gpt_context",
+      "persona_id": "gpt-kansai-dialect",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-parent-child-fever",
+      "session_id": "1786118108629693509469",
+      "category": "gpt_context",
+      "persona_id": "gpt-parent-child-fever",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-medicine-anaphora",
+      "session_id": "1786118143491706515160",
+      "category": "gpt_context",
+      "persona_id": "gpt-medicine-anaphora",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-alcohol-interaction",
+      "session_id": "1786118198439778979403",
+      "category": "gpt_context",
+      "persona_id": "gpt-alcohol-interaction",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-vague-to-specific",
+      "session_id": "1786118247377983336827",
+      "category": "gpt_context",
+      "persona_id": "gpt-vague-to-specific",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-travel-medicine",
+      "session_id": "1786118324387280453927",
+      "category": "gpt_context",
+      "persona_id": "gpt-travel-medicine",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-pet-redirect",
+      "session_id": "1786118355812806802567",
+      "category": "gpt_context",
+      "persona_id": "gpt-pet-redirect",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-teen-slang",
+      "session_id": "1786118393338287569542",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-teen-slang",
+      "turns": 4,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-rambling-elder",
+      "session_id": "1786118456344931473786",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-rambling-elder",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-indirect-worry",
+      "session_id": "1786118521995891421775",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-indirect-worry",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-multi-symptom",
+      "session_id": "1786118566253356862125",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-multi-symptom",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-emotional-distress",
+      "session_id": "1786118627136720232291",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-emotional-distress",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-english-mix",
+      "session_id": "1786118676915290927038",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-english-mix",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-pregnant-worried",
+      "session_id": "1786118759940751468329",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-pregnant-worried",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-shift-worker",
+      "session_id": "1786118781009474955049",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-shift-worker",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-dosage-casual",
+      "session_id": "1786118819716040116731",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-dosage-casual",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-comparison-dialect",
+      "session_id": "1786118887918352603551",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-comparison-dialect",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-topic-return",
+      "session_id": "1786118976814363351918",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-topic-return",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-grandchild-medicine",
+      "session_id": "1786118997512987807445",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-grandchild-medicine",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-menstrual-pain",
+      "session_id": "1786119043603557213924",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-menstrual-pain",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-chronic-meds",
+      "session_id": "1786119083145742771756",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-chronic-meds",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-implicit-short",
+      "session_id": "1786119131294756450878",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-implicit-short",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-sports-prep",
+      "session_id": "1786119195288056439959",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-sports-prep",
+      "turns": 4,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-allergy-check",
+      "session_id": "1786119272433831358646",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-allergy-check",
+      "turns": 4,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-business-polite",
+      "session_id": "1786119325723534853882",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-business-polite",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-vague-feeling",
+      "session_id": "1786119405344746616403",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-vague-feeling",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-returning-thread",
+      "session_id": "1786119463068413637705",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-returning-thread",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

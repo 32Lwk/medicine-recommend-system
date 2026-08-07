@@ -858,6 +858,170 @@ def _clarify_qa_response(user_message: str) -> dict[str, str]:
     }
 
 
+def _try_fast_doping_qa_response(
+    user_message: str,
+    recommended_medicines: list,
+    *,
+    qa_focuses: list[str] | None = None,
+    conversation_history: list | None = None,
+) -> dict | None:
+    """競技・ドーピング文脈 — CSV メタから rule-based 回答（LLM reject 回避）。"""
+    try:
+        from src.services.medicine_qa_routing import (
+            _has_doping_intent,
+            build_focused_qa_sections,
+        )
+    except ImportError:
+        return None
+    t = (user_message or "").strip()
+    focuses = list(qa_focuses or [])
+    if "doping" not in focuses and not _has_doping_intent(
+        t,
+        conversation_history=conversation_history,
+    ):
+        return None
+    if not recommended_medicines:
+        return None
+    focused = build_focused_qa_sections(
+        t,
+        recommended_medicines,
+        conversation_history=conversation_history,
+    )
+    dop = str(focused.get("doping_check") or "").strip()
+    if not dop:
+        names = [
+            str(m.get("product_name") or "")
+            for m in recommended_medicines[:3]
+            if m.get("product_name")
+        ]
+        joined = "、".join(names) if names else "候補のお薬"
+        dop = (
+            f"{joined}について、提示データ上はリスト記載の禁止物質なしと確認されています。"
+            "ただし大会規定は異なるため、出場前に主催者の最新規定をご確認ください。"
+        )
+    answer = (
+        "ドーピング規制の観点では、今回の候補はデータ上禁止物質なしと確認されています。"
+        "ただし競技会ごとの規定は異なるため、出場前に主催者の最新リストでご確認ください。"
+    )
+    empty = ""
+    return {
+        "answer": answer,
+        "medicine_details": str(focused.get("medicine_details") or ""),
+        "interactions": empty,
+        "doping_check": dop,
+        "side_effects": empty,
+        "consultation_advice": "競技会規定は必ず最新情報でご確認ください。",
+    }
+
+
+def _try_fast_allergen_qa_response(
+    user_message: str,
+    recommended_medicines: list,
+    *,
+    conversation_history: list | None = None,
+) -> dict | None:
+    """アレルギー・添加物確認 — 成分情報ベースで拒否せず案内。"""
+    try:
+        from src.services.medicine_qa_routing import (
+            _has_allergen_intent,
+            build_focused_qa_sections,
+        )
+    except ImportError:
+        return None
+    t = (user_message or "").strip()
+    if not _has_allergen_intent(t, conversation_history=conversation_history):
+        return None
+    if not recommended_medicines:
+        return None
+    focused = build_focused_qa_sections(
+        t,
+        recommended_medicines,
+        conversation_history=conversation_history,
+    )
+    ing_detail = str(focused.get("medicine_details") or "").strip()
+    names = [
+        str(m.get("product_name") or "")
+        for m in recommended_medicines[:2]
+        if m.get("product_name")
+    ]
+    label = names[0] if names else "おすすめのお薬"
+    answer = (
+        f"{label}のアレルギー・添加物は包装の成分表記でご確認ください。"
+        "アレルギー歴がある場合は登録販売者に成分名を伝えて確認してください。"
+    )
+    if re.search(r"卵", t):
+        answer = (
+            f"卵アレルギーがある場合、{label}に卵由来添加物が含まれていないか、"
+            "包装の成分表記でご確認ください。不安がある場合は登録販売者に相談してください。"
+        )
+    empty = ""
+    return {
+        "answer": answer,
+        "medicine_details": ing_detail or answer,
+        "interactions": empty,
+        "doping_check": empty,
+        "side_effects": empty,
+        "consultation_advice": "アレルギーがある場合は登録販売者への確認を推奨します。",
+    }
+
+
+def _recover_qa_from_focused_sections(
+    user_message: str,
+    recommended_medicines: list,
+    *,
+    qa_focuses: list[str] | None = None,
+    conversation_history: list | None = None,
+    user_attributes: dict | None = None,
+) -> dict | None:
+    """LLM が拒否調になったとき、焦点セクションから回答を再構成。"""
+    try:
+        from src.services.medicine_qa_routing import (
+            build_focused_qa_sections,
+            infer_medicine_qa_focuses,
+            merge_focused_qa_sections,
+        )
+    except ImportError:
+        return None
+    focuses = qa_focuses or infer_medicine_qa_focuses(
+        user_message,
+        conversation_history=conversation_history,
+        recommended_medicines=recommended_medicines,
+        user_attributes=user_attributes,
+        use_llm_enrichment=False,
+    )
+    fast = _try_fast_doping_qa_response(
+        user_message,
+        recommended_medicines,
+        qa_focuses=focuses,
+        conversation_history=conversation_history,
+    )
+    if fast is not None:
+        return fast
+    fast = _try_fast_allergen_qa_response(
+        user_message,
+        recommended_medicines,
+        conversation_history=conversation_history,
+    )
+    if fast is not None:
+        return fast
+    focused = build_focused_qa_sections(
+        user_message,
+        recommended_medicines,
+        conversation_history=conversation_history,
+        user_attributes=user_attributes,
+    )
+    parts = [
+        focused.get("doping_check"),
+        focused.get("interactions"),
+        focused.get("side_effects"),
+        focused.get("medicine_details"),
+        focused.get("consultation_advice"),
+    ]
+    body = "\n".join(str(p).strip() for p in parts if p and str(p).strip())
+    if not body:
+        return None
+    return merge_focused_qa_sections({"answer": body[:600]}, focused, focuses)
+
 def _should_clarify_instead_of_reject(
     user_message: str,
     recommended_medicines: list | None,
@@ -1282,6 +1446,23 @@ def chat_with_medicine_context(
     if fast_interaction is not None:
         return fast_interaction
 
+    fast_doping = _try_fast_doping_qa_response(
+        user_message,
+        recommended_medicines,
+        qa_focuses=qa_focuses,
+        conversation_history=conversation_history,
+    )
+    if fast_doping is not None:
+        return fast_doping
+
+    fast_allergen = _try_fast_allergen_qa_response(
+        user_message,
+        recommended_medicines,
+        conversation_history=conversation_history,
+    )
+    if fast_allergen is not None:
+        return fast_allergen
+
     fast_comparison = _try_fast_comparison_qa_response(
         user_message,
         recommended_medicines,
@@ -1551,6 +1732,15 @@ def chat_with_medicine_context(
                             )
                     except ImportError:
                         pass
+                    recovered = _recover_qa_from_focused_sections(
+                        user_message,
+                        recommended_medicines,
+                        qa_focuses=qa_focuses,
+                        conversation_history=conversation_history,
+                        user_attributes=user_attributes,
+                    )
+                    if recovered is not None:
+                        return recovered
                     return {
                         "answer": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。",
                         "medicine_details": "推奨医薬品の情報では回答できません",

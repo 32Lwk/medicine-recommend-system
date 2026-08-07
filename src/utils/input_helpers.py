@@ -555,11 +555,24 @@ def reroute_symptom_general_other_to_physical(
 def should_fallback_to_symptom_recommendation(
     triage_result: Optional[Dict[str, Any]],
     message: str = "",
+    *,
+    conversation_history: Optional[list] = None,
 ) -> bool:
     """オーケストレーター未解決時に Physical 推奨フローへ落とすか。"""
     triage = triage_result or {}
     category = triage.get("category", "")
     subcategory = str(triage.get("subcategory") or "")
+
+    try:
+        from src.services.reco_followup_signals import is_travel_thread_followup
+
+        if is_travel_thread_followup(
+            message,
+            conversation_history=conversation_history,
+        ):
+            return False
+    except ImportError:
+        pass
 
     if category in ("Physical", "Ask"):
         return True
@@ -593,6 +606,8 @@ _CORRECTION_PATTERNS: tuple[str, ...] = (
     r"^ちが[うい]",
     r"^間違[えい]",
     r"^さっきと違",
+    # 主訴転換の談話標識（症状語そのものではない）
+    r"^(?:やっぱ|やはり|むしろ|実は|ていうか|っていうか)",
 )
 
 

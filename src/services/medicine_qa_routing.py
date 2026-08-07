@@ -759,6 +759,35 @@ def _has_product_image_intent(
     return False
 
 
+def _has_allergen_intent(
+    text: str,
+    *,
+    conversation_history: list[dict[str, Any]] | None = None,
+) -> bool:
+    """成分・食物アレルギー・添加物に関する follow-up か（会話文脈優先）。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    if re.search(r"アレルギ|allerg", t, re.I):
+        return True
+    if re.search(r"添加物|由来成分|含まれ|入って", t) and re.search(
+        r"卵|乳|小麦|そば|落花生|ピーナッツ|成分",
+        t,
+    ):
+        return True
+    if conversation_history:
+        blob = " ".join(
+            str(m.get("content") or m.get("message") or "")
+            for m in conversation_history[-8:]
+            if isinstance(m, dict)
+        )
+        if re.search(r"アレルギ|allerg", blob, re.I) and (
+            _is_anaphoric_reference(t) or re.search(r"大丈夫|平気|影響|入って|含", t)
+        ):
+            return True
+    return False
+
+
 def _has_ingredient_intent(text: str) -> bool:
     t = (text or "").strip()
     return any(k in t for k in _INGREDIENT_KEYWORDS)
@@ -1219,6 +1248,8 @@ def _infer_medicine_qa_focuses_uncached(
             focuses.append("ingredient")
     if _has_doping_intent(t, conversation_history=conversation_history):
         focuses.append("doping")
+    if _has_allergen_intent(t, conversation_history=conversation_history):
+        focuses.append("ingredient")
     if _has_interaction_intent(
         t,
         conversation_history=conversation_history,

@@ -1,0 +1,39 @@
+# 失敗3件の再検証
+version: 2
+source: retry-failures-2026-08-08
+personas:
+  - id: gpt-teen-slang
+    label: 若者スラング
+    category: gpt_diverse
+    turns: 4
+    opening: マジで頭キツいんだけど
+    goal: 頭痛相談。2ターン目「胃弱い系」。3ターン目「さっきので平気？」と指示語。
+    demographics:
+      age: "10代後半"
+      gender: female
+    system: |
+      「マジ」「キツい」を使う。患者として自分の体調だけ。
+
+  - id: gpt-sports-prep
+    label: スポーツ前
+    category: gpt_diverse
+    turns: 4
+    opening: 明日マラソンなんだけど、膝が痛い
+    goal: 2ターン目「痛み止め飲んで走れる？」→3ターン目「ドーピング大丈夫？」。
+    demographics:
+      age: "30代"
+      gender: male
+    system: |
+      マラソン前。自分の膝と大会の心配。
+
+  - id: gpt-allergy-check
+    label: アレルギー確認
+    category: gpt_diverse
+    turns: 4
+    opening: 蕁麻疹出た
+    goal: 推奨後「成分アレルギー」「卵アレルギー」を確認。
+    demographics:
+      age: "30代"
+      gender: female
+    system: |
+      アレルギー心配。自分の体質のみ。
