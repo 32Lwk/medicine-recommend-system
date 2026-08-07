@@ -333,15 +333,27 @@ def run_chat_post_pipeline(
 
     mark_pipeline_step("before_triage")
     from src.handlers.chat.chat_triage import run_triage
+    from src.services.medicine_discovery_routing import try_rule_based_symptom_triage
 
-    early_response, ctx.triage_result = run_triage(
+    rule_triage = try_rule_based_symptom_triage(
         session,
-        client_info,
-        sid,
         ctx.user_message,
-        ctx.sanitized_message,
-        ctx.recommendation_client,
+        sid=sid,
+        sanitized_message=ctx.sanitized_message,
     )
+    if rule_triage is not None:
+        ctx.triage_result = rule_triage
+        early_response = None
+        mark_pipeline_step("short_symptom_triage_skip_llm")
+    else:
+        early_response, ctx.triage_result = run_triage(
+            session,
+            client_info,
+            sid,
+            ctx.user_message,
+            ctx.sanitized_message,
+            ctx.recommendation_client,
+        )
     if early_response is not None:
         return _guard_return(early_response)
 

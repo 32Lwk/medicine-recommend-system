@@ -14,7 +14,7 @@ from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
-_AMBIGUOUS_MAX_CHARS = 180
+_AMBIGUOUS_MAX_CHARS = 120
 _SESSION_CACHE_KEY = "_followup_intent_cache"
 
 

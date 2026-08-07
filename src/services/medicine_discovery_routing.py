@@ -177,6 +177,47 @@ def apply_cold_start_triage_override(
     return triage
 
 
+def try_rule_based_symptom_triage(
+    session: Any,
+    user_message: str,
+    *,
+    sid: Optional[str] = None,
+    sanitized_message: Optional[str] = None,
+) -> Optional[dict]:
+    """
+    初回・短文の明示症状 → LLM triage をスキップして Physical を返す。
+    greeting 誤ルートと triage レイテンシを同時に抑える。
+    """
+    if not session_is_medical_cold_start(session, sid):
+        return None
+    msg = (sanitized_message or user_message or "").strip()
+    if not msg or len(msg) > 80:
+        return None
+    try:
+        from src.services.concierge_intent import classify_concierge_intent
+
+        if classify_concierge_intent(msg) in ("greeting", "thanks", "chitchat"):
+            return None
+    except ImportError:
+        pass
+    try:
+        from src.utils.input_helpers import has_explicit_symptom_signal
+    except ImportError:
+        return None
+    if not has_explicit_symptom_signal(msg):
+        return None
+    triage = {
+        "category": "Physical",
+        "subcategory": "explicit_symptom_short",
+        "confidence": 0.92,
+        "reasoning": "rule_based short symptom (skip llm_triage)",
+    }
+    session["last_triage_result"] = triage
+    if sid:
+        session["_last_triage_result"] = triage
+    return triage
+
+
 def should_route_medicine_discovery_to_recommendation(
     session: Any,
     sid: Optional[str],

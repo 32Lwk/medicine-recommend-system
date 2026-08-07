@@ -168,6 +168,13 @@ _FOCUS_LLM_SKIP_SOURCES = (
     "intent_router_medicine_qa",
     "fast_medicine_signal",
     "medicine_context_short",
+    "travel_import_thread",
+    "llm_followup_medicine_qa",
+    "llm_followup_travel",
+    "rule_medicine_thread",
+    "symptom_thread_recommendation",
+    "compound_symptom_pivot",
+    "compound_reco_context",
 )
 
 
@@ -959,7 +966,7 @@ def resolve_medicine_qa_route(
             "symptom_thread_recommendation",
         )
 
-    if (recs or active_products) and client is not None:
+    if (recs or active_products) and client is not None and len(t) <= 120:
         try:
             from src.services.conversation_followup_resolver import (
                 FollowupIntent,
