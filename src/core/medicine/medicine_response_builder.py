@@ -6,6 +6,7 @@ get_medicine_details, detect_medicine_name_in_query, chat_with_medicine_context 
 
 import json
 import logging
+import re
 from typing import Any
 
 import pandas as pd
@@ -367,6 +368,43 @@ def _finalize_structured_qa_response(
     return _sanitize_qa_result(out)
 
 
+def _apply_user_correction_pivot(
+    user_message: str,
+    recommended_medicines: list,
+    qa_focuses: list[str],
+    *,
+    session: Any = None,
+) -> tuple[list, list[str]]:
+    """訂正発話時は comparison を外し、言及品目に絞る。"""
+    from src.utils.input_helpers import detect_correction_intent
+
+    if not detect_correction_intent(user_message):
+        return recommended_medicines, qa_focuses
+
+    from src.dialogue.routing.context_signals import extract_drug_entities
+
+    entities = extract_drug_entities(user_message or "")
+    focuses = [f for f in qa_focuses if f != "comparison"]
+    if not focuses:
+        focuses = ["ingredient", "side_effect"]
+
+    if not entities:
+        return recommended_medicines, focuses
+
+    try:
+        df = pd.read_csv(CSV_PATH)
+        narrowed: list = []
+        for ent in entities[:2]:
+            hits = detect_medicine_name_in_query(ent, df, session=session)
+            if hits:
+                narrowed.append(hits[0])
+        if narrowed:
+            return narrowed[:3], focuses
+    except Exception:
+        logger.debug("correction pivot narrow skipped", exc_info=True)
+    return recommended_medicines, focuses
+
+
 def _try_fast_comparison_qa_response(
     user_message: str,
     recommended_medicines: list,
@@ -377,6 +415,10 @@ def _try_fast_comparison_qa_response(
     session_id: str | None = None,
 ) -> dict | None:
     """2〜4製品比較は CSV メタ + ルールベースセクションで即応答（KB/重い JSON LLM を省略）。"""
+    from src.utils.input_helpers import detect_correction_intent
+
+    if detect_correction_intent(user_message):
+        return None
     focuses = list(qa_focuses or [])
     if "comparison" not in focuses or len(recommended_medicines or []) < 2:
         return None
@@ -437,6 +479,313 @@ def _try_fast_product_image_qa_response(
     return parsed
 
 
+_HOME_INVENTORY_FOLLOWUP_RE = re.compile(
+    r"家に|うちに|うちにも|"
+    r"(?:家|うち).{0,12}持って|"
+    r"持って.{0,12}(?:家|うち)|"
+    r"あるわ|あるね|あるよ|あるん",
+)
+_S_VARIANT_FOLLOWUP_RE = re.compile(r"Sは|Sが|プレミアム|ついて|ついてい")
+
+
+def _prefer_user_stated_medicines_for_interaction(
+    user_message: str,
+    recommended_medicines: list,
+    *,
+    conversation_history: list | None,
+    session: Any = None,
+    session_id: str | None = None,
+) -> list:
+    """併用・飲酒フォローアップではユーザー申告品目を bot 推奨より優先。"""
+    if not conversation_history:
+        return recommended_medicines or []
+    try:
+        from src.services.medicine_qa_routing import _has_interaction_intent
+        from src.services.medicine_thread_context import (
+            collect_active_medicine_products,
+            resolve_session_recommended_medicines,
+        )
+
+        if not _has_interaction_intent(
+            user_message,
+            conversation_history=conversation_history,
+            recommended_medicines=recommended_medicines,
+        ):
+            return recommended_medicines or []
+        active = collect_active_medicine_products(
+            session,
+            sid=session_id,
+            messages=conversation_history,
+            recommended_medicines=recommended_medicines,
+        )
+        if not any(p.get("source") == "history_user_entity" for p in active):
+            return recommended_medicines or []
+        resolved = resolve_session_recommended_medicines(
+            session,
+            sid=session_id,
+            messages=conversation_history,
+        )
+        return resolved or recommended_medicines or []
+    except Exception:
+        logger.debug("prefer user-stated interaction meds skipped", exc_info=True)
+        return recommended_medicines or []
+
+
+def _try_fast_travel_import_qa_response(
+    user_message: str,
+    recommended_medicines: list | None,
+    *,
+    conversation_history: list | None = None,
+) -> dict | None:
+    """旅行・持ち込みの初回相談（推奨履歴なし）— reject テンプレを避ける。"""
+    t = (user_message or "").strip()
+    if not t:
+        return None
+
+    travel_context = False
+    thread_followup = False
+    try:
+        from src.services.medicine_qa_routing import is_travel_import_context
+        from src.services.reco_followup_signals import is_travel_thread_followup
+
+        thread_followup = is_travel_thread_followup(
+            t,
+            conversation_history=conversation_history,
+        )
+        travel_context = is_travel_import_context(t) or thread_followup
+    except ImportError:
+        try:
+            from src.services.medicine_qa_routing import is_travel_import_context
+
+            travel_context = is_travel_import_context(t)
+        except ImportError:
+            return None
+    if not travel_context:
+        return None
+    if recommended_medicines and not thread_followup:
+        return None
+
+    from src.dialogue.routing.context_signals import extract_drug_entities
+
+    blob_all = t
+    if conversation_history:
+        blob_all += " " + " ".join(
+            str(m.get("content") or m.get("message") or "")
+            for m in conversation_history[-8:]
+            if isinstance(m, dict)
+        )
+
+    drug_names = extract_drug_entities(t) or extract_drug_entities(blob_all)
+    if not drug_names:
+        m = re.search(
+            r"ロキソニン|バファリン|カロナール|タイレノール|イブ|パブロン|"
+            r"アドビル|セデス|PL|pl",
+            blob_all,
+            re.I,
+        )
+        drug_label = m.group(0) if m else "お持ちのお薬"
+    else:
+        drug_label = drug_names[0]
+
+    dest = "海外"
+    if "タイ" in blob_all:
+        dest = "タイ"
+    elif "韓国" in blob_all:
+        dest = "韓国"
+
+    if thread_followup:
+        if re.search(r"診断書|処方箋|書類", t):
+            answer = (
+                f"{drug_label}のような市販薬を{dest}へ持ち込む場合、"
+                "診断書や処方箋は必須ではないことが多いです。"
+                "ただし処方薬に該当する場合や、入国審査で使用目的の説明を"
+                "求められたときは、医師のメモや処方箋写しがあると安心です。"
+                "市販薬でも元包装と成分表記ラベルは必ず残してください。"
+            )
+        elif re.search(r"量|どれくらい|何個|何錠|止められ|空港", t):
+            answer = (
+                f"{drug_label}を{dest}へ持ち込む目安として、"
+                "旅行期間の個人使用分（おおむね1〜2箱・1〜2週間分程度）に"
+                "収めるのが無難です。大量や業者のような量は別審査になりやすく、"
+                "空港・税関で止められるリスクが上がります。"
+                "不安なら元包装のまま、使用目的メモを英語または現地語で"
+                "用意し、申告を求められたら正直に申告してください。"
+            )
+        else:
+            answer = (
+                f"{drug_label}を{dest}へ持ち込む際の一般的な注意点です。"
+                "① 元の包装・成分表記ラベルを残す "
+                "② 個人使用の量に収める（大量持ち込みは別審査になりやすい） "
+                "③ 必要に応じて医師の診断書・処方箋写し・使用目的メモを用意 "
+                "④ 入国カードや税関で申告が求められる場合がある "
+                "⑤ 最新の規制は外務省「海外安全ホームページ」や渡航先大使館で確認。"
+                "不安があれば出発前に登録販売者や航空会社にもご確認ください。"
+            )
+        doping = ""
+    else:
+        answer = (
+            f"{drug_label}を{dest}へ持ち込む場合、入国規制・量・包装・成分表記は"
+            "国・地域ごとに異なります。市販の解熱鎮痛薬は個人使用の範囲で持参される"
+            "ことが多いですが、大量持ち込みや処方薬に該当する場合は別扱いになる"
+            "ことがあります。成分表記のわかる包装、必要に応じて医師の診断書や"
+            "処方箋の写しを用意し、税関・入国審査の最新情報は外務省や渡航先の"
+            "公的機関、お近くの登録販売者でもご確認ください。"
+        )
+        doping = (
+            f"{drug_label}は一般のスポーツ競技におけるドーピング禁止物質リスト上、"
+            "典型的な市販品では大きな問題にならないことが多いです。"
+            "ただし海外入国規制とは別問題です。"
+        )
+    empty = ""
+    return {
+        "answer": answer,
+        "medicine_details": empty,
+        "interactions": empty,
+        "doping_check": doping,
+        "side_effects": empty,
+        "consultation_advice": "渡航先の最新規制は必ずご自身でご確認ください。",
+    }
+
+
+def _try_fast_thread_inventory_qa_response(
+    user_message: str,
+    recommended_medicines: list,
+    *,
+    conversation_history: list | None = None,
+    session: Any = None,
+    session_id: str | None = None,
+) -> dict | None:
+    """「家に/うちにも」「Sは〜」等 — スレッド維持の短い報告に定型拒否せず応答。"""
+    t = (user_message or "").strip()
+    try:
+        from src.services.medicine_qa_routing import is_travel_import_context
+
+        if is_travel_import_context(t):
+            return None
+    except Exception:
+        pass
+    is_home = bool(_HOME_INVENTORY_FOLLOWUP_RE.search(t))
+    is_s_variant = bool(_S_VARIANT_FOLLOWUP_RE.search(t))
+    if not t or not (is_home or is_s_variant):
+        return None
+    try:
+        from src.services.medicine_thread_context import (
+            collect_active_medicine_products,
+            should_continue_medicine_thread,
+        )
+
+        if not should_continue_medicine_thread(
+            t,
+            session=session,
+            sid=session_id,
+            conversation_history=conversation_history,
+            recommended_medicines=recommended_medicines,
+            client=None,
+        ):
+            return None
+        active = collect_active_medicine_products(
+            session,
+            sid=session_id,
+            messages=conversation_history,
+            recommended_medicines=recommended_medicines,
+        )
+        product = str(
+            (active[0] if active else (recommended_medicines or [{}])[0]).get("product_name")
+            or "お手元の市販薬"
+        )
+        if is_s_variant:
+            answer = (
+                f"「{product}」で S 表記の有無についてですね。"
+                "市販ではロキソニンSやロキソニンSプレミアムが一般的です。"
+                "お手元の箱やPTPシートの表記を確認し、不安があればお近くの登録販売者に見せて相談すると確実です。"
+            )
+        else:
+            if re.search(r"うち|あるわ", t):
+                answer = (
+                    f"うちにも{product}があるんですね。"
+                    "同じ成分の市販薬を重ねて飲まないよう、用法用量と説明書の注意を確認して使ってください。"
+                    "他に気になることがあれば、いつでも聞いてください。"
+                )
+            else:
+                answer = (
+                    f"おうちにも{product}があるのですね。"
+                    "同じ成分の市販薬を重ねて飲まないよう、用法用量と説明書の注意を確認して使ってください。"
+                    "他に気になることがあれば、いつでも聞いてください。"
+                )
+        empty = ""
+        return {
+            "answer": answer,
+            "medicine_details": empty,
+            "interactions": empty,
+            "doping_check": empty,
+            "side_effects": empty,
+            "consultation_advice": empty,
+        }
+    except Exception:
+        logger.debug("fast thread inventory qa skipped", exc_info=True)
+        return None
+
+
+def _try_fast_interaction_followup_qa_response(
+    user_message: str,
+    recommended_medicines: list,
+    *,
+    qa_focuses: list[str] | None = None,
+    conversation_history: list | None = None,
+    session: Any = None,
+    session_id: str | None = None,
+) -> dict | None:
+    """併用・「それと一緒に」フォロー — 文脈品目を明示し拒否テンプレを避ける。"""
+    try:
+        from src.services.medicine_qa_routing import _has_interaction_intent
+        from src.services.medicine_thread_context import collect_active_medicine_products
+
+        if not _has_interaction_intent(
+            user_message,
+            conversation_history=conversation_history,
+            recommended_medicines=recommended_medicines,
+        ):
+            return None
+        active = collect_active_medicine_products(
+            session,
+            sid=session_id,
+            messages=conversation_history,
+            recommended_medicines=recommended_medicines,
+        )
+        if not active:
+            return None
+        product = str(active[0].get("product_name") or "").strip()
+        if not product:
+            return None
+        um = user_message or ""
+        alcohol_kw = ("お酒", "飲酒", "アルコール", "酒", "ビール", "wine", "beer")
+        if any(k in um for k in alcohol_kw):
+            answer = (
+                f"「{product}」を飲酒後に使ってよいかは、成分によって注意が異なります。"
+                "一般にアセトアミノフェン系はアルコール摂取後の服用で肝障害リスクが上がることがあり、"
+                "NSAIDs系は胃への負担が増すことがあります。"
+                "飲酒直後や大量飲酒後は自己判断を避え、お近くの登録販売者に成分名を伝えてご相談ください。"
+            )
+        else:
+            answer = (
+                f"「{product}」と別のお薬を同時に飲めるかは、成分の重複や併用禁忌によって変わります。"
+                "一緒に飲みたい市販薬の名前を教えていただければ、注意したい組み合わせを一緒に確認できます。"
+                "不安がある場合は、お近くの登録販売者にご相談ください。"
+            )
+        empty = ""
+        return {
+            "answer": answer,
+            "medicine_details": empty,
+            "interactions": answer,
+            "doping_check": empty,
+            "side_effects": empty,
+            "consultation_advice": empty,
+        }
+    except Exception:
+        logger.debug("fast interaction followup qa skipped", exc_info=True)
+        return None
+
+
 def _build_structured_qa_from_stream(
     user_message: str,
     recommended_medicines: list,
@@ -477,6 +826,116 @@ def _build_structured_qa_from_stream(
         user_attributes=user_attributes,
         answer=answer,
     )
+
+
+def _last_assistant_plain(conversation_history: list | None) -> str:
+    from src.utils.sage_message_plain import resolve_bot_user_facing_text
+
+    for msg in reversed(conversation_history or []):
+        if not isinstance(msg, dict):
+            continue
+        role = str(msg.get("role") or msg.get("type") or "").lower()
+        if role in ("assistant", "bot"):
+            return resolve_bot_user_facing_text(msg)
+    return ""
+
+
+def _clarify_qa_response(user_message: str) -> dict[str, str]:
+    msg = (user_message or "").strip()
+    if re.search(r"飲み合わせ|併用|一緒に", msg):
+        lead = "どのお薬同士の飲み合わせか教えていただけますか？"
+    else:
+        lead = "どのお薬についてのご質問か教えていただけますか？"
+    answer = f"{lead}お薬名が分かれば、こちらで一般的な情報をお伝えします。"
+    empty = ""
+    return {
+        "answer": answer,
+        "medicine_details": empty,
+        "interactions": empty,
+        "doping_check": empty,
+        "side_effects": empty,
+        "consultation_advice": empty,
+    }
+
+
+def _should_clarify_instead_of_reject(
+    user_message: str,
+    recommended_medicines: list | None,
+    *,
+    session: Any = None,
+    session_id: str | None = None,
+    conversation_history: list | None = None,
+) -> bool:
+    """品目未特定・一般論 — 拒否テンプレより Clarify を優先。"""
+    msg = (user_message or "").strip()
+    if not msg:
+        return False
+    if recommended_medicines:
+        return False
+    try:
+        from src.services.medicine_thread_context import collect_active_medicine_products
+
+        active = collect_active_medicine_products(
+            session,
+            sid=session_id,
+            messages=conversation_history,
+        )
+        if active:
+            return False
+    except Exception:
+        pass
+    if re.search(r"飲み合わせ|併用|一緒に|他の薬", msg):
+        return True
+    try:
+        from src.services.concierge_intent import looks_like_conversational_request, _is_medicine_consultation
+
+        if looks_like_conversational_request(msg) and not _is_medicine_consultation(msg):
+            return True
+    except Exception:
+        pass
+    try:
+        from src.services.medicine_qa_routing import is_travel_import_context
+
+        if is_travel_import_context(msg):
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _maybe_regenerate_on_comparison_loop(
+    parsed_result: dict[str, Any],
+    *,
+    user_message: str,
+    recommended_medicines: list | None,
+    conversation_history: list | None,
+    user_attributes: dict | None,
+    qa_focuses: list | None,
+) -> dict[str, Any]:
+    """直前 bot と answer が酷似する場合、焦点セクションを再生成。"""
+    try:
+        from src.services.e2e_turn_eval import text_similarity
+        from src.services.medicine_qa_routing import build_focused_qa_sections, merge_focused_qa_sections
+
+        prior = _last_assistant_plain(conversation_history)
+        answer = str(parsed_result.get("answer") or "")
+        if not prior or text_similarity(answer, prior) < 0.85:
+            return parsed_result
+        focused = build_focused_qa_sections(
+            user_message,
+            recommended_medicines or [],
+            conversation_history=conversation_history,
+            user_attributes=user_attributes or {},
+        )
+        merged = merge_focused_qa_sections(parsed_result, focused, qa_focuses or [])
+        if str(merged.get("answer") or "") == answer and focused:
+            hint = str(focused.get("answer") or focused.get("medicine_details") or "")[:400]
+            if hint and hint != answer:
+                merged["answer"] = hint
+        return merged
+    except Exception:
+        logger.debug("comparison loop regen skipped", exc_info=True)
+        return parsed_result
 
 
 def chat_with_medicine_context(
@@ -543,46 +1002,96 @@ def chat_with_medicine_context(
             "consultation_advice": "",
         }
 
-    # 発話にブランド通称がある場合は、履歴推奨より先にブランド解決+セッションピンを適用
+    early_travel = _try_fast_travel_import_qa_response(
+        user_message,
+        recommended_medicines,
+        conversation_history=conversation_history,
+    )
+    if early_travel is not None:
+        return early_travel
+
     try:
-        from src.dialogue.routing.context_signals import extract_drug_entities
+        from src.services.medicine_qa_routing import is_travel_import_context
 
-        if extract_drug_entities(user_message):
-            df_early = pd.read_csv(CSV_PATH)
-            brand_hits = detect_medicine_name_in_query(
-                user_message, df_early, session=session
+        travel_cold = is_travel_import_context(user_message) and not recommended_medicines
+    except ImportError:
+        travel_cold = False
+
+    if not travel_cold:
+        # 発話にブランド通称がある場合は、履歴推奨より先にブランド解決+セッションピンを適用
+        # 比較 intent 時はセッション文脈の複数系統を上書きしない
+        try:
+            from src.dialogue.routing.context_signals import extract_drug_entities
+            from src.services.medicine_qa_routing import _has_comparison_intent
+
+            comparison_intent = _has_comparison_intent(
+                user_message,
+                conversation_history=conversation_history,
+                recommended_medicines=recommended_medicines,
             )
-            if brand_hits:
-                recommended_medicines = brand_hits[:5]
-                logger.info(
-                    "Using brand-resolved (+session pin) medicines as Q&A context: %s",
-                    [m.get("product_name") for m in recommended_medicines],
+            if extract_drug_entities(user_message) and not comparison_intent:
+                df_early = pd.read_csv(CSV_PATH)
+                brand_hits = detect_medicine_name_in_query(
+                    user_message, df_early, session=session
                 )
-                if session is not None and session_id:
-                    try:
-                        from src.services.session_manager import save_session_to_db
+                if brand_hits:
+                    recommended_medicines = brand_hits[:5]
+                    logger.info(
+                        "Using brand-resolved (+session pin) medicines as Q&A context: %s",
+                        [m.get("product_name") for m in recommended_medicines],
+                    )
+                    if session is not None and session_id:
+                        try:
+                            from src.services.session_manager import save_session_to_db
 
-                        save_session_to_db(session_id, session)
-                    except Exception:
-                        logger.debug("qa_brand_pins persist skipped", exc_info=True)
-    except Exception as e:
-        logger.debug("early brand resolve skipped: %s", e)
+                            save_session_to_db(session_id, session)
+                        except Exception:
+                            logger.debug("qa_brand_pins persist skipped", exc_info=True)
+        except Exception as e:
+            logger.debug("early brand resolve skipped: %s", e)
+    else:
+        logger.info("Skipping brand pin for travel/import cold-start Q&A")
+
+    recommended_medicines = _prefer_user_stated_medicines_for_interaction(
+        user_message,
+        recommended_medicines or [],
+        conversation_history=conversation_history,
+        session=session,
+        session_id=session_id,
+    )
 
     if not recommended_medicines and conversation_history:
         try:
-            for hist in reversed(conversation_history):
-                diag = hist.get("diagnosis") if isinstance(hist, dict) else None
-                if isinstance(diag, dict) and diag.get("recommended_medicines"):
-                    recommended_medicines = diag.get(
-                        "recommended_medicines", []
-                    ) or []
-                    if recommended_medicines:
-                        print(
-                            f"会話履歴から推奨医薬品を復元: {len(recommended_medicines)}件"
-                        )
-                        break
+            from src.services.medicine_thread_context import resolve_session_recommended_medicines
+
+            restored = resolve_session_recommended_medicines(
+                session,
+                sid=session_id,
+                messages=conversation_history,
+            )
+            if restored:
+                recommended_medicines = restored
+                logger.info(
+                    "Restored %s medicine(s) from session context for Q&A/RAG",
+                    len(recommended_medicines),
+                )
         except Exception as e:
-            print(f"履歴復元エラー: {e}")
+            logger.debug("session medicine context restore skipped: %s", e)
+        if not recommended_medicines:
+            try:
+                for hist in reversed(conversation_history):
+                    diag = hist.get("diagnosis") if isinstance(hist, dict) else None
+                    if isinstance(diag, dict) and diag.get("recommended_medicines"):
+                        recommended_medicines = diag.get(
+                            "recommended_medicines", []
+                        ) or []
+                        if recommended_medicines:
+                            print(
+                                f"会話履歴から推奨医薬品を復元: {len(recommended_medicines)}件"
+                            )
+                            break
+            except Exception as e:
+                print(f"履歴復元エラー: {e}")
     # 推奨医薬品がない場合はルールベース推奨を優先（症状・競技条件などを考慮）
     if not recommended_medicines:
         from src.services.medicine_qa_routing import should_skip_recommendation_for_medicine_qa
@@ -657,6 +1166,8 @@ def chat_with_medicine_context(
     _mark_qa("history_read")
     history_text = ""
     if conversation_history is not None:
+        from src.utils.sage_message_plain import resolve_bot_user_facing_text
+
         recent_messages = conversation_history[-5:]
         for msg in recent_messages:
             if msg.get("type") == "user":
@@ -669,7 +1180,9 @@ def chat_with_medicine_context(
                     medicines = diagnosis.get("recommended_medicines", [])
                     history_text += f"AI: 推奨医薬品: {', '.join([m.get('product_name', '') for m in medicines])}\n"
                 else:
-                    history_text += f"AI: {msg.get('content', '')}\n"
+                    plain = resolve_bot_user_facing_text(msg)
+                    if plain:
+                        history_text += f"AI: {plain}\n"
     _mark_qa("question_parse")
     medicines_text = ""
     if recommended_medicines:
@@ -714,6 +1227,21 @@ def chat_with_medicine_context(
         user_attributes=user_attributes,
         use_llm_enrichment=not _has_product_image_intent(user_message),
     )
+    recommended_medicines, qa_focuses = _apply_user_correction_pivot(
+        user_message,
+        recommended_medicines or [],
+        qa_focuses,
+        session=session,
+    )
+    if "comparison" in qa_focuses and recommended_medicines:
+        from src.services.medicine_qa_comparison_quality import expand_medicines_for_comparison
+
+        recommended_medicines = expand_medicines_for_comparison(
+            user_message,
+            recommended_medicines,
+            conversation_history=conversation_history,
+            session=session,
+        )
     fast_product_image = _try_fast_product_image_qa_response(
         user_message,
         recommended_medicines,
@@ -725,6 +1253,35 @@ def chat_with_medicine_context(
     if fast_product_image is not None:
         return fast_product_image
 
+    fast_travel = _try_fast_travel_import_qa_response(
+        user_message,
+        recommended_medicines,
+        conversation_history=conversation_history,
+    )
+    if fast_travel is not None:
+        return fast_travel
+
+    fast_inventory = _try_fast_thread_inventory_qa_response(
+        user_message,
+        recommended_medicines,
+        conversation_history=conversation_history,
+        session=session,
+        session_id=session_id,
+    )
+    if fast_inventory is not None:
+        return fast_inventory
+
+    fast_interaction = _try_fast_interaction_followup_qa_response(
+        user_message,
+        recommended_medicines,
+        qa_focuses=qa_focuses,
+        conversation_history=conversation_history,
+        session=session,
+        session_id=session_id,
+    )
+    if fast_interaction is not None:
+        return fast_interaction
+
     fast_comparison = _try_fast_comparison_qa_response(
         user_message,
         recommended_medicines,
@@ -733,6 +1290,16 @@ def chat_with_medicine_context(
         user_attributes=user_attributes,
         session_id=session_id,
     )
+    if fast_comparison is not None:
+        prior = _last_assistant_plain(conversation_history)
+        ans = str(fast_comparison.get("answer") or "")
+        try:
+            from src.services.e2e_turn_eval import text_similarity
+
+            if prior and text_similarity(ans, prior) >= 0.85:
+                fast_comparison = None
+        except Exception:
+            pass
     if fast_comparison is not None:
         return fast_comparison
 
@@ -959,6 +1526,31 @@ def chat_with_medicine_context(
                         "回答できません",
                     ]
                 ):
+                    if _should_clarify_instead_of_reject(
+                        user_message,
+                        recommended_medicines,
+                        session=session,
+                        session_id=session_id,
+                        conversation_history=conversation_history,
+                    ):
+                        return _clarify_qa_response(user_message)
+                    try:
+                        from src.services.medicine_qa_routing import (
+                            should_prioritize_physical_for_symptom,
+                        )
+
+                        if should_prioritize_physical_for_symptom(
+                            user_message,
+                            conversation_history=conversation_history,
+                            recommended_medicines=recommended_medicines,
+                        ):
+                            return _clarify_qa_response(
+                                "症状の変化について承知しました。"
+                                "咳の状態に合わせた市販薬を改めてご案内しますので、"
+                                "痰の有無など分かる範囲で教えてください。"
+                            )
+                    except ImportError:
+                        pass
                     return {
                         "answer": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。",
                         "medicine_details": "推奨医薬品の情報では回答できません",
@@ -993,6 +1585,14 @@ def chat_with_medicine_context(
                     conversation_history=conversation_history,
                     user_attributes=user_attributes,
                     answer=str(parsed_result.get("answer") or streamed_answer or ""),
+                )
+                parsed_result = _maybe_regenerate_on_comparison_loop(
+                    parsed_result,
+                    user_message=user_message,
+                    recommended_medicines=recommended_medicines,
+                    conversation_history=conversation_history,
+                    user_attributes=user_attributes,
+                    qa_focuses=qa_focuses,
                 )
                 if stream_active and session_id:
                     emit_qa_sections_from_response(parsed_result, session_id)

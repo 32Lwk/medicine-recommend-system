@@ -12,6 +12,120 @@ from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
+_THREAD_INVENTORY_FOLLOWUP_RE = re.compile(
+    r"家に|うちに|うちにも|"
+    r"(?:家|うち).{0,12}持って|"
+    r"持って.{0,12}(?:家|うち)|"
+    r"あるわ|あるね|あるよ|Sは|Sが|ついてい",
+)
+
+
+def _resolve_thread_inventory_medicine_qa(
+    text: str,
+    *,
+    session: Any,
+    sid: str | None,
+    conversation_history: list[dict[str, Any]] | None,
+    recommended_medicines: list[dict[str, Any]] | None,
+) -> Optional[MedicineQaRouteDecision]:
+    """家に/うちにも/S表記 — 医薬品スレッド継続を Concierge greeting より優先。"""
+    try:
+        from src.services.medicine_qa_routing import is_travel_import_context
+
+        if is_travel_import_context(text or ""):
+            return None
+    except Exception:
+        pass
+    if not _THREAD_INVENTORY_FOLLOWUP_RE.search(text or ""):
+        return None
+    try:
+        from src.services.medicine_thread_context import collect_active_medicine_products
+
+        active = collect_active_medicine_products(
+            session,
+            sid=sid,
+            messages=conversation_history,
+            recommended_medicines=recommended_medicines,
+        )
+    except Exception:
+        active = []
+    if active:
+        return MedicineQaRouteDecision(
+            MedicineQaRoute.MEDICINE_QA,
+            "rule_medicine_thread_inventory_early",
+        )
+    # active 抽出失敗時: 直前 bot が medicine_qa ならスレッド継続（greeting 誤判定防止）
+    raw_msgs: list[dict[str, Any]] = []
+    if conversation_history and isinstance(conversation_history[0], dict):
+        if conversation_history[0].get("type") in ("user", "bot"):
+            raw_msgs = list(conversation_history)
+    if not raw_msgs and session is not None:
+        raw_msgs = list((session.get("messages") if isinstance(session, dict) else []) or [])
+    if not raw_msgs and sid:
+        try:
+            from src.services.session_manager import get_session_from_db
+
+            raw_msgs = list((get_session_from_db(sid) or {}).get("messages") or [])
+        except Exception:
+            raw_msgs = []
+
+    for msg in reversed(raw_msgs):
+        if not isinstance(msg, dict):
+            continue
+        role = str(msg.get("type") or msg.get("role") or "").lower()
+        if role not in ("bot", "assistant"):
+            continue
+        diagnosis = msg.get("diagnosis") if isinstance(msg.get("diagnosis"), dict) else {}
+        kind = str(diagnosis.get("kind") or "")
+        content = str(msg.get("content") or "")
+        if kind == "medicine_qa" or content in ("sage_qa", "sage_status"):
+            return MedicineQaRouteDecision(
+                MedicineQaRoute.MEDICINE_QA,
+                "rule_medicine_thread_inventory_last_bot_qa",
+            )
+        break
+
+    # expand_messages_for_llm 形式（role/content のみ）のフォールバック
+    for turn in reversed(conversation_history or []):
+        if not isinstance(turn, dict):
+            continue
+        role = str(turn.get("role") or "").lower()
+        if role != "assistant":
+            continue
+        plain = str(turn.get("content") or "")
+        try:
+            from src.dialogue.routing.context_signals import extract_drug_entities
+
+            if extract_drug_entities(plain):
+                return MedicineQaRouteDecision(
+                    MedicineQaRoute.MEDICINE_QA,
+                    "rule_medicine_thread_inventory_last_bot_qa",
+                )
+        except Exception:
+            pass
+        break
+
+    return None
+
+
+def looks_like_medicine_thread_inventory_followup(
+    text: str,
+    *,
+    session: Any = None,
+    sid: str | None = None,
+    conversation_history: list[dict[str, Any]] | None = None,
+    recommended_medicines: list[dict[str, Any]] | None = None,
+) -> bool:
+    """家に/うちにも/S表記 — medicine_qa 継続シグナル（Concierge greeting 抑止用）。"""
+    return _resolve_thread_inventory_medicine_qa(
+        text,
+        session=session,
+        sid=sid,
+        conversation_history=conversation_history,
+        recommended_medicines=recommended_medicines,
+    ) is not None
+
+
 _CONCIERGE_META_INTENTS = frozenset({
     "capabilities",
     "architecture",
@@ -42,6 +156,29 @@ class MedicineQaRouteDecision:
     route: MedicineQaRoute
     source: str
     concierge_intent: Optional[str] = None
+
+
+_FOCUS_LLM_SKIP_SOURCES = (
+    "rule_medicine_thread",
+    "rule_medicine_thread_inventory",
+    "medicine_information_question",
+    "medicine_context_followup",
+    "intent_router_medicine_side_effect_qa",
+    "intent_router_medicine_followup_qa",
+    "intent_router_medicine_qa",
+    "fast_medicine_signal",
+    "medicine_context_short",
+)
+
+
+def should_skip_focus_llm_enrichment(decision: MedicineQaRouteDecision) -> bool:
+    """ルート確定済みなら focus LLM 補完を省略（レイテンシ削減）。"""
+    if decision.route in (MedicineQaRoute.CONCIERGE, MedicineQaRoute.PHYSICAL):
+        return True
+    if decision.route != MedicineQaRoute.MEDICINE_QA:
+        return False
+    src = decision.source or ""
+    return any(src.startswith(prefix) or prefix in src for prefix in _FOCUS_LLM_SKIP_SOURCES)
 
 
 def is_medicine_qa_eligibility_llm_enabled() -> bool:
@@ -93,12 +230,20 @@ def _has_medicine_qa_fast_signals(
         infer_medicine_qa_focuses,
         is_medicine_information_question,
         is_strict_medicine_side_effect_question,
+        should_prioritize_physical_for_symptom,
     )
     from src.services.concierge_intent import _is_medicine_consultation, looks_like_inquiry
     from src.dialogue.routing.context_signals import extract_drug_entities
 
     t = (text or "").strip()
     if not t:
+        return False
+
+    if should_prioritize_physical_for_symptom(
+        t,
+        conversation_history=conversation_history,
+        recommended_medicines=recommended_medicines,
+    ):
         return False
 
     if _is_medicine_consultation(t):
@@ -489,6 +634,7 @@ def resolve_medicine_qa_route(
     text: str,
     *,
     session: Any = None,
+    sid: str | None = None,
     triage_result: dict[str, Any] | None = None,
     conversation_history: list[dict[str, Any]] | None = None,
     recommended_medicines: list[dict[str, Any]] | None = None,
@@ -511,6 +657,97 @@ def resolve_medicine_qa_route(
     if not t:
         return MedicineQaRouteDecision(MedicineQaRoute.DEFER, "empty")
 
+    from src.agents.session_agent import probe_session_admin_intent
+
+    if probe_session_admin_intent(t):
+        return MedicineQaRouteDecision(
+            MedicineQaRoute.CONCIERGE,
+            "session_ops_early",
+            concierge_intent="session_ops",
+        )
+
+    from src.services.concierge_intent import (
+        _is_medicine_consultation,
+        looks_like_conversational_request,
+        looks_like_reflective_health_chitchat,
+    )
+
+    if looks_like_reflective_health_chitchat(t):
+        return MedicineQaRouteDecision(
+            MedicineQaRoute.CONCIERGE,
+            "reflective_health_chitchat",
+            concierge_intent="chitchat",
+        )
+
+    inv_early = _resolve_thread_inventory_medicine_qa(
+        t,
+        session=session,
+        sid=sid,
+        conversation_history=conversation_history,
+        recommended_medicines=recommended_medicines,
+    )
+    if inv_early:
+        return inv_early
+
+    if (
+        looks_like_conversational_request(t)
+        and not _is_medicine_consultation(t)
+        and not has_explicit_symptom_signal(t)
+    ):
+        try:
+            from src.services.medicine_thread_context import collect_active_medicine_products
+
+            _early_active = collect_active_medicine_products(
+                session,
+                sid=sid,
+                messages=conversation_history,
+                recommended_medicines=recommended_medicines,
+            )
+        except Exception:
+            _early_active = []
+        if not _early_active and not recommended_medicines:
+            return MedicineQaRouteDecision(
+                MedicineQaRoute.CONCIERGE,
+                "general_chitchat_no_product",
+                concierge_intent="chitchat",
+            )
+
+    if re.search(r"飲み合わせ|併用|一緒に|他の薬", t):
+        brand_in_text = bool(re.search(
+            r"ロキソニン|バファリン|カロナール|タイレノール|イブ|セデス|パブロン",
+            t,
+            re.I,
+        ))
+        if not brand_in_text and not recommended_medicines:
+            try:
+                from src.services.medicine_thread_context import collect_active_medicine_products
+
+                _amb_active = collect_active_medicine_products(
+                    session,
+                    sid=sid,
+                    messages=conversation_history,
+                )
+            except Exception:
+                _amb_active = []
+            if not _amb_active:
+                try:
+                    from src.dialogue.sync_legacy import update_dialogue_turn_state
+
+                    update_dialogue_turn_state(
+                        session,
+                        sid,
+                        user_text=t,
+                        user_goal="clarify",
+                        pending_clarification="drug_name_for_interaction",
+                    )
+                except Exception:
+                    logger.debug("clarify dialogue_state skipped", exc_info=True)
+                return MedicineQaRouteDecision(
+                    MedicineQaRoute.CONCIERGE,
+                    "ambiguous_drug_clarify",
+                    concierge_intent="chitchat",
+                )
+
     from src.services.contact_channel_intent import (
         classify_contact_channel_question,
         contact_channel_to_concierge_intent,
@@ -530,12 +767,15 @@ def resolve_medicine_qa_route(
     if recs is None:
         recs = _extract_recommended_medicines(session, conversation_history)
 
-    def _after_meta_none() -> MedicineQaRouteDecision:
-        return _resolve_after_meta_none(
-            t,
-            conversation_history=conversation_history,
-            recommended_medicines=recs,
-        )
+    from src.services.medicine_thread_context import (
+        _is_concierge_topic_pivot,
+        collect_active_medicine_products,
+        expand_messages_for_llm,
+        should_continue_medicine_thread,
+    )
+
+    raw_messages = conversation_history or (session.get("messages") if session else None)
+    llm_history = expand_messages_for_llm(raw_messages)
 
     triage_intent = _resolve_concierge_from_triage(triage_result)
     if triage_intent:
@@ -545,29 +785,59 @@ def resolve_medicine_qa_route(
             concierge_intent=triage_intent,
         )
 
-    from src.services.concierge_agent_history import is_meta_follow_up_utterance
+    try:
+        from src.services.medicine_qa_routing import is_travel_import_context
+        from src.services.reco_followup_signals import is_travel_thread_followup
 
-    if conversation_history and is_meta_follow_up_utterance(t):
-        if recs or _has_medicine_qa_fast_signals(
+        if is_travel_import_context(t) or is_travel_thread_followup(
             t,
-            conversation_history=conversation_history,
-            recommended_medicines=recs,
+            conversation_history=llm_history or raw_messages,
         ):
             return MedicineQaRouteDecision(
                 MedicineQaRoute.MEDICINE_QA,
-                "context_follow_up_medicine",
+                "travel_import_thread",
+            )
+    except ImportError:
+        pass
+
+    if _is_concierge_topic_pivot(t):
+        meta_intent = _resolve_concierge_meta_intent(
+            t,
+            session=session,
+            conversation_history=llm_history or raw_messages,
+        )
+        if meta_intent:
+            return MedicineQaRouteDecision(
+                MedicineQaRoute.CONCIERGE,
+                "topic_pivot_concierge",
+                concierge_intent=meta_intent,
+            )
+
+    from src.services.concierge_agent_history import is_meta_follow_up_utterance
+
+    if llm_history and is_meta_follow_up_utterance(t):
+        meta_intent = _resolve_concierge_meta_intent(
+            t,
+            session=session,
+            conversation_history=llm_history or raw_messages,
+        )
+        if meta_intent:
+            return MedicineQaRouteDecision(
+                MedicineQaRoute.CONCIERGE,
+                "meta_follow_up_concierge",
+                concierge_intent=meta_intent,
             )
 
     meta_intent = _resolve_concierge_meta_intent(
         t,
         session=session,
-        conversation_history=conversation_history,
+        conversation_history=llm_history or raw_messages,
     )
     if meta_intent:
         compound = _resolve_compound_route_override(
             t,
             meta_intent,
-            conversation_history=conversation_history,
+            conversation_history=llm_history or raw_messages,
             recommended_medicines=recs,
             client=client,
         )
@@ -579,9 +849,136 @@ def resolve_medicine_qa_route(
             concierge_intent=meta_intent,
         )
 
+    from src.services.medicine_qa_routing import should_prioritize_physical_for_symptom
+
+    recs_early = recommended_medicines
+    if recs_early is None:
+        recs_early = _extract_recommended_medicines(session, conversation_history)
+
+    if should_prioritize_physical_for_symptom(
+        t,
+        conversation_history=llm_history or raw_messages,
+        recommended_medicines=recs_early,
+    ):
+        return MedicineQaRouteDecision(
+            MedicineQaRoute.PHYSICAL,
+            "symptom_physical_priority",
+        )
+
+    thread_source = should_continue_medicine_thread(
+        t,
+        session=session,
+        sid=sid,
+        conversation_history=llm_history or raw_messages,
+        recommended_medicines=recs,
+        client=client,
+    )
+    if thread_source:
+        return MedicineQaRouteDecision(
+            MedicineQaRoute.MEDICINE_QA,
+            thread_source,
+        )
+
+    active_products = collect_active_medicine_products(
+        session,
+        sid=sid,
+        messages=raw_messages,
+        recommended_medicines=recs,
+    )
+    if sid:
+        try:
+            from src.services.dialogue_turn_trace import append_dialogue_turn_trace
+
+            prompt_turns = len(llm_history) if llm_history else 0
+            product_names: list[str] = []
+            for p in active_products or []:
+                if isinstance(p, dict):
+                    product_names.append(
+                        str(p.get("product_name") or p.get("name") or "")
+                    )
+                else:
+                    product_names.append(str(p))
+            product_names = [n for n in product_names if n][:8]
+            rag_tier = ""
+            try:
+                from src.services.local_rag_context import resolve_rag_tier
+
+                rag_tier = resolve_rag_tier(
+                    t,
+                    conversation_history=llm_history or raw_messages,
+                    recommended_medicines=recs,
+                    session=session,
+                )
+            except Exception:
+                logger.debug("resolve_rag_tier skipped", exc_info=True)
+            append_dialogue_turn_trace(
+                session_id=str(sid),
+                user_message=t,
+                route="medicine_qa_eligibility",
+                active_products=product_names,
+                prompt_turns=prompt_turns,
+                rag_tier=rag_tier,
+                source="resolve_medicine_qa_route",
+            )
+            try:
+                from src.services.turn_user_goal import resolve_turn_user_goal
+                from src.dialogue.sync_legacy import update_dialogue_turn_state
+
+                goal = resolve_turn_user_goal(
+                    t,
+                    conversation_history=llm_history or raw_messages,
+                    active_products=product_names,
+                )
+                update_dialogue_turn_state(
+                    session,
+                    sid,
+                    user_text=t,
+                    user_goal=goal,
+                    active_products=product_names,
+                    thread_topic=product_names[0] if product_names else None,
+                )
+            except Exception:
+                logger.debug("dialogue_state turn update skipped", exc_info=True)
+        except Exception:
+            logger.debug("dialogue_turn_trace skipped", exc_info=True)
+    if active_products and not recs:
+        recs = active_products
+
+    from src.services.medicine_qa_routing import (
+        is_symptom_recommendation_followup,
+        is_travel_import_context,
+    )
+
+    if is_symptom_recommendation_followup(
+        t,
+        conversation_history=llm_history or raw_messages,
+        recommended_medicines=recs,
+    ):
+        return MedicineQaRouteDecision(
+            MedicineQaRoute.PHYSICAL,
+            "symptom_thread_recommendation",
+        )
+
+    if (
+        _THREAD_INVENTORY_FOLLOWUP_RE.search(t)
+        and active_products
+        and not is_travel_import_context(t)
+    ):
+        return MedicineQaRouteDecision(
+            MedicineQaRoute.MEDICINE_QA,
+            "rule_medicine_thread_inventory_fallback",
+        )
+
+    def _after_meta_none() -> MedicineQaRouteDecision:
+        return _resolve_after_meta_none(
+            t,
+            conversation_history=llm_history or raw_messages,
+            recommended_medicines=recs,
+        )
+
     if _has_medicine_qa_fast_signals(
         t,
-        conversation_history=conversation_history,
+        conversation_history=llm_history or raw_messages,
         recommended_medicines=recs,
     ):
         from src.services.store_inquiry_handler import is_probable_store_inquiry_any
@@ -594,12 +991,31 @@ def resolve_medicine_qa_route(
         return MedicineQaRouteDecision(MedicineQaRoute.PHYSICAL, "explicit_symptom")
 
     if not looks_like_inquiry(t):
+        try:
+            from src.services.medicine_discovery_routing import session_has_medicine_qa_context
+
+            if session_has_medicine_qa_context(session, sid) or active_products:
+                return MedicineQaRouteDecision(
+                    MedicineQaRoute.MEDICINE_QA,
+                    "medicine_context_short_utterance",
+                )
+        except Exception:
+            pass
         ack_intent = _resolve_structural_ack_intent(
             t,
             session=session,
-            conversation_history=conversation_history,
+            conversation_history=llm_history or raw_messages,
         )
         if ack_intent:
+            if (
+                ack_intent == "greeting"
+                and active_products
+                and _THREAD_INVENTORY_FOLLOWUP_RE.search(t)
+            ):
+                return MedicineQaRouteDecision(
+                    MedicineQaRoute.MEDICINE_QA,
+                    "rule_medicine_thread_inventory_fallback",
+                )
             return MedicineQaRouteDecision(
                 MedicineQaRoute.CONCIERGE,
                 "structural_ack",
@@ -611,7 +1027,7 @@ def resolve_medicine_qa_route(
         llm_intent = _llm_resolve_concierge_intent(
             t,
             client,
-            conversation_history=conversation_history,
+            conversation_history=llm_history or raw_messages,
         )
         if llm_intent:
             return MedicineQaRouteDecision(
@@ -622,12 +1038,31 @@ def resolve_medicine_qa_route(
         return _after_meta_none()
 
     if not looks_like_inquiry(t):
+        try:
+            from src.services.medicine_discovery_routing import session_has_medicine_qa_context
+
+            if session_has_medicine_qa_context(session, sid) or active_products:
+                return MedicineQaRouteDecision(
+                    MedicineQaRoute.MEDICINE_QA,
+                    "medicine_context_short_utterance",
+                )
+        except Exception:
+            pass
         ack_intent = _resolve_structural_ack_intent(
             t,
             session=session,
-            conversation_history=conversation_history,
+            conversation_history=llm_history or raw_messages,
         )
         if ack_intent:
+            if (
+                ack_intent == "greeting"
+                and active_products
+                and _THREAD_INVENTORY_FOLLOWUP_RE.search(t)
+            ):
+                return MedicineQaRouteDecision(
+                    MedicineQaRoute.MEDICINE_QA,
+                    "rule_medicine_thread_inventory_fallback",
+                )
             return MedicineQaRouteDecision(
                 MedicineQaRoute.CONCIERGE,
                 "structural_ack",

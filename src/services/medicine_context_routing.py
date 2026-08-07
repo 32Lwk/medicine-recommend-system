@@ -131,12 +131,29 @@ def resolve_medicine_context_route_rule(
     if not msg:
         return "none"
 
+    try:
+        from src.services.concierge_agent_history import is_meta_follow_up_utterance
+        from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+
+        if is_meta_follow_up_utterance(msg) or is_probable_store_inquiry_any(msg):
+            return "none"
+    except ImportError:
+        pass
+
     has_reco = session_has_recommended_medicines(session, sid)
+    try:
+        from src.services.medicine_discovery_routing import session_has_medicine_qa_context
+
+        has_med_ctx = session_has_medicine_qa_context(session, sid)
+    except ImportError:
+        has_med_ctx = has_reco
     cold = session_is_medical_cold_start(session, sid)
     sports = has_sports_medicine_context(msg)
     has_symptom = has_symptom_for_recommendation(msg)
 
-    if has_reco:
+    if has_reco or has_med_ctx:
+        if has_symptom_for_recommendation(msg):
+            return "none"
         if is_post_reco_followup_reference(msg):
             return "followup_qa"
         if is_informational_reco_followup(msg):
@@ -156,6 +173,13 @@ def resolve_medicine_context_route_rule(
 
             if is_reco_cold_nlu_v2_enabled() and should_prompt_cold_symptoms(msg):
                 return "cold_symptom_chip_prompt"
+        except ImportError:
+            pass
+        try:
+            from src.services.reco_followup_signals import is_bot_echo_symptom_interview
+
+            if is_bot_echo_symptom_interview(msg):
+                return "none"
         except ImportError:
             pass
         if sports and not has_symptom:
@@ -194,6 +218,14 @@ def is_ambiguous_medicine_context(
     question = any(q in msg for q in _QUESTION_MARKERS)
     discovery = has_medicine_discovery_intent(msg)
     has_symptom = has_symptom_for_recommendation(msg)
+
+    try:
+        from src.services.reco_followup_signals import is_bot_echo_symptom_interview
+
+        if is_bot_echo_symptom_interview(msg):
+            return False
+    except ImportError:
+        pass
 
     if has_reco and (sports or discovery) and question:
         return True
@@ -239,6 +271,15 @@ def resolve_medicine_context_route(
                 llm_route,
                 sid,
             )
+            if llm_route == "symptom_prompt":
+                from src.services.medicine_discovery_routing import (
+                    session_has_recommended_medicines,
+                )
+
+                if session_has_recommended_medicines(session, sid):
+                    return "none"
+                if not has_sports_medicine_context(user_message):
+                    return "none"
             return llm_route
     except Exception:
         logger.debug("medicine_context LLM classifier skipped", exc_info=True)

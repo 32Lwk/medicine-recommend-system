@@ -88,6 +88,33 @@ def message_adds_reco_context(user_text: str) -> bool:
     return False
 
 
+def _history_and_reco_for(session: Any, sid: Optional[str]) -> tuple[list, list | None]:
+    history = list(session.get("messages") or []) if session else []
+    last = find_last_recommendation(session, sid) if session else None
+    recs = (last or {}).get("recommended_medicines") if last else None
+    return history, recs
+
+
+def should_bypass_reco_summary_short_circuit(
+    user_text: str,
+    *,
+    session: Any = None,
+    sid: Optional[str] = None,
+) -> bool:
+    """要約 / 同一リスト短絡を抑止し再推奨へ進めるか。"""
+    try:
+        from src.services.reco_followup_signals import message_warrants_reco_rescore
+
+        history, recs = _history_and_reco_for(session, sid)
+        return message_warrants_reco_rescore(
+            user_text,
+            conversation_history=history,
+            recommended_medicines=recs,
+        )
+    except ImportError:
+        return message_adds_reco_context(user_text)
+
+
 def is_recommendation_end_intent(user_text: str) -> bool:
     text = (user_text or "").strip()
     if not text or len(text) > 120:
@@ -206,7 +233,7 @@ def try_reco_flow_entry_short_circuit(
     if is_recommendation_end_intent(text):
         logger.info("UX_RECO_DEDUP: 終了意図を検出 — 推奨ループを停止")
         return build_recommendation_closing_response(session, sid, user_message=text)
-    if not message_adds_reco_context(text):
+    if not should_bypass_reco_summary_short_circuit(text, session=session, sid=sid):
         logger.info("UX_RECO_DEDUP: 新コンテキストなし — 要約応答へ")
         return build_recommendation_summary_response(session, sid, user_message=text)
     return None
@@ -230,6 +257,12 @@ def try_skip_duplicate_medicine_list(
     prev_sig = medicine_list_signature(last.get("recommended_medicines") or [])
     new_sig = medicine_list_signature(recommended_medicines)
     if not prev_sig or prev_sig != new_sig:
+        return None
+    if should_bypass_reco_summary_short_circuit(
+        user_message or "",
+        session=session,
+        sid=sid,
+    ):
         return None
     logger.info("UX_RECO_DEDUP: 同一薬リスト — 再推奨をスキップ")
     return build_recommendation_summary_response(

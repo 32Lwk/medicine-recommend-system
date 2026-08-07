@@ -178,6 +178,40 @@ _ALCOHOL_KEYWORDS = (
     "ハイボール",
     "缶チューハイ",
 )
+_TRAVEL_IMPORT_KEYWORDS = (
+    "空港",
+    "持ち込",
+    "入国",
+    "海外",
+    "旅行",
+    "税関",
+    "飛行機",
+    "出国",
+    "国境",
+    "止められ",
+    "引っか",
+    "海关",
+)
+_SYMPTOM_RECO_ASK_RE = re.compile(
+    r"市販薬|"
+    r"薬(?:を|は)?(?:何|なに|ある|買|使)|"
+    r"何(?:か|が)(?:いい|ええ|ある)|"
+    r"何を(?:飲|使|買)|"
+    r"教えて(?:ほしい|ください)?|"
+    r"提案|"
+    r"違う(?:ん|の)?|"
+    r"じゃ(?:あ|なく)|"
+    r"実(?:は|際)",
+    re.IGNORECASE,
+)
+_SYMPTOM_PIVOT_RE = re.compile(
+    r"やっぱ(?:り)?|そっち|キツ|つら|違う|"
+    r"も出(?:て)?|もある|も出てき|"
+    r"咳|去痰|鎮咳|鼻水|発熱|のど|喉|熱出",
+    re.IGNORECASE,
+)
+_ELDERLY_CONTEXT_RE = re.compile(r"お年寄り|高齢|孫|ご高齢|年寄り")
+_ANAPHORA_EFFICACY_RE = re.compile(r"効果|どんな|何に効|どういう")
 _EFFICACY_KEYWORDS_RE = re.compile(r"効き目|効果|効く|効き|どれくらい効")
 _USAGE_KEYWORDS = ("飲み方", "用法", "用量", "何錠", "いつ飲", "食後", "食前", "空腹", "ご飯", "頻度", "何回", "何度")
 _SIDE_EFFECT_CAUSAL_DRINK_RE = re.compile(
@@ -396,6 +430,199 @@ def _distinct_brand_count(
     return len(roots)
 
 
+def is_travel_import_context(text: str) -> bool:
+    """海外持ち込み・空港検査など旅行文脈（家の在庫報告と区別）。"""
+    return any(k in (text or "") for k in _TRAVEL_IMPORT_KEYWORDS)
+
+
+def _history_has_symptom_context(
+    conversation_history: list[dict[str, Any]] | None,
+    recommended_medicines: list[dict[str, Any]] | None,
+) -> bool:
+    from src.utils.input_helpers import has_explicit_symptom_signal
+
+    if recommended_medicines:
+        return True
+    if not conversation_history:
+        return False
+    blob = " ".join(
+        str(m.get("content") or m.get("message") or "")
+        for m in conversation_history[-8:]
+        if isinstance(m, dict)
+    )
+    return has_explicit_symptom_signal(blob)
+
+
+def is_symptom_recommendation_followup(
+    text: str,
+    *,
+    conversation_history: list[dict[str, Any]] | None = None,
+    recommended_medicines: list[dict[str, Any]] | None = None,
+) -> bool:
+    """
+    症状スレッド中の「市販薬ある？」「違うん、咳」等 — 製品比較 Q&A ではなく推奨フローへ。
+    """
+    t = (text or "").strip()
+    if not t or not _history_has_symptom_context(conversation_history, recommended_medicines):
+        return False
+    if any(k in t for k in ("違い", "どっち", "比較", "vs", "どう違")):
+        return False
+    if _distinct_brand_count(
+        t,
+        conversation_history=None,
+        recommended_medicines=None,
+        include_history=False,
+    ) >= 2:
+        return False
+    from src.utils.input_helpers import has_explicit_symptom_signal
+
+    if _SYMPTOM_RECO_ASK_RE.search(t):
+        return True
+    if has_explicit_symptom_signal(t) and not _resolve_medicine_entities(
+        t,
+        conversation_history=conversation_history,
+        recommended_medicines=recommended_medicines,
+    ):
+        return True
+    return False
+
+
+def is_symptom_pivot_followup(
+    text: str,
+    *,
+    conversation_history: list[dict[str, Any]] | None = None,
+    recommended_medicines: list[dict[str, Any]] | None = None,
+) -> bool:
+    """推奨後に別症状・主訴の追加（咳も…、やっぱりそっちがキツい等）→ 再推奨。"""
+    t = (text or "").strip()
+    if not t or not _history_has_symptom_context(conversation_history, recommended_medicines):
+        return False
+    if any(k in t for k in ("違い", "どっち", "比較", "vs", "どう違")):
+        return False
+    from src.utils.input_helpers import has_explicit_symptom_signal
+
+    if not has_explicit_symptom_signal(t):
+        return False
+    if _SYMPTOM_PIVOT_RE.search(t):
+        return True
+    if re.search(r"咳|去痰|鎮咳", t) and re.search(r"教えて|効く|薬|市販|ほしい|ある", t):
+        return True
+    return False
+
+
+def is_symptom_only_initial(
+    text: str,
+    *,
+    conversation_history: list[dict[str, Any]] | None = None,
+    recommended_medicines: list[dict[str, Any]] | None = None,
+) -> bool:
+    """初回の症状申告のみ（薬名・履歴なし）→ Physical 優先。"""
+    from src.utils.input_helpers import has_explicit_symptom_signal
+    from src.services.concierge_intent import looks_like_inquiry
+
+    t = (text or "").strip()
+    if not t or not has_explicit_symptom_signal(t):
+        return False
+    if recommended_medicines:
+        return False
+    if conversation_history:
+        user_turns = sum(
+            1 for m in conversation_history if isinstance(m, dict) and m.get("type") == "user"
+        )
+        if user_turns > 0:
+            return False
+    if _resolve_medicine_entities(
+        t,
+        conversation_history=conversation_history,
+        recommended_medicines=recommended_medicines,
+    ):
+        return False
+    if looks_like_inquiry(t) and re.search(r"薬|市販|教えて|おすすめ|選", t):
+        return False
+    try:
+        from src.services.medicine_discovery_routing import (
+            has_medicine_discovery_intent,
+            has_sports_medicine_context,
+        )
+
+        if has_medicine_discovery_intent(t) or has_sports_medicine_context(t):
+            return False
+    except ImportError:
+        pass
+    if looks_like_inquiry(t) and re.search(
+        r"副作用|成分|違い|ドーピング|併用|飲み合わせ", t
+    ):
+        return False
+    return True
+
+
+def should_prioritize_physical_for_symptom(
+    text: str,
+    *,
+    conversation_history: list[dict[str, Any]] | None = None,
+    recommended_medicines: list[dict[str, Any]] | None = None,
+) -> bool:
+    """症状スレッドでは medicine_qa（成分比較）より Physical / 再推奨を優先。"""
+    return (
+        is_symptom_recommendation_followup(
+            text,
+            conversation_history=conversation_history,
+            recommended_medicines=recommended_medicines,
+        )
+        or is_symptom_pivot_followup(
+            text,
+            conversation_history=conversation_history,
+            recommended_medicines=recommended_medicines,
+        )
+        or is_symptom_only_initial(
+            text,
+            conversation_history=conversation_history,
+            recommended_medicines=recommended_medicines,
+        )
+    )
+
+
+def _has_travel_import_intent(
+    text: str,
+    *,
+    conversation_history: list[dict[str, Any]] | None = None,
+    recommended_medicines: list[dict[str, Any]] | None = None,
+) -> bool:
+    t = (text or "").strip()
+    if is_travel_import_context(t):
+        if recommended_medicines:
+            return True
+        if _resolve_medicine_entities(
+            t,
+            conversation_history=conversation_history,
+            recommended_medicines=recommended_medicines,
+        ):
+            return True
+    try:
+        from src.services.reco_followup_signals import is_travel_thread_followup
+
+        if is_travel_thread_followup(
+            t,
+            conversation_history=conversation_history,
+        ):
+            return True
+    except ImportError:
+        pass
+    if conversation_history:
+        blob = " ".join(
+            str(m.get("content") or m.get("message") or "")
+            for m in conversation_history[-6:]
+            if isinstance(m, dict)
+        )
+        if any(
+            k in blob
+            for k in ("ロキソニン", "バファリン", "カロナール", "タイレノール", "イブ", "パブロン")
+        ):
+            if is_travel_import_context(blob) or is_travel_import_context(t):
+                return True
+    return False
+
+
 def _has_comparison_intent(
     text: str,
     *,
@@ -403,6 +630,13 @@ def _has_comparison_intent(
     recommended_medicines: list[dict[str, Any]] | None = None,
 ) -> bool:
     t = (text or "").strip()
+    if is_symptom_recommendation_followup(
+        t,
+        conversation_history=conversation_history,
+        recommended_medicines=recommended_medicines,
+    ):
+        return False
+
     pick_or_diff = any(
         k in t.lower()
         for k in (
@@ -418,6 +652,9 @@ def _has_comparison_intent(
             "better",
         )
     ) or bool(_COMPARISON_INTENT_RE.search(t))
+
+    if _is_anaphoric_reference(t) and _ANAPHORA_EFFICACY_RE.search(t) and not pick_or_diff:
+        return False
 
     suitability = any(
         k in t
@@ -785,6 +1022,22 @@ def is_medicine_information_question(
     if _is_concierge_operator_card_request(t, history=conversation_history):
         return False
 
+    try:
+        from src.services.store_inquiry_handler import is_probable_store_inquiry_any
+
+        if is_probable_store_inquiry_any(t):
+            return False
+    except Exception:
+        pass
+
+    try:
+        from src.services.concierge_agent_history import is_meta_follow_up_utterance
+
+        if is_meta_follow_up_utterance(t):
+            return False
+    except Exception:
+        pass
+
     from src.utils.input_helpers import has_explicit_symptom_signal
 
     has_entity = bool(
@@ -797,6 +1050,13 @@ def is_medicine_information_question(
     has_context = bool(recommended_medicines) or bool(conversation_history)
 
     # 初回の症状申告（薬名・推奨文脈なし）は推奨フロー優先。age 等 focus だけでは Q&A 直行しない。
+    if should_prioritize_physical_for_symptom(
+        t,
+        conversation_history=conversation_history,
+        recommended_medicines=recommended_medicines,
+    ):
+        return False
+
     if has_explicit_symptom_signal(t) and not has_entity and not has_context:
         return False
 
@@ -910,6 +1170,22 @@ def _infer_medicine_qa_focuses_uncached(
 ) -> list[MedicineQaFocus]:
     focuses: list[MedicineQaFocus] = []
 
+    try:
+        from src.services.reco_followup_signals import is_wellness_alternative_topic
+
+        if is_wellness_alternative_topic(t) and recommended_medicines:
+            return ["general"]
+    except ImportError:
+        pass
+
+    alcohol_in_utterance = any(k in t for k in _ALCOHOL_KEYWORDS)
+    if alcohol_in_utterance and _has_interaction_intent(
+        t,
+        conversation_history=conversation_history,
+        recommended_medicines=recommended_medicines,
+    ):
+        return ["interaction"]
+
     has_product_image = _has_product_image_intent(t, conversation_history=conversation_history)
     if has_product_image:
         focuses.append("product_image")
@@ -919,6 +1195,12 @@ def _infer_medicine_qa_focuses_uncached(
         recommended_medicines=recommended_medicines,
     ):
         focuses.append("comparison")
+    if _has_travel_import_intent(
+        t,
+        conversation_history=conversation_history,
+        recommended_medicines=recommended_medicines,
+    ):
+        focuses.append("doping")
     if _has_side_effect_topic_intent(t):
         focuses.append("side_effect")
     if _has_age_intent(
@@ -928,7 +1210,13 @@ def _infer_medicine_qa_focuses_uncached(
     ):
         focuses.append("age")
     if _has_ingredient_intent(t):
-        focuses.append("ingredient")
+        try:
+            from src.services.reco_followup_signals import is_wellness_alternative_topic
+
+            if not is_wellness_alternative_topic(t):
+                focuses.append("ingredient")
+        except ImportError:
+            focuses.append("ingredient")
     if _has_doping_intent(t, conversation_history=conversation_history):
         focuses.append("doping")
     if _has_interaction_intent(
@@ -943,6 +1231,16 @@ def _infer_medicine_qa_focuses_uncached(
         recommended_medicines=recommended_medicines,
     ):
         focuses.append("usage")
+
+    if _is_anaphoric_reference(t) and _ANAPHORA_EFFICACY_RE.search(t):
+        focuses = [f for f in focuses if f != "comparison"]
+        if not any(f in focuses for f in ("usage", "side_effect", "age")):
+            focuses.append("usage")
+
+    if _ELDERLY_CONTEXT_RE.search(t) and recommended_medicines:
+        focuses = [f for f in focuses if f not in ("comparison", "ingredient")]
+        if "age" not in focuses:
+            focuses.append("age")
 
     if not focuses:
         focuses.append("general")
@@ -988,20 +1286,24 @@ def get_medicine_qa_session_context(
     sid: Optional[str] = None,
 ) -> dict[str, Any]:
     """Medicine QA routing 用の session 文脈。"""
+    from src.services.medicine_thread_context import (
+        expand_messages_for_llm,
+        resolve_session_recommended_medicines,
+    )
     from src.services.session_manager import get_session_from_db
 
     session_data = get_session_from_db(sid) if sid else None
     if not isinstance(session_data, dict):
         session_data = {}
     messages = list(session_data.get("messages") or (session or {}).get("messages") or [])
-    history = messages[-10:]
-    recommended: list[dict[str, Any]] = []
-    for msg in reversed(messages):
-        if msg.get("type") == "bot" and msg.get("diagnosis"):
-            rec = msg.get("diagnosis", {}).get("recommended_medicines") or []
-            if rec:
-                recommended = list(rec)
-                break
+    history = expand_messages_for_llm(messages[-10:])
+    from src.services.medicine_thread_context import resolve_session_recommended_medicines
+
+    recommended = resolve_session_recommended_medicines(
+        session,
+        sid=sid,
+        messages=messages,
+    )
     attrs = dict(
         session_data.get("user_attributes")
         or (session or {}).get("user_attributes")
@@ -1458,6 +1760,33 @@ def build_focused_qa_sections(
     user_attributes: dict[str, Any] | None = None,
 ) -> dict[str, str]:
     """質問意図（複数 focus）に沿った補足フィールドを返す。"""
+    try:
+        from src.services.reco_followup_signals import is_wellness_alternative_topic
+
+        if is_wellness_alternative_topic(user_message):
+            names = [
+                str(m.get("product_name") or m.get("name") or "").strip()
+                for m in (medicines or [])[:2]
+                if isinstance(m, dict)
+            ]
+            names = [n for n in names if n]
+            prior = f"先ほどご案内した{names[0]}などの市販薬に加え、" if names else ""
+            return {
+                "medicine_details": "",
+                "interactions": "",
+                "doping_check": "",
+                "side_effects": "",
+                "consultation_advice": (
+                    f"{prior}"
+                    "サプリメント（食物繊維・マグネシウム等）は食品区分で、"
+                    "医薬品の市販薬とは効能・安全性の評価基準が異なります。"
+                    "自然由来を重視される場合も、症状が続くときは登録販売者に"
+                    "体質・持病・併用薬を伝えて相談されると安心です。"
+                ),
+            }
+    except ImportError:
+        pass
+
     focuses = infer_medicine_qa_focuses(
         user_message,
         conversation_history=conversation_history,

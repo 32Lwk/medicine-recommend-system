@@ -476,23 +476,39 @@ def run_chat_post_pipeline(
             MedicineQaRoute,
             resolve_medicine_qa_route,
             should_route_medicine_information_qa,
+            should_skip_focus_llm_enrichment,
         )
 
         user_msg = ctx.sanitized_message or ctx.user_message
+
+        from src.handlers.chat.non_human_patient_block_route import (
+            try_non_human_patient_redirect_response,
+        )
+
+        pet_resp = try_non_human_patient_redirect_response(
+            session,
+            client_info,
+            sid,
+            ctx.user_message or "",
+            user_msg,
+            append_user=False,
+        )
+        if pet_resp is not None:
+            mark_pipeline_step("non_human_patient_redirect")
+            return _guard_return(pet_resp)
+
         qa_ctx = get_medicine_qa_session_context(session, sid)
         mark_pipeline_step("before_medicine_qa_route")
         route_decision = resolve_medicine_qa_route(
             user_msg,
             session=session,
+            sid=sid,
             triage_result=ctx.triage_result,
             conversation_history=qa_ctx["conversation_history"],
             recommended_medicines=qa_ctx["recommended_medicines"],
             client=ctx.recommendation_client,
         )
-        skip_focus_llm = route_decision.route in (
-            MedicineQaRoute.CONCIERGE,
-            MedicineQaRoute.PHYSICAL,
-        )
+        skip_focus_llm = should_skip_focus_llm_enrichment(route_decision)
         focuses = infer_medicine_qa_focuses(
             user_msg,
             conversation_history=qa_ctx["conversation_history"],
@@ -502,7 +518,73 @@ def run_chat_post_pipeline(
         )
         mark_pipeline_step("after_medicine_qa_route")
 
-        if is_medicine_information_question(
+        if route_decision.route == MedicineQaRoute.PHYSICAL:
+            logger.info(
+                "🔄 medicine_qa gate → Physical 再推奨: source=%s",
+                route_decision.source,
+            )
+            ctx.triage_result = dict(ctx.triage_result or {})
+            ctx.triage_result["category"] = "Physical"
+            ctx.triage_result["subcategory"] = route_decision.source or "symptom_physical_priority"
+            session["last_triage_result"] = ctx.triage_result
+            sync_routing_context(ctx)
+            mark_pipeline_step("medicine_qa_physical_priority")
+        elif route_decision.route == MedicineQaRoute.CONCIERGE:
+            from src.handlers.chat.chat_question_route import try_qa_gate_concierge_response
+
+            if route_decision.concierge_intent:
+                triage = dict(ctx.triage_result or {})
+                triage["concierge_intent"] = route_decision.concierge_intent
+                triage["concierge_intent_source"] = f"qa_gate:{route_decision.source}"
+                ctx.triage_result = triage
+                session["last_triage_result"] = triage
+            conc_early = try_qa_gate_concierge_response(
+                session,
+                client_info,
+                sid,
+                ctx.user_message,
+                ctx.sanitized_message or user_msg,
+                ctx.recommendation_client,
+                triage_result=ctx.triage_result,
+                routing=ctx.routing,
+            )
+            if conc_early is not None:
+                mark_pipeline_step("medicine_qa_concierge_early_end")
+                return _guard_return(conc_early)
+
+        elif route_decision.route == MedicineQaRoute.MEDICINE_QA:
+            from src.handlers.chat.medicine_context_handlers import (
+                handle_medicine_followup_qa,
+                handle_medicine_information_qa,
+            )
+
+            _thread_sources = (
+                "intent_router_",
+                "medicine_context_",
+                "llm_medicine_thread",
+                "rule_medicine_thread",
+                "medicine_context_short",
+                "medicine_information_question",
+            )
+            _src = route_decision.source or ""
+            if any(_src.startswith(p) or p in _src for p in _thread_sources):
+                logger.info(
+                    "💬 medicine_qa early route (thread continuation): source=%s",
+                    _src,
+                )
+                mark_pipeline_step("medicine_qa_thread_route_start")
+                resp = _guard_return(
+                    handle_medicine_followup_qa(
+                        session,
+                        client_info,
+                        sid,
+                        ctx.original_user_message or user_msg,
+                    )
+                )
+                mark_pipeline_step("medicine_qa_thread_route_end")
+                return resp
+
+        if route_decision.route != MedicineQaRoute.PHYSICAL and is_medicine_information_question(
             user_msg,
             conversation_history=qa_ctx["conversation_history"],
             recommended_medicines=qa_ctx["recommended_medicines"],
@@ -530,7 +612,7 @@ def run_chat_post_pipeline(
             )
             mark_pipeline_step("medicine_qa_early_route_end")
             return resp
-        if is_medicine_side_effect_qa_enabled(sid) and is_medicine_side_effect_route(user_msg):
+        if route_decision.route != MedicineQaRoute.PHYSICAL and is_medicine_side_effect_qa_enabled(sid) and is_medicine_side_effect_route(user_msg):
             if should_use_medicine_qa_unified(focuses, user_message=user_msg):
                 from src.handlers.chat.medicine_context_handlers import (
                     handle_medicine_information_qa,
@@ -571,7 +653,28 @@ def run_chat_post_pipeline(
             client=ctx.recommendation_client,
             triage_result=ctx.triage_result,
         )
-        if med_ctx_route == "followup_qa":
+        skip_med_ctx_followup = False
+        try:
+            from src.services.medicine_qa_eligibility import (
+                MedicineQaRoute,
+                resolve_medicine_qa_route,
+            )
+            from src.services.medicine_qa_routing import get_medicine_qa_session_context
+
+            _qa_ctx = get_medicine_qa_session_context(session, sid)
+            _gate = resolve_medicine_qa_route(
+                ctx.sanitized_message or ctx.user_message,
+                session=session,
+                sid=sid,
+                triage_result=ctx.triage_result,
+                conversation_history=_qa_ctx["conversation_history"],
+                recommended_medicines=_qa_ctx["recommended_medicines"],
+                client=ctx.recommendation_client,
+            )
+            skip_med_ctx_followup = _gate.route == MedicineQaRoute.CONCIERGE
+        except Exception:
+            pass
+        if med_ctx_route == "followup_qa" and not skip_med_ctx_followup:
             from src.handlers.chat.medicine_context_handlers import handle_medicine_followup_qa
 
             logger.info("🏃 medicine_context early: followup_qa")
@@ -854,6 +957,7 @@ def run_chat_post_pipeline(
         if not should_fallback_to_symptom_recommendation(
             ctx.triage_result,
             ctx.sanitized_message or ctx.user_message,
+            conversation_history=session.get("messages") or [],
         ):
             return _guard_return(
                 ({"status": "ok", "message_count": len(session.get("messages", []))}, 200)

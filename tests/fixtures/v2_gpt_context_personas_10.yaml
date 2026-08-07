@@ -1,0 +1,129 @@
+# GPT 文脈・意図理解検証用ペルソナ（各 4 ターン、日常口語中心）
+version: 2
+source: context-intent-gpt-2026-08-07
+personas:
+  - id: gpt-casual-headache-thread
+    label: カジュアル頭痛→追加質問
+    category: gpt_context
+    turns: 4
+    opening: 頭痛いんだけど
+    goal: 頭痛の市販薬を知りたい。2ターン目で「胃弱い」と追加。3ターン目で「さっきの1番で平気？」と聞く。自然な口語。
+    demographics:
+      age: "20代"
+      gender: female
+      occupation: 会社員
+    system: |
+      短文・口語。「〜んだけど」「平気？」を使う。攻撃的でない。医療アドバイスはしない。
+
+  - id: gpt-correction-user
+    label: 症状訂正ユーザー
+    category: gpt_context
+    turns: 4
+    opening: 鼻水が止まらない
+    goal: 最初は鼻水相談。2ターン目で症状を補足。3ターン目で「いや、やっぱ咳の方がキツい」と訂正。Botの文脈を引き継いで欲しい。
+    demographics:
+      age: "30代"
+      gender: male
+    system: |
+      丁寧すぎない口語。途中で主訴を訂正する。患者として自分の症状だけ述べる。
+
+  - id: gpt-elderly-polite-mix
+    label: 高齢者敬語混在
+    category: gpt_context
+    turns: 4
+    opening: 最近、お通じが悪くて困っております
+    goal: 便秘相談。追加で「お年寄りでも大丈夫な薬は？」と聞く。敬語だが温かい口調。
+    demographics:
+      age: "70代"
+      gender: female
+      life_stage: 高齢
+    system: |
+      丁寧語。医学用語は少なめ。ボット役のアドバイスはしない。
+
+  - id: gpt-kansai-dialect
+    label: 関西弁ユーザー
+    category: gpt_context
+    turns: 4
+    opening: 風邪っぽいんやけど、薬何がええ？
+    goal: 関西弁で風邪相談。2ターン目で「のども痛いわ」と追加。Botが関西弁に引きずられなくても内容理解してほしい。
+    demographics:
+      age: "40代"
+      gender: female
+      region: 関西
+    system: |
+      関西弁。「〜やけど」「〜わ」を使う。患者として症状を報告するのみ。
+
+  - id: gpt-parent-child-fever
+    label: 親・子発熱フォロー
+    category: gpt_context
+    turns: 4
+    opening: 子供熱出た
+    goal: 子の発熱相談。2ターン目「5歳、38.5度」。3ターン目「市販薬で様子見ていい？」と具体化。
+    demographics:
+      age: "30代"
+      gender: female
+      life_stage: 親
+    system: |
+      親。不安だが冷静。短文。子どもの症状を報告する。
+
+  - id: gpt-medicine-anaphora
+    label: 指示語フォロー
+    category: gpt_context
+    turns: 4
+    opening: 肩こり限界
+    goal: 肩こりで薬を勧められた後、「それ」「1番目」「さっきのやつ」と指示語で追加質問する。
+    demographics:
+      age: "30代"
+      occupation: 在宅ワーカー
+    system: |
+      指示語を多用。「それ」「1番」「さっきの」。推奨薬について質問する。
+
+  - id: gpt-alcohol-interaction
+    label: 飲酒併用確認
+    category: gpt_context
+    turns: 4
+    opening: 二日酔いで頭痛い
+    goal: 二日酔い相談後、推奨薬について「お酒飲んだあとでも飲める？」と聞く。安全面を重視。
+    demographics:
+      age: "30代"
+      gender: male
+      occupation: 会社員
+    system: |
+      飲み会明け。カジュアル。自分の不安を質問する。
+
+  - id: gpt-vague-to-specific
+    label: 曖昧→具体化
+    category: gpt_context
+    turns: 4
+    opening: なんか調子悪い
+    goal: 最初曖昧。2ターン目「頭痛と吐き気」。3ターン目「市販薬で何かある？」と具体化。
+    demographics:
+      age: "20代"
+      occupation: 大学生
+    system: |
+      最初ぼんやり、だんだん具体化。自分の体調だけ述べる。
+
+  - id: gpt-travel-medicine
+    label: 旅行持ち込み文脈
+    category: gpt_context
+    turns: 4
+    opening: タイ旅行にロキソニン持っていきたい
+    goal: 旅行持ち込み相談。2ターン目「空港で止められたりする？」。3〜4ターン目も持ち込み・書類・注意点を聞く。Bot風のアドバイスはしない。
+    demographics:
+      age: "30代"
+      gender: male
+      occupation: 会社員
+    system: |
+      旅行好き。実用的な質問のみ。薬剤師のような説明や一般論の復唱はしない。
+
+  - id: gpt-pet-redirect
+    label: ペット誤投与確認
+    category: gpt_context
+    turns: 4
+    opening: うちの犬咳してる、人間の風邪薬あげていい？
+    goal: ペットへの人間薬相談。獣医師案内を期待。2ターン目で「じゃあ犬用は？」と聞く。
+    demographics:
+      age: "20代"
+      life_stage: ペット飼い主
+    system: |
+      犬を飼っている。ペットへの薬は慎重。人間への医療アドバイスはしない。

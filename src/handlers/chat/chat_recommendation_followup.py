@@ -92,7 +92,21 @@ def _should_use_recommendation_summary_mode(session: Any, sanitized_message: str
         return False
     if any(k in text for k in PREFERS_KAMPO_KEYWORDS + PREFERS_NOT_KAMPO_KEYWORDS):
         return False
-    return _find_last_recommendation(session, None) is not None
+    if _find_last_recommendation(session, None) is None:
+        return False
+    try:
+        from src.services.reco_followup_signals import message_warrants_reco_rescore
+
+        last = _find_last_recommendation(session, None)
+        if message_warrants_reco_rescore(
+            text,
+            conversation_history=session.get("messages") or [],
+            recommended_medicines=(last or {}).get("recommended_medicines"),
+        ):
+            return False
+    except ImportError:
+        pass
+    return True
 
 
 def _build_recommendation_summary_response(
@@ -239,6 +253,32 @@ def run_recommendation_followups(
         )
         if reco_early is not None:
             return FollowupResult(response=reco_early)
+    except ImportError:
+        pass
+
+    try:
+        from src.services.medicine_qa_routing import is_symptom_pivot_followup
+
+        last_diag = _find_last_recommendation(session, sid)
+        if last_diag and is_symptom_pivot_followup(
+            sanitized_message,
+            conversation_history=session.get("messages") or [],
+            recommended_medicines=last_diag.get("recommended_medicines"),
+        ):
+            prior_symptoms = last_diag.get("symptoms") or []
+            prior_text = "、".join(prior_symptoms[:3]) if prior_symptoms else ""
+            merged = sanitized_message.strip()
+            if prior_text and prior_text not in merged:
+                merged = f"{prior_text}。{merged}"
+            triage_result["category"] = "Physical"
+            triage_result["subcategory"] = "symptom_pivot"
+            triage_result["reasoning"] = "症状追加・主訴変更のため再推奨フローへ"
+            logger.info("🔄 症状ピボットを検出: 再推奨フローへ")
+            return FollowupResult(
+                sanitized_message=merged,
+                user_message=merged,
+                processed_message=merged,
+            )
     except ImportError:
         pass
 

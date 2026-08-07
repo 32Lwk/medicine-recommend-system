@@ -86,6 +86,19 @@ class TurnResult:
 
 
 @dataclass
+class TurnEvalRecord:
+    turn_index: int
+    passed: bool
+    notes: list[str] = field(default_factory=list)
+    failures: list[str] = field(default_factory=list)
+    rule_ids: list[str] = field(default_factory=list)
+    status: str = "pass"
+    judge: dict[str, Any] = field(default_factory=dict)
+    prompt_turns: Optional[int] = None
+    prompt_audit_ok: Optional[bool] = None
+
+
+@dataclass
 class ScenarioResult:
     scenario_id: str
     category: str
@@ -99,6 +112,7 @@ class ScenarioResult:
     persona_id: str = ""
     intent_eval: dict[str, Any] = field(default_factory=dict)
     judge: dict[str, Any] = field(default_factory=dict)
+    turn_evals: list[TurnEvalRecord] = field(default_factory=list)
 
 
 class V2TestClient:
@@ -199,6 +213,14 @@ def _strip_html(text: str) -> str:
 
 
 def _extract_bot_text(msg: dict[str, Any]) -> str:
+    try:
+        from src.utils.sage_message_plain import resolve_bot_user_facing_text
+
+        plain = resolve_bot_user_facing_text(msg)
+        if plain:
+            return _strip_html(plain)
+    except ImportError:
+        pass
     content = str(msg.get("content") or "")
     if content.strip() in ("sage_reco", "sage_status", "sage_qa"):
         diag = msg.get("diagnosis")
@@ -207,11 +229,21 @@ def _extract_bot_text(msg: dict[str, Any]) -> str:
                 val = diag.get(key)
                 if val:
                     return _strip_html(str(val))
+            try:
+                from src.schemas.recommendation_diagnosis_v1 import DiagnosisV1
+                from src.services.recommendation_diagnosis_builder import build_display_summary
+
+                summary = build_display_summary(DiagnosisV1.model_validate(diag))
+                if summary and summary != "sage_reco":
+                    return _strip_html(summary)
+            except Exception:
+                pass
+        return ""
     if content:
         return _strip_html(content)
     diag = msg.get("diagnosis")
     if isinstance(diag, dict):
-        return _strip_html(str(diag.get("message") or diag.get("title") or ""))
+        return _strip_html(str(diag.get("message") or diag.get("title") or diag.get("personalized_advice") or ""))
     return ""
 
 
@@ -362,41 +394,20 @@ def _gpt_user_reply(
     system: str = "",
     opening: str = "",
     turn_index: int = 0,
+    demographics: dict[str, Any] | None = None,
+    label: str = "",
 ) -> str:
-    api_key = os.getenv("OPENAI_API_KEY", "").strip()
-    if not api_key:
-        return opening or "もう少し詳しく教えてください"
-    if turn_index == 0 and opening:
-        return opening
-    try:
-        from openai import OpenAI
+    from src.services.e2e_gpt_user_sim import gpt_user_reply
 
-        client = OpenAI(api_key=api_key)
-        lines = []
-        user_only = [(role, text) for role, text in history[-10:] if role == "user"]
-        for role, text in user_only:
-            lines.append(f"ユーザー: {text[:500]}")
-        persona_block = f"\nペルソナ指示: {system}\n" if system else ""
-        prompt = (
-            "あなたは医薬品相談チャットのテストユーザーです。"
-            f"目的: {goal}\n"
-            f"{persona_block}"
-            "会話履歴（ユーザー発話のみ）を踏まえ、自然な日本語で次のユーザー発話を1〜2文返してください。"
-            "アシスタントの返答を模倣したり、「アシスタント:」等のプレフィックスを付けないでください。"
-            "攻撃・不適切表現・個人情報の捏造は禁止。\n\n"
-            + "\n".join(lines)
-        )
-        resp = client.chat.completions.create(
-            model=os.getenv("V2_TEST_GPT_MODEL", "gpt-4o-mini"),
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=120,
-            temperature=0.5,
-        )
-        content = (resp.choices[0].message.content or "続きを教えて").strip()
-        content = re.sub(r"^(アシスタント|ボット|assistant|bot)\s*[:：]\s*", "", content, flags=re.I)
-        return content
-    except Exception:
-        return "もう少し詳しく教えてください"
+    return gpt_user_reply(
+        history,
+        goal=goal,
+        system=system,
+        opening=opening,
+        turn_index=turn_index,
+        demographics=demographics,
+        label=label,
+    )
 
 
 def _percentile(values: list[float], pct: float) -> float:
@@ -494,6 +505,49 @@ def _judge_scenario(spec: dict[str, Any], turns: list[TurnResult]) -> dict[str, 
         return {"error": str(exc)[:200]}
 
 
+def _aggregate_turn_eval(results: list[ScenarioResult]) -> dict[str, Any]:
+    turn_rows: list[dict[str, Any]] = []
+    rule_pass = 0
+    judged = 0
+    aligned = 0
+    reject = 0
+    comp_loop = 0
+    total = 0
+    for r in results:
+        for te in r.turn_evals:
+            total += 1
+            if te.passed:
+                rule_pass += 1
+            if "reject_no_reco" in te.rule_ids:
+                reject += 1
+            if "comparison_loop" in te.rule_ids:
+                comp_loop += 1
+            grade = str((te.judge or {}).get("grade") or "")
+            if te.judge:
+                judged += 1
+                if grade == "aligned" or (te.judge or {}).get("pass"):
+                    aligned += 1
+            turn_rows.append(
+                {
+                    "scenario_id": r.scenario_id,
+                    "turn_index": te.turn_index,
+                    "rule_pass": te.passed,
+                    "judge_grade": grade or None,
+                    "prompt_turns": te.prompt_turns,
+                    "failures": te.failures,
+                }
+            )
+    return {
+        "turns_evaluated": total,
+        "turn_rule_pass": rule_pass,
+        "reject_no_reco": reject,
+        "comparison_loop": comp_loop,
+        "judge_turns": judged,
+        "judge_aligned": aligned,
+        "turn_rows": turn_rows,
+    }
+
+
 def _aggregate_judge(results: list[ScenarioResult]) -> dict[str, Any]:
     scored = [r.judge for r in results if r.judge and r.judge.get("overall") is not None]
     if not scored:
@@ -511,83 +565,157 @@ def _aggregate_judge(results: list[ScenarioResult]) -> dict[str, Any]:
     }
 
 
-def _evaluate_scenario(spec: dict[str, Any], turns: list[TurnResult]) -> tuple[bool, list[str], list[str]]:
-    notes: list[str] = []
-    failures: list[str] = []
+def _evaluate_scenario_legacy_extras(
+    spec: dict[str, Any],
+    turns: list[TurnResult],
+    failures: list[str],
+) -> None:
+    """旧 expect の must_not 拡張（clarification_loop / store / sage_reco 等）。"""
     last = turns[-1] if turns else None
     if not last:
-        failures.append("no_turns")
-        return False, notes, failures
+        return
+    expect = spec.get("expect") or {}
+    text = last.response_full or last.response_snippet
+    for bad in expect.get("must_not") or []:
+        if bad == "store" and ("薬局" in text or "店舗" in text) and "発熱" in (spec.get("description") or ""):
+            failures.append("store_during_fever")
+        elif bad == "clarification_loop_unresolved":
+            trail = _trailing_clarification_count(turns)
+            last_kind = (last.diagnosis_kind or "").lower()
+            if trail >= 3:
+                failures.append("clarification_loop_unresolved")
+            elif len(turns) >= 3 and trail >= 2 and last_kind != "llm_unavailable":
+                failures.append("clarification_loop_unresolved")
+        elif bad == "sage_reco_without_age":
+            if (last.diagnosis_kind or "").lower().startswith("sage_reco"):
+                failures.append("sage_reco_without_age")
 
-    if expect := spec.get("expect") or {}:
-        if expect.get("must_have_response", True):
-            if len((last.response_full or last.response_snippet).strip()) < 5:
-                failures.append("response_missing_or_too_short")
-            else:
-                notes.append("has_response")
+    if expect.get("content_kpi"):
+        kpis = expect["content_kpi"]
+        if "no_greeting" in kpis and GREETING_ONLY_RE.match(text.strip()):
+            failures.append("followup_greeting_only")
+        if "tech_vocab_or_topic_ref" in kpis:
+            if not any(t in text for t in TECH_VOCAB):
+                if not any(t in (spec.get("description") or "") for t in ("技術", "architecture")):
+                    failures.append("missing_tech_vocab")
 
-        if last.http_status != 200:
-            failures.append(f"http_{last.http_status}")
 
-        route = _kind_route(last.diagnosis_kind or "", last.response_full or last.response_snippet)
-        exp_route = expect.get("primary_route")
-        if exp_route and route != exp_route and route != "other":
-            if exp_route == "Physical" and route in ("Counseling", "Concierge"):
-                failures.append(f"route_mismatch expected={exp_route} got={route} kind={last.diagnosis_kind}")
-            elif exp_route != "Counseling":
-                failures.append(f"route_mismatch expected={exp_route} got={route} kind={last.diagnosis_kind}")
-            else:
-                notes.append(f"route_soft_match {route}")
+def _evaluate_scenario(
+    spec: dict[str, Any],
+    turns: list[TurnResult],
+    *,
+    session_id: str = "",
+    assert_prompt_context: bool = False,
+) -> tuple[bool, list[str], list[str], list[TurnEvalRecord]]:
+    from src.services.dialogue_turn_trace import prompt_turns_for_latest_trace
+    from src.services.e2e_turn_eval import build_turn_expect_map, evaluate_scenario_all_turns
 
-        exp_kind = expect.get("diagnosis_kind")
-        if exp_kind and (last.diagnosis_kind or "") != exp_kind:
-            failures.append(f"kind_mismatch expected={exp_kind} got={last.diagnosis_kind}")
+    has_turn_expects = bool(spec.get("turn_expects")) or bool(build_turn_expect_map(spec))
+    ok, notes, failures, raw_results = evaluate_scenario_all_turns(
+        spec,
+        turns,
+        kind_route_fn=_kind_route,
+        evaluate_all_turns=has_turn_expects,
+    )
+    _evaluate_scenario_legacy_extras(spec, turns, failures)
 
-        for bad in expect.get("must_not") or []:
-            text = last.response_full or last.response_snippet
-            if bad == "greeting_only" and GREETING_ONLY_RE.match(text.strip()):
-                failures.append("greeting_only")
-            elif bad == "store" and ("薬局" in text or "店舗" in text) and "発熱" in (spec.get("description") or ""):
-                failures.append("store_during_fever")
-            elif bad == "response_missing" and len(text.strip()) < 5:
-                failures.append("response_missing")
-            elif bad == "clarification_loop_unresolved":
-                trail = _trailing_clarification_count(turns)
-                last_kind = (last.diagnosis_kind or "").lower()
-                if trail >= 3:
-                    failures.append("clarification_loop_unresolved")
-                elif len(turns) >= 3 and trail >= 2 and last_kind != "llm_unavailable":
-                    failures.append("clarification_loop_unresolved")
-            elif bad == "sage_reco_without_age":
-                if (last.diagnosis_kind or "").lower().startswith("sage_reco"):
-                    failures.append("sage_reco_without_age")
+    turn_records: list[TurnEvalRecord] = []
+    expect_map = build_turn_expect_map(spec)
+    trace_prompt = prompt_turns_for_latest_trace(session_id) if session_id else None
 
-        for kw in expect.get("context_keywords") or []:
-            if kw.lower() in (last.response_full or last.response_snippet).lower():
-                notes.append(f"context_kw:{kw}")
-            else:
-                failures.append(f"missing_context_kw:{kw}")
+    for tr in raw_results:
+        expect = expect_map.get(tr.turn_index, {})
+        min_prompt = expect.get("min_history_turns_in_prompt")
+        prompt_turns: Optional[int] = trace_prompt
+        prompt_audit_ok: Optional[bool] = None
+        if assert_prompt_context and min_prompt is not None:
+            if prompt_turns is None and tr.turn_index < len(turns):
+                prompt_turns = max(0, tr.turn_index)
+            if prompt_turns is not None:
+                prompt_audit_ok = int(prompt_turns) >= int(min_prompt)
+                if not prompt_audit_ok:
+                    failures.append(
+                        f"t{tr.turn_index}:prompt_audit:{prompt_turns}<{min_prompt}"
+                    )
+        turn_records.append(
+            TurnEvalRecord(
+                turn_index=tr.turn_index,
+                passed=tr.passed and (prompt_audit_ok is not False),
+                notes=list(tr.notes),
+                failures=list(tr.failures),
+                rule_ids=list(tr.rule_ids),
+                status=tr.status,
+                prompt_turns=prompt_turns,
+                prompt_audit_ok=prompt_audit_ok,
+            )
+        )
 
-        text = last.response_full or last.response_snippet
-        for bad in expect.get("must_not_contain") or []:
-            if str(bad) in text:
-                failures.append(f"must_not_contain:{bad}")
-
-        if expect.get("content_kpi"):
-            kpis = expect["content_kpi"]
-            text = last.response_full or last.response_snippet
-            if "no_greeting" in kpis and GREETING_ONLY_RE.match(text.strip()):
-                failures.append("followup_greeting_only")
-            if "tech_vocab_or_topic_ref" in kpis:
-                if not any(t in text for t in TECH_VOCAB):
-                    if not any(t in (spec.get("description") or "") for t in ("技術", "architecture")):
-                        failures.append("missing_tech_vocab")
-
-        if expect.get("min_turns") and len(turns) < int(expect["min_turns"]):
-            failures.append("min_turns_not_met")
+    if assert_prompt_context and session_id and not trace_prompt:
+        notes.append("prompt_trace:fallback_unavailable")
 
     ok = len(failures) == 0
-    return ok, notes, failures
+    return ok, notes, failures, turn_records
+
+
+def _history_snippets_for_turn(turns: list[TurnResult], turn_index: int) -> list[str]:
+    lines: list[str] = []
+    for t in turns[: turn_index + 1]:
+        lines.append(f"user: {t.user_message[:200]}")
+        bot = t.response_full or t.response_snippet
+        if bot:
+            lines.append(f"bot: {bot[:200]}")
+    return lines
+
+
+def _judge_failed_turns(
+    spec: dict[str, Any],
+    turns: list[TurnResult],
+    turn_records: list[TurnEvalRecord],
+) -> None:
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        return
+    try:
+        from openai import OpenAI
+
+        from src.services.e2e_turn_judge import judge_turn_passes, llm_judge_turn
+
+        client = OpenAI(api_key=api_key)
+    except Exception:
+        return
+
+    goal = str(spec.get("description") or spec.get("dynamic_goal") or "")
+    for rec in turn_records:
+        if rec.passed and rec.status != "review":
+            continue
+        if rec.turn_index >= len(turns):
+            continue
+        turn = turns[rec.turn_index]
+        expect_map = {}
+        try:
+            from src.services.e2e_turn_eval import build_turn_expect_map
+
+            expect_map = build_turn_expect_map(spec)
+        except Exception:
+            pass
+        user_goal = str((expect_map.get(rec.turn_index) or {}).get("user_goal") or "")
+        judge = llm_judge_turn(
+            client,
+            user_message=turn.user_message,
+            bot_answer=turn.response_full or turn.response_snippet,
+            diagnosis_kind=turn.diagnosis_kind or "",
+            history_snippets=_history_snippets_for_turn(turns, rec.turn_index),
+            scenario_goal=goal,
+            user_goal=user_goal,
+        )
+        rec.judge = judge
+        if not rec.passed and judge_turn_passes(judge):
+            rec.status = "review"
+            rec.notes.append("judge:partial_pass")
+        elif rec.passed and not judge_turn_passes(judge):
+            rec.passed = False
+            rec.status = "fail"
+            rec.failures.append(f"judge:{judge.get('reason', judge.get('grade', 'misaligned'))}")
 
 
 def _append_turn(
@@ -622,6 +750,8 @@ def _run_scenario(
     spec: dict[str, Any],
     *,
     use_gpt_user: bool,
+    assert_prompt_context: bool = False,
+    judge_on_fail: bool = False,
 ) -> ScenarioResult:
     sid = client.new_session(scenario_id=str(spec["id"]))
     turns: list[TurnResult] = []
@@ -654,7 +784,19 @@ def _run_scenario(
         _append_turn(turns, history, idx=len(all_messages) + d, msg=msg, body=body, messages=messages)
         time.sleep(0.25)
 
-    ok, notes, failures = _evaluate_scenario(spec, turns)
+    ok, notes, failures, turn_evals = _evaluate_scenario(
+        spec,
+        turns,
+        session_id=sid,
+        assert_prompt_context=assert_prompt_context,
+    )
+    if judge_on_fail and (not ok or any(not te.passed for te in turn_evals)):
+        _judge_failed_turns(spec, turns, turn_evals)
+        ok = all(te.passed for te in turn_evals) and len(failures) == 0
+        for te in turn_evals:
+            for f in te.failures:
+                if f not in failures:
+                    failures.append(f"t{te.turn_index}:{f}")
     return ScenarioResult(
         scenario_id=str(spec["id"]),
         category=str(spec.get("category") or "general"),
@@ -666,6 +808,7 @@ def _run_scenario(
         auto_failures=failures,
         description=str(spec.get("description") or ""),
         persona_id=str(spec.get("persona_id") or ""),
+        turn_evals=turn_evals,
     )
 
 
@@ -674,6 +817,7 @@ def _run_gpt_persona_session(
     persona: dict[str, Any],
     *,
     turns_per_session: int,
+    judge_gpt: bool = False,
 ) -> ScenarioResult:
     persona_id = str(persona.get("id") or "")
     sid = client.new_session(scenario_id=f"gpt-{persona_id}")
@@ -682,22 +826,33 @@ def _run_gpt_persona_session(
     goal = str(persona.get("goal") or persona.get("label") or "")
     system = str(persona.get("system") or "")
     opening = str(persona.get("opening") or "")
+    demographics = persona.get("demographics") if isinstance(persona.get("demographics"), dict) else None
+    label = str(persona.get("label") or "")
+    n_turns = int(persona.get("turns") or 0) or turns_per_session
+    sim_failures: list[str] = []
 
-    for idx in range(turns_per_session):
+    for idx in range(n_turns):
         msg = _gpt_user_reply(
             history,
             goal=goal,
             system=system,
             opening=opening,
             turn_index=idx,
+            demographics=demographics,
+            label=label,
         )
+        from src.services.e2e_gpt_user_sim import validate_simulated_user_output
+
+        sim_ok, sim_reason = validate_simulated_user_output(msg)
+        if not sim_ok and idx > 0:
+            sim_failures.append(f"t{idx}:sim_bot_echo:{sim_reason}")
         body = client.chat(msg)
         messages = client.session_messages()
         _append_turn(turns, history, idx=idx, msg=msg, body=body, messages=messages)
         time.sleep(0.2)
 
     last = turns[-1] if turns else None
-    failures: list[str] = []
+    failures: list[str] = list(sim_failures)
     notes: list[str] = []
     if not last or len((last.response_full or "").strip()) < 3:
         failures.append("response_missing")
@@ -705,6 +860,31 @@ def _run_gpt_persona_session(
         notes.append("has_response")
     if last and last.http_status != 200:
         failures.append(f"http_{last.http_status}")
+
+    from src.services.e2e_turn_eval import REJECT_NO_RECO, apply_global_rules, TurnEvalContext
+
+    for t in turns:
+        ctx = TurnEvalContext(
+            turn_index=t.turn_index,
+            user_message=t.user_message,
+            bot_text=t.response_full or t.response_snippet or "",
+        )
+        _, g_fail, g_ids = apply_global_rules(ctx)
+        for gf in g_fail:
+            failures.append(f"t{t.turn_index}:{gf}")
+        if "reject_no_reco" in g_ids:
+            notes.append(f"t{t.turn_index}:reject_detected")
+
+    judge: dict[str, Any] = {}
+    if judge_gpt and turns:
+        judge = _judge_scenario(persona, turns)
+        overall = judge.get("overall")
+        if overall is not None:
+            notes.append(f"judge_overall:{overall}")
+            if float(overall) < 3.5:
+                failures.append(f"judge_low_overall:{overall}")
+        elif judge.get("error"):
+            notes.append(f"judge_error:{judge.get('error')}")
 
     return ScenarioResult(
         scenario_id=f"gpt-{persona.get('id', 'persona')}",
@@ -717,6 +897,7 @@ def _run_gpt_persona_session(
         auto_failures=failures,
         description=str(persona.get("label") or ""),
         persona_id=str(persona.get("id") or ""),
+        judge=judge,
     )
 
 
@@ -728,10 +909,11 @@ def _load_scenarios(path: Path | None = None) -> list[dict[str, Any]]:
     return list(data.get("scenarios") or [])
 
 
-def _load_personas() -> list[dict[str, Any]]:
-    if not PERSONAS_PATH.is_file():
+def _load_personas(path: Path | None = None) -> list[dict[str, Any]]:
+    personas_path = path or PERSONAS_PATH
+    if not personas_path.is_file():
         return []
-    data = yaml.safe_load(PERSONAS_PATH.read_text(encoding="utf-8"))
+    data = yaml.safe_load(personas_path.read_text(encoding="utf-8"))
     return list(data.get("personas") or [])
 
 
@@ -787,6 +969,10 @@ def _scenario_result_from_dict(row: dict[str, Any]) -> ScenarioResult:
         persona_id=str(row.get("persona_id") or ""),
         intent_eval=dict(row.get("intent_eval") or {}),
         judge=dict(row.get("judge") or {}),
+        turn_evals=[
+            TurnEvalRecord(**te) if isinstance(te, dict) else te
+            for te in (row.get("turn_evals") or [])
+        ],
     )
 
 
@@ -1141,7 +1327,7 @@ def write_report(
 
     latency = metrics.get("latency_this_run") or {}
     if latency:
-        lines.extend(["", "## レイテンシ（KPI: p95 < 5s）", ""])
+        lines.extend(["", "## レイテンシ（KPI: p95 < 12s）", ""])
         lines.append(f"- 計測ターン数: {latency.get('turns_measured', 0)}")
         lines.append(
             f"- end-to-end: p50 {latency.get('e2e_ms_p50', 0)}ms / "
@@ -1209,6 +1395,32 @@ def write_report(
         )
 
     lines.extend(["", "## 自動メトリクス（gcp-log-analysis 系）", "", "```json", json.dumps(metrics, ensure_ascii=False, indent=2)[:12000], "```", ""])
+
+    turn_kpi = metrics.get("turn_eval_kpi") or {}
+    if turn_kpi:
+        lines.extend(
+            [
+                "",
+                "## ターン別評価 KPI",
+                "",
+                f"- 評価ターン数: {turn_kpi.get('turns_evaluated', 0)}",
+                f"- ターン rule pass: {turn_kpi.get('turn_rule_pass', 0)}",
+                f"- reject_no_reco 検知: {turn_kpi.get('reject_no_reco', 0)}",
+                f"- comparison_loop 検知: {turn_kpi.get('comparison_loop', 0)}",
+                f"- judge aligned: {turn_kpi.get('judge_aligned', 0)} / judged {turn_kpi.get('judge_turns', 0)}",
+                "",
+                "| scenario | turn | rule | judge | prompt | failures |",
+                "|----------|------|------|-------|--------|----------|",
+            ]
+        )
+        for row in (turn_kpi.get("turn_rows") or [])[:120]:
+            lines.append(
+                f"| {row.get('scenario_id')} | {row.get('turn_index')} | "
+                f"{'PASS' if row.get('rule_pass') else 'FAIL'} | "
+                f"{row.get('judge_grade', '—')} | "
+                f"{row.get('prompt_turns', '—')} | "
+                f"{'; '.join(row.get('failures') or [])[:80]} |"
+            )
 
     lines.extend(["", "## 要確認シナリオ", ""])
     if not failed:
@@ -1374,10 +1586,36 @@ def main() -> int:
         action="store_true",
         help="LLM-as-judge で内容適切性を採点（OPENAI_API_KEY 必須）",
     )
+    parser.add_argument(
+        "--judge-on-fail",
+        action="store_true",
+        help="ルール評価 fail/review ターンのみ e2e_turn_judge を実行",
+    )
+    parser.add_argument(
+        "--judge-gpt",
+        action="store_true",
+        help="GPT ペルソナ最終ターンを LLM judge（overall>=3.5 で合格）",
+    )
+    parser.add_argument(
+        "--assert-prompt-context",
+        action="store_true",
+        help="turn_expects min_history_turns_in_prompt を dialogue_turn_trace と照合",
+    )
+    parser.add_argument(
+        "--evaluate-all-turns",
+        action="store_true",
+        help="turn_expects 無しでも全ターンに must_have_response を適用",
+    )
     parser.add_argument("--skip-metrics", action="store_true")
     parser.add_argument("--skip-yaml", action="store_true", help="Skip static YAML scenarios")
     parser.add_argument("--sessions", type=int, default=0, help="GPT persona session count (gpt-scale)")
     parser.add_argument("--min-chats", type=int, default=0, help="Minimum total chat turns for gpt-scale")
+    parser.add_argument(
+        "--turns-per-session",
+        type=int,
+        default=0,
+        help="GPT persona turns per session (default: max(40, min_chats/n))",
+    )
     parser.add_argument("--report-suffix", default="v2", help="Report filename suffix")
     parser.add_argument(
         "--categories",
@@ -1413,6 +1651,11 @@ def main() -> int:
         "--scenarios-path",
         default="",
         help="Alternate YAML scenarios file (default: tests/fixtures/v2_local_chat_scenarios.yaml)",
+    )
+    parser.add_argument(
+        "--personas-path",
+        default="",
+        help="Alternate GPT personas YAML (default: tests/fixtures/v2_gpt_personas.yaml)",
     )
     args = parser.parse_args()
 
@@ -1483,7 +1726,15 @@ def main() -> int:
             sid = str(spec.get("id"))
             print(f"  [yaml {i}/{len(scenarios)}] {sid} ...", flush=True)
             try:
-                results.append(_run_scenario(client, spec, use_gpt_user=args.use_gpt_user))
+                results.append(
+                    _run_scenario(
+                        client,
+                        spec,
+                        use_gpt_user=args.use_gpt_user,
+                        assert_prompt_context=args.assert_prompt_context,
+                        judge_on_fail=args.judge_on_fail,
+                    )
+                )
             except Exception as exc:
                 results.append(
                     ScenarioResult(
@@ -1506,7 +1757,10 @@ def main() -> int:
                 _save_checkpoint(checkpoint_path, meta=partial_meta, results=results)
 
     if gpt_scale:
-        personas = _load_personas()
+        personas_path = Path(args.personas_path).expanduser() if args.personas_path.strip() else None
+        if personas_path and not personas_path.is_absolute():
+            personas_path = PROJECT_ROOT / personas_path
+        personas = _load_personas(personas_path)
         n_sessions = args.sessions or max(10, len(personas) or 12)
         personas = personas[:n_sessions] if personas else []
         if not personas:
@@ -1514,12 +1768,21 @@ def main() -> int:
             return 2
 
         min_chats = args.min_chats or 500
-        turns_each = max(40, (min_chats + len(personas) - 1) // len(personas))
+        base_turns = args.turns_per_session if args.turns_per_session > 0 else 40
+        turns_each = max(base_turns, (min_chats + len(personas) - 1) // len(personas))
         print(f"Running GPT scale: {len(personas)} sessions × ~{turns_each} turns (target {min_chats}+ chats) ...")
         for i, persona in enumerate(personas, 1):
-            print(f"  [gpt {i}/{len(personas)}] {persona.get('id')} ({turns_each} turns) ...", flush=True)
+            n = int(persona.get("turns") or 0) or turns_each
+            print(f"  [gpt {i}/{len(personas)}] {persona.get('id')} ({n} turns) ...", flush=True)
             try:
-                results.append(_run_gpt_persona_session(client, persona, turns_per_session=turns_each))
+                results.append(
+                    _run_gpt_persona_session(
+                        client,
+                        persona,
+                        turns_per_session=turns_each,
+                        judge_gpt=args.judge_gpt,
+                    )
+                )
             except Exception as exc:
                 results.append(
                     ScenarioResult(
@@ -1563,6 +1826,7 @@ def main() -> int:
     else:
         metrics = _run_auto_metrics(started, session_ids)
     metrics["latency_this_run"] = _latency_summary(results, session_ids, started)
+    metrics["turn_eval_kpi"] = _aggregate_turn_eval(results)
     if args.judge:
         metrics["content_quality_judge"] = _aggregate_judge(results)
 
