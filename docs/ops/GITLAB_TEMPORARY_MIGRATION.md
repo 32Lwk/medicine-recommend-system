@@ -78,6 +78,8 @@ _AR_HOSTNAME: asia-northeast1-docker.pkg.dev
 
 dev トリガー側で `_SERVICE_NAME=medicine-recommend-dev` に上書きする（後述 §3.3）。
 
+**dev GitHub トリガー**（2026-08-08 以降）: コンソール自動生成のインライン構成では `GIT_COMMIT` / `GIT_COMMIT_DATE` が Cloud Run に反映されないため、**リポジトリ内 `cloudbuild.yaml` を参照**する。定義は [`infra/gcp/cloudbuild-trigger-medicine-recommend-dev.yaml`](../../infra/gcp/cloudbuild-trigger-medicine-recommend-dev.yaml)。再適用: `./scripts/setup-gcp-dev-cloudbuild-trigger.sh`。
+
 **ビルド手順の概要**（3 ステップ）:
 
 1. `scripts/write_build_meta.py` で `static/build-meta.json` 生成（コミット日・ハッシュ）
@@ -106,7 +108,7 @@ dev トリガー側で `_SERVICE_NAME=medicine-recommend-dev` に上書きする
 | トリガー名 | ソース | ブランチ | デプロイ先 | 状態 |
 |-----------|--------|---------|-----------|------|
 | `medicine-recommend-dev-gitlab-main` | GitLab `blank2703726/medicine-recommend` | `^main$` | `medicine-recommend-dev` | **有効**（新規） |
-| `rmgpgab-medicine-recommend-dev-asia-northeast1-32Lwk-medicinsut`（旧名） | GitHub `32Lwk/medicine-recommend-system` | `^main$` | `medicine-recommend-dev` | **無効化推奨** |
+| `rmgpgab-medicine-recommend-dev-asia-northeast1-32Lwk-medicinsut`（旧名） | GitHub `32Lwk/medicine-recommend-system` | `^main$` | `medicine-recommend-dev` | **有効** — `cloudbuild.yaml` 参照（`infra/gcp/cloudbuild-trigger-medicine-recommend-dev.yaml`） |
 | 本番用 GitHub トリガー | GitHub | `^main$` | `medicine-recommend` | 有効のまま（停止中は動かない） |
 
 ### 3.2 新規トリガー `medicine-recommend-dev-gitlab-main`

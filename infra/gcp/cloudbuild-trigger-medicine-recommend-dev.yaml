@@ -1,0 +1,19 @@
+name: rmgpgab-medicine-recommend-dev-asia-northeast1-32Lwk-medicinsut
+description: Build and deploy to Cloud Run service medicine-recommend-dev on push to "^main$"
+github:
+  owner: 32Lwk
+  name: medicine-recommend-system
+  push:
+    branch: ^main$
+filename: cloudbuild.yaml
+includeBuildLogs: INCLUDE_BUILD_LOGS_WITH_STATUS
+serviceAccount: projects/medicine-recommend/serviceAccounts/340042923793-compute@developer.gserviceaccount.com
+substitutions:
+  _SERVICE_NAME: medicine-recommend-dev
+  _DEPLOY_REGION: asia-northeast1
+  _AR_REPOSITORY: cloud-run-source-deploy
+  _AR_HOSTNAME: asia-northeast1-docker.pkg.dev
+tags:
+  - gcp-cloud-build-deploy-cloud-run
+  - gcp-cloud-build-deploy-cloud-run-managed
+  - medicine-recommend-dev
