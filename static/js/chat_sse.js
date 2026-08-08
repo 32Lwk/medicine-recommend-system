@@ -4,10 +4,11 @@
 (function (global) {
     'use strict';
 
-    function parseSseChunk(buffer) {
+    function parseSseChunk(buffer, options) {
+        const opts = options || {};
         const events = [];
         const parts = buffer.split('\n\n');
-        const rest = parts.pop() || '';
+        const rest = opts.forceFlush ? '' : (parts.pop() || '');
         parts.forEach(function (block) {
             if (!block.trim()) return;
             let event = 'message';
@@ -26,7 +27,19 @@
                 }
             }
         });
+        if (opts.forceFlush && rest.trim()) {
+            const tail = parseSseChunk(rest + '\n\n', { forceFlush: false });
+            tail.events.forEach(function (ev) {
+                events.push(ev);
+            });
+        }
         return { events: events, rest: rest };
+    }
+
+    function consumeSseEvents(buffer, onChunk, forceFlush) {
+        const parsed = parseSseChunk(buffer, { forceFlush: forceFlush });
+        parsed.events.forEach(onChunk);
+        return parsed.rest;
     }
 
     function submitStream(options) {
@@ -68,22 +81,26 @@
             let lastEventId = null;
             let lastDonePayload = null;
 
+            function trackEvent(ev) {
+                if (ev.id) lastEventId = ev.id;
+                if (ev.event === 'done' && ev.data) {
+                    lastDonePayload = ev.data;
+                }
+                onEvent(ev);
+            }
+
             function pump() {
                 return reader.read().then(function (result) {
                     if (result.done) {
+                        // Safari may close the stream before a trailing blank line arrives.
+                        if (buffer) {
+                            buffer = consumeSseEvents(buffer, trackEvent, true);
+                        }
                         onDone({ lastEventId: lastEventId, done: lastDonePayload });
                         return;
                     }
                     buffer += decoder.decode(result.value, { stream: true });
-                    const parsed = parseSseChunk(buffer);
-                    buffer = parsed.rest;
-                    parsed.events.forEach(function (ev) {
-                        if (ev.id) lastEventId = ev.id;
-                        if (ev.event === 'done' && ev.data) {
-                            lastDonePayload = ev.data;
-                        }
-                        onEvent(ev);
-                    });
+                    buffer = consumeSseEvents(buffer, trackEvent, false);
                     return pump();
                 });
             }
@@ -96,5 +113,6 @@
     global.ChatSSE = {
         submitStream: submitStream,
         parseSseChunk: parseSseChunk,
+        consumeSseEvents: consumeSseEvents,
     };
 })(typeof window !== 'undefined' ? window : this);

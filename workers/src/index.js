@@ -101,13 +101,18 @@ export default {
     const originHeaders = new Headers(request.headers);
     originHeaders.set("Host", new URL(originBase).host);
 
+    const proxyInit = {
+      method: request.method,
+      headers: originHeaders,
+      redirect: "manual",
+    };
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      proxyInit.body = request.body;
+    }
+
     let originResp;
     try {
-      originResp = await fetch(originUrl, {
-        method: request.method,
-        headers: originHeaders,
-        redirect: "manual",
-      });
+      originResp = await fetch(originUrl, proxyInit);
     } catch (_) {
       originResp = null;
     }
