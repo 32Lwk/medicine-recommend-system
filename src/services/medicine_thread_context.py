@@ -360,6 +360,24 @@ def should_continue_medicine_thread(
     if _is_concierge_topic_pivot(t):
         return None
 
+    try:
+        from src.services.medicine_discovery_routing import session_has_medicine_qa_context
+
+        has_ctx = session_has_medicine_qa_context(session, sid)
+    except Exception:
+        has_ctx = bool(recommended_medicines)
+
+    active = collect_active_medicine_products(
+        session,
+        sid=sid,
+        messages=conversation_history,
+        recommended_medicines=recommended_medicines,
+    )
+
+    # スレッド内の感想（「痛みが和らぐ」等）は Physical 優先より先に継続判定
+    if active and _is_medicine_discussion_continuation(t, active_products=active):
+        return "rule_medicine_thread_continuation"
+
     from src.services.medicine_qa_routing import should_prioritize_physical_for_symptom
 
     if should_prioritize_physical_for_symptom(
@@ -382,27 +400,11 @@ def should_continue_medicine_thread(
     except Exception:
         logger.debug("medicine_context_route skipped", exc_info=True)
 
-    try:
-        from src.services.medicine_discovery_routing import session_has_medicine_qa_context
-
-        has_ctx = session_has_medicine_qa_context(session, sid)
-    except Exception:
-        has_ctx = bool(recommended_medicines)
-
-    active = collect_active_medicine_products(
-        session,
-        sid=sid,
-        messages=conversation_history,
-        recommended_medicines=recommended_medicines,
-    )
     if not has_ctx and not active:
         return None
 
     from src.services.concierge_intent import looks_like_inquiry, _is_medicine_consultation
     from src.utils.input_helpers import has_explicit_symptom_signal
-
-    if active and _is_medicine_discussion_continuation(t, active_products=active):
-        return "rule_medicine_thread_continuation"
 
     if _is_medicine_consultation(t) or (
         has_explicit_symptom_signal(t) and not looks_like_inquiry(t)

@@ -8,9 +8,9 @@ from src.handlers.chat import chat_post_pipeline as mod
 
 def test_intent_router_shadow_after_triage():
     src = inspect.getsource(mod.run_chat_post_pipeline)
-    assert "run_and_record_shadow" in src
+    assert "schedule_shadow_observation" in src
     triage_idx = src.find("run_triage")
-    shadow_idx = src.find("run_and_record_shadow")
+    shadow_idx = src.find("schedule_shadow_observation")
     assert triage_idx > 0 and shadow_idx > triage_idx
 
 

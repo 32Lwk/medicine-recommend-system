@@ -188,7 +188,7 @@ def test_resolve_medicine_qa_route_skips_structural_ack_for_thread():
             client=None,
         )
     assert decision.route == MedicineQaRoute.MEDICINE_QA
-    assert decision.source.startswith("intent_router_")
+    assert decision.source.startswith(("intent_router_", "rule_medicine_thread_"))
 
 
 def test_should_continue_medicine_thread_pain_ack_not_new_symptom():

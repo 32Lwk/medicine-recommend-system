@@ -61,7 +61,7 @@ def test_gate_pending_delete_cancel():
     assert d is not None
     assert d.primary_route == "SessionOps"
     assert d.sub_route == "pending_clear"
-    assert d.source == "pending_delete_cancel"
+    assert d.source == "correction_delete_cancel"
 
 
 def test_gate_pharmacy_location():
