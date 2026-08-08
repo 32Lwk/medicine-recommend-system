@@ -152,4 +152,45 @@ def mark_correction_in_dialogue_state(
         return
     ctx = load_dialogue_context(session)
     ctx.setdefault("flags", {})["correction_detected"] = True
+    ctx.setdefault("flags", {})["correction_pending"] = True
+    from src.dialogue.routing.context_signals import extract_drug_entities
+
+    entities = extract_drug_entities(user_text or "")
+    if entities:
+        ctx["active_products"] = entities[:5]
+        ctx["thread_topic"] = entities[0]
+    ctx["last_user_goal"] = "correction"
+    save_dialogue_context(session, ctx)
+
+
+def update_dialogue_turn_state(
+    session: Any,
+    sid: str | None,
+    *,
+    user_text: str = "",
+    user_goal: str = "",
+    active_products: list[str] | None = None,
+    thread_topic: str | None = None,
+    pending_clarification: str | None = None,
+) -> None:
+    """Phase 3.5: 対話状態を dialogue_state に dual-write。"""
+    if not is_chat_pipeline_v2_for_session(sid):
+        return
+    if session is None or not hasattr(session, "get"):
+        return
+    ctx = load_dialogue_context(session)
+    if user_goal:
+        ctx["last_user_goal"] = user_goal
+    if active_products is not None:
+        ctx["active_products"] = list(active_products)[:8]
+    if thread_topic is not None:
+        ctx["thread_topic"] = thread_topic
+    if pending_clarification is not None:
+        ctx["pending_clarification"] = pending_clarification
+    if user_text and not ctx.get("thread_topic"):
+        from src.dialogue.routing.context_signals import extract_drug_entities
+
+        ents = extract_drug_entities(user_text)
+        if ents:
+            ctx["thread_topic"] = ents[0]
     save_dialogue_context(session, ctx)

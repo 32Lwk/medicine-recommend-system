@@ -1,15 +1,53 @@
 # AWS ステージング検証チェックリスト
 
-`aws.medicine.yutok.dev` 向け。GCP 本番 `medicine.yutok.dev` への影響がないことを必ず確認する。
+`aws-medicine.yutok.dev` / `aws.medicine.yutok.dev` 向け。GCP 本番 `medicine.yutok.dev` への影響がないことを必ず確認する。
 
-## 前提（IAM 解除後）
+> **2026-08-07**: **Fargate + Cloudflare Tunnel** 移行完了。ALB / WAF / ECS Express は **削除済**。SSOT: [AWS_FARGATE_TUNNEL.md](./AWS_FARGATE_TUNNEL.md)
+
+## Fargate + Tunnel（移行後 — 必須確認）
+
+| 確認 | コマンド / 期待 |
+|------|----------------|
+| デプロイモード | `cat scripts/.aws-deploy-mode` → `fargate_tunnel` |
+| 状態ファイル | `scripts/.aws-fargate-tunnel.json` が存在 |
+| ALB 件数 | `aws elbv2 describe-load-balancers` → **0 件**（新アカウント） |
+| ECS loadBalancers | `[]`（ALB 未接続） |
+| タスク定義 | `medicine-recommend-tunnel`（app + cloudflared） |
+| Origin health | `curl -s https://origin-aws-medicine.yutok.dev/health` → 200（稼働時） |
+| Worker health | `curl -s https://aws-medicine.yutok.dev/health` → 200（稼働時）/ 503（停止時） |
+| Worker ORIGIN | `workers/wrangler.toml` → `ORIGIN_URL=https://origin-aws-medicine.yutok.dev` |
+| Wake Lambda | `medicine-recommend-wake-staging` 存在 |
+| idle-stop | EventBridge `medicine-recommend-staging-idle-stop` ENABLED |
+| 停止デフォルト | desired=0, min/max=0（`stop-aws-staging.sh` 後） |
+
+```bash
+AWS_PROFILE=default ./scripts/print-aws-fargate-tunnel-config.sh
+curl -s https://aws-medicine.yutok.dev/health
+curl -s https://origin-aws-medicine.yutok.dev/health
+```
+
+## 前提（IAM）
 
 - [x] `aws sts get-caller-identity --profile medicine-recommend-dev` が成功
 - [ ] Admin に **GUI で必要な最大権限**を付与（任意 — Bedrock KB 初回は `AWS_PROFILE=admin` 推奨）
 - [ ] `medicine-recommend-dev` に [AWS_IAM_MEDICINE_RECOMMEND_DEV_EXTRA.json](./AWS_IAM_MEDICINE_RECOMMEND_DEV_EXTRA.json) をアタッチ（`iam:CreateRole` / Bedrock KB CLI 用）
 - [ ] Git Bash 利用時は [AWS_INFRA.md](./AWS_INFRA.md) の MSYS 注意を確認
 
-## Secrets Manager（ECS Express）
+## Secrets Manager（Fargate Tunnel — 移行後）
+
+```bash
+# Tunnel トークンは setup-aws-fargate-tunnel.sh / migrate 時に Secrets へ登録
+# その他シークレット: setup-aws-express-secrets.sh（レガシー名だが env 注入は継続利用可）
+./scripts/setup-aws-express-secrets.sh .env
+```
+
+| 確認 | 期待 |
+|------|------|
+| Tunnel token secret | `medicine-recommend/aws-staging/cloudflare-tunnel-token` |
+| app secrets | OPENAI / DATABASE / SECRET_KEY / R2 / DEEPL / LINE 等 |
+| `/health` | `200`（稼働時） |
+
+## Secrets Manager（ECS Express — レガシー）
 
 ```bash
 ./scripts/setup-aws-express-secrets.sh .env

@@ -2,20 +2,28 @@
 
 > **旧アカウント**: `290780119994` → **新アカウント**: `620992446973`  
 > **リージョン**: `ap-northeast-1`  
-> **移行日**: 2026-08-06
+> **アカウント移行日**: 2026-08-06  
+> **Fargate + Tunnel 移行日**: 2026-08-07
 
-GCP 本番 `medicine.yutok.dev` には影響なし。AWS ステージング `aws.medicine.yutok.dev` のみ対象。
+GCP 本番 `medicine.yutok.dev` には影響なし。AWS ステージング `aws-medicine.yutok.dev` / `aws.medicine.yutok.dev` のみ対象。
 
-## 移行後リソース（新アカウント）
+## 移行後リソース（新アカウント — 2026-08-07 更新）
 
 | 種別 | 値 |
 |------|-----|
-| ECS Express エンドポイント | `https://me-9585b72a360742069939f7e74bb4bb46.ecs.ap-northeast-1.on.aws` |
+| **入口 URL** | `https://aws-medicine.yutok.dev`（Cloudflare Worker + Wake） |
+| **オリジン（Tunnel）** | `https://origin-aws-medicine.yutok.dev` |
+| ECS | Fargate `default` / `medicine-recommend`（タスク定義 `medicine-recommend-tunnel`） |
+| ~~ECS Express エンドポイント~~ | **削除済**（2026-08-07） |
+| ~~ALB~~ | **0 件** |
 | CloudFront static | `https://dnv1ek9xdguhs.cloudfront.net/static` |
 | ECR | `620992446973.dkr.ecr.ap-northeast-1.amazonaws.com/medicine-recommend` |
 | CodePipeline | `medicine-recommend-main` |
 | CodeStar Connection | `medicine-recommend-github`（**AVAILABLE**） |
+| デプロイモード | `fargate_tunnel`（`scripts/.aws-deploy-mode`） |
 | IAM ユーザー | `Admin`, `medicine-recommend-dev` |
+
+詳細 SSOT: [AWS_FARGATE_TUNNEL.md](./AWS_FARGATE_TUNNEL.md)
 
 ## CLI ログイン
 
@@ -107,15 +115,18 @@ runtime critical（`620992446973` に更新済み）:
 AWS_PROFILE=default ./scripts/setup-aws-custom-domain.sh
 ```
 
-**推奨 DNS（任意）** — 現状 Express CNAME でも TLS は動作するが、ALB 直 CNAME が推奨:
+**推奨 DNS（任意）** — ~~ALB 直 CNAME~~ **レガシー（2026-08-07 ALB 削除済）**:
+
+> 現構成: `aws-medicine.yutok.dev` → Worker、`origin-aws-medicine.yutok.dev` → Tunnel。`aws.medicine.yutok.dev` は CI/E2E 用 DNS only。
 
 ```
+# レガシー（移行前）
 aws.medicine.yutok.dev → ecs-express-gateway-alb-7a197fcf-1310163209.ap-northeast-1.elb.amazonaws.com
 ```
 
-**再発防止**: `stop-aws-staging.sh` が Auto Scaling **min/max=0** まで下げる（MinCapacity=1 のままだと desired=0 でも復帰しうる）。`resume-aws-staging.sh` で min/max/desired を復元。
+**再発防止**: `stop-aws-staging.sh` が Auto Scaling **min/max=0** まで下げる。`resume-aws-staging.sh` で min/max/desired を復元。
 
-**503 について**: 停止中は ALB にターゲットがなく **503 が正常**。利用前に `./scripts/resume-aws-staging.sh`（3–6 分待ち）。
+**503 について**: 停止中は Tunnel 先にターゲットがなく **503 が正常**。Worker wake → 3–6 分待ち、または `./scripts/resume-aws-staging.sh`。
 
 ### 2. CodeStar GitHub OAuth — **完了**
 
@@ -152,11 +163,38 @@ BUDGET_LIMIT=30 ./scripts/apply-aws-budget-notifications.sh
 
 詳細: [AWS_COST_PLAN.md](./AWS_COST_PLAN.md) / [AWS_BUDGET_STAGED_ACTIONS.md](./AWS_BUDGET_STAGED_ACTIONS.md)
 
-### 6. 旧アカウント整理（移行確認後 30 日）
+### 6. 旧アカウント整理 — **ALB 削除済（2026-08-07）**
 
-- 旧 CodePipeline 停止
-- 旧 ECS `desiredCount=0`
-- 旧 S3 / Secrets 削除
+| 操作 | 状態 |
+|------|------|
+| ECS `desiredCount=0` | ✅ |
+| `delete-aws-express-staging.sh --confirm` | ✅ Express INACTIVE |
+| 残存 ALB / WAF | ✅ **手動削除**（Express 削除後に孤立 ALB が残存したため） |
+| 新アカウント Express → Fargate + Tunnel | ✅ [AWS_FARGATE_TUNNEL.md](./AWS_FARGATE_TUNNEL.md) |
+
+```bash
+# 旧アカウント Express 削除
+AWS_PROFILE=medicine-recommend-dev AWS_ACCOUNT_ID=290780119994 \
+  ./scripts/delete-aws-express-staging.sh --confirm
+```
+
+30 日後: 旧 ECR / Secrets / S3 の完全削除を再評価。
+
+### 7. Fargate + Cloudflare Tunnel 移行 — **完了（2026-08-07）**
+
+```bash
+export AWS_PROFILE=default AWS_ACCOUNT_ID=620992446973
+export CLOUDFLARE_TUNNEL_TOKEN='...'
+./scripts/migrate-aws-express-to-fargate-tunnel.sh --confirm
+cd workers && npx wrangler deploy
+./scripts/stop-aws-staging.sh   # 停止デフォルト化
+```
+
+| 検証 | 結果 |
+|------|------|
+| ALB 件数（新） | 0 |
+| `/health` Worker / Origin | 200 OK（稼働時） |
+| コスト（停止デフォルト） | ~$6–7/月（新のみ） |
 
 ## トラブルシュート
 
@@ -165,20 +203,19 @@ BUDGET_LIMIT=30 ./scripts/apply-aws-budget-notifications.sh
 | タスク起動失敗 `GetSecretValue` | `ecsTaskExecutionRole` に Secrets 権限なし | bootstrap スクリプト再実行 or IAM inline policy 追加 |
 | `exec ./start.sh: no such file` | Windows CRLF | Dockerfile の `sed -i 's/\r$//'` + `CMD ["bash","./start.sh"]` |
 | CodePipeline setup 失敗（Windows） | `/tmp` パス | `setup-aws-codepipeline.sh` の `aws_file_arg()` 使用 |
+| 503（停止中） | ECS desired=0 | **正常**。Worker が wake → 3–6 分待ち |
 | 503（CANARY 中） | デプロイ bake 3+3 分 | 数分待って `/health` 再確認 |
+| stop 後すぐ起動 | Worker / ヘルスチェックが wake | stop 後は URL にアクセスしない |
+| Origin 502 | cloudflared / Tunnel token | タスクログ、Secrets 確認 |
+| 旧 ALB 残存 | Express 削除後の孤立 | listener 削除 → ALB 削除 |
 | HTTPS 証明書エラー（`SEC_E_WRONG_PRINCIPAL`） | ACM が ISSUED でも ALB リスナー未アタッチ | `./scripts/setup-aws-custom-domain.sh` を再実行 |
 | post_build Failed（`/health` 420s タイムアウト） | 上記 TLS 未設定で `curl -sf` 失敗 | カスタムドメイン TLS 設定後に Pipeline 再実行 |
 
 ## 検証
 
 ```bash
-curl -s https://me-9585b72a360742069939f7e74bb4bb46.ecs.ap-northeast-1.on.aws/health
+curl -s https://aws-medicine.yutok.dev/health
+curl -s https://origin-aws-medicine.yutok.dev/health
 curl -sI https://dnv1ek9xdguhs.cloudfront.net/static/css/main.css
-```
-
-DNS 切替後:
-
-```bash
-curl -s https://aws.medicine.yutok.dev/health
 GIT_COMMIT=$(git rev-parse HEAD) ./scripts/aws-staging-smoke.sh
 ```

@@ -1,0 +1,11 @@
+{
+  "cpu": "512",
+  "memory": "1024",
+  "desired_count": 1,
+  "min_tasks": 1,
+  "max_tasks": 10,
+  "cpu_target": 70,
+  "gunicorn_workers": "2",
+  "waf_rate_limit_before": 2000,
+  "saved_at": "2026-08-04T15:20:20Z"
+}

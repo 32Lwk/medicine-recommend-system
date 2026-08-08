@@ -62,5 +62,10 @@ aws ecs update-service \
 
 echo ""
 echo "Done. Wait 3-5 min, then check:"
-echo "  curl -I https://me-af03a514688645069e3946cd45cd6970.ecs.ap-northeast-1.on.aws/health"
-echo "  curl -I https://aws.medicine.yutok.dev/health"
+if is_fargate_tunnel_mode 2>/dev/null; then
+  ORIGIN="$(resolve_tunnel_origin_url 2>/dev/null || echo https://origin-aws-medicine.yutok.dev)"
+  echo "  curl -sI ${ORIGIN}/health"
+else
+  echo "  curl -I https://me-af03a514688645069e3946cd45cd6970.ecs.ap-northeast-1.on.aws/health"
+fi
+echo "  curl -sI https://aws-medicine.yutok.dev/health"

@@ -1,0 +1,344 @@
+version: 1
+source: context-intent-expanded-2026-08-07
+count: 30
+scenarios:
+# --- ベース回帰（12） ---
+- id: ctx-abdominal-timeout-01
+  category: physical_context
+  wave: regression
+  input: お腹が痛い
+  description: 腹痛推奨タイムアウト回帰
+  expect:
+    primary_route: Physical
+    must_have_response: true
+
+- id: ctx-loxonin-followup-home-01
+  category: medicine_thread
+  wave: regression
+  input: 家にもあります
+  setup:
+  - ロキソニンの写真を見せてください
+  expect:
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+    context_keywords:
+    - ロキソニン
+
+- id: ctx-loxonin-followup-s-variant-01
+  category: medicine_thread
+  wave: regression
+  input: Sはついていません
+  setup:
+  - ロキソニンの写真を見せてください
+  - 家にもあります
+  expect:
+    must_have_response: true
+    min_turns: 3
+    must_not:
+    - greeting_only
+    context_keywords:
+    - ロキソニン
+
+- id: ctx-loxonin-followup-s-found-01
+  category: medicine_thread
+  wave: regression
+  input: 見てみたらSがついていました
+  setup:
+  - ロキソニンの写真を見せてください
+  - 家にもあります
+  - Sはついていません
+  expect:
+    must_have_response: true
+    min_turns: 4
+    must_not_contain:
+    - azのど
+    context_keywords:
+    - ロキソニン
+
+- id: ctx-reco-followup-compare-01
+  category: medicine_thread
+  wave: regression
+  input: どっちがいい？
+  setup:
+  - 頭が痛い
+  expect:
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+
+- id: ctx-warafin-followup-01
+  category: medicine_thread
+  wave: regression
+  input: それと一緒に飲んでも大丈夫？
+  setup:
+  - 今ロキソニンを飲んでいます
+  expect:
+    must_have_response: true
+    min_turns: 2
+    context_keywords:
+    - ロキソニン
+
+# --- 日常表現・方言・省略（18） ---
+- id: exp-casual-home-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: うちにもあるわ
+  setup:
+  - ロキソニンの写真見せて
+  description: 関西寄りカジュアル「うちにも」
+  expect:
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+    context_keywords:
+    - ロキソニン
+
+- id: exp-kansai-ack-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: せやねん、家にもあるで
+  setup:
+  - ロキソニンSって何？
+  expect:
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+
+- id: exp-slang-sleepy-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: マジで眠くなる？
+  setup:
+  - ロキソニンって何？
+  description: 若者言葉で副作用確認
+  expect:
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+
+- id: exp-anaphora-alcohol-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: お酒飲んでも平気？
+  setup:
+  - 今ロキソニン飲んでます
+  expect:
+    must_have_response: true
+    min_turns: 2
+    context_keywords:
+    - ロキソニン
+
+- id: exp-multi-compare-01
+  category: medicine_thread_multi
+  wave: expanded
+  input: 1番と2番どっちがええの？
+  setup:
+  - 頭痛がひどい
+  description: 複数推奨後の口語比較
+  expect:
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+
+- id: exp-typo-brand-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: ロキソニソの副作用
+  description:  typo 許容の医薬品 QA
+  expect:
+    must_have_response: true
+    must_not:
+    - response_missing
+
+- id: exp-english-mix-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: loxonin で sleepiness ある？
+  setup:
+  - ロキソニンについて教えて
+  expect:
+    must_have_response: true
+    min_turns: 2
+
+- id: exp-elderly-vague-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: あの赤い包装のやつ、大丈夫かな
+  setup:
+  - ロキソニンの写真を見せてください
+  description: 曖昧指示でのフォロー
+  expect:
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+
+- id: exp-thanks-then-followup-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: あと眠くなる？
+  setup:
+  - ロキソニンの副作用教えて
+  - ありがとう
+  description: 感謝後も医薬品スレッド継続
+  expect:
+    must_have_response: true
+    min_turns: 3
+    must_not:
+    - greeting_only
+
+- id: exp-dosage-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: 1日何錠まで？
+  setup:
+  - 頭が痛い
+  expect:
+    must_have_response: true
+    min_turns: 2
+
+- id: exp-pregnancy-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: 妊娠中だけどさっきの薬飲んでいい？
+  setup:
+  - 頭痛がします
+  expect:
+    must_have_response: true
+    min_turns: 2
+
+- id: exp-child-age-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: 5歳だけど使える？
+  setup:
+  - 子どもが咳をしています
+  expect:
+    must_have_response: true
+    min_turns: 2
+
+- id: exp-ibuprofen-stomach-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: イブ飲んだらお腹キツくなったことある
+  description: 単発の日常表現 QA
+  expect:
+    must_have_response: true
+    must_not:
+    - greeting_only
+
+- id: exp-warafin-slang-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: ワーファリン飲んでて、さっきのやつ大丈夫？
+  setup:
+  - ロキソニンとイブの違いは？
+  expect:
+    must_have_response: true
+    min_turns: 2
+
+- id: exp-package-casual-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: パッケージ見せて
+  setup:
+  - ロキソニン知りたい
+  expect:
+    must_have_response: true
+    min_turns: 2
+
+- id: exp-correction-pivot-01
+  category: correction
+  wave: expanded
+  input: いや、違う、イブの方が気になる
+  setup:
+  - 頭痛い
+  - どっちがいい？
+  description: 比較文脈からの訂正
+  expect:
+    must_have_response: true
+    min_turns: 3
+
+- id: exp-greeting-then-symptom-01
+  category: physical_context
+  wave: expanded
+  input: 喉痛いんやけど
+  setup:
+  - こんにちは
+  description: 挨拶後の関西弁症状
+  expect:
+    must_have_response: true
+    min_turns: 2
+
+- id: exp-short-ack-02
+  category: medicine_thread_casual
+  wave: expanded
+  input: なるほど
+  setup:
+  - ロキソニンとイブの違いは？
+  expect:
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+
+- id: exp-combo-medicines-01
+  category: medicine_thread_multi
+  wave: expanded
+  input: 3つとも成分一緒？
+  setup:
+  - 頭痛がする
+  description: 複数推奨後の成分比較（網羅性）
+  expect:
+    must_have_response: true
+    min_turns: 2
+
+- id: exp-fever-number-01
+  category: physical_context
+  wave: expanded
+  input: 39度ある
+  setup:
+  - 熱っぽい
+  expect:
+    must_have_response: true
+    min_turns: 2
+
+- id: exp-insomnia-vague-01
+  category: counseling_context
+  wave: expanded
+  input: もう2週間くらい
+  setup:
+  - 最近よく眠れなくて
+  expect:
+    must_have_response: true
+    min_turns: 2
+
+- id: exp-concierge-pivot-01
+  category: medicine_thread_casual
+  wave: expanded
+  input: 技術スタックは？
+  setup:
+  - ロキソニンの副作用教えて
+  description: 医薬品→メタ質問への話題転換（新トピック）
+  expect:
+    primary_route: Concierge
+    must_have_response: true
+    min_turns: 2
+
+- id: exp-store-after-reco-01
+  category: store
+  wave: expanded
+  input: 近くの薬局どこ？
+  setup:
+  - 頭痛い
+  expect:
+    primary_route: Store
+    must_have_response: true
+    min_turns: 2

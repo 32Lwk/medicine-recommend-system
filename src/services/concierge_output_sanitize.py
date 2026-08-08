@@ -88,9 +88,29 @@ def _collapse_whitespace(text: str) -> str:
     return result.strip()
 
 
+def _unwrap_embedded_json_answer(text: str) -> str:
+    """LLM が JSON 全体を answer として返した場合に answer フィールドだけ抽出する。"""
+    import json
+
+    s = (text or "").strip()
+    if not s.startswith("{") or '"answer"' not in s[:400]:
+        return s
+    try:
+        parsed = json.loads(s)
+        if isinstance(parsed, dict):
+            ans = str(parsed.get("answer") or "").strip()
+            if ans:
+                return ans
+    except json.JSONDecodeError:
+        m = re.search(r'"answer"\s*:\s*"((?:[^"\\]|\\.)*)"', s, re.DOTALL)
+        if m:
+            return m.group(1).replace('\\"', '"').replace("\\n", "\n")
+    return s
+
+
 def sanitize_medicine_ask_output(text: str) -> str:
     """Ask 回答から env 名・内部パス等を除去（Concierge と同パターン）。"""
-    result = strip_internal_llm_prefix((text or "").strip())
+    result = _unwrap_embedded_json_answer(strip_internal_llm_prefix((text or "").strip()))
     if not result:
         return result
     result = _replace_env_assignments(result)

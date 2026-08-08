@@ -1,0 +1,226 @@
+version: 2
+source: golden-pr-initial-2026-08-07
+count: 12
+description: PR必須ゴールデン（初期）。expanded から turn_expects 付きで移行。anaphora/pivot 専バケット含む。
+scenarios:
+- id: golden-loxonin-home-01
+  category: anaphora
+  wave: golden-pr
+  description: ロキソニンスレッド — 家にも（greeting リセット禁止）
+  setup:
+  - ロキソニンの写真を見せてください
+  input: 家にもあります
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      context_keywords:
+      - ロキソニン
+  - turn: 1
+    expect:
+      must_have_response: true
+      must_not:
+      - greeting_only
+      context_keywords:
+      - ロキソニン
+      must_reference_prior:
+      - ロキソニン
+      must_not_repeat_prior_bot: true
+  expect:
+    min_turns: 2
+
+- id: golden-loxonin-s-variant-01
+  category: anaphora
+  wave: golden-pr
+  description: S 表記フォロー — 文脈維持
+  setup:
+  - ロキソニンの写真を見せてください
+  - 家にもあります
+  input: Sはついていません
+  turn_expects:
+  - turn: 2
+    expect:
+      context_keywords:
+      - ロキソニン
+      must_not:
+      - greeting_only
+      must_reference_prior:
+      - ロキソニン
+  expect:
+    min_turns: 3
+
+- id: golden-warafin-anaphora-01
+  category: anaphora
+  wave: golden-pr
+  description: 「それと」併用確認 — active product 維持
+  setup:
+  - 今ロキソニンを飲んでいます
+  input: それと一緒に飲んでも大丈夫？
+  turn_expects:
+  - turn: 1
+    expect:
+      context_keywords:
+      - ロキソニン
+      must_reference_prior:
+      - ロキソニン
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 2
+
+- id: golden-compare-followup-01
+  category: medicine_thread
+  wave: golden-pr
+  description: 推奨後比較 — comparison ループ禁止
+  setup:
+  - 頭が痛い
+  input: どっちがいい？
+  turn_expects:
+  - turn: 1
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_repeat_prior_bot: true
+      must_not:
+      - greeting_only
+  expect:
+    min_turns: 2
+
+- id: golden-correction-pivot-01
+  category: correction
+  wave: golden-pr
+  description: ユーザー訂正 — イブへ pivot
+  setup:
+  - 頭痛い
+  - どっちがいい？
+  input: いや、違う、イブの方が気になる
+  turn_expects:
+  - turn: 2
+    expect:
+      must_have_response: true
+      must_reference_prior:
+      - イブ
+      context_keywords:
+      - イブ
+      must_answer_question: true
+  expect:
+    min_turns: 3
+
+- id: golden-meta-pivot-01
+  category: pivot
+  wave: golden-pr
+  description: 医薬品スレッド中のメタ質問 → Concierge
+  setup:
+  - ロキソニンの副作用教えて
+  input: 技術スタックは？
+  turn_expects:
+  - turn: 1
+    expect:
+      primary_route: Concierge
+      must_have_response: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 2
+
+- id: golden-alcohol-anaphora-01
+  category: anaphora
+  wave: golden-pr
+  description: 指示語なし併用禁忌 — ロキソニン文脈
+  setup:
+  - 今ロキソニン飲んでます
+  input: お酒飲んでも平気？
+  turn_expects:
+  - turn: 1
+    expect:
+      context_keywords:
+      - ロキソニン
+      must_reference_prior:
+      - ロキソニン
+      must_answer_question: true
+  expect:
+    min_turns: 2
+
+- id: golden-clarify-ambiguous-01
+  category: clarify
+  wave: golden-pr
+  description: 品目未特定の飲み合わせ — Clarify 期待
+  input: 他の薬と一緒に飲んでも大丈夫？
+  turn_expects:
+  - turn: 0
+    expect:
+      expects_clarify: true
+      primary_route: Concierge
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    must_have_response: true
+
+- id: golden-chitchat-health-01
+  category: chitchat
+  wave: golden-pr
+  description: 品目なし健康一般論 — 拒否テンプレ禁止
+  input: 最近疲れが取れなくて、市販薬に頼りすぎかもしれません
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+      primary_route: Concierge
+  expect:
+    must_have_response: true
+
+- id: golden-session-delete-01
+  category: session_ops
+  wave: golden-pr
+  description: 削除依頼 — SessionOps 一貫
+  input: この会話を削除して
+  turn_expects:
+  - turn: 0
+    expect:
+      primary_route: SessionOps
+      must_have_response: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    must_have_response: true
+
+- id: golden-thanks-followup-01
+  category: medicine_thread
+  wave: golden-pr
+  description: 感謝後も医薬品スレッド継続
+  setup:
+  - ロキソニンの副作用教えて
+  - ありがとう
+  input: あと眠くなる？
+  turn_expects:
+  - turn: 2
+    expect:
+      context_keywords:
+      - ロキソニン
+      must_not:
+      - greeting_only
+      must_answer_question: true
+  expect:
+    min_turns: 3
+
+- id: golden-casual-home-kansai-01
+  category: anaphora
+  wave: golden-pr
+  description: 関西弁フォロー — うちにも
+  setup:
+  - ロキソニンの写真見せて
+  input: うちにもあるわ
+  turn_expects:
+  - turn: 1
+    expect:
+      context_keywords:
+      - ロキソニン
+      must_not:
+      - greeting_only
+      must_reference_prior:
+      - ロキソニン
+  expect:
+    min_turns: 2

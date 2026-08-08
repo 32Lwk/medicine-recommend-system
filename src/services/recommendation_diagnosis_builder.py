@@ -334,6 +334,16 @@ def build_display_summary(diagnosis: DiagnosisV1) -> str:
     return text or "医薬品推奨結果"
 
 
+def ensure_user_facing_advice(diagnosis: DiagnosisV1) -> DiagnosisV1:
+    """sage_reco マーカー単体がユーザーに見えないよう、プレーン要約を補完する。"""
+    if (diagnosis.personalized_advice or "").strip():
+        return diagnosis
+    summary = build_display_summary(diagnosis)
+    if summary:
+        diagnosis.personalized_advice = summary
+    return diagnosis
+
+
 def merge_reco_detail(
     diagnosis: dict[str, Any],
     detail: dict[str, Any],

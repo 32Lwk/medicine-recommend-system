@@ -1,0 +1,43 @@
+{
+  "trace_count": 1,
+  "exported_traces": [
+    {
+      "trace_id": "bd31130a-3e78-4bbe-953c-aa78a3f9dc27",
+      "events": [
+        {
+          "ts": "2026-08-05T02:39:18.828Z",
+          "type": "post_start"
+        },
+        {
+          "ts": "2026-08-05T02:39:18.828Z",
+          "type": "received_message",
+          "text": "腰が痛い"
+        },
+        {
+          "ts": "2026-08-05T02:39:20.029Z",
+          "type": "user_message",
+          "text": "腰が痛い"
+        },
+        {
+          "ts": "2026-08-05T02:39:24.039Z",
+          "type": "triage",
+          "category": "Physical",
+          "subcategory": "back_pain",
+          "confidence": 0.99
+        }
+      ],
+      "started_at": "2026-08-05T02:39:18.828Z",
+      "session_id": null,
+      "user_message": "腰が痛い",
+      "triage": {
+        "category": "Physical",
+        "subcategory": "back_pain",
+        "confidence": 0.99
+      },
+      "concierge_intent": null,
+      "pipeline_perf": null,
+      "agent_steps": []
+    }
+  ],
+  "slow_traces_ge_8s": []
+}

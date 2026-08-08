@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "expanded-v4-gpt5",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-07T14:39:15.879240+00:00",
+    "elapsed_sec": 523.0,
+    "scenario_count": 5,
+    "total_turns": 20,
+    "auto_pass": 4,
+    "use_gpt_user": true,
+    "gpt_scale": true,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "gpt-gpt-correction-user",
+      "session_id": "1786113555888460573812",
+      "category": "gpt_context",
+      "persona_id": "gpt-correction-user",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-elderly-polite-mix",
+      "session_id": "1786113670746175602872",
+      "category": "gpt_context",
+      "persona_id": "gpt-elderly-polite-mix",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-kansai-dialect",
+      "session_id": "1786113770430079751614",
+      "category": "gpt_context",
+      "persona_id": "gpt-kansai-dialect",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-vague-to-specific",
+      "session_id": "1786113923324946443716",
+      "category": "gpt_context",
+      "persona_id": "gpt-vague-to-specific",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-travel-medicine",
+      "session_id": "1786114019185506316610",
+      "category": "gpt_context",
+      "persona_id": "gpt-travel-medicine",
+      "turns": 4,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

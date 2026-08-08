@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "report_suffix": "tier1-gpt-v3",
+    "date": "2026-08-08",
+    "started_at": "2026-08-08T02:48:49.757872+00:00",
+    "elapsed_sec": 218.0,
+    "scenario_count": 4,
+    "total_turns": 16
+  },
+  "skipped": true
+}

@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "expanded-v1-gpt",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-07T13:13:39.647117+00:00",
+    "elapsed_sec": 548.4,
+    "scenario_count": 10,
+    "total_turns": 40,
+    "auto_pass": 3,
+    "use_gpt_user": true,
+    "gpt_scale": true,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "gpt-gpt-casual-headache-thread",
+      "session_id": "1786108419653818424166",
+      "category": "gpt_context",
+      "persona_id": "gpt-casual-headache-thread",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-correction-user",
+      "session_id": "1786108471567846748274",
+      "category": "gpt_context",
+      "persona_id": "gpt-correction-user",
+      "turns": 4,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-elderly-polite-mix",
+      "session_id": "1786108531550713255820",
+      "category": "gpt_context",
+      "persona_id": "gpt-elderly-polite-mix",
+      "turns": 4,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-kansai-dialect",
+      "session_id": "1786108596944369205821",
+      "category": "gpt_context",
+      "persona_id": "gpt-kansai-dialect",
+      "turns": 4,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-parent-child-fever",
+      "session_id": "1786108654275724933306",
+      "category": "gpt_context",
+      "persona_id": "gpt-parent-child-fever",
+      "turns": 4,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-medicine-anaphora",
+      "session_id": "1786108710917907373667",
+      "category": "gpt_context",
+      "persona_id": "gpt-medicine-anaphora",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-alcohol-interaction",
+      "session_id": "1786108777070845193893",
+      "category": "gpt_context",
+      "persona_id": "gpt-alcohol-interaction",
+      "turns": 4,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-vague-to-specific",
+      "session_id": "1786108840172361261716",
+      "category": "gpt_context",
+      "persona_id": "gpt-vague-to-specific",
+      "turns": 4,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-travel-medicine",
+      "session_id": "1786108892637745692430",
+      "category": "gpt_context",
+      "persona_id": "gpt-travel-medicine",
+      "turns": 4,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-pet-redirect",
+      "session_id": "1786108920333739708304",
+      "category": "gpt_context",
+      "persona_id": "gpt-pet-redirect",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

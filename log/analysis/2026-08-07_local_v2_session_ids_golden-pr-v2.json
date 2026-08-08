@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "golden-pr-v2",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-07T10:56:30.381577+00:00",
+    "elapsed_sec": 216.0,
+    "scenario_count": 8,
+    "total_turns": 17,
+    "auto_pass": 4,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "golden-loxonin-home-01",
+      "session_id": "1786100190391417455627",
+      "category": "anaphora",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-loxonin-s-variant-01",
+      "session_id": "1786100205169232439998",
+      "category": "anaphora",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-warafin-anaphora-01",
+      "session_id": "1786100229253322540472",
+      "category": "anaphora",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-compare-followup-01",
+      "session_id": "1786100275882827202166",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-correction-pivot-01",
+      "session_id": "1786100309289597362942",
+      "category": "correction",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-meta-pivot-01",
+      "session_id": "1786100350706623839509",
+      "category": "pivot",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-alcohol-anaphora-01",
+      "session_id": "1786100356694589613974",
+      "category": "anaphora",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-clarify-ambiguous-01",
+      "session_id": "1786100402466994998303",
+      "category": "clarify",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "source_path": "D:\\Programing\\medicine-recommend\\log\\raw\\downloaded-aws-logs-20260805-20260806-20260806-164015.json",
+  "source_name": "downloaded-aws-logs-20260805-20260806-20260806-164015.json",
+  "entry_count": 49526,
+  "time_range": {
+    "start": "2026-08-05T02:14:33.910Z",
+    "end": "2026-08-06T16:11:26.136Z"
+  },
+  "services": {
+    "/ecs/medicine-recommend": 49526
+  },
+  "primary_service": "/ecs/medicine-recommend",
+  "revisions": {},
+  "commit_shas": {},
+  "severity_counts": {
+    "INFO": 41108,
+    "DEBUG": 8202,
+    "WARNING": 126,
+    "ERROR": 90
+  },
+  "platform": "aws",
+  "log_group": "/ecs/medicine-recommend",
+  "region": "ap-northeast-1",
+  "ecs_service": "medicine-recommend",
+  "log_streams": {
+    "ecs/Main/cc6bcacd45ab420cbcc0881ca8c60bb7": 10703,
+    "ecs/Main/7c0717a055f04ce38f06f95c1fa0ae61": 2581,
+    "ecs/Main/a4ed224b3748453183beb5d353bdc110": 2574,
+    "ecs/Main/b68ee51f1bf746ee8079eafe31e2da65": 2553,
+    "ecs/Main/e1ef4b9b8c7948a8a5522002fd611b40": 2553,
+    "ecs/Main/ab9feb1689694a439c955d7e32833e3d": 2551,
+    "ecs/Main/ec7e2d2f117140bdbc55fd252c2e586d": 2550,
+    "ecs/Main/74c938549bb1451cbdfcf90334a99525": 2549,
+    "ecs/Main/de3b867f552b43df89673aa48b3eb845": 2525,
+    "ecs/Main/479000f65f32443cbefc459784481933": 2495,
+    "ecs/Main/0106c6d921444809b1e68589ceff7fa0": 2433,
+    "ecs/Main/819a1d6d53544608acd5692dd044a26b": 2287,
+    "ecs/Main/9036cf4c0d0b4ab6b39d5aba762b54e3": 2244,
+    "ecs/Main/62a8adea95da4f83b7984289c1b2a5f3": 2236,
+    "ecs/Main/7acd0e87b5cf407db0492e2a118f8239": 2021,
+    "ecs/Main/114910a34ef8479983df65f16b7fd571": 492,
+    "ecs/Main/c5a34f0e8f22418e80b20d07eb918251": 404,
+    "ecs/Main/ed4ee4d422a2409b88ed6efe8d5354d1": 350,
+    "ecs/Main/8bd00065785f4db4ba6ad1b3e939ec57": 310,
+    "ecs/Main/5571e45a43d34b72a3c776de0b38fcff": 265
+  },
+  "task_definitions": {}
+}

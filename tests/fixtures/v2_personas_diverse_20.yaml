@@ -1,0 +1,164 @@
+# 多様な背景・趣味・口調を持つ 20 ペルソナ（ゴールデン 12 件とは独立）
+version: 1
+source: persona-diverse-2026-08-07
+description: ロキソニン/anaphora 偏重を避けたユーザー像。E2E turn_expects と GPT sim 共用。
+personas:
+  - id: persona-marathon-knee
+    label: マラソンランナー（膝痛）
+    category: physical
+    age: 34
+    traits: [ランニング, 週末長距離, 自己管理]
+    opening: 昨日10km走ったら膝が痛い
+    goal: 膝痛の市販薬と休養アドバイス。NSAID と湿布の違いを聞く
+
+  - id: persona-pregnant-nausea
+    label: 妊娠初期（つわり）
+    category: physical
+    age: 29
+    traits: [妊娠12週, 慎重, 受診検討]
+    opening: 妊娠中なんですが、つわりがつらくて市販薬使ってもいい？
+    goal: 妊娠中の市販薬安全性。成分名を聞かれたら答える
+
+  - id: persona-gamer-eyestrain
+    label: ゲーマー（目の疲れ）
+    category: physical
+    age: 22
+    traits: [eスポーツ, 長時間PC, カジュアル口調]
+    opening: ゲームやりすぎて目がバキバキなんだけど
+    goal: 目の疲れ・目薬。/contact ではなく症状相談
+
+  - id: persona-elderly-constipation
+    label: 高齢者（便秘・丁寧語）
+    category: physical
+    age: 72
+    traits: [丁寧語, 慢性便秘, 薬局常連]
+    opening: 最近便通が悪くて困っております
+    goal: 便秘薬の選び方。強い下剤より穏やかな提案
+
+  - id: persona-student-exam
+    label: 受験生（ストレス不眠）
+    category: chitchat_to_physical
+    age: 18
+    traits: [大学受験, 不眠, 短文]
+    opening: 勉強のストレスで全然寝れない
+    goal: 最初は傾聴、その後頭痛・睡眠の市販薬相談へ
+
+  - id: persona-shift-worker
+    label: 夜勤ナース（昼夜逆転）
+    category: physical
+    age: 28
+    traits: [夜勤, 眠気, カフェイン]
+    opening: 夜勤明けで頭痛と眠気がひどい
+    goal: 眠気・頭痛。勤務中の注意も聞く
+
+  - id: persona-pet-owner-wrong
+    label: 犬の飼い主（誤相談）
+    category: redirect
+    age: 40
+    traits: [ペット, 犬, 人間用と混同]
+    opening: うちの犬が咳してるんですが、人間の風邪薬あげていい？
+    goal: 人間用OTCを犬に使う危険性。獣医受診を促す
+
+  - id: persona-hangover-weekend
+    label: 会社員（二日酔い）
+    category: medicine_thread
+    age: 31
+    traits: [飲み会, 二日酔い, 比較好き]
+    opening: 昨日飲みすぎて頭が割れそう
+    goal: 推奨後「お酒飲んだあとでもいい？」と併用確認
+
+  - id: persona-allergy-pollen
+    label: 花粉症デビュー
+    category: physical
+    age: 25
+    traits: [初花粉症, くしゃみ, 目痒]
+    opening: 初めて花粉症っぽくて、市販の鼻炎薬どれがいい？
+    goal: 抗アレルギー系の一般論。reject 禁止
+
+  - id: persona-diabetic-cold
+    label: 糖尿病者（風邪薬）
+    category: medicine_thread
+    age: 55
+    traits: [糖尿病, 糖質注意, インスリン]
+    opening: インスリン打ってるんですが、風邪薬飲んでも大丈夫？
+    goal: 併用・糖質への言及。must_answer_question
+
+  - id: persona-caregiver-mother
+    label: 介護する娘（高齢母）
+    category: medicine_thread
+    age: 48
+    traits: [介護, 母80歳, 血圧薬]
+    opening: 80歳の母が血圧の薬飲んでて、風邪薬一緒に飲める？
+    goal: 高齢+併用。Clarify または一般注意
+
+  - id: persona-travel-medicine
+    label: 海外旅行者
+    category: medicine_qa
+    age: 36
+    traits: [旅行, 持ち薬, ロキソニン]
+    opening: タイに持っていく市販薬でロキソニンは大丈夫？
+    goal: 持ち込み一般論+用法。greeting リセット禁止
+
+  - id: persona-yoga-muscle
+    label: ヨガインストラクター
+    category: physical
+    age: 33
+    traits: [ヨガ, 筋肉痛, 湿布]
+    opening: レッスン後の筋肉痛に湿布と飲み薬どっちがいい？
+    goal: 比較質問への直接回答
+
+  - id: persona-barista-caffeine
+    label: バリスタ（カフェイン過多）
+    category: chitchat
+    age: 24
+    traits: [コーヒー, カフェイン, 動悸不安]
+    opening: コーヒー飲みすぎて動悸と頭痛がする
+    goal: カフェイン過多の一般論+市販薬慎重論
+
+  - id: persona-fisher-sunburn
+    label: 釣り人（日焼け）
+    category: physical
+    age: 45
+    traits: [釣り, 日焼け, 外用]
+    opening: 海釣りで真っ赤に日焼けした
+    goal: 日焼け後の市販薬・冷却
+
+  - id: persona-cosplay-voice
+    label: コスプレイヤー（声枯れ）
+    category: physical
+    age: 21
+    traits: [コスプレ, 声枯れ, イベント]
+    opening: イベントで叫びすぎて声が出ない
+    goal: のどの市販薬。reject 禁止
+
+  - id: persona-freelance-shoulder
+    label: フリーランス（肩こり）
+    category: medicine_thread
+    age: 37
+    traits: [在宅, 肩こり, 修正]
+    opening: 在宅ワークで肩こりが限界
+    goal: 推奨後「さっきの1番、胃弱い私でも大丈夫？」
+
+  - id: persona-hiker-headache
+    label: 登山好き（高山頭痛）
+    category: physical
+    age: 42
+    traits: [登山, 頭痛, 高山]
+    opening: 3000m級で登ってたら頭痛と吐き気
+    goal: 高山病疑い→受診/緊急寄りの注意
+
+  - id: persona-kansai-grandchild
+    label: 関西のばあちゃん（孫の熱）
+    category: physical
+    age: 68
+    traits: [関西弁, 孫, 発熱]
+    opening: 孫が熱出てもうて困ってるわ
+    goal: 小児発熱の一般論。関西弁理解
+
+  - id: persona-ambiguous-interaction
+    label: 曖昧な併用質問（品目なし）
+    category: clarify
+    age: 30
+    traits: [曖昧, 併用, Clarify期待]
+    opening: 今飲んでる薬あるんやけど、他のと一緒に飲める？
+    goal: 品目 Clarify。reject 禁止

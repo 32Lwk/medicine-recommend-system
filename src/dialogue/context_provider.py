@@ -39,8 +39,6 @@ def build_context_bundle(
     """agent_kind に応じた履歴窓と長期記憶ブロックを組み立てる。"""
     limit = resolve_history_limit(agent_kind)
     messages = get_recent_messages(session, sid, limit=limit)
-    digest = history_digest(messages)
-
     memory_block = ""
     if agent_kind in ("default", "physical", "counseling", "concierge", "session_ops"):
         from src.services.line_user_memory import is_line_memory_session
@@ -53,6 +51,12 @@ def build_context_bundle(
             )
             if mem_messages:
                 messages = mem_messages
+        else:
+            from src.services.medicine_thread_context import expand_messages_for_llm
+
+            messages = expand_messages_for_llm(messages, max_turns=limit)
+
+    digest = history_digest(messages)
 
     return ContextBundle(
         agent_kind=agent_kind,

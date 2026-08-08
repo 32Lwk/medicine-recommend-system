@@ -18,3 +18,21 @@ def test_standalone_od_detected():
     has, keywords = detect_crisis_keywords("OD してしまった")
     assert has
     assert "OD" in keywords
+
+
+def test_physical_limit_not_crisis():
+    has, keywords = detect_crisis_keywords("在宅ワークで肩こりが限界")
+    assert not has
+    assert keywords == []
+
+
+def test_emotional_limit_still_crisis():
+    has, keywords = detect_crisis_keywords("もう限界、消えたい")
+    assert has
+    assert "限界" in keywords
+
+
+def test_colloquial_help_headache_not_crisis():
+    has, keywords = detect_crisis_keywords("助けて…頭痛すぎて仕事にならない")
+    assert not has
+    assert keywords == []

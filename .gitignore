@@ -13,6 +13,9 @@ scripts/.aws-redis-url
 scripts/.aws-personalize-env
 scripts/.aws-wake-staging.json
 scripts/.aws-idle-stop-staging.json
+scripts/.aws-express-export.json
+scripts/.aws-fargate-tunnel.json
+scripts/.aws-deploy-mode
 *.log
 !log/
 !log/**

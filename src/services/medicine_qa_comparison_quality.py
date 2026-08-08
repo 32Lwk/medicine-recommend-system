@@ -121,6 +121,130 @@ def build_comparison_answer_scaffold(
     return opener + "同系統の解熱鎮痛薬のため、重ねて使わないでください。"
 
 
+def _ingredient_classes_in_text(text: str) -> set[str]:
+    """発話から比較対象の成分系統ラベルを抽出。"""
+    from src.services.medicine_qa_routing import (
+        _ingredient_comparison_traits,
+        _ingredients_in_text,
+    )
+
+    classes: set[str] = set()
+    t = (text or "").lower()
+    if "アセトアミノフェン" in t or "acetaminophen" in t or "パラセタモール" in t:
+        classes.add("アセトアミノフェン")
+    if "イブプロフェン" in t or "ibuprofen" in t:
+        classes.add("NSAIDs")
+    if "ロキソプロフェン" in t or "loxoprofen" in t:
+        classes.add("NSAIDs")
+    if "アスピリン" in t or "aspirin" in t:
+        classes.add("NSAIDs")
+    for ing in _ingredients_in_text(text):
+        traits = _ingredient_comparison_traits(ing)
+        label = traits.get("class_label")
+        if label:
+            classes.add(label)
+    return classes
+
+
+def _class_label_for_medicine(med: dict[str, Any]) -> str:
+    from src.services.medicine_qa_routing import _ingredient_comparison_traits
+
+    ing = str(med.get("ingredients") or "")
+    return str(_ingredient_comparison_traits(ing).get("class_label") or "")
+
+
+def expand_medicines_for_comparison(
+    user_message: str,
+    medicines: list[dict[str, Any]] | None,
+    *,
+    conversation_history: list | None = None,
+    session: Any = None,
+    max_products: int = 4,
+) -> list[dict[str, Any]]:
+    """
+    比較質問でセッション推奨と成分系統代表をマージする。
+    ユーザーが「イブプロフェン vs アセトアミノフェン」と聞いたとき、
+    単一系統の CSV ヒットだけに置き換わらないようにする。
+    """
+    from src.services.medicine_qa_routing import _has_comparison_intent
+
+    base = list(medicines or [])
+    if not base:
+        return base
+
+    if not _has_comparison_intent(
+        user_message,
+        conversation_history=conversation_history,
+        recommended_medicines=base,
+    ):
+        return base[:max_products]
+
+    blob_parts = [user_message or ""]
+    for msg in (conversation_history or [])[-8:]:
+        if not isinstance(msg, dict):
+            continue
+        role = str(msg.get("role") or msg.get("type") or "").lower()
+        if role in ("user",):
+            blob_parts.append(str(msg.get("content") or ""))
+    classes_needed = _ingredient_classes_in_text(" ".join(blob_parts))
+
+    result: list[dict[str, Any]] = []
+    seen_names: set[str] = set()
+    covered: set[str] = set()
+
+    def _add(med: dict[str, Any]) -> None:
+        name = str(med.get("product_name") or med.get("name") or "").strip()
+        if not name or name in seen_names:
+            return
+        seen_names.add(name)
+        result.append(med)
+        cls = _class_label_for_medicine(med)
+        if cls:
+            covered.add(cls)
+
+    for med in base:
+        _add(med)
+        if len(result) >= max_products:
+            return result[:max_products]
+
+    missing = classes_needed - covered
+    if not missing and len(result) >= 2:
+        return result[:max_products]
+
+    try:
+        import pandas as pd
+
+        from src.core.medicine.medicine_response_builder import detect_medicine_name_in_query
+        from src.core.medicine_logic import CSV_PATH
+
+        df = pd.read_csv(CSV_PATH)
+        query_by_class = {
+            "アセトアミノフェン": "アセトアミノフェン",
+            "NSAIDs": "イブプロフェン",
+        }
+        for cls in missing:
+            query = query_by_class.get(cls)
+            if not query:
+                continue
+            hits = detect_medicine_name_in_query(query, df, session=session)
+            for hit in hits:
+                hit_cls = _class_label_for_medicine(hit)
+                ing = str(hit.get("ingredients") or "").lower()
+                if cls == "アセトアミノフェン" and "アセトアミノフェン" not in ing:
+                    continue
+                if cls == "NSAIDs" and "イブプロフェン" not in ing and "ロキソプロフェン" not in ing:
+                    continue
+                if hit_cls == cls or (cls == "NSAIDs" and hit_cls == "NSAIDs"):
+                    _add(hit)
+                    break
+            if len(result) >= max_products:
+                break
+    except Exception:
+        pass
+
+    return result[:max_products] if result else base[:max_products]
+
+
 def enrich_thin_comparison_answer(
     response: dict[str, Any],
     medicines: list[dict[str, Any]],

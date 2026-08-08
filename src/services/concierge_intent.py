@@ -318,6 +318,46 @@ _CONVERSATIONAL_REQUEST_RE = re.compile(
     r"話相手|話しかけ|付き合って|退屈|暇だから|退屈だから|寂しい|誰か.*?話|話聞いて",
     re.I,
 )
+_REFLECTIVE_HEALTH_CHITCHAT_RE = re.compile(
+    r"頼り(?:すぎ|過ぎ|すぎて|過ぎて|っちゃ|ちゃ)"
+    r"|取れ(?:ない|なく)"
+    r"|眠れ(?:ない|なく)"
+    r"|最近.{0,24}(?:疲|だる|不調|しんど|ストレス)"
+    r"|(?:話|相談).{0,8}(?:聞いて|したい)"
+    r"|市販薬.{0,12}(?:頼|使い(?:すぎ|過ぎ))",
+    re.I,
+)
+
+
+def looks_like_reflective_health_chitchat(text: str) -> bool:
+    """品目なしの健康一般論・市販薬への依存不安など（推奨依頼ではない）。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    if looks_like_user_question(t) and re.search(
+        r"(何|どれ|教えて|おすすめ|選|買|飲む|使う)",
+        t,
+    ):
+        return False
+    return bool(_REFLECTIVE_HEALTH_CHITCHAT_RE.search(t))
+
+
+def build_reflective_health_chitchat_text(user_text: str) -> str:
+    """
+    品目なし健康一般論 — LLM なし fast-path（共感2文+市販薬誘導1文、計画 L）。
+    """
+    t = (user_text or "").strip()
+    if re.search(r"疲|だる|不調|しんど|ストレス", t):
+        lead = "疲れが続くと、気持ちも体もしんどくなりますよね。"
+    elif re.search(r"市販薬|頼り|使い(?:すぎ|過ぎ)", t):
+        lead = "市販薬の使い方が気になっているのかもしれません。"
+    else:
+        lead = "お体や気持ちのことで、もやもやしていることがあるのですね。"
+    return (
+        f"{lead}"
+        "こちらは市販薬の相談窓口です。"
+        "今のつらさや、気になる症状・飲んでいる市販薬があれば、お気軽にお聞かせください。"
+    )
 
 
 def looks_like_conversational_request(text: str) -> bool:
@@ -372,6 +412,8 @@ def infer_structural_concierge_intent(
     *,
     prior_meta_intent: Optional[str] = None,
     conversation_history: Optional[list] = None,
+    session: Any = None,
+    sid: Optional[str] = None,
 ) -> Optional[ConciergeIntent]:
     """
     短い非医療・非店舗入力を構造的に greeting とみなす（辞書登録なし）。
@@ -383,6 +425,8 @@ def infer_structural_concierge_intent(
         user_text,
         prior_intent=prior_meta_intent,
         conversation_history=conversation_history,
+        session=session,
+        sid=sid,
     ):
         return None
     text = (user_text or "").strip()

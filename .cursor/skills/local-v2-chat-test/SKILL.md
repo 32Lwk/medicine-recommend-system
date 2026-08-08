@@ -193,10 +193,25 @@ runner が自動生成:
 | パス | 用途 |
 |------|------|
 | `tests/fixtures/v2_local_chat_scenarios.yaml` | 100 YAML シナリオ |
+| `tests/fixtures/v2_e2e_corpus_pr500.yaml` | PR 用 500 分岐（ログ抽出 + 自動生成） |
 | `tests/fixtures/v2_gpt_personas.yaml` | GPT ペルソナ（実ログパターン） |
 | `docs/dev/CHAT_PIPELINE_V2.md` | v2 仕様・フラグ |
 
 カテゴリ例: `session_ops`, `physical`, `physical_fever`, `concierge`, `concierge_followup`, `correction`, `counseling_context`, `emergency`, `security`, `store`
+
+### PR 500 コーパス（方針 C）
+
+ログから自動抽出 → クラスタ dedupe → bucket 比率調整 → 不足分テンプレ生成:
+
+```powershell
+python scripts/build_v2_e2e_corpus_from_logs.py
+python scripts/validate_e2e_corpus.py
+python scripts/local_v2_chat_test_runner.py --scenarios-path tests/fixtures/v2_e2e_corpus_pr500.yaml --limit 20 --report-suffix pr500-smoke
+```
+
+構築統計: `log/analysis/YYYY-MM-DD_e2e_corpus_build.json`
+
+GitHub PR: `.github/workflows/chat-pipeline-v2-pr.yml`（単体 + コーパス検証）。ライブ 20 件は PR ラベル `run-pr500-smoke` 時のみ。
 
 ---
 

@@ -359,8 +359,18 @@ def run_chat_post_pipeline(
 
     mark_pipeline_step("after_triage")
 
-    from src.services.medicine_discovery_routing import apply_cold_start_triage_override
+    from src.services.medicine_discovery_routing import (
+        apply_cold_start_triage_override,
+        apply_explicit_symptom_triage_override,
+    )
 
+    ctx.triage_result = apply_explicit_symptom_triage_override(
+        session,
+        ctx.triage_result,
+        ctx.user_message,
+        sid=sid,
+        sanitized_message=ctx.sanitized_message,
+    )
     ctx.triage_result = apply_cold_start_triage_override(
         session,
         ctx.triage_result,

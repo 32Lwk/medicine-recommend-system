@@ -241,6 +241,35 @@ def test_scaffold_builds_ingredient_based_summary():
     assert "イブ" in text or "イブプロフェン" in text
 
 
+def test_expand_medicines_for_comparison_adds_acetaminophen_class():
+    from src.services.medicine_qa_comparison_quality import expand_medicines_for_comparison
+
+    session_meds = [
+        {"product_name": "イブ", "ingredients": "イブプロフェン"},
+        {"product_name": "ノーシンエフ200", "ingredients": "イブプロフェン"},
+    ]
+    msg = "イブプロフェンとアセトアミノフェンの違いを比較して"
+    expanded = expand_medicines_for_comparison(msg, session_meds)
+    classes = set()
+    for med in expanded:
+        ing = str(med.get("ingredients") or "").lower()
+        if "アセトアミノフェン" in ing and "イブプロフェン" not in ing:
+            classes.add("acet")
+        elif "イブプロフェン" in ing or "ロキソプロフェン" in ing:
+            classes.add("nsaid")
+    assert "acet" in classes
+    assert "nsaid" in classes
+
+
+def test_unwrap_embedded_json_answer():
+    from src.services.concierge_output_sanitize import sanitize_medicine_ask_output
+
+    raw = '{ "answer": "はい、飲み合わせは大事です。", "medicine_details": "..." }'
+    out = sanitize_medicine_ask_output(raw)
+    assert out == "はい、飲み合わせは大事です。"
+    assert "medicine_details" not in out
+
+
 # --- 5. LLM ノイズ上書き（任意入力パターン） ---
 
 LLM_NOISE_PATTERNS = [

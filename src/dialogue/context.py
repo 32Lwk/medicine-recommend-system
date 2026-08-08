@@ -16,6 +16,27 @@ def empty_dialogue_state() -> dict[str, Any]:
         "counseling": {},
         "handoff": {},
         "flags": {},
+        # Phase 3.5 — スレッド継続（single-writer: update_dialogue_turn_state / mark_correction）
+        "thread_topic": None,
+        "active_products": [],
+        "last_user_goal": "",
+        "pending_clarification": None,
+    }
+
+
+def get_dialogue_thread_state(session: Any) -> dict[str, Any]:
+    """ルーティング・RAG・評価が参照する thread スナップショット。"""
+    ctx = load_dialogue_context(session)
+    flags = ctx.get("flags") if isinstance(ctx.get("flags"), dict) else {}
+    products = ctx.get("active_products")
+    if not isinstance(products, list):
+        products = []
+    return {
+        "thread_topic": ctx.get("thread_topic"),
+        "active_products": [str(p) for p in products if p][:8],
+        "last_user_goal": str(ctx.get("last_user_goal") or ""),
+        "pending_clarification": ctx.get("pending_clarification"),
+        "correction_pending": bool(flags.get("correction_detected") or flags.get("correction_pending")),
     }
 
 
@@ -35,6 +56,14 @@ def load_dialogue_context(session: Any) -> dict[str, Any]:
     ctx.setdefault("counseling", {})
     ctx.setdefault("handoff", {})
     ctx.setdefault("flags", {})
+    if "thread_topic" not in ctx:
+        ctx["thread_topic"] = None
+    if not isinstance(ctx.get("active_products"), list):
+        ctx["active_products"] = []
+    if "last_user_goal" not in ctx:
+        ctx["last_user_goal"] = ""
+    if "pending_clarification" not in ctx:
+        ctx["pending_clarification"] = None
 
     legacy_pending = session.get("pending_memory_delete")
     if isinstance(legacy_pending, dict) and not ctx["pending"].get("session_delete"):

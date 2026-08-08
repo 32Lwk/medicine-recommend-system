@@ -1,0 +1,15 @@
+{
+  "configured_at": "2026-08-06T04:12:09Z",
+  "account_id": "620992446973",
+  "ecs": {
+    "cpu": 512,
+    "memory": 1024,
+    "min_tasks": 1,
+    "max_tasks": 1,
+    "gunicorn_workers": 1,
+    "default_desired_count": 0
+  },
+  "logs_retention_days": 7,
+  "resume": "./scripts/resume-aws-staging.sh",
+  "stop": "./scripts/stop-aws-staging.sh"
+}

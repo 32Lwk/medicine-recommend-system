@@ -68,6 +68,56 @@ def _rule_based_note_for_medicine(med: Dict, index: int) -> str:
     return body
 
 
+def _retrieve_medicine_context_with_timeout(
+    query: str,
+    *,
+    recommended_medicines: List[Dict] | None = None,
+    nlu_result: Dict | None = None,
+    conversation_history: list | None = None,
+    timeout_sec: float | None = None,
+) -> Dict:
+    """Medicine KB retrieve。Local RAG 未 ready / タイムアウト時は空結果。"""
+    from config.aws_features import MEDICINE_RAG_LOCAL, MEDICINE_RAG_NONE, get_medicine_rag_provider
+    from config.llm_config import get_medicine_kb_augment_timeout_sec
+    from src.services.bedrock_kb_retrieve import retrieve_medicine_context
+    from src.services.local_rag_index import is_bm25_index_ready
+
+    empty: Dict = {"chunks": [], "source_uris": []}
+    if get_medicine_rag_provider() == MEDICINE_RAG_NONE:
+        return empty
+    if get_medicine_rag_provider() == MEDICINE_RAG_LOCAL and not is_bm25_index_ready("medicine"):
+        logger.info(
+            "Local RAG BM25 index not ready — skipping medicine context retrieve"
+        )
+        return empty
+
+    hard_timeout = timeout_sec if timeout_sec is not None else get_medicine_kb_augment_timeout_sec()
+    pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="explain_kb")
+    try:
+        fut = pool.submit(
+            retrieve_medicine_context,
+            query,
+            recommended_medicines=recommended_medicines,
+            nlu_result=nlu_result,
+            conversation_history=conversation_history,
+            use_cache=True,
+        )
+        try:
+            result = fut.result(timeout=hard_timeout)
+            return result if isinstance(result, dict) else empty
+        except FuturesTimeoutError:
+            logger.warning(
+                "Medicine KB retrieve hard timeout after %.0fs — skipping citation",
+                hard_timeout,
+            )
+            return empty
+        except Exception as exc:
+            logger.warning("Medicine KB retrieve failed: %s — skipping citation", exc)
+            return empty
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
+
+
 def _augment_medicine_prompt_with_timeout(
     user_text: str,
     base_prompt: str,
@@ -490,7 +540,6 @@ def _kb_citation_for_explanation(
 ) -> str:
     """方式 A: retrieve 結果から citation 1–2 文を返す（LLM 追加呼び出しなし）。"""
     from config.aws_features import MEDICINE_RAG_NONE, get_medicine_rag_provider
-    from src.services.bedrock_kb_retrieve import retrieve_medicine_context
 
     if get_medicine_rag_provider() == MEDICINE_RAG_NONE:
         return ""
@@ -516,12 +565,11 @@ def _kb_citation_for_explanation(
                 conversation_history = list(hist)
                 break
 
-    result = retrieve_medicine_context(
+    result = _retrieve_medicine_context_with_timeout(
         query,
         recommended_medicines=[candidate],
         nlu_result=nlu_result,
         conversation_history=conversation_history,
-        use_cache=True,
     )
     chunks = result.get("chunks") or []
     if not chunks:

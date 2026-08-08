@@ -189,6 +189,12 @@ if command -v cygpath >/dev/null 2>&1; then
   ZIP_ARG="fileb://$(cygpath -w "$ZIP_FILE")"
 fi
 
+LAMBDA_ENV="Variables={AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID},ECS_CLUSTER=${ECS_CLUSTER},ECS_SERVICE=${ECS_SERVICE},PROJECT_PREFIX=${PROJECT_PREFIX},PIPELINE_NAME=${PIPELINE_NAME},BUILD_PROJECT=${BUILD_PROJECT},LOG_GROUP=${LOG_GROUP}"
+if [[ -f "$ROOT/scripts/.aws-fargate-tunnel.json" ]] || [[ "$(cat "$ROOT/scripts/.aws-deploy-mode" 2>/dev/null)" == "fargate_tunnel" ]]; then
+  LAMBDA_ENV="${LAMBDA_ENV},ECS_DEPLOY_MODE=fargate_tunnel,FARGATE_TASK_FAMILY=${FARGATE_TASK_FAMILY:-medicine-recommend-tunnel}"
+fi
+LAMBDA_ENV="${LAMBDA_ENV}}"
+
 if aws lambda get-function --function-name "$LAMBDA_NAME" --region "$AWS_REGION" >/dev/null 2>&1; then
   aws lambda update-function-code \
     --function-name "$LAMBDA_NAME" \
@@ -198,7 +204,7 @@ if aws lambda get-function --function-name "$LAMBDA_NAME" --region "$AWS_REGION"
   for attempt in 1 2 3 4 5 6; do
     if aws lambda update-function-configuration \
       --function-name "$LAMBDA_NAME" \
-      --environment "Variables={AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID},ECS_CLUSTER=${ECS_CLUSTER},ECS_SERVICE=${ECS_SERVICE},PROJECT_PREFIX=${PROJECT_PREFIX},PIPELINE_NAME=${PIPELINE_NAME},BUILD_PROJECT=${BUILD_PROJECT},LOG_GROUP=${LOG_GROUP}}" \
+      --environment "$LAMBDA_ENV" \
       --timeout 120 \
       --region "$AWS_REGION" >/dev/null 2>&1; then
       break
@@ -218,7 +224,7 @@ else
     --handler handler.lambda_handler \
     --zip-file "$ZIP_ARG" \
     --timeout 120 \
-    --environment "Variables={AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID},ECS_CLUSTER=${ECS_CLUSTER},ECS_SERVICE=${ECS_SERVICE},PROJECT_PREFIX=${PROJECT_PREFIX},PIPELINE_NAME=${PIPELINE_NAME},BUILD_PROJECT=${BUILD_PROJECT},LOG_GROUP=${LOG_GROUP}}" \
+    --environment "$LAMBDA_ENV" \
     --region "$AWS_REGION" \
     --query 'FunctionArn' --output text >/dev/null
   echo "Created Lambda: $LAMBDA_NAME"

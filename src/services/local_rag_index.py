@@ -6,6 +6,7 @@ import logging
 import math
 import re
 import threading
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
@@ -216,12 +217,19 @@ class BM25Index:
 
 _INDEX: Dict[str, BM25Index] = {}
 _INDEX_LOCK = threading.Lock()
+_INDEX_BUILDING: set[str] = set()
 
 
 def is_bm25_index_ready(namespace: str) -> bool:
     """BM25 index が構築済みか（構築中は False）。"""
     with _INDEX_LOCK:
         return namespace in _INDEX
+
+
+def is_bm25_index_building(namespace: str) -> bool:
+    """別スレッドが index を構築中か。"""
+    with _INDEX_LOCK:
+        return namespace in _INDEX_BUILDING
 
 
 from src.services.local_rag_query import tokenize_for_search
@@ -600,10 +608,32 @@ def get_bm25_index(namespace: str) -> BM25Index:
     cached = _INDEX.get(namespace)
     if cached is not None:
         return cached
+
+    should_build = False
     with _INDEX_LOCK:
         cached = _INDEX.get(namespace)
         if cached is not None:
             return cached
+        if namespace not in _INDEX_BUILDING:
+            _INDEX_BUILDING.add(namespace)
+            should_build = True
+
+    if not should_build:
+        deadline = time.time() + 120.0
+        while time.time() < deadline:
+            cached = _INDEX.get(namespace)
+            if cached is not None:
+                return cached
+            time.sleep(0.05)
+        with _INDEX_LOCK:
+            cached = _INDEX.get(namespace)
+            if cached is not None:
+                return cached
+            if namespace not in _INDEX_BUILDING:
+                _INDEX_BUILDING.add(namespace)
+                should_build = True
+
+    if should_build:
         idx = BM25Index()
         if namespace == "medicine":
             idx.build(_build_medicine_chunks())
@@ -611,9 +641,20 @@ def get_bm25_index(namespace: str) -> BM25Index:
             idx.build(_build_concierge_chunks())
         else:
             idx.build([])
-        _INDEX[namespace] = idx
-        logger.info("Local RAG BM25 index %s: %d chunks", namespace, len(idx.chunks))
-        return idx
+        with _INDEX_LOCK:
+            _INDEX_BUILDING.discard(namespace)
+            existing = _INDEX.get(namespace)
+            if existing is not None:
+                return existing
+            _INDEX[namespace] = idx
+            logger.info(
+                "Local RAG BM25 index %s: %d chunks", namespace, len(idx.chunks)
+            )
+            return idx
+
+    empty = BM25Index()
+    empty.build([])
+    return empty
 
 
 def clear_bm25_index() -> None:

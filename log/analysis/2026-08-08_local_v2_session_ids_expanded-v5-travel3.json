@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "date": "2026-08-08",
+    "report_suffix": "expanded-v5-travel3",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-07T15:21:42.652955+00:00",
+    "elapsed_sec": 52.8,
+    "scenario_count": 1,
+    "total_turns": 4,
+    "auto_pass": 1,
+    "use_gpt_user": true,
+    "gpt_scale": true,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "gpt-gpt-travel-medicine",
+      "session_id": "1786116102655022226393",
+      "category": "gpt_context",
+      "persona_id": "gpt-travel-medicine",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

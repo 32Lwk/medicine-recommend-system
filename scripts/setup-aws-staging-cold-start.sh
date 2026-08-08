@@ -26,7 +26,11 @@ echo "==> AWS staging cold-start setup (account=${AWS_ACCOUNT_ID})"
 echo "    spec: 512 CPU / 1024 MiB, minTasks=1 maxTasks=1, workers=1"
 echo "    logs: ${LOG_GROUP} retention=${LOG_RETENTION_DAYS}d"
 
-echo "==> Tune ECS Express to minimal capacity"
+DEPLOY_MODE_LABEL="express"
+if is_fargate_tunnel_mode; then
+  DEPLOY_MODE_LABEL="fargate_tunnel"
+fi
+echo "==> Tune ECS capacity (mode=${DEPLOY_MODE_LABEL})"
 ECS_CPU=512 \
 ECS_MEMORY=1024 \
 ECS_MIN_TASKS=1 \

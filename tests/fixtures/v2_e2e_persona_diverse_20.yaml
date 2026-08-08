@@ -1,0 +1,330 @@
+version: 2
+source: persona-diverse-e2e-2026-08-07
+count: 20
+description: 20 多様ペルソナ E2E — ゴールデン 12 件と独立。turn_expects は文脈理解・拒否禁止・質問応答を一般化評価。
+scenarios:
+- id: persona-marathon-knee
+  category: physical
+  wave: persona-diverse
+  persona_id: persona-marathon-knee
+  description: ランナー膝痛 — Physical 応答・拒否禁止
+  input: 昨日10km走ったら膝が痛い
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-pregnant-nausea
+  category: physical
+  wave: persona-diverse
+  persona_id: persona-pregnant-nausea
+  description: 妊娠中つわり — 安全寄りの回答
+  input: 妊娠中なんですが、つわりがつらくて市販薬使ってもいい？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-gamer-eyestrain
+  category: physical
+  wave: persona-diverse
+  persona_id: persona-gamer-eyestrain
+  input: ゲームやりすぎて目がバキバキなんだけど
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-elderly-constipation
+  category: physical
+  wave: persona-diverse
+  persona_id: persona-elderly-constipation
+  input: 最近便通が悪くて困っております
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-student-exam
+  category: chitchat
+  wave: persona-diverse
+  persona_id: persona-student-exam
+  description: 受験ストレス — Concierge/Physical いずれも拒否禁止
+  input: 勉強のストレスで全然寝れない
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-shift-worker
+  category: physical
+  wave: persona-diverse
+  persona_id: persona-shift-worker
+  input: 夜勤明けで頭痛と眠気がひどい
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-pet-owner-wrong
+  category: redirect
+  wave: persona-diverse
+  persona_id: persona-pet-owner-wrong
+  input: うちの犬が咳してるんですが、人間の風邪薬あげていい？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-hangover-weekend
+  category: medicine_thread
+  wave: persona-diverse
+  persona_id: persona-hangover-weekend
+  description: 二日酔い→推奨後の飲酒併用
+  setup:
+  - 昨日飲みすぎて頭が割れそう
+  input: お酒飲んだあとでもその薬飲んで平気？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+  - turn: 1
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not:
+      - greeting_only
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 2
+
+- id: persona-allergy-pollen
+  category: physical
+  wave: persona-diverse
+  persona_id: persona-allergy-pollen
+  input: 初めて花粉症っぽくて、市販の鼻炎薬どれがいい？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-diabetic-cold
+  category: medicine_thread
+  wave: persona-diverse
+  persona_id: persona-diabetic-cold
+  input: インスリン打ってるんですが、風邪薬飲んでも大丈夫？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-caregiver-mother
+  category: medicine_thread
+  wave: persona-diverse
+  persona_id: persona-caregiver-mother
+  input: 80歳の母が血圧の薬飲んでて、風邪薬一緒に飲める？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-travel-medicine
+  category: medicine_qa
+  wave: persona-diverse
+  persona_id: persona-travel-medicine
+  setup:
+  - タイ旅行にロキソニンを持っていきたい
+  input: 空港で止められたりしない？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      context_keywords:
+      - ロキソニン
+  - turn: 1
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not:
+      - greeting_only
+      must_reference_prior: true
+  expect:
+    min_turns: 2
+
+- id: persona-yoga-muscle
+  category: physical
+  wave: persona-diverse
+  persona_id: persona-yoga-muscle
+  input: レッスン後の筋肉痛に湿布と飲み薬どっちがいい？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-barista-caffeine
+  category: chitchat
+  wave: persona-diverse
+  persona_id: persona-barista-caffeine
+  input: コーヒー飲みすぎて動悸と頭痛がする
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-fisher-sunburn
+  category: physical
+  wave: persona-diverse
+  persona_id: persona-fisher-sunburn
+  input: 海釣りで真っ赤に日焼けした
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-cosplay-voice
+  category: physical
+  wave: persona-diverse
+  persona_id: persona-cosplay-voice
+  input: イベントで叫びすぎて声が出ない
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-freelance-shoulder
+  category: medicine_thread
+  wave: persona-diverse
+  persona_id: persona-freelance-shoulder
+  setup:
+  - 在宅ワークで肩こりが限界
+  input: さっき勧めてもらった1番、胃弱い私でも大丈夫？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+  - turn: 1
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not:
+      - greeting_only
+      must_reference_prior: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 2
+
+- id: persona-hiker-headache
+  category: physical
+  wave: persona-diverse
+  persona_id: persona-hiker-headache
+  input: 3000m級で登ってたら頭痛と吐き気
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-kansai-grandchild
+  category: physical
+  wave: persona-diverse
+  persona_id: persona-kansai-grandchild
+  input: 孫が熱出てもうて困ってるわ
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1
+
+- id: persona-ambiguous-interaction
+  category: clarify
+  wave: persona-diverse
+  persona_id: persona-ambiguous-interaction
+  input: 今飲んでる薬あるんやけど、他のと一緒に飲める？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      expects_clarify: true
+      primary_route: Concierge
+      must_not_contain:
+      - 推奨医薬品の情報では回答できません
+  expect:
+    min_turns: 1

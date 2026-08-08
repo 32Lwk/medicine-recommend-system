@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "date": "2026-08-08",
+    "report_suffix": "tier1-short-yaml-v3",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-08T02:45:43.080927+00:00",
+    "elapsed_sec": 30.3,
+    "scenario_count": 3,
+    "total_turns": 3,
+    "auto_pass": 3,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "tier1-short-urticaria",
+      "session_id": "1786157143083009189313",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "tier1-short-cough",
+      "session_id": "1786157151637039998750",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "tier1-short-fever-child",
+      "session_id": "1786157170183633209674",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

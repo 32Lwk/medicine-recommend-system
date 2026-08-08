@@ -1,0 +1,278 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "expanded-0807-v2",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-06T20:37:45.477390+00:00",
+    "elapsed_sec": 700.3,
+    "scenario_count": 29,
+    "total_turns": 60,
+    "auto_pass": 27,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "ctx-abdominal-timeout-01",
+      "session_id": "1786048665487519863001",
+      "category": "physical_context",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "ctx-loxonin-followup-home-01",
+      "session_id": "1786048684002575671933",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "ctx-loxonin-followup-s-variant-01",
+      "session_id": "1786048703216434918778",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "ctx-loxonin-followup-s-found-01",
+      "session_id": "1786048719870657175355",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "ctx-reco-followup-compare-01",
+      "session_id": "1786048756475554248632",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "ctx-warafin-followup-01",
+      "session_id": "1786048789970715516871",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-casual-home-01",
+      "session_id": "1786048814615733523556",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-kansai-ack-01",
+      "session_id": "1786048830851787704551",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-slang-sleepy-01",
+      "session_id": "1786048859876131558809",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-anaphora-alcohol-01",
+      "session_id": "1786048882631961269685",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-multi-compare-01",
+      "session_id": "1786048910521953917265",
+      "category": "medicine_thread_multi",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-typo-brand-01",
+      "session_id": "1786048943500672798989",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-english-mix-01",
+      "session_id": "1786048955476621813285",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-elderly-vague-01",
+      "session_id": "1786048982690558852057",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-thanks-then-followup-01",
+      "session_id": "1786048995113815800025",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-dosage-01",
+      "session_id": "1786049025145306165021",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-pregnancy-01",
+      "session_id": "1786049058374055888805",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-child-age-01",
+      "session_id": "1786049101402968603703",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-ibuprofen-stomach-01",
+      "session_id": "1786049129169848169836",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-warafin-slang-01",
+      "session_id": "1786049131679014976166",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-package-casual-01",
+      "session_id": "1786049154442381654549",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-correction-pivot-01",
+      "session_id": "1786049168411692655291",
+      "category": "correction",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-greeting-then-symptom-01",
+      "session_id": "1786049207018459558388",
+      "category": "physical_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-short-ack-02",
+      "session_id": "1786049236934952732719",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-combo-medicines-01",
+      "session_id": "1786049245667556885763",
+      "category": "medicine_thread_multi",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-fever-number-01",
+      "session_id": "1786049277120905980910",
+      "category": "physical_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-insomnia-vague-01",
+      "session_id": "1786049311585030340770",
+      "category": "counseling_context",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-concierge-pivot-01",
+      "session_id": "1786049323509390991969",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-store-after-reco-01",
+      "session_id": "1786049335554048387338",
+      "category": "store",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

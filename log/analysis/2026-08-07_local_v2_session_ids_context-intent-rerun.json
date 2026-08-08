@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "context-intent-rerun",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-06T19:45:47.687810+00:00",
+    "elapsed_sec": 235.8,
+    "scenario_count": 3,
+    "total_turns": 7,
+    "auto_pass": 2,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "ctx-loxonin-followup-s-variant-01",
+      "session_id": "1786045672102386431376",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "ctx-loxonin-followup-s-found-01",
+      "session_id": "1786045753491712499937",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

@@ -1,0 +1,849 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 593,
+    "by_status": {
+      "404": 592,
+      "405": 1
+    },
+    "by_path": {
+      "UNKNOWN /api/main_session (404)": 561,
+      "UNKNOWN /robots.txt (404)": 1,
+      "UNKNOWN /api/chat/stream (405)": 1,
+      "UNKNOWN /api/chat (404)": 1,
+      "UNKNOWN /api/chat/async (404)": 1,
+      "UNKNOWN /api/chat/smart (404)": 1,
+      "UNKNOWN /v1/chat/completions (404)": 1,
+      "UNKNOWN /v1/models (404)": 1,
+      "UNKNOWN /mcp (404)": 1,
+      "UNKNOWN /v1/mcp (404)": 1,
+      "UNKNOWN /sse (404)": 1,
+      "UNKNOWN /messages (404)": 1,
+      "UNKNOWN /actuator (404)": 1,
+      "UNKNOWN /_stcore/health (404)": 1,
+      "UNKNOWN /_stcore/host-config (404)": 1,
+      "UNKNOWN /console (404)": 1,
+      "UNKNOWN /.well-known/agent.json (404)": 1,
+      "UNKNOWN /.well-known/agent-card.json (404)": 1,
+      "UNKNOWN /.well-known/agent-card (404)": 1,
+      "UNKNOWN /message%3Asend (404)": 1,
+      "UNKNOWN /sendMessage (404)": 1,
+      "UNKNOWN /tasks (404)": 1,
+      "UNKNOWN /extendedAgentCard (404)": 1,
+      "UNKNOWN /a2a/jsonrpc (404)": 1,
+      "UNKNOWN /a2a (404)": 1,
+      "UNKNOWN /rpc (404)": 1,
+      "UNKNOWN /jsonrpc (404)": 1,
+      "UNKNOWN /api/v1/agent (404)": 1,
+      "UNKNOWN /api/feedback (404)": 1,
+      "UNKNOWN /gradio_api/queue/join (404)": 1
+    },
+    "slow_endpoints_ge_5s": {},
+    "samples": [
+      {
+        "timestamp": "2026-08-05T02:30:30.014Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:16:59.850Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:20:59.839Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:21:59.835Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:23:59.851Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:24:59.837Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:26:59.825Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:28:59.829Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:31:59.840Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:36:59.840Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:38:59.825Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:39:59.836Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:40:59.846Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:45:59.834Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:46:59.821Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:47:59.831Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:48:59.831Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:50:59.823Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:51:59.817Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:53:59.821Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:54:59.816Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:55:59.826Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T06:56:59.949Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:00:59.822Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:03:59.822Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:04:59.821Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:05:59.805Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:06:59.818Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:07:59.810Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:08:59.816Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:09:59.817Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:10:59.812Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:11:59.800Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:12:59.805Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:15:59.804Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:16:59.814Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:17:59.822Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:18:59.818Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:19:59.809Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:20:59.805Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:21:59.804Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:22:59.839Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:23:59.867Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:24:59.807Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:27:59.807Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:28:59.807Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:29:59.802Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:31:59.804Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:32:59.911Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:33:59.804Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:34:59.807Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:36:59.799Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:37:59.807Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:39:59.795Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:40:59.818Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:41:59.791Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:42:59.800Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:43:59.797Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:44:59.803Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:45:59.797Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:46:59.807Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:47:59.788Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:48:59.803Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:49:59.793Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:50:59.808Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:51:59.783Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:52:59.809Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:53:59.791Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:54:59.783Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:55:59.786Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:56:59.775Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:57:59.789Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:58:59.800Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T07:59:59.795Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T08:00:59.788Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T08:01:59.780Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T08:02:59.796Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T08:03:59.780Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T08:04:59.782Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      },
+      {
+        "timestamp": "2026-08-05T08:05:59.790Z",
+        "status": 404,
+        "method": "UNKNOWN",
+        "path": "/api/main_session",
+        "latency_s": null,
+        "severity": "INFO",
+        "revision": null,
+        "commit_sha": null
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 0,
+    "top_patterns": [],
+    "samples": []
+  }
+}

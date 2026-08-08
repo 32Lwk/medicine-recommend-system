@@ -1,8 +1,10 @@
 # AWS 統合アーキテクチャ図 — medicine-recommend
 
-> **対象環境**: AWS ステージング `https://aws.medicine.yutok.dev`  
-> **アカウント**: `290780119994` / **リージョン**: `ap-northeast-1`（東京）  
-> **調査日**: 2026-07-28（AWS CLI `medicine-recommend-dev` プロファイルで実リソース確認）
+> **対象環境**: AWS ステージング `https://aws-medicine.yutok.dev`  
+> **アカウント**: `620992446973`（新） / 旧 `290780119994`（バックアップ） / **リージョン**: `ap-northeast-1`（東京）  
+> **調査日**: 2026-07-28（図生成） / **インフラ更新**: 2026-08-07（Fargate + Tunnel、ALB/WAF 削除）
+
+> ⚠️ **draw.io 図は 2026-08-07 時点で未更新**。ランタイム経路は **WAF → ALB → ECS** ではなく **Worker → Tunnel → Fargate [cloudflared | app]**。最新 SSOT: [AWS_FARGATE_TUNNEL.md](./AWS_FARGATE_TUNNEL.md)
 
 本番トラフィックは **GCP Cloud Run**（`medicine.yutok.dev`）が正本。AWS はステージング試験環境として、Translate / Polly / Bedrock KB / CloudFront 等の AWS ネイティブ機能を検証する。
 

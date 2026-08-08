@@ -1,6 +1,238 @@
 # 開発履歴・更新日誌
 
-**最終更新日: 2026年8月5日**（連絡先・案内カード文脈ルーティング・operator カード同梱表示・UI 順序修正）
+**最終更新日: 2026年8月8日**（Physical 症状 NLU 一般化・GPT E2E 拡張・Tier1 レイテンシ・候補 0 件 UX）
+
+---
+
+## 2026-08-08 — Physical 症状 NLU 一般化・GPT E2E 拡張・Tier1 検証
+
+### 概要
+
+**ユーザー文脈・日常表現**を優先し、E2E で顕在化した `蕁麻疹出た` / `耳が痛い` 等の失敗を **テスト個別ハックではなく** NLU 補正・同義語展開・`physical_no_recommendation` フォールバックで一般化。GPT 多ターン（30 ペルソナ + targeted 4）と Tier1 短文 YAML で **13/13 + 4/4 PASS**。追加 LLM は follow-up 曖昧時（≤120 文字）に限定しコスト・レイテンシを抑制。
+
+### 背景・課題
+
+| 課題 | 内容 |
+|------|------|
+| route `unknown` | `no_candidates` 時に `error=True` のまま sage_reco エラー表示 → E2E が Physical 期待で FAIL |
+| NLU 汎用化 | 「耳が痛い」→「炎症」、「蕁麻疹」→「発疹」のみで CSV 効能（耳痛・じんましん）不一致 |
+| GPT E2E 品質 | follow-up 訂正・指示語・アレルギー確認・旅行文脈で 5/10 程度 → 一般シグナル + LLM resolver で改善 |
+| レイテンシ | GPT 30 で p95 ~28s → Tier1 rule triage + focus_llm skip で短縮（KPI p95 < 15s は継続） |
+| PR コスト | GPT 30×4 毎 PR は非現実 → **変更領域マップ**で targeted のみ |
+
+### 実装（Physical / NLU）
+
+| ファイル | 変更 |
+|---------|------|
+| `src/utils/symptom_helpers.py` | **`refine_nlu_symptoms_from_context`** — 原文パターンで canonical 症状追加・汎用 NLU 差し替え |
+| `src/core/scoring_utils.py` | **じんましん / 蕁麻疹** 同義語を `発疹`・`湿疹` に連結 |
+| `src/core/rule_based_recommendation.py` | NLU 後に symptom refine を挿入 |
+| `src/handlers/chat/chat_recommendation_flow.py` | **`no_candidates` → `_build_empty_recommendation_fallback` 即 return** |
+| `src/services/physical_no_reco_guidance.py` | **新規** — 皮膚/耳鼻等の候補 0 件ガイダンス（LLM なし） |
+| `src/utils/input_helpers.py` | 皮膚明示症状（蕁麻疹・かぶれ・吹き出物・赤み） |
+| `src/services/medicine_discovery_routing.py` | `try_rule_based_symptom_triage` / `apply_explicit_symptom_triage_override` |
+
+### 実装（GPT E2E / Follow-up — 8/5〜8/7 コミット含む）
+
+| ファイル | 変更 |
+|---------|------|
+| `src/services/reco_followup_signals.py` | pivot / travel / anaphora / bot-echo シグナル集約 |
+| `src/services/conversation_followup_resolver.py` | ルール inconclusive 時 LLM follow-up（≤120 文字） |
+| `src/services/e2e_gpt_user_sim.py` | 患者ロール sim + `validate_simulated_user_output` |
+| `src/core/medicine/medicine_response_builder.py` | travel / doping / allergen fast path |
+| `src/services/medicine_qa_routing.py` | allergen intent / travel routing |
+| `src/handlers/chat/chat_post_pipeline.py` | MedicineQaRoute.PHYSICAL 再推奨・triage override 配線 |
+
+### テスト・CI
+
+| 項目 | 内容 |
+|------|------|
+| Fixtures | `v2_tier1_short_symptom.yaml`, `v2_gpt_tier1_targeted.yaml`, `v2_gpt_expanded_personas_30.yaml` 他 |
+| ドキュメント | [`docs/dev/E2E_TARGETED_TEST_MAP.md`](docs/dev/E2E_TARGETED_TEST_MAP.md), [**`docs/dev/PHYSICAL_SYMPTOM_E2E.md`**](docs/dev/PHYSICAL_SYMPTOM_E2E.md) |
+| CI | `test_reco_followup_signals`, `test_conversation_followup_resolver`, `test_e2e_gpt_user_sim` |
+| Unit | `tests/utils/test_symptom_helpers.py` — refine 耳痛・蕁麻疹 |
+
+### 検証（2026-08-08 ローカル）
+
+| スコープ | 結果 | レポート |
+|---------|------|----------|
+| Tier1 短文 3 | **3/3** | `log/analysis/2026-08-08_local_v2_chat_test_tier1-short-yaml-v3.md` |
+| Physical 10 | **10/10** | `log/analysis/2026-08-08_local_v2_chat_test_tier1-physical10-v3.md` |
+| GPT Tier1 4×4 | **4/4** | `log/analysis/2026-08-08_local_v2_chat_test_tier1-gpt-v3.md` |
+| GPT 30 diverse（先行） | **~30/30** | `log/analysis/2026-08-08_local_v2_chat_test_expanded-v6-diverse30.md` |
+
+### レイテンシ・コスト
+
+| 観点 | 方針 |
+|------|------|
+| 追加 LLM | symptom refine / no_reco guidance は **ルールのみ** |
+| followup LLM | ルール優先、短文（≤120 文字）のみ |
+| PR テスト | GPT 30 フルは **月次**、PR は targeted 2〜4 ペルソナ |
+| KPI | p95 < 15s（Physical YAML 10 現状 ~24s — Tier2 継続） |
+
+### RAG / Concierge 更新
+
+| 文書 | 内容 |
+|------|------|
+| [`docs/dev/PHYSICAL_SYMPTOM_E2E.md`](docs/dev/PHYSICAL_SYMPTOM_E2E.md) | **SSOT** — NLU 補正・no_candidates・E2E マップ |
+| [`docs/concierge/rag/technical-pipeline-rag.md`](docs/concierge/rag/technical-pipeline-rag.md) | 症状補正・候補 0 件 FAQ 追加 |
+| [`docs/concierge/technical/12-technical-faq-rag.md`](docs/concierge/technical/12-technical-faq-rag.md) | 同上 |
+| `config/concierge_rag_sources.py` | `PHYSICAL_SYMPTOM_E2E.md`, `E2E_TARGETED_TEST_MAP.md` を DEV 索引に追加 |
+| `static/changelog-digest.json` | Concierge 用要約更新 |
+
+### 未完了・フォローアップ
+
+- [ ] 蕁麻疹の **実 OTC 推奨**（現状は physical_no_recommendation で UX/route は合格）
+- [ ] Tier2 レイテンシ（explanation 並列化・focus_llm 追加 skip）
+- [ ] `dialogue_state.thread_topic` Phase 2（GPT 安定後）
+
+---
+
+## 2026-08-07 — AWS ステージング Fargate + Tunnel 移行・ALB 削除・Cloud Run 型コスト最適化
+
+### 概要
+
+新アカウント `620992446973` の AWS ステージングを **ECS Express + ALB**（停止中でも ~$19/月 固定）から **通常 ECS Fargate + cloudflared サイドカー + Cloudflare Tunnel**（ALB なし）へ移行。**アプリ Docker イメージ・環境変数・RAG/推論ロジックは変更なし**。入口は従来どおり `https://aws-medicine.yutok.dev`（Worker + Wake）。移行検証・旧 ALB 削除・停止デフォルト化を **2026-08-07 実施済み**。
+
+### 背景・課題
+
+| 課題 | 内容 |
+|------|------|
+| ALB 固定費 | ECS Express 付属 ALB が **desiredCount=0 でも ~$18–28/月** |
+| App Runner 不可 | 2026/4/30 以降新規受付停止のため不採用 |
+| 二重請求 | 旧アカウント `290780119994` に Express + ALB が残存 |
+| 目標 | **$10–20/月**（停止デフォルト + 週数時間利用） |
+
+### アーキテクチャ（移行後）
+
+```
+ブラウザ → aws-medicine.yutok.dev (Cloudflare Worker: Wake + プロキシ)
+              ↓ ORIGIN_URL
+         origin-aws-medicine.yutok.dev (Cloudflare Tunnel)
+              ↓ localhost:8080
+         Fargate タスク [cloudflared | app]  ※ ALB なし / desiredCount=0 可
+              ↓ 30 分アイドル
+         idle-stop Lambda → ECS 0
+```
+
+| Cloud Run（GCP 本番） | AWS ステージング（移行後） |
+|----------------------|---------------------------|
+| アクセスで自動起動 | ✅ Worker → wake Lambda |
+| アイドルで 0 | ✅ EventBridge + idle-stop（30 分） |
+| 同 URL で待機→表示 | ✅ `/health` ポーリング |
+| コールドスタート | 数秒〜1–2 分 | **3〜6 分**（Fargate pull + 起動） |
+
+### インフラ変更（新アカウント `620992446973`）
+
+| 項目 | 移行前 | 移行後 |
+|------|--------|--------|
+| Compute | ECS Express Gateway | 通常 ECS Fargate |
+| タスク定義 | `default-medicine-recommend` | `medicine-recommend-tunnel:2`（app + cloudflared） |
+| CPU / Memory | 512 / 1024 | 512 / 1024（同一） |
+| 入口 | ALB + ACM | Cloudflare Tunnel（`origin-aws-medicine.yutok.dev`） |
+| ALB | 付属（削除不可単体） | **0 件** |
+| WAF | 削除済（8/6） | **0 件** |
+| loadBalancers | ALB 接続 | `[]` |
+| デプロイモード | express | `fargate_tunnel`（`scripts/.aws-deploy-mode`） |
+
+### 旧アカウント整理（`290780119994` — 2026-08-07 実施）
+
+| 操作 | 結果 |
+|------|------|
+| `delete-aws-express-staging.sh --confirm` | Express **INACTIVE** |
+| 残存 ALB `ecs-express-gateway-alb-c8b801ce` | **手動削除**（Express 削除後に孤立） |
+| WAF `medicine-recommend-web-acl` | **削除** |
+| ECS | desired=0 / running=0（停止維持） |
+
+### コスト（移行後試算）
+
+| シナリオ | USD/月（税抜目安） |
+|---------|-------------------|
+| 新アカウント・停止デフォルト | **~$6–7** |
+| 新 + 旧（ALB 削除後・両方停止） | **~$11–15** |
+| Wake + 週 5h 利用（新のみ） | **~$7–9** |
+| 常時 24h 稼働（新のみ） | ~$31–32 |
+| 移行前（Express+ALB 停止中） | ~$23–25 |
+
+**8/1–8/7 実績（Cost Explorer）**: 新 $1.28（ELB $0.34 は移行前按分） / 旧 ~$30（ECS 稼働期間 + ALB + WAF）
+
+### 精度・RAG・レイテンシへの影響
+
+| 観点 | 影響 |
+|------|------|
+| 推奨ロジック / スコアリング | **なし**（同一イメージ） |
+| RAG（`MEDICINE_RAG_PROVIDER=local` 等） | **なし** |
+| DB（Neon）・LLM API | **なし** |
+| ウォーム時レイテンシ | **ほぼ同等**（Tunnel 経由 +数十 ms 程度） |
+| コールドスタート | **+3〜6 分**（起動待ち HTML 表示） |
+
+### スクリプト・設定（新規 / 更新）
+
+| ファイル | 用途 |
+|---------|------|
+| `scripts/migrate-aws-express-to-fargate-tunnel.sh` | ワンショット移行 |
+| `scripts/setup-aws-fargate-tunnel.sh` | Fargate + Tunnel サービス作成 |
+| `scripts/setup_fargate_tunnel.py` | タスク定義・ECS サービス API |
+| `scripts/lib/fargate_tunnel_lib.py` | 2 コンテナ定義（app + cloudflared） |
+| `scripts/delete-aws-express-staging.sh` | Express + ALB 削除 |
+| `scripts/export_aws_express_config.py` | Express 設定バックアップ |
+| `scripts/tune-aws-fargate-capacity.sh` | CPU/メモリ/scaling 調整 |
+| `scripts/print-aws-fargate-tunnel-config.sh` | 状態表示 |
+| `scripts/.aws-fargate-tunnel.json` | 移行後状態 SSOT |
+| `scripts/.aws-deploy-mode` | `fargate_tunnel` |
+| `scripts/.aws-express-export.json` | Express ロールバック用バックアップ |
+| `scripts/lambda/budget_staged_action/handler.py` | Fargate モード対応 |
+| `scripts/lib/aws_common.sh` | `is_fargate_tunnel_mode()` 等 |
+| `workers/wrangler.toml` | `ORIGIN_URL=https://origin-aws-medicine.yutok.dev` |
+| `tests/scripts/test_fargate_tunnel_lib.py` | タスク定義ユニットテスト |
+
+### 運用コマンド
+
+```bash
+# 移行（初回のみ）
+export AWS_PROFILE=default AWS_ACCOUNT_ID=620992446973
+export CLOUDFLARE_TUNNEL_TOKEN='...'
+./scripts/migrate-aws-express-to-fargate-tunnel.sh --confirm
+
+# 停止 / 再開（通常は Worker アクセスで wake 即可）
+./scripts/stop-aws-staging.sh
+./scripts/resume-aws-staging.sh
+
+# 旧アカウント Express 削除
+AWS_PROFILE=medicine-recommend-dev AWS_ACCOUNT_ID=290780119994 \
+  ./scripts/delete-aws-express-staging.sh --confirm
+
+# 確認
+curl -s https://aws-medicine.yutok.dev/health
+curl -s https://origin-aws-medicine.yutok.dev/health
+```
+
+### 検証（2026-08-07）
+
+| 確認項目 | 結果 |
+|---------|------|
+| Worker `/health` | 200 OK（稼働時）/ 503 + 起動 HTML（停止時） |
+| Origin `/health` | 200 OK、`git_commit: f908d0d` |
+| Express クラスタ | 新: MISSING / 旧: INACTIVE |
+| ALB 件数 | 新: 0 / 旧: 0（削除後） |
+| Budget | $30/月、実績 $1.28（8/1–7） |
+
+### ドキュメント
+
+| 文書 | 内容 |
+|------|------|
+| [`docs/ops/AWS_FARGATE_TUNNEL.md`](docs/ops/AWS_FARGATE_TUNNEL.md) | **SSOT** — アーキテクチャ・移行・コスト・影響 |
+| [`docs/ops/AWS_WAKE_ON_ACCESS.md`](docs/ops/AWS_WAKE_ON_ACCESS.md) | Cloud Run 型 Wake / idle-stop |
+| [`docs/ops/AWS_COST_PLAN.md`](docs/ops/AWS_COST_PLAN.md) | 移行後コスト試算 |
+| [`docs/ops/AWS_ACCOUNT_MIGRATION.md`](docs/ops/AWS_ACCOUNT_MIGRATION.md) | アカウント移行 + Tunnel 移行記録 |
+| [`docs/ops/AWS_STAGING_CHECKLIST.md`](docs/ops/AWS_STAGING_CHECKLIST.md) | Fargate Tunnel 検証項目 |
+| [`docs/concierge/technical/03-deployment-operations.md`](docs/concierge/technical/03-deployment-operations.md) | AWS デプロイ経路更新 |
+
+### 未完了・任意フォローアップ
+
+- [ ] Budget Lambda に `ECS_DEPLOY_MODE=fargate_tunnel` 設定（`setup-aws-budget-staged-actions.sh` 再実行）
+- [ ] draw.io アーキテクチャ図の ALB/WAF 経路更新（`AWS_ARCHITECTURE_DIAGRAMS.md` 参照）
+- [ ] 8 月後半請求で ELB=$0 継続を Cost Explorer で確認
 
 ---
 

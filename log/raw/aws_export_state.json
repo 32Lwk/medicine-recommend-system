@@ -1,13 +1,13 @@
 {
   "by_log_group": {
     "/ecs/medicine-recommend": {
-      "last_start": "2026-08-05T01:00:00Z",
-      "last_end": "2026-08-05T02:15:00Z",
-      "source_path": "D:\\Programing\\medicine-recommend\\log\\raw\\downloaded-aws-logs-20260805-20260805-20260805-020942.json",
+      "last_start": "2026-08-05T02:14:30Z",
+      "last_end": "2026-08-06T16:40:15Z",
+      "source_path": "D:\\Programing\\medicine-recommend\\log\\raw\\downloaded-aws-logs-20260805-20260806-20260806-164015.json",
       "source_kind": "export",
-      "entry_count": 30,
+      "entry_count": 49526,
       "region": "ap-northeast-1",
-      "exported_at": "2026-08-05T02:09:45Z"
+      "exported_at": "2026-08-06T16:41:10Z"
     }
   }
 }

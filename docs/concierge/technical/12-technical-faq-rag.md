@@ -616,6 +616,28 @@
 
 ---
 
+## Q: 市販薬候補が見つからないとき（no_candidates）の扱い
+
+<!-- rag-keywords: no_candidates 候補なし 見つかりませんでした physical_no_recommendation Physical -->
+
+**回答要点**
+
+- **What**: CSV スコアリングで候補 0 件でも **Physical ルート**を維持し、`physical_no_recommendation` で案内
+- **Why**: 機械的「見つかりません」だけでは E2E/route も UX も不十分。症状カテゴリに応じた受診・追加質問が必要
+- **How**: `physical_no_reco_guidance`（ルール）+ 事前の `refine_nlu_symptoms_from_context` で 0 件率低減
+- **LLM**: この経路では **追加呼び出しなし**（コスト・レイテンシ優先）
+
+**この場合は別 doc を参照**
+
+- SSOT → `docs/dev/PHYSICAL_SYMPTOM_E2E.md`
+- E2E マップ → `docs/dev/E2E_TARGETED_TEST_MAP.md`
+
+**答えないこと**
+
+- 個別症状の具体的 OTC 商品名（Physical 推奨フローへ）
+
+---
+
 ## Q: OpenAI embedding を Local RAG に使う理由
 
 <!-- rag-keywords: OpenAI embedding モデル 理由 品質 text-embedding -->

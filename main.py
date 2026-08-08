@@ -2792,6 +2792,26 @@ def api_admin_sessions(_: None = Depends(admin_json_auth)):
     return {"sessions": sessions_data, "admin_mode": bool(get_admin_mode()), "ai_auto_reply": bool(get_ai_auto_reply())}
 
 
+@app.get("/api/admin/sessions/{session_id}/turn_trace")
+def api_admin_session_turn_trace(
+    session_id: str,
+    _: None = Depends(admin_json_auth),
+):
+    """v2 E2E 用 dialogue_turn_trace.jsonl を session 単位で返す。"""
+    from src.services.dialogue_turn_trace import load_traces_for_session
+    from src.dialogue.context import get_dialogue_thread_state
+
+    session_data = get_session_from_db(session_id) or {}
+    traces = load_traces_for_session(session_id)
+    thread = get_dialogue_thread_state(session_data)
+    return {
+        "session_id": session_id,
+        "traces": traces,
+        "dialogue_thread_state": thread,
+        "count": len(traces),
+    }
+
+
 @app.post("/api/admin/sessions/purge_empty")
 def api_admin_purge_empty_sessions(_: None = Depends(admin_json_auth)):
     db = get_database()

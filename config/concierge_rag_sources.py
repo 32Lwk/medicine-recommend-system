@@ -26,4 +26,6 @@ CONCIERGE_DEV_DOCS: Tuple[str, ...] = (
     "docs/dev/ARCHITECTURE_MULTI_AGENT.md",
     "docs/dev/FASTAPI_ARCHITECTURE.md",
     "docs/dev/ROUTE_SPEC.md",
+    "docs/dev/PHYSICAL_SYMPTOM_E2E.md",
+    "docs/dev/E2E_TARGETED_TEST_MAP.md",
 )

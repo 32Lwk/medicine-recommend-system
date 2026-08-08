@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import re
 from typing import Any, Dict, List, Optional
 
 from src.services.medicine_discovery_routing import (
@@ -51,6 +52,11 @@ def should_prompt_cold_symptoms(
 ) -> bool:
     text = (user_text or "").strip()
     if COLD_KEYWORD not in text:
+        return False
+    if re.search(
+        r"(?:何|なに)が(?:いい|ええ|よい)|市販|薬.*(?:ええ|いい|よい|ある)",
+        text,
+    ):
         return False
     if len(_symptom_names(nlu_result)) > 1:
         return False

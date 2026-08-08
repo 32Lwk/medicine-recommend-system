@@ -97,3 +97,8 @@ def test_flag_on_other_emergency_types_unaffected(monkeypatch):
     assert detect_store_emergency("大量出血しています") is not None
     assert detect_store_emergency("倒れている人がいます") is not None
     assert detect_store_emergency("ナイフを持っている人がいます") is not None
+
+
+def test_rhinitis_otc_not_fire_emergency():
+    """「鼻炎薬」内の「炎」が火災キーワードに誤検知されないこと。"""
+    assert detect_store_emergency("初めて花粉症っぽくて、市販の鼻炎薬どれがいい？") is None

@@ -5,12 +5,15 @@
 name = "aws-staging-wake"
 main = "src/index.js"
 compatibility_date = "2024-08-01"
+# Worker → Tunnel (same zone) fetch requires public egress path
+compatibility_flags = ["global_fetch_strictly_public"]
 account_id = "2a1ac0678cd0b207ca4fa5681a9a0690"
 
 routes = [
-  { pattern = "aws-medicine.yutok.dev/*", zone_name = "yutok.dev" }
+  { pattern = "aws-medicine.yutok.dev/*", zone_name = "yutok.dev" },
+  { pattern = "aws.medicine.yutok.dev", zone_name = "yutok.dev", custom_domain = true },
 ]
 
 [vars]
-ORIGIN_URL = "https://me-9585b72a360742069939f7e74bb4bb46.ecs.ap-northeast-1.on.aws"
+ORIGIN_URL = "https://origin-aws-medicine.yutok.dev"
 WAKE_API_URL = "https://ixd7ulmasbky6puy2xc4r2bssy0nhwom.lambda-url.ap-northeast-1.on.aws"

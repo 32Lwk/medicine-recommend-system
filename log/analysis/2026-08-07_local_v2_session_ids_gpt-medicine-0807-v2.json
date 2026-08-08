@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "gpt-medicine-0807-v2",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-06T20:37:45.496547+00:00",
+    "elapsed_sec": 1258.3,
+    "scenario_count": 4,
+    "total_turns": 0,
+    "auto_pass": 0,
+    "use_gpt_user": true,
+    "gpt_scale": true,
+    "v2_enabled": true
+  },
+  "sessions": []
+}

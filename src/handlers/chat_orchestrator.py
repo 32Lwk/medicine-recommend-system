@@ -137,6 +137,16 @@ class ChatOrchestrator:
                 subtype="inappropriate_drug_block",
             )
 
+        pet_redirect = self._route_non_human_patient(ctx)
+        if pet_redirect is not None:
+            return OrchestratorRouteResult(
+                resolved=True,
+                response=pet_redirect,
+                reason=RouteReason.RESOLVED,
+                category=triage.get("category", "Other"),
+                subtype="non_human_patient_redirect",
+            )
+
         unrecognized = self._route_unrecognized_symptom(ctx)
         if unrecognized is not None:
             return OrchestratorRouteResult(
@@ -254,9 +264,32 @@ class ChatOrchestrator:
                             )
                         triage_after = ctx.triage_result or {}
                         if resp is None and triage_after.get("concierge_intent") != "session_ops":
-                            mark_pipeline_step("orch_route_concierge_start")
-                            resp = self._route_concierge(ctx, monitor)
-                            mark_pipeline_step("orch_route_concierge_end")
+                            from src.dialogue.history import resolve_concierge_history_with_fallback
+                            from src.services.medicine_qa_eligibility import (
+                                MedicineQaRoute,
+                                resolve_medicine_qa_route,
+                            )
+
+                            _oth_text = ctx.sanitized_message or ctx.user_message or ""
+                            _oth_history = resolve_concierge_history_with_fallback(
+                                ctx.session, ctx.sid
+                            )
+                            _oth_decision = resolve_medicine_qa_route(
+                                _oth_text,
+                                session=ctx.session,
+                                sid=ctx.sid,
+                                triage_result=ctx.triage_result,
+                                conversation_history=_oth_history,
+                                client=self._client,
+                            )
+                            if _oth_decision.route == MedicineQaRoute.MEDICINE_QA:
+                                mark_pipeline_step("orch_other_medicine_qa_start")
+                                resp = self._route_ask(ctx)
+                                mark_pipeline_step("orch_other_medicine_qa_end")
+                            if resp is None:
+                                mark_pipeline_step("orch_route_concierge_start")
+                                resp = self._route_concierge(ctx, monitor)
+                                mark_pipeline_step("orch_route_concierge_end")
                 if resp is None:
                     resp = self._route_store(ctx)
             else:
@@ -465,6 +498,7 @@ class ChatOrchestrator:
         decision = resolve_medicine_qa_route(
             text,
             session=ctx.session,
+            sid=ctx.sid,
             triage_result=ctx.triage_result,
             conversation_history=history,
             client=self._client,
@@ -720,6 +754,20 @@ class ChatOrchestrator:
             ctx.user_message or "",
             ctx.sanitized_message or ctx.user_message or "",
             ctx.triage_result,
+            append_user=True,
+        )
+
+    def _route_non_human_patient(self, ctx: Any) -> Optional[ResponseTuple]:
+        from src.handlers.chat.non_human_patient_block_route import (
+            try_non_human_patient_redirect_response,
+        )
+
+        return try_non_human_patient_redirect_response(
+            ctx.session,
+            ctx.client_info,
+            ctx.sid,
+            ctx.user_message or "",
+            ctx.sanitized_message or ctx.user_message or "",
             append_user=True,
         )
 

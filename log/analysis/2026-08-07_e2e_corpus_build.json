@@ -1,0 +1,49 @@
+{
+  "from_logs": {
+    "medicine_thread": 45,
+    "side_effect_qa": 26,
+    "comparison": 50,
+    "physical_symptom": 33,
+    "store": 6,
+    "concierge_meta": 24,
+    "greeting_short": 22,
+    "general": 50
+  },
+  "generated": {
+    "medicine_thread": 80,
+    "side_effect_qa": 49,
+    "physical_symptom": 42,
+    "store": 44,
+    "concierge_meta": 26,
+    "greeting_short": 3
+  },
+  "target": {
+    "medicine_thread": 125,
+    "side_effect_qa": 75,
+    "comparison": 50,
+    "physical_symptom": 75,
+    "store": 50,
+    "concierge_meta": 50,
+    "greeting_short": 25,
+    "general": 50
+  },
+  "total_selected": 500,
+  "bucket_counts": {
+    "medicine_thread": 125,
+    "side_effect_qa": 75,
+    "comparison": 50,
+    "physical_symptom": 75,
+    "store": 50,
+    "concierge_meta": 50,
+    "greeting_short": 25,
+    "general": 50
+  },
+  "raw_scenarios": 887,
+  "deduped_scenarios": 337,
+  "counseling_sessions": 3077,
+  "output_yaml": "D:\\Programing\\medicine-recommend\\tests\\fixtures\\v2_e2e_corpus_pr500.yaml",
+  "analysis_dirs": [
+    "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260729-20260806-20260806-141635",
+    "D:\\Programing\\medicine-recommend\\log\\analysis\\downloaded-logs-20260728-20260729-20260729-043016"
+  ]
+}

@@ -21,7 +21,9 @@ python scripts/local_v2_chat_test_runner.py --skip-yaml --use-gpt-user `
 | `medicine_response_builder.py`, `medicine_qa_routing.py` | sports-prep, allergy-check, travel-medicine | 12 | comparison / interaction |
 | `reco_followup_signals.py`, `reco_dedup.py` | correction-user, implicit-short | 8 | pivot-fix |
 | `conversation_followup_resolver.py` | medicine-anaphora, returning-thread | 8 | — |
-| `medicine_discovery_routing.py`, `chat_post_pipeline.py` (triage) | vague-to-specific, allergy-check | 8 | cold-start |
+| `medicine_discovery_routing.py`, `chat_post_pipeline.py` (triage) | vague-to-specific, allergy-check | 8 | cold-start, `v2_tier1_short_symptom.yaml` |
+| `symptom_helpers.py`, `scoring_utils.py`, `physical_no_reco_guidance.py` | — | 0 | `v2_tier1_short_symptom.yaml` + physical `--limit 10` |
+| `chat_recommendation_flow.py` (no_candidates) | — | 0 | physical `--limit 10` |
 | `e2e_gpt_user_sim.py` | teen-slang | 4 | — |
 | `llm_triage.py`, `chat_triage.py` | vague-to-specific, emotional-distress | 8 | triage smoke |
 | CI / workflow のみ | — | 0 | `pytest` unit only |
@@ -33,6 +35,7 @@ python scripts/local_v2_chat_test_runner.py --skip-yaml --use-gpt-user `
 | unit pytest | 0 | <2min |
 | YAML smoke 10 | ~30 | ~5min |
 | targeted GPT 2〜3 ペルソナ | ~40 | ~8min |
+| GPT Tier1 targeted 4×4 | ~20 | ~4min |
 | GPT 30 フル | ~500 | ~29min |
 
 ## ベースライン

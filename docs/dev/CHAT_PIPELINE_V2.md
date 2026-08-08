@@ -203,8 +203,44 @@ Cloud Run env 例: [`scripts/cloudrun_v2_env.example`](../scripts/cloudrun_v2_en
 
 ---
 
+## Phase 3.5: dialogue_state（対話状態機械）
+
+v2 セッションでは `session.dialogue_state` が **thread / routing / 評価 trace の合成ビュー**。
+
+| フィールド | 意味 | single-writer |
+|-----------|------|----------------|
+| `thread_topic` | 継続トピック（例: ロキソニン飲み合わせ） | `update_dialogue_turn_state` / `mark_correction_in_dialogue_state` |
+| `active_products` | 文脈品目（最大 8） | 同上（`qa_brand_pins` は別途ピン用途） |
+| `last_user_goal` | `resolve_turn_user_goal` 出力 | `update_dialogue_turn_state` |
+| `pending_clarification` | Clarify 待ち（例: `drug_name_for_interaction`） | `update_dialogue_turn_state`（ambiguous ルート） |
+| `flags.correction_pending` | ユーザー訂正検出 | `mark_correction_in_dialogue_state` |
+
+**読取**: `load_dialogue_context` / `get_dialogue_thread_state` / `collect_active_medicine_products`（`dialogue_state` 品目をマージ）
+
+**RAG Tier**（`local_rag_context.resolve_rag_tier`）: Tier0=品目ピン / Tier1=指示語・曖昧 / Tier2=比較。`dialogue_turn_trace.rag_tier` に記録。
+
+**観測**: `log/dialogue_turn_trace.jsonl` — Admin `/api/admin/sessions/{id}/turn_trace` + v2 テストセッション UI パネル。
+
+---
+
+## Physical 症状 NLU・E2E（2026-08-08）
+
+短文・日常表現の Physical ルーティングと GPT 多ターン E2E の SSOT は [`PHYSICAL_SYMPTOM_E2E.md`](PHYSICAL_SYMPTOM_E2E.md)。PR 最小テストは [`E2E_TARGETED_TEST_MAP.md`](E2E_TARGETED_TEST_MAP.md)。
+
+| 要素 | 要点 |
+|------|------|
+| NLU 補正 | `refine_nlu_symptoms_from_context` — 原文から canonical 症状（耳の痛み・じんましん等） |
+| 候補 0 件 | `physical_no_recommendation` + `physical_no_reco_guidance`（LLM なし） |
+| Tier1 triage | `try_rule_based_symptom_triage` / `apply_explicit_symptom_triage_override` |
+| Follow-up | `reco_followup_signals` + `conversation_followup_resolver`（≤120 文字 LLM） |
+| 検証 | Tier1 3/3 · Physical 10/10 · GPT targeted 4/4（2026-08-08） |
+
+---
+
 ## 関連ドキュメント
 
+- [PHYSICAL_SYMPTOM_E2E.md](PHYSICAL_SYMPTOM_E2E.md) — Physical NLU 補正・no_candidates・GPT E2E
+- [E2E_TARGETED_TEST_MAP.md](E2E_TARGETED_TEST_MAP.md) — PR 変更領域→最小テスト
 - [CHAT_ROUTE_EXPECTATIONS.md](CHAT_ROUTE_EXPECTATIONS.md) — 決定権マトリクス・期待 route
 - [ROUTE_SPEC.md](ROUTE_SPEC.md) — HTTP API 仕様
 - [ARCHITECTURE_MULTI_AGENT.md](ARCHITECTURE_MULTI_AGENT.md) — 現行 Agent 構成

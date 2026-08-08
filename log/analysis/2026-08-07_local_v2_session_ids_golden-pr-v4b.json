@@ -1,0 +1,125 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "golden-pr-v4b",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-07T11:18:24.891874+00:00",
+    "elapsed_sec": 200.7,
+    "scenario_count": 12,
+    "total_turns": 24,
+    "auto_pass": 9,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "golden-loxonin-home-01",
+      "session_id": "1786101504902165547669",
+      "category": "anaphora",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-loxonin-s-variant-01",
+      "session_id": "1786101516897687797934",
+      "category": "anaphora",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-warafin-anaphora-01",
+      "session_id": "1786101545303264276228",
+      "category": "anaphora",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-compare-followup-01",
+      "session_id": "1786101555467039879998",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-correction-pivot-01",
+      "session_id": "1786101582878831929093",
+      "category": "correction",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-meta-pivot-01",
+      "session_id": "1786101621063046308474",
+      "category": "pivot",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-alcohol-anaphora-01",
+      "session_id": "1786101625956959770233",
+      "category": "anaphora",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-clarify-ambiguous-01",
+      "session_id": "1786101665778122751690",
+      "category": "clarify",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-chitchat-health-01",
+      "session_id": "1786101667811402513825",
+      "category": "chitchat",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-session-delete-01",
+      "session_id": "1786101675297454864996",
+      "category": "session_ops",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-thanks-followup-01",
+      "session_id": "1786101675784065491347",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "golden-casual-home-kansai-01",
+      "session_id": "1786101690637853539916",
+      "category": "anaphora",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

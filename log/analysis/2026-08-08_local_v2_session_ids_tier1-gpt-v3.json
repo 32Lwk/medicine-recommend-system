@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "date": "2026-08-08",
+    "report_suffix": "tier1-gpt-v3",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-08T02:48:49.757872+00:00",
+    "elapsed_sec": 218.0,
+    "scenario_count": 4,
+    "total_turns": 16,
+    "auto_pass": 4,
+    "use_gpt_user": true,
+    "gpt_scale": true,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "gpt-gpt-correction-user",
+      "session_id": "1786157329760015514850",
+      "category": "tier1_correction",
+      "persona_id": "gpt-correction-user",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-allergy-check",
+      "session_id": "1786157404574643787800",
+      "category": "tier1_allergen",
+      "persona_id": "gpt-allergy-check",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-vague-to-specific",
+      "session_id": "1786157448468482463049",
+      "category": "tier1_triage",
+      "persona_id": "gpt-vague-to-specific",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-implicit-short",
+      "session_id": "1786157496211417699561",
+      "category": "tier1_anaphora",
+      "persona_id": "gpt-implicit-short",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

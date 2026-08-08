@@ -1,0 +1,222 @@
+# Chat Pipeline v2 ローカル統合テスト v2 (2026-08-08)
+
+- ベース URL: `http://127.0.0.1:5000/`
+- 参照: [CHAT_PIPELINE_V2.md](../docs/dev/CHAT_PIPELINE_V2.md)
+- 実行時刻: 2026-08-08T02:40:12.809861+00:00
+- 所要時間: 27.0s
+- シナリオ/セッション: 3 / 総ターン: 3
+- 自動合格: 2 / 要確認: 1
+- GPT ユーザーシミュレータ: False
+- GPT スケールモード: False
+
+> **手動評価**: [http://127.0.0.1:5000/admin](http://127.0.0.1:5000/admin) で各 `session_id` の会話を確認してください。
+
+## エグゼクティブサマリ
+
+- **physical**: 2/3 自動合格 / 3 ターン
+
+## IntentRouter Shadow / Dispatch KPI
+
+_`--skip-metrics` のため計測スキップ_
+
+## カテゴリ別
+
+| カテゴリ | セッション | ターン | 合格 | 要確認 |
+|----------|------------|--------|------|--------|
+| physical | 3 | 3 | 2 | 1 |
+
+## レイテンシ（KPI: p95 < 12s）
+
+- 計測ターン数: 3
+- end-to-end: p50 9037.0ms / **p95 13800.0ms** / max 13800.0ms
+- pipeline total: p50 7877.0ms / p95 13472.75ms / max 13472.75ms
+- LLM 呼び出し: 合計 7 / リクエストあたり平均 2.33
+
+| フェーズ(path) | 呼び出し | latency合計ms | p50 | p95 |
+|----------------|----------|---------------|-----|-----|
+| missing_info_service | 2 | 3736.04 | 1769.42 | 1966.62 |
+| explanation_generator.batch_usage_notes | 1 | 3547.92 | 3547.92 | 3547.92 |
+| medicine_qa/focus_llm | 3 | 3531.55 | 1276.22 | 1303.45 |
+| chat_response_service.personalized_advice | 1 | 1440.16 | 1440.16 | 1440.16 |
+
+## 意図評価（intent evaluation）
+
+- 追跡セッション: 0
+- counseling_detail マッチ: 0
+- route ログマッチ: 0
+
+### セッション別意図サマリ
+
+| session_id | scenario | turns | counseling | route_events | top_routes |
+|------------|----------|-------|------------|--------------|------------|
+| `1786156812812860982301` | tier1-short-urticaria | 1 | 0/0 | 0 | — |
+| `1786156822142324381790` | tier1-short-cough | 1 | 0/0 | 0 | — |
+| `1786156836268621974189` | tier1-short-fever-child | 1 | 0/0 | 0 | — |
+
+## 自動メトリクス（gcp-log-analysis 系）
+
+```json
+{
+  "intent_router_shadow_skipped": true,
+  "latency_this_run": {
+    "turns_measured": 3,
+    "e2e_ms_p50": 9037.0,
+    "e2e_ms_p95": 13800.0,
+    "e2e_ms_max": 13800.0,
+    "phase_breakdown": {
+      "pipeline_perf_requests": 3,
+      "total_ms_p50": 7877.0,
+      "total_ms_p95": 13472.75,
+      "total_ms_max": 13472.75,
+      "llm_calls_total": 7,
+      "llm_calls_per_request_avg": 2.33,
+      "llm_by_path": {
+        "missing_info_service": {
+          "count": 2,
+          "latency_ms_sum": 3736.04,
+          "latency_ms_p50": 1769.42,
+          "latency_ms_p95": 1966.62
+        },
+        "explanation_generator.batch_usage_notes": {
+          "count": 1,
+          "latency_ms_sum": 3547.92,
+          "latency_ms_p50": 3547.92,
+          "latency_ms_p95": 3547.92
+        },
+        "medicine_qa/focus_llm": {
+          "count": 3,
+          "latency_ms_sum": 3531.55,
+          "latency_ms_p50": 1276.22,
+          "latency_ms_p95": 1303.45
+        },
+        "chat_response_service.personalized_advice": {
+          "count": 1,
+          "latency_ms_sum": 1440.16,
+          "latency_ms_p50": 1440.16,
+          "latency_ms_p95": 1440.16
+        }
+      },
+      "breakdown_steps_avg_ms": {
+        "after_counseling_flow": 472.96,
+        "after_get_session_db": 14.26,
+        "after_medicine_qa_route": 975.11,
+        "after_security": 224.04,
+        "after_triage": 309.89,
+        "after_triage_follow_ups": 375.21,
+        "before_emoji_route": 290.36,
+        "before_llm_setup": 24.96,
+        "before_medicine_qa_route": 491.44,
+        "before_orchestrator": 1022.67,
+        "before_security": 35.9,
+        "before_triage": 295.24,
+        "emit_cards_early": 8340.54,
+        "explanation_phase_done": 11908.0,
+        "explanation_phase_start": 11907.99,
+        "line_carousel_push": 11897.54,
+        "medicine_qa_physical_priority": 975.53,
+        "moderation_done": 472.99,
+        "nlu_batch_done": 4154.36,
+        "nlu_batch_start": 2112.56,
+        "parsed_message": 11.11,
+        "personalized_advice": 13364.09,
+        "post_start": 10.93,
+        "rb_explain_batch_done": 11895.86,
+        "rb_missing_info_done": 6700.34,
+        "rb_scoring_only_done": 8340.52,
+        "rule_based_scoring_only_done": 9812.04,
+        "rule_based_start": 4821.8,
+        "safety_gate_done": 369.44,
+        "session_db_read": 11.15,
+        "short_symptom_triage_skip_llm": 309.89
+      }
+    }
+  },
+  "turn_eval_kpi": {
+    "turns_evaluated": 3,
+    "turn_rule_pass": 2,
+    "reject_no_reco": 0,
+    "comparison_loop": 0,
+    "judge_turns": 0,
+    "judge_aligned": 0,
+    "turn_rows": [
+      {
+        "scenario_id": "tier1-short-urticaria",
+        "turn_index": 0,
+        "rule_pass": false,
+        "judge_grade": null,
+        "prompt_turns": 1,
+        "failures": [
+          "route_mismatch expected=Physical got=unknown"
+        ]
+      },
+      {
+        "scenario_id": "tier1-short-cough",
+        "turn_index": 0,
+        "rule_pass": true,
+        "judge_grade": null,
+        "prompt_turns": null,
+        "failures": []
+      },
+      {
+        "scenario_id": "tier1-short-fever-child",
+        "turn_index": 0,
+        "rule_pass": true,
+        "judge_grade": null,
+        "prompt_turns": null,
+        "failures": []
+      }
+    ]
+  }
+}
+```
+
+
+## ターン別評価 KPI
+
+- 評価ターン数: 3
+- ターン rule pass: 2
+- reject_no_reco 検知: 0
+- comparison_loop 検知: 0
+- judge aligned: 0 / judged 0
+
+| scenario | turn | rule | judge | prompt | failures |
+|----------|------|------|-------|--------|----------|
+| tier1-short-urticaria | 0 | FAIL | None | 1 | route_mismatch expected=Physical got=unknown |
+| tier1-short-cough | 0 | PASS | None | None |  |
+| tier1-short-fever-child | 0 | PASS | None | None |  |
+
+## 要確認シナリオ
+
+| id | category | session_id | failures | last_kind |
+|----|----------|------------|----------|-----------|
+| tier1-short-urticaria | physical | `1786156812812860982301` | t0:route_mismatch expected=Physical got=unknown | None |
+
+## 全セッション — 完全トランスクリプト
+
+### tier1-short-urticaria — physical (REVIEW)
+- session_id: `1786156812812860982301`
+- wave: tier1
+#### Turn 1
+- **User**: 蕁麻疹出た
+- **Bot** (`unknown`, 9037ms):
+
+該当する医薬品が見つかりませんでした
+
+### tier1-short-cough — physical (PASS)
+- session_id: `1786156822142324381790`
+- wave: tier1
+#### Turn 1
+- **User**: 咳がひどい
+- **Bot** (`unknown`, 13800ms):
+
+咳がひどいんですね、つらいですね。トピックGトローチなどのトローチは、のどの炎症や刺激で出る咳・のどの不快感をやわらげやすいです。水分をこまめにとり、乾燥や冷気を避けてください。息苦しさ、発熱、黄色い痰がある、長引く場合は受診を。インフルエンザが疑わしいときも早めの相談が安心です。
+
+### tier1-short-fever-child — physical (PASS)
+- session_id: `1786156836268621974189`
+- wave: tier1
+#### Turn 1
+- **User**: 子供熱出た
+- **Bot** (`pediatric_age_required`, 3252ms):
+
+お子さまの年齢が分かると、より安全な市販薬をご案内できます。何歳か教えていただけますか。高熱が続く場合や状態が悪い場合は、早めに医療機関へご相談ください。
+

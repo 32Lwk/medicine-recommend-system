@@ -2673,15 +2673,24 @@ def build_concierge_payload(
         )
     if intent == "chitchat":
         from src.services.status_diagnosis_builder import build_concierge_text_status
-
-        text = generate_chitchat_text(
-            client, user_text, session_id=session_id, history=history
+        from src.services.concierge_intent import (
+            build_reflective_health_chitchat_text,
+            looks_like_reflective_health_chitchat,
         )
+
+        if looks_like_reflective_health_chitchat(user_text):
+            text = build_reflective_health_chitchat_text(user_text)
+            chitchat_llm_used = False
+        else:
+            text = generate_chitchat_text(
+                client, user_text, session_id=session_id, history=history
+            )
+            chitchat_llm_used = True
         return {
             "content": text,
             "content_format": "text",
             "concierge_intent": intent,
-            "llm_used": True,
+            "llm_used": chitchat_llm_used,
             "sage_diagnosis": build_concierge_text_status(
                 text, title="お話", kind="concierge_chitchat"
             ).to_client_dict(),

@@ -1,0 +1,639 @@
+{
+  "meta": {
+    "date": "2026-08-08",
+    "report_suffix": "tier1-physical10-v2",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-08T02:40:12.810859+00:00",
+    "elapsed_sec": 137.2,
+    "scenario_count": 10,
+    "total_turns": 10,
+    "auto_pass": 9,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "metrics": {
+    "intent_router_shadow_skipped": true,
+    "latency_this_run": {
+      "turns_measured": 10,
+      "e2e_ms_p50": 13553.0,
+      "e2e_ms_p95": 17641.0,
+      "e2e_ms_max": 17641.0,
+      "phase_breakdown": {
+        "pipeline_perf_requests": 10,
+        "total_ms_p50": 13257.65,
+        "total_ms_p95": 16570.29,
+        "total_ms_max": 16570.29,
+        "llm_calls_total": 38,
+        "llm_calls_per_request_avg": 3.8,
+        "llm_by_path": {
+          "explanation_generator.batch_usage_notes": {
+            "count": 9,
+            "latency_ms_sum": 37836.65,
+            "latency_ms_p50": 4161.64,
+            "latency_ms_p95": 4585.26
+          },
+          "missing_info_service": {
+            "count": 10,
+            "latency_ms_sum": 20605.67,
+            "latency_ms_p50": 1993.93,
+            "latency_ms_p95": 2409.89
+          },
+          "chat_response_service.personalized_advice": {
+            "count": 9,
+            "latency_ms_sum": 13072.15,
+            "latency_ms_p50": 1448.85,
+            "latency_ms_p95": 1687.04
+          },
+          "medicine_qa/focus_llm": {
+            "count": 10,
+            "latency_ms_sum": 9664.91,
+            "latency_ms_p50": 959.99,
+            "latency_ms_p95": 1167.15
+          }
+        },
+        "breakdown_steps_avg_ms": {
+          "after_counseling_flow": 225.54,
+          "after_get_session_db": 13.06,
+          "after_medicine_qa_route": 234.06,
+          "after_security": 148.55,
+          "after_triage": 176.95,
+          "after_triage_follow_ups": 206.84,
+          "before_emoji_route": 168.87,
+          "before_llm_setup": 23.67,
+          "before_medicine_qa_route": 232.11,
+          "before_orchestrator": 259.89,
+          "before_security": 28.66,
+          "before_triage": 170.35,
+          "emit_cards_early": 8174.98,
+          "explanation_phase_done": 12402.57,
+          "explanation_phase_start": 12402.56,
+          "line_carousel_push": 12392.27,
+          "medicine_qa_physical_priority": 234.89,
+          "moderation_done": 225.56,
+          "nlu_batch_done": 3690.56,
+          "nlu_batch_start": 1499.12,
+          "parsed_message": 10.93,
+          "personalized_advice": 13867.72,
+          "post_start": 10.8,
+          "rb_explain_batch_done": 12388.92,
+          "rb_missing_info_done": 5813.57,
+          "rb_scoring_only_done": 8174.96,
+          "rule_based_scoring_only_done": 11700.96,
+          "rule_based_start": 3743.5,
+          "safety_gate_done": 202.52,
+          "session_db_read": 10.97,
+          "short_symptom_triage_skip_llm": 176.94
+        }
+      }
+    },
+    "turn_eval_kpi": {
+      "turns_evaluated": 10,
+      "turn_rule_pass": 9,
+      "reject_no_reco": 0,
+      "comparison_loop": 0,
+      "judge_turns": 0,
+      "judge_aligned": 0,
+      "turn_rows": [
+        {
+          "scenario_id": "physical-symptom-01",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "physical-symptom-02",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "physical-symptom-03",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "physical-symptom-04",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "physical-symptom-05",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "physical-symptom-06",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "physical-symptom-07",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "physical-symptom-08",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "physical-symptom-09",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "physical-symptom-10",
+          "turn_index": 0,
+          "rule_pass": false,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": [
+            "route_mismatch expected=Physical got=unknown"
+          ]
+        }
+      ]
+    }
+  },
+  "results": [
+    {
+      "scenario_id": "physical-symptom-01",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1786156812838160215049",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "頭痛い",
+          "http_status": 200,
+          "elapsed_ms": 17641,
+          "diagnosis_kind": null,
+          "response_snippet": "頭痛いの、つらいですね。まずは無理せず休んで、水分をとってください。イブやバファリンEXは、つらい頭痛をやわらげやすいお薬です。胃が弱い方、妊娠中の方、他の痛み止めを飲んでいる方は注意が必要です。発熱やのどの痛みもあるなら、インフルエンザの可能性もあるので受診も考えてください。",
+          "response_full": "頭痛いの、つらいですね。まずは無理せず休んで、水分をとってください。イブやバファリンEXは、つらい頭痛をやわらげやすいお薬です。胃が弱い方、妊娠中の方、他の痛み止めを飲んでいる方は注意が必要です。発熱やのどの痛みもあるなら、インフルエンザの可能性もあるので受診も考えてください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "physical-symptom-02",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1786156830776634919892",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "頭が痛いです",
+          "http_status": 200,
+          "elapsed_ms": 15662,
+          "diagnosis_kind": null,
+          "response_snippet": "頭が痛いのですね、つらいですね。まずは無理をせず、暗い静かな場所で休み、水分を少しずつとってください。おすすめのイブ、バファリンEX、カロナールAは、頭痛の痛みを和らげるのに向いています。胃が弱い方は食後に。発熱やのどの痛みもあれば、インフルエンザの可能性もあるので注意し、強い痛みや長引く場合は受診してください】【。",
+          "response_full": "頭が痛いのですね、つらいですね。まずは無理をせず、暗い静かな場所で休み、水分を少しずつとってください。おすすめのイブ、バファリンEX、カロナールAは、頭痛の痛みを和らげるのに向いています。胃が弱い方は食後に。発熱やのどの痛みもあれば、インフルエンザの可能性もあるので注意し、強い痛みや長引く場合は受診してください】【。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "physical-symptom-03",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1786156846727632396531",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "咳が出ます",
+          "http_status": 200,
+          "elapsed_ms": 13553,
+          "diagnosis_kind": null,
+          "response_snippet": "咳が出てつらいですね。のどの刺激で出る咳には、トローチでのどをうるおし、症状を和らげる方法が合いやすいです。水分をこまめにとり、乾燥やたばこ煙は避けてください。高熱や強いだるさ、息苦しさ、咳が長引く場合は受診を。インフルエンザが疑わしいときも早めの受診が安心です】【。",
+          "response_full": "咳が出てつらいですね。のどの刺激で出る咳には、トローチでのどをうるおし、症状を和らげる方法が合いやすいです。水分をこまめにとり、乾燥やたばこ煙は避けてください。高熱や強いだるさ、息苦しさ、咳が長引く場合は受診を。インフルエンザが疑わしいときも早めの受診が安心です】【。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "physical-symptom-04",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1786156860614464156633",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "のどが痛い",
+          "http_status": 200,
+          "elapsed_ms": 14834,
+          "diagnosis_kind": null,
+          "response_snippet": "のどが痛いのはつらいですね。まずは刺激の少ないのどスプレーで、痛む部分を直接ケアするのがおすすめです。スカイブブロンのどスプレーやルルのどスプレーは、のどの炎症や痛みに使いやすいです。発熱や強いだるさ、関節痛があればインフルエンザの可能性もあるので受診を。気になる場合は薬剤師にご相談ください。",
+          "response_full": "のどが痛いのはつらいですね。まずは刺激の少ないのどスプレーで、痛む部分を直接ケアするのがおすすめです。スカイブブロンのどスプレーやルルのどスプレーは、のどの炎症や痛みに使いやすいです。発熱や強いだるさ、関節痛があればインフルエンザの可能性もあるので受診を。気になる場合は薬剤師にご相談ください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "physical-symptom-05",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1786156875731015371447",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "鼻水が止まらない",
+          "http_status": 200,
+          "elapsed_ms": 14820,
+          "diagnosis_kind": null,
+          "response_snippet": "鼻水が止まらないのはつらいですね。スカイブブロンHIは鼻水だけでなく、かぜの他の症状も一緒に見たいときに向いています。鼻づまりが強ければスカイブブロンNAスプレーも使いやすいです。発熱や強いだるさがあればインフルエンザの可能性もあるので受診を。眠気や運転前は注意してください。",
+          "response_full": "鼻水が止まらないのはつらいですね。スカイブブロンHIは鼻水だけでなく、かぜの他の症状も一緒に見たいときに向いています。鼻づまりが強ければスカイブブロンNAスプレーも使いやすいです。発熱や強いだるさがあればインフルエンザの可能性もあるので受診を。眠気や運転前は注意してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "physical-symptom-06",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1786156890829732100979",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "胃が痛い",
+          "http_status": 200,
+          "elapsed_ms": 12458,
+          "diagnosis_kind": null,
+          "response_snippet": "胃が痛いのですね、つらいですね。第一三共胃腸薬グリーン微粒や新キャベジンコーワSは、胃酸の出すぎや胃の荒れによる胃痛に使いやすいです。まずは刺激物・お酒・空腹を避け、無理せず休んでください。黒い便、吐血、強い痛みや発熱があれば早めに受診を。",
+          "response_full": "胃が痛いのですね、つらいですね。第一三共胃腸薬グリーン微粒や新キャベジンコーワSは、胃酸の出すぎや胃の荒れによる胃痛に使いやすいです。まずは刺激物・お酒・空腹を避け、無理せず休んでください。黒い便、吐血、強い痛みや発熱があれば早めに受診を。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "physical-symptom-07",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1786156903610764800744",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "下痢をしています",
+          "http_status": 200,
+          "elapsed_ms": 13295,
+          "diagnosis_kind": null,
+          "response_snippet": "下痢でつらいですね。オウレン末は、腸の動きを整えて水様便を落ち着かせたい時に使われる生薬です。まずは水分をこまめに取り、脂っこい物や冷たい飲み物は控えてください。発熱、強い腹痛、血便、嘔吐を伴う、または2日以上続く場合は受診をおすすめします。",
+          "response_full": "下痢でつらいですね。オウレン末は、腸の動きを整えて水様便を落ち着かせたい時に使われる生薬です。まずは水分をこまめに取り、脂っこい物や冷たい飲み物は控えてください。発熱、強い腹痛、血便、嘔吐を伴う、または2日以上続く場合は受診をおすすめします。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "physical-symptom-08",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1786156917192849467112",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "便秘です",
+          "http_status": 200,
+          "elapsed_ms": 12107,
+          "diagnosis_kind": null,
+          "response_snippet": "便秘でおつらいですね。まずは水分をしっかりとり、軽い運動や食物繊維も意識してください。つらい張りには、比較的すぐ出したい場合はミカサ浣腸N40／コトブキ浣腸40が役立ちます。お腹の張りや食べすぎもあるなら大柴胡湯も候補です。強い腹痛、血便、数日続く便秘は受診してください。",
+          "response_full": "便秘でおつらいですね。まずは水分をしっかりとり、軽い運動や食物繊維も意識してください。つらい張りには、比較的すぐ出したい場合はミカサ浣腸N40／コトブキ浣腸40が役立ちます。お腹の張りや食べすぎもあるなら大柴胡湯も候補です。強い腹痛、血便、数日続く便秘は受診してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "physical-symptom-09",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1786156929586632544364",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "目がかゆい",
+          "http_status": 200,
+          "elapsed_ms": 14074,
+          "diagnosis_kind": null,
+          "response_snippet": "目がかゆいのですね、つらいですね。かゆみが中心なら、目の炎症や充血にも使いやすいアイエースVクールやアイリス50が候補です。まずは手でこすらず、コンタクトは外して使ってください。痛み・目やに・見えにくさがある、または長引く場合は受診をおすすめします。",
+          "response_full": "目がかゆいのですね、つらいですね。かゆみが中心なら、目の炎症や充血にも使いやすいアイエースVクールやアイリス50が候補です。まずは手でこすらず、コンタクトは外して使ってください。痛み・目やに・見えにくさがある、または長引く場合は受診をおすすめします。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "physical-symptom-10",
+      "category": "physical",
+      "wave": "1b",
+      "session_id": "1786156943953087544215",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "耳が痛い",
+          "http_status": 200,
+          "elapsed_ms": 5804,
+          "diagnosis_kind": null,
+          "response_snippet": "該当する医薬品が見つかりませんでした",
+          "response_full": "該当する医薬品が見つかりませんでした",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": false,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [
+        "t0:route_mismatch expected=Physical got=unknown"
+      ],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": false,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [
+            "route_mismatch expected=Physical got=unknown"
+          ],
+          "rule_ids": [],
+          "status": "fail",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    }
+  ]
+}

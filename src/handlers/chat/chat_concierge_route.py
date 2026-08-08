@@ -213,6 +213,23 @@ def try_concierge_response(
     routing_text = (sanitized_message or user_message or "").strip()
     llm_text = resolve_llm_user_text(user_message=user_message)
     alt_texts = [t for t in (user_message, processed_message, sanitized_message) if t]
+
+    from src.dialogue.history import resolve_concierge_history_with_fallback
+    from src.services.medicine_qa_eligibility import looks_like_medicine_thread_inventory_followup
+
+    _conc_history = resolve_concierge_history_with_fallback(session, sid)
+    if looks_like_medicine_thread_inventory_followup(
+        routing_text,
+        session=session,
+        sid=sid,
+        conversation_history=_conc_history,
+    ):
+        logger.info(
+            "⏭️ Concierge skip: medicine thread inventory followup %r",
+            routing_text[:40],
+        )
+        return None
+
     from src.services.routing_context import evaluate_store_gate
 
     intent_source = str((triage_result or {}).get("concierge_intent_source") or "")

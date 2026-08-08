@@ -80,3 +80,29 @@ def test_mirror_concierge_intent_skipped_when_v2_off(monkeypatch):
     session: dict = {}
     mirror_concierge_intent(session, "line:U1", "architecture")
     assert "dialogue_state" not in session
+
+
+def test_get_dialogue_thread_state_defaults():
+    from src.dialogue.context import get_dialogue_thread_state, save_dialogue_context
+
+    session: dict = {}
+    save_dialogue_context(
+        session,
+        {
+            "version": 1,
+            "pending": {},
+            "concierge": {},
+            "counseling": {},
+            "handoff": {},
+            "flags": {"correction_pending": True},
+            "thread_topic": "ロキソニン",
+            "active_products": ["ロキソニンS"],
+            "last_user_goal": "answer",
+            "pending_clarification": None,
+        },
+    )
+    thread = get_dialogue_thread_state(session)
+    assert thread["thread_topic"] == "ロキソニン"
+    assert thread["active_products"] == ["ロキソニンS"]
+    assert thread["last_user_goal"] == "answer"
+    assert thread["correction_pending"] is True

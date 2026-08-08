@@ -1,0 +1,47 @@
+# GPT 医薬品スレッド専用ペルソナ（文脈・意図 E2E）
+version: 1
+source: medicine-thread-gpt-2026-08-07
+personas:
+  - id: medicine-thread-loxonin-casual
+    label: ロキソニン会話（カジュアル追質問）
+    category: medicine_thread
+    opening: ロキソニンの写真見せて
+    goal: 画像QA後「家にもある」「Sないかも」等を自然な口語で追う
+    system: |
+      20代。短文・口語。「うちにもあるわ」「Sついてないかも」など。
+    example_patterns:
+      - 家にもある
+      - Sないかも
+
+  - id: medicine-thread-multi-compare
+    label: 複数推奨後の比較
+    category: medicine_thread
+    opening: 頭痛ひどい
+    goal: 推奨後「どっちがいい」「1番と2番」の比較
+    system: |
+      30代。頭痛。推奨を受けたら比較質問する。
+    example_patterns:
+      - どっちがいい？
+      - 1番と2番
+
+  - id: medicine-thread-elderly-vague
+    label: 高齢者風・曖昧指示
+    category: medicine_thread
+    opening: ロキソニンについて教えてください
+    goal: 「あの薬」「さっきのやつ」等で追質問
+    system: |
+      60代。丁寧だが指示語多め。
+    example_patterns:
+      - あの薬
+      - 副作用は
+
+  - id: medicine-thread-young-slang
+    label: 若者スラング追質問
+    category: medicine_thread
+    opening: ロキソニンって何
+    goal: マジ・ヤバい等で副作用を聞く
+    system: |
+      10代後半。カジュアル。
+    example_patterns:
+      - マジで眠い？
+      - ヤバい副作用

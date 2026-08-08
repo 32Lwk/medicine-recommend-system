@@ -1,7 +1,54 @@
 {
   "source": "CHANGELOG.md",
-  "header_date": "2026年7月26日（Medicine QA 文脈／LLM 補完・ロバストネス 253/253）",
+  "header_date": "2026年8月8日（Physical 症状 NLU 一般化・GPT E2E 拡張・Tier1 レイテンシ・候補 0 件 UX）",
   "releases": [
+    {
+      "heading": "2026-08-08 — Physical 症状 NLU 一般化・GPT E2E 拡張・Tier1 検証",
+      "overview": "ユーザー文脈・日常表現を優先し、E2E で顕在化した 蕁麻疹出た / 耳が痛い 等の失敗を テスト個別ハックではなく NLU 補正・同義語展開・physical_no_recommendation フォールバックで一般化。GPT 多ターン（30 ペルソナ + targeted 4）と Tier1 短文 YAML で 13/13 + 4/4 PASS。追加 LLM は follow-up 曖昧時（≤120 文字）に限定しコスト・レイテンシを抑制。",
+      "highlights": [
+        "[ ] 蕁麻疹の 実 OTC 推奨（現状は physical_no_recommendation で UX/route は合格）",
+        "[ ] Tier2 レイテンシ（explanation 並列化・focus_llm 追加 skip）",
+        "[ ] dialogue_state.thread_topic Phase 2（GPT 安定後）"
+      ]
+    },
+    {
+      "heading": "2026-08-07 — AWS ステージング Fargate + Tunnel 移行・ALB 削除・Cloud Run 型コスト最適化",
+      "overview": "新アカウント 620992446973 の AWS ステージングを ECS Express + ALB（停止中でも ~$19/月 固定）から 通常 ECS Fargate + cloudflared サイドカー + Cloudflare Tunnel（ALB なし）へ移行。アプリ Docker イメージ・環境変数・RAG/推論ロジックは変更なし。入口は従来どおり https://aws-medicine.yutok.dev（Worker + Wake）。移行検証・旧 ALB 削除・停止デフォルト化を 2026-08-07 実施済み。",
+      "highlights": [
+        "[ ] Budget Lambda に ECS_DEPLOY_MODE=fargate_tunnel 設定（setup-aws-budget-staged-actions.sh 再実行）",
+        "[ ] draw.io アーキテクチャ図の ALB/WAF 経路更新（AWS_ARCHITECTURE_DIAGRAMS.md 参照）",
+        "[ ] 8 月後半請求で ELB=$0 継続を Cost Explorer で確認"
+      ]
+    },
+    {
+      "heading": "2026-08-05 — 連絡先・案内カード文脈ルーティング・operator カード同梱・UI 順序修正",
+      "overview": "「運用者はだれ？」「案内カード見せて」等の 運営連絡先意図 が、支払い案内（store_payment）・医薬品 Q&A・商品画像に誤ルートする問題を、特定フレーズ個別対応ではなく contact channel 一般分類で修正。Web UI では連絡先を 同一 status カード内 sections に同梱表示。ローカル E2E 23/23（contact context シナリオ）。",
+      "highlights": [
+        "docs/dev/CONTACT_CHANNEL_ROUTING.md — 新規 SSOT",
+        "docs/dev/CHAT_ROUTE_EXPECTATIONS.md — operator / 案内カード行追加",
+        "docs/concierge/technical/00-disclosure-policy.md — 同梱 sections 方針",
+        "config/line_config.py — LINE 公式 URL / QR 正規化",
+        "src/utils/port_utils.py / app.py — ローカルポート競合検出・フォールバック",
+        "scripts/stop_local_dev.py / stop-local-dev.ps1 — ローカル dev 停止ヘルパー"
+      ]
+    },
+    {
+      "heading": "2026-07-28 — Concierge Meta KB 拡張・L3 ライブ品質・Local RAG 固定",
+      "overview": "Amazon Q 型 Meta KB（技術 FAQ + アプリ概要 + 作成意図 + 企業/B2B + 法務横断）を RAG 最適化 FAQ として拡充し、L3 ライブ LLM eval（ルール tier / judge tier / 多ターン E2E）で口語・省略・文脈 follow-up を検証。Concierge 向け Bedrock KB はコード上 Local RAG 固定（CONCIERGE_RAG_PROVIDER=bedrock_kb も local に正規化）。",
+      "highlights": [
+        "ログ: log/analysis/concierge_*_20260728*.json",
+        "正本: docs/ops/CONCIERGE_TECH_FAQ_MAINTENANCE.md、docs/concierge/technical/13-meta-kb-unified-index.md"
+      ]
+    },
+    {
+      "heading": "2026-07-28 — 返信遅延改善計画 v3（SSE・Upstash・LLM 最適化・session 混線修正）",
+      "overview": "GCP dev ログ分析（2026-07-26〜28）で特定した 180〜351s ハング・429 輻輳・15〜78s 構造遅延 を、推奬精度・返信水準を維持したまま解消。Cloud Run 1Gi/Workers=2/concurrency=10、SSE in_flight 修正、Upstash Redis、LLM 重複排除・並列フラグ、フロント輻輳対策を一括実装。",
+      "highlights": [
+        "技術正本: docs/ops/LATENCY_IMPROVEMENT_V3.md",
+        "運用 env: docs/ops/CLOUD_RUN_LLM_ENV.md",
+        "Upstash 設定: scripts/setup-gcp-upstash-redis.sh"
+      ]
+    },
     {
       "heading": "2026-07-26 — Medicine QA 文脈一般化・focus LLM・GPT 多ターン検証（253/253）",
       "overview": "ユーザー視点の 日常表現・省略・多ターン文脈 でも意図を汲めるよう、単語リスト合わせ込みではなく ライフステージ文脈の型・構造的曖昧さ時の LLM 補完・GPT 会話 fidelity で Medicine QA / Concierge meta を強化。ライブ GPT を含むロバストネス評価 253/253 (100%)。",
@@ -28,48 +75,6 @@
         "data/otc_image_versions.json — CDN キャッシュバスティング用 slug 追加",
         "scripts/sync_top50_otc_images.py / scripts/sync_otc_images_retry.py / scripts/otc_image_multi_source.py",
         "成果物: log/analysis/otc_image_sync_bulk/"
-      ]
-    },
-    {
-      "heading": "2026年7月26日 — Medicine QA ロバストネス・Local RAG・文脈 routing",
-      "overview": "医薬品 Q&A の 日常口語・方言・指示語 follow-up・複合 intent に耐える routing を一般化。Local RAG（BM25 + 文脈 query）と multi-focus retrieve を統合し、固定 eval 43/43・GPT 会話 + LLM stress 含む 75 問中 74+ PASS を達成。",
-      "highlights": [
-        "medicine_qa_html.py / chat_medicine_qa_html.py — 製品写真・multi-focus セクション",
-        "flex_messages.py — LINE Flex QA hero",
-        "dispatcher.py / chat_post_pipeline.py — session 文脈付き focus 推定"
-      ]
-    },
-    {
-      "heading": "2026年7月26日 — PMDA OTC Cloud 完走・KB re-ingest・orphans 分析クローズ",
-      "overview": "Cloud Agent（cursor/pmda-otc-live-fetch-07ea）で OTC 7,495 品目の PMDA live 完走（~14.5h）を main にマージ。続けて C-3（S3 sync → Bedrock re-ingest → eval） を実施。orphans 1,240 件の分析を記録し 受け入れクローズ。",
-      "highlights": []
-    },
-    {
-      "heading": "2026年7月25日 — SSE 副作用 Q&A 表示復旧・医薬品比較 Q&A・CodeBuild post_deploy 高速化",
-      "overview": "AWS ステージングで 「ロキソニンって眠くなる？」 等の副作用 Q&A がバックエンド正常完了後も 処理バブル（AI分析中）のまま になる不具合を修正。あわせて 医薬品比較 Q&A ルーティング・ブランド通称レジストリ・副作用 UI、および CodeBuild post_build 高速化（精度維持） を反映。",
-      "highlights": []
-    },
-    {
-      "heading": "2026年7月25日 — NLU/ルーティング統合（Unified Pipeline）・副作用 QA・AWS ログ分析",
-      "overview": "AWS ステージングログで特定した Concierge follow-up 乖離（doc_changelog 固定）と ロキソニン副作用 QA の誤 escalation を、Intent Router v2 有効時に 一括 ON する 3 層ルーティングで修正。あわせて AWS CloudWatch ログ分析パイプライン（GCP 相当）を追加し、ゴールデン 6 セッションを local-v2-chat-test で再検証（8/8 自動合格）。",
-      "highlights": [
-        "finalize_medicine_qa_response: DB 保存後に session cookie から messages を削除する際、mark_pipeline_turn_bot_appended を呼び pipeline end guard の誤 system_e…",
-        "main._enrich_v2_test_chat_body: v2 テスト UA 向け POST 応答に DB フォールバック付き latest_bot を同梱"
-      ]
-    },
-    {
-      "heading": "2026年7月25日 — OTC 画像（トキワ公式）・推奨除外・TTS/UI・静的アセット",
-      "overview": "マツキヨ未掲載の トキワイブプロエースＡ を常盤薬品公式画像で R2 に配置。イブプロフェン錠200S / 200SC は OTC CSV に残しつつ推奨候補から除外（EC 未掲載・画像なし・ジェネリック名で購入特定が困難なため）。あわせて Sage UI の CHANGELOG 表示・TTS（Polly SSML / Web Speech） と localhost 限定の /static/ 配信を改善。",
-      "highlights": [
-        "localhost / 127.0.0.1 リクエスト時のみ middleware が prefer_local_static を立て、CDN の代わりに /static/ を返す",
-        "LOCAL_STATIC_ASSETS=1 環境変数でも強制可能",
-        "dev ホスト（aws.medicine.yutok.dev）は CloudFront を継続利用",
-        "docs/ops/CLOUDFLARE_R2_IMAGES.md: マツキヨ未掲載品の公式ソース手動アップロード手順、上位50一括同期手順",
-        "docs/ops/RECOMMENDATION_PRODUCT_FILTERS.md（新規）: 推奨除外リストの運用",
-        "docs/ops/AWS_FEATURES_ROLLOUT.md: localhost 静的アセット・APP_ENV dev 手順追記",
-        "イブプロフェン錠200S のパッケージ画像（JAN 判明時 or ユーザー提供素材）",
-        "RECOMMENDATION_EXCLUDED_PRODUCTS の設定ファイル化（CSV / YAML）",
-        "上位50以外の推奨頻度品目の継続同期（sync_otc_images_from_matsukiyo --limit 200 の定期実行）"
       ]
     }
   ]

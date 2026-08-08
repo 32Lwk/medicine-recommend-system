@@ -218,6 +218,56 @@ def try_rule_based_symptom_triage(
     return triage
 
 
+def apply_explicit_symptom_triage_override(
+    session: Any,
+    triage_result: Optional[dict],
+    user_message: str,
+    *,
+    sid: Optional[str] = None,
+    sanitized_message: Optional[str] = None,
+) -> dict:
+    """
+    LLM triage が Concierge/Other に寄ったが、入力は明示症状のみのとき Physical へ矯正。
+    皮膚症状・短文申告など has_explicit_symptom_signal で拾えるケースの安全網。
+    """
+    triage = dict(triage_result or {})
+    cat = str(triage.get("category") or "").strip()
+    if cat in ("Physical", "Emergency", "Security"):
+        return triage
+    msg = (sanitized_message or user_message or "").strip()
+    if not msg:
+        return triage
+    try:
+        from src.utils.input_helpers import has_explicit_symptom_signal
+    except ImportError:
+        return triage
+    if not has_explicit_symptom_signal(msg):
+        return triage
+    try:
+        from src.services.concierge_intent import probe_meta_concierge_intent
+
+        if probe_meta_concierge_intent(msg):
+            return triage
+    except ImportError:
+        pass
+    if session_has_medicine_qa_context(session, sid):
+        return triage
+    if cat not in ("Other", "Ask", "Concierge", ""):
+        return triage
+    triage["category"] = "Physical"
+    triage["subcategory"] = "explicit_symptom_override"
+    prev = (triage.get("reasoning") or "").strip()
+    triage["reasoning"] = (
+        f"{prev} [explicit_symptom→Physical override]"
+        if prev
+        else "explicit symptom signal overrides non-Physical triage"
+    )
+    session["last_triage_result"] = triage
+    if sid:
+        session["_last_triage_result"] = triage
+    return triage
+
+
 def should_route_medicine_discovery_to_recommendation(
     session: Any,
     sid: Optional[str],

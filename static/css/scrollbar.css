@@ -45,7 +45,8 @@ body.about-page > .about-scroll,
 .admin-feedback-chat-thread-messages,
 .admin-feedback-detail-output,
 .admin-feedback-detail-log-pre,
-.admin-feedback-investigation-log {
+.admin-feedback-investigation-log,
+.turn-trace-panel {
     scrollbar-width: thin;
     scrollbar-color: var(--app-scrollbar-thumb) var(--app-scrollbar-track);
     -webkit-overflow-scrolling: touch;
@@ -79,7 +80,8 @@ body.about-page > .about-scroll::-webkit-scrollbar,
 .admin-feedback-chat-thread-messages::-webkit-scrollbar,
 .admin-feedback-detail-output::-webkit-scrollbar,
 .admin-feedback-detail-log-pre::-webkit-scrollbar,
-.admin-feedback-investigation-log::-webkit-scrollbar {
+.admin-feedback-investigation-log::-webkit-scrollbar,
+.turn-trace-panel::-webkit-scrollbar {
     width: 7px;
     height: 7px;
     background: transparent;
@@ -114,7 +116,8 @@ body.about-page > .about-scroll::-webkit-scrollbar-track,
 .admin-feedback-chat-thread-messages::-webkit-scrollbar-track,
 .admin-feedback-detail-output::-webkit-scrollbar-track,
 .admin-feedback-detail-log-pre::-webkit-scrollbar-track,
-.admin-feedback-investigation-log::-webkit-scrollbar-track {
+.admin-feedback-investigation-log::-webkit-scrollbar-track,
+.turn-trace-panel::-webkit-scrollbar-track {
     background: var(--app-scrollbar-track);
     border-radius: 999px;
     margin-block: 8px;
@@ -181,7 +184,8 @@ body.about-page > .about-scroll::-webkit-scrollbar-thumb,
 .admin-feedback-chat-thread-messages::-webkit-scrollbar-thumb,
 .admin-feedback-detail-output::-webkit-scrollbar-thumb,
 .admin-feedback-detail-log-pre::-webkit-scrollbar-thumb,
-.admin-feedback-investigation-log::-webkit-scrollbar-thumb {
+.admin-feedback-investigation-log::-webkit-scrollbar-thumb,
+.turn-trace-panel::-webkit-scrollbar-thumb {
     background: var(--app-scrollbar-thumb);
     background-clip: padding-box;
     border-radius: 999px;
@@ -216,7 +220,8 @@ body.about-page > .about-scroll::-webkit-scrollbar-thumb:hover,
 .admin-feedback-chat-thread-messages::-webkit-scrollbar-thumb:hover,
 .admin-feedback-detail-output::-webkit-scrollbar-thumb:hover,
 .admin-feedback-detail-log-pre::-webkit-scrollbar-thumb:hover,
-.admin-feedback-investigation-log::-webkit-scrollbar-thumb:hover {
+.admin-feedback-investigation-log::-webkit-scrollbar-thumb:hover,
+.turn-trace-panel::-webkit-scrollbar-thumb:hover {
     background: var(--app-scrollbar-thumb-hover);
     background-clip: padding-box;
 }

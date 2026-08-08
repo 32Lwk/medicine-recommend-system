@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "pet-quick",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-07T12:49:04.128639+00:00",
+    "elapsed_sec": 4.9,
+    "scenario_count": 1,
+    "total_turns": 1,
+    "auto_pass": 1,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "persona-pet-owner-wrong",
+      "session_id": "1786106944140853534353",
+      "category": "redirect",
+      "persona_id": "persona-pet-owner-wrong",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

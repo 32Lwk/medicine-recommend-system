@@ -1,0 +1,197 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "persona-diverse-v3",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-07T12:41:22.502861+00:00",
+    "elapsed_sec": 364.6,
+    "scenario_count": 20,
+    "total_turns": 23,
+    "auto_pass": 19,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "persona-marathon-knee",
+      "session_id": "1786106482515435363767",
+      "category": "physical",
+      "persona_id": "persona-marathon-knee",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-pregnant-nausea",
+      "session_id": "1786106514170242595859",
+      "category": "physical",
+      "persona_id": "persona-pregnant-nausea",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-gamer-eyestrain",
+      "session_id": "1786106517961714354974",
+      "category": "physical",
+      "persona_id": "persona-gamer-eyestrain",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-elderly-constipation",
+      "session_id": "1786106540859557188495",
+      "category": "physical",
+      "persona_id": "persona-elderly-constipation",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-student-exam",
+      "session_id": "1786106565601591137635",
+      "category": "chitchat",
+      "persona_id": "persona-student-exam",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-shift-worker",
+      "session_id": "1786106572523867544306",
+      "category": "physical",
+      "persona_id": "persona-shift-worker",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-pet-owner-wrong",
+      "session_id": "1786106592264526792162",
+      "category": "redirect",
+      "persona_id": "persona-pet-owner-wrong",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-hangover-weekend",
+      "session_id": "1786106622638481422083",
+      "category": "medicine_thread",
+      "persona_id": "persona-hangover-weekend",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-allergy-pollen",
+      "session_id": "1786106641422223687817",
+      "category": "physical",
+      "persona_id": "persona-allergy-pollen",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-diabetic-cold",
+      "session_id": "1786106668476969196474",
+      "category": "medicine_thread",
+      "persona_id": "persona-diabetic-cold",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-caregiver-mother",
+      "session_id": "1786106680685303958920",
+      "category": "medicine_thread",
+      "persona_id": "persona-caregiver-mother",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-travel-medicine",
+      "session_id": "1786106683317071246692",
+      "category": "medicine_qa",
+      "persona_id": "persona-travel-medicine",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-yoga-muscle",
+      "session_id": "1786106709399808840280",
+      "category": "physical",
+      "persona_id": "persona-yoga-muscle",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-barista-caffeine",
+      "session_id": "1786106733272136772582",
+      "category": "chitchat",
+      "persona_id": "persona-barista-caffeine",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-fisher-sunburn",
+      "session_id": "1786106735731151664241",
+      "category": "physical",
+      "persona_id": "persona-fisher-sunburn",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-cosplay-voice",
+      "session_id": "1786106742088179589281",
+      "category": "physical",
+      "persona_id": "persona-cosplay-voice",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-freelance-shoulder",
+      "session_id": "1786106770138016758850",
+      "category": "medicine_thread",
+      "persona_id": "persona-freelance-shoulder",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-hiker-headache",
+      "session_id": "1786106808659582721551",
+      "category": "physical",
+      "persona_id": "persona-hiker-headache",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-kansai-grandchild",
+      "session_id": "1786106835943879936593",
+      "category": "physical",
+      "persona_id": "persona-kansai-grandchild",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "persona-ambiguous-interaction",
+      "session_id": "1786106844531451937913",
+      "category": "clarify",
+      "persona_id": "persona-ambiguous-interaction",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

@@ -1,0 +1,197 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "pr500-smoke",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-06T21:41:54.555370+00:00",
+    "elapsed_sec": 561.2,
+    "scenario_count": 20,
+    "total_turns": 75,
+    "auto_pass": 20,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "corpus-medicine-0001",
+      "session_id": "1786052514709217847655",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 5,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0002",
+      "session_id": "1786052530416628623281",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 5,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0003",
+      "session_id": "1786052573738508895357",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 5,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0004",
+      "session_id": "1786052629317561386123",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0005",
+      "session_id": "1786052642751071840166",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0006",
+      "session_id": "1786052655820395348862",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0007",
+      "session_id": "1786052668511155449933",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0008",
+      "session_id": "1786052706661516905409",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0009",
+      "session_id": "1786052717259646790194",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0010",
+      "session_id": "1786052742650098597967",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0011",
+      "session_id": "1786052763517054829607",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0012",
+      "session_id": "1786052798140861330663",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0013",
+      "session_id": "1786052838100499404258",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0014",
+      "session_id": "1786052846162748371332",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0015",
+      "session_id": "1786052866158246982311",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0016",
+      "session_id": "1786052913466248716842",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0017",
+      "session_id": "1786052978083299864122",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0018",
+      "session_id": "1786053037006387101011",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0019",
+      "session_id": "1786053046238591294269",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "corpus-medicine-0020",
+      "session_id": "1786053064255382755678",
+      "category": "medicine_thread",
+      "persona_id": "",
+      "turns": 3,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

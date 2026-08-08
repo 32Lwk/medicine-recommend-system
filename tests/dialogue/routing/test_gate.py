@@ -95,6 +95,15 @@ def test_gate_medical_emergency_seizure():
     assert d.primary_route == "Emergency"
 
 
+def test_gate_hypothetical_side_effect_not_emergency():
+    d = run_deterministic_gate(
+        "呼吸が苦しくなる副作用が出ることがあると心配です",
+        {},
+        "web-1",
+    )
+    assert d is None or d.primary_route != "Emergency"
+
+
 def test_gate_concierge_architecture_follow_up():
     session = {
         "messages": [

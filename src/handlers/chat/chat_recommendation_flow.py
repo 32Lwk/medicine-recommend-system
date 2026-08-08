@@ -119,15 +119,14 @@ def _build_empty_recommendation_fallback(session, sid, recommendation_result: di
     from src.services.sage_bot_response import build_bot_response
     from src.services.status_diagnosis_builder import build_notice_status
     from src.services.reco_error_messages import ERROR_MESSAGES
+    from src.services.physical_no_reco_guidance import build_physical_no_reco_message
 
-    doctor = (recommendation_result.get("doctor_consultation") or "").strip()
-    no_msg = ERROR_MESSAGES["no_candidates"]["main_message"]
-    message = doctor or no_msg
+    message = build_physical_no_reco_message(user_message, recommendation_result)
     hints = list(ERROR_MESSAGES["no_candidates"].get("recommendations") or [])
     sage_diag = build_notice_status(
         message,
         title=ERROR_MESSAGES["no_candidates"]["title"],
-        kind="no_recommendation",
+        kind="physical_no_recommendation",
         hints=hints[:3] if hints else None,
     ).to_client_dict()
     bot = build_bot_response(session, sid, sage_diagnosis=sage_diag, legacy_content=message)
@@ -1276,6 +1275,29 @@ def run_recommendation_flow(
             # 医薬品種類が判定できない場合（Noneまたは「その他」）の処理
             # 情報登録の成功・失敗に関係なく、医薬品推奨処理に移る
             if not medicine_type or medicine_type == 'その他':
+                    try:
+                        from src.services.reco_followup_signals import (
+                            should_reroute_failed_medicine_type_to_qa,
+                        )
+
+                        if should_reroute_failed_medicine_type_to_qa(
+                            user_message,
+                            session=session,
+                            sid=session.get("_id"),
+                        ):
+                            from src.handlers.chat.medicine_context_handlers import (
+                                handle_medicine_followup_qa,
+                            )
+
+                            logger.info(
+                                "🔄 種類判定不可 — 推奨/Q&A 文脈のため followup_qa へ委譲"
+                            )
+                            mark_processing_step(session.get("_id"), "finalize")
+                            return handle_medicine_followup_qa(
+                                session, client, session.get("_id"), user_message
+                            )
+                    except ImportError:
+                        pass
                     # メッセージの組み立て
                     consultation_messages = []
                                 
@@ -1871,18 +1893,20 @@ def run_recommendation_flow(
                         'algorithm': 'rule_based'
                     }
                 elif recommendation_result.get('status') == 'no_candidates':
-                    # 候補医薬品が見つからない場合 - エラーメッセージを表示
                     monitor.increment_error()
                     confidence_score = recommendation_result.get('confidence_score', 0.0)
-                    logger.warning(f"⚠️ Rule-based algorithm: no candidates found (confidence: {confidence_score:.2f})")
-                    # エラー情報を保持して後続のエラー表示処理で使用
-                    recommendation_result['error'] = True
-                    recommendation_result['error_type'] = 'no_candidates'
-                    recommendation_result['error_details'] = {
-                        'confidence_score': confidence_score,
-                        'reason': recommendation_result.get('reason', '該当する医薬品が見つかりませんでした'),
-                        'technical_details': f"信頼度スコア: {confidence_score:.2f}, 症状: {symptoms}, 医薬品の種類: {medicine_type}"
-                    }
+                    logger.warning(
+                        "Rule-based no candidates sid=%s confidence=%.2f symptoms=%s",
+                        sid,
+                        confidence_score,
+                        symptoms,
+                    )
+                    return _build_empty_recommendation_fallback(
+                        session,
+                        sid,
+                        recommendation_result,
+                        sanitized_message,
+                    )
                 elif recommendation_result.get('status') == 'error':
                     # ルールベース推奨エラー - エラーメッセージを表示
                     monitor.increment_error()
@@ -2114,6 +2138,7 @@ def run_recommendation_flow(
                 SAGE_RECO_MARKER,
                 build_diagnosis_v1,
                 build_display_summary,
+                ensure_user_facing_advice,
             )
 
             sage_diagnosis_v1 = None
@@ -2949,6 +2974,7 @@ def run_recommendation_flow(
                         logger.warning(f"⚠️ ログ追加エラー（無視して続行）: {e}")
                             
             if sage_diagnosis_v1 is not None:
+                sage_diagnosis_v1 = ensure_user_facing_advice(sage_diagnosis_v1)
                 bot_diag = sage_diagnosis_v1.to_user_dict()
                 admin_detailed_diag = sage_diagnosis_v1.to_client_dict()
                 try:

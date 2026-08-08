@@ -23,6 +23,33 @@ _MEDICAL_EMERGENCY_HINTS = (
     "過量服薬",
 )
 
+_HYPOTHETICAL_SIDE_EFFECT_MARKERS = (
+    "出ることがある",
+    "出たら",
+    "もし",
+    "場合",
+    "ことがある",
+    "症状が出",
+    "副作用",
+    "アレルギー",
+    "教えて",
+    "説明",
+    "心配",
+    "使用をやめ",
+    "相談した方が",
+)
+
+
+def _is_hypothetical_side_effect_discussion(text: str) -> bool:
+    """副作用・アレルギーの説明・仮定話法では Emergency gate を抑止。"""
+    t = (text or "").strip()
+    if not t:
+        return False
+    if not any(h in t for h in _MEDICAL_EMERGENCY_HINTS):
+        return False
+    return any(m in t for m in _HYPOTHETICAL_SIDE_EFFECT_MARKERS)
+
+
 _EMOTIONAL_COUNSELING_HINTS = (
     "眠れ",
     "不眠",
@@ -463,13 +490,14 @@ def run_deterministic_gate(
         )
 
     if any(h in text for h in _MEDICAL_EMERGENCY_HINTS):
-        return RouteDecision(
-            primary_route="Emergency",
-            sub_route="medical_emergency",
-            confidence=0.95,
-            resolved_by="gate",
-            source="medical_emergency_hint",
-        )
+        if not _is_hypothetical_side_effect_discussion(text):
+            return RouteDecision(
+                primary_route="Emergency",
+                sub_route="medical_emergency",
+                confidence=0.95,
+                resolved_by="gate",
+                source="medical_emergency_hint",
+            )
 
     from src.utils.input_helpers import (
         has_explicit_symptom_signal,

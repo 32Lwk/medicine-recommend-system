@@ -68,6 +68,9 @@ def detect_crisis_keywords(user_message):
         r'心臓.*(?:が|の).*苦しい',
         r'失恋.*(?:して|で).*苦しい',
         r'恋愛.*(?:で|の).*苦しい',
+        # 「限界」は肩こり・痛み・疲労など身体的文脈では希死念慮ではない
+        r'(?:肩|腰|膝|首|背中|頭|痛|便秘|疲れ|つら|しんど|在宅|ワーク|仕事|勉強).{0,10}限界',
+        r'限界.{0,10}(?:肩|腰|膝|首|背中|頭|痛|便秘|疲れ|在宅|ワーク|仕事|勉強)',
     ]
 
     # 恋愛文脈キーワード
@@ -81,9 +84,22 @@ def detect_crisis_keywords(user_message):
     for keyword in crisis_keywords:
         if not _keyword_matches(keyword, user_message_lower):
             continue
-        # 「苦しい」は身体的症状の文脈では検出しない
-        if keyword == '苦しい':
+        # 「苦しい」「限界」は身体的症状の文脈では検出しない
+        if keyword in ('苦しい', '限界'):
             if has_physical_context or has_romantic_context:
+                continue
+        # 「助けて」系は身体的症状・日常相談の口語では除外（希死念慮の強シグナルが無い場合）
+        if keyword in ('助けて', '助けてください', '助けを', '助けが必要'):
+            colloquial_help = re.search(
+                r'(?:頭痛|熱|咳|鼻水|腹痛|肩|吐き|めまい|眠れ|調子|仕事|勉強).{0,20}(?:助けて|たすけて)|'
+                r'(?:助けて|たすけて).{0,20}(?:頭痛|熱|咳|鼻水|腹痛|肩|吐き|めまい|眠れ|調子|仕事|勉強)',
+                user_message,
+                re.IGNORECASE,
+            )
+            crisis_strong = any(
+                s in user_message for s in ('消えたい', '死に', '自殺', '119', '倒れ', '意識')
+            )
+            if colloquial_help and not crisis_strong:
                 continue
         detected_keywords.append(keyword)
 

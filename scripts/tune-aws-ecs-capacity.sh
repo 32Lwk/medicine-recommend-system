@@ -15,6 +15,10 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=lib/aws_common.sh
 source "$ROOT/scripts/lib/aws_common.sh"
 
+if is_fargate_tunnel_mode; then
+  exec bash "$ROOT/scripts/tune-aws-fargate-capacity.sh" "$@"
+fi
+
 ECS_CPU="${ECS_CPU:-1024}"
 ECS_MEMORY="${ECS_MEMORY:-2048}"
 ECS_MIN_TASKS="${ECS_MIN_TASKS:-2}"

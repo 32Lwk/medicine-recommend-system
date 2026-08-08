@@ -24,6 +24,8 @@ _CLASSIFIER_PROMPT = """あなたは市販薬相談チャットのルーティ�
 
 【ルール】
 - 会話に推奨医薬品の案内があるとき「どれ」「使える」は followup_qa を優先
+- 推奨履歴があるセッションでは symptom_prompt を選ばない（none または followup_qa）
+- 競技・大会の言及が入力に無い場合は symptom_prompt を選ばない
 - 「風邪ですが大会前に」のように症状＋競技が両方ある初回は cold_start_recommend
 - 症状なしで「競技前に使える薬は？」のみは symptom_prompt
 - 頭痛など症状のみで競技の話がない場合は none

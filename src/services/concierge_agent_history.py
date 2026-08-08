@@ -185,12 +185,28 @@ def should_block_structural_greeting(
     *,
     prior_intent: Optional[str] = None,
     conversation_history: Optional[List[Dict[str, Any]]] = None,
+    session: Any = None,
+    sid: Optional[str] = None,
 ) -> bool:
     """
     structural greeting 推定を禁止すべきか（フォローアップ regex または直前メタ意図）。
     """
     if is_meta_follow_up_utterance(text):
         return True
+    try:
+        from src.services.medicine_qa_eligibility import (
+            looks_like_medicine_thread_inventory_followup,
+        )
+
+        if looks_like_medicine_thread_inventory_followup(
+            text,
+            session=session,
+            sid=sid,
+            conversation_history=conversation_history,
+        ):
+            return True
+    except Exception:
+        pass
     block_prior = _META_FOLLOW_UP_PRIOR_INTENTS
     if _is_concierge_followup_routing_enabled():
         block_prior = _FOLLOW_UP_PRIOR_EXTENDED

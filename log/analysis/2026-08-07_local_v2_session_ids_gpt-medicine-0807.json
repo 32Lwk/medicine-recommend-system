@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "gpt-medicine-0807",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-06T20:07:57.478804+00:00",
+    "elapsed_sec": 388.3,
+    "scenario_count": 4,
+    "total_turns": 32,
+    "auto_pass": 4,
+    "use_gpt_user": true,
+    "gpt_scale": true,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "gpt-medicine-thread-loxonin-casual",
+      "session_id": "1786046877482322343538",
+      "category": "medicine_thread",
+      "persona_id": "medicine-thread-loxonin-casual",
+      "turns": 8,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-medicine-thread-multi-compare",
+      "session_id": "1786046993493767245731",
+      "category": "medicine_thread",
+      "persona_id": "medicine-thread-multi-compare",
+      "turns": 8,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-medicine-thread-elderly-vague",
+      "session_id": "1786047068855798579196",
+      "category": "medicine_thread",
+      "persona_id": "medicine-thread-elderly-vague",
+      "turns": 8,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-medicine-thread-young-slang",
+      "session_id": "1786047173371016350165",
+      "category": "medicine_thread",
+      "persona_id": "medicine-thread-young-slang",
+      "turns": 8,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

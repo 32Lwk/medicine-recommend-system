@@ -8,6 +8,78 @@ from src.services.medicine_qa_eligibility import (
 )
 
 
+def test_reflective_health_chitchat_routes_to_concierge():
+    decision = resolve_medicine_qa_route(
+        "最近疲れが取れなくて、市販薬に頼りすぎかもしれません",
+        client=None,
+    )
+    assert decision.route == MedicineQaRoute.CONCIERGE
+    assert decision.concierge_intent == "chitchat"
+    assert decision.source == "reflective_health_chitchat"
+
+
+def test_ambiguous_interaction_routes_to_clarify_concierge():
+    decision = resolve_medicine_qa_route(
+        "他の薬と一緒に飲んでも大丈夫？",
+        client=None,
+    )
+    assert decision.route == MedicineQaRoute.CONCIERGE
+    assert decision.source == "ambiguous_drug_clarify"
+    assert decision.concierge_intent == "chitchat"
+
+
+def test_kansai_home_inventory_routes_medicine_qa():
+    history = [
+        {"type": "user", "content": "ロキソニンの写真見せて"},
+        {
+            "type": "bot",
+            "content": "sage_qa",
+            "diagnosis": {"message": "ロキソニンSのパッケージ画像です。", "kind": "medicine_qa"},
+        },
+    ]
+    decision = resolve_medicine_qa_route(
+        "うちにもあるわ",
+        conversation_history=history,
+        client=None,
+    )
+    assert decision.route == MedicineQaRoute.MEDICINE_QA
+    assert "inventory" in decision.source
+
+
+def test_home_inventory_routes_medicine_qa_when_active_extract_fails():
+    """collect_active が空でも直前 bot=medicine_qa なら inventory 継続。"""
+    history = [
+        {"type": "user", "content": "ロキソニンの写真を見せてください"},
+        {
+            "type": "bot",
+            "content": "sage_qa",
+            "diagnosis": {"kind": "medicine_qa", "message": "パッケージ画像です。"},
+        },
+    ]
+    decision = resolve_medicine_qa_route(
+        "家にもあります",
+        conversation_history=history,
+        client=None,
+    )
+    assert decision.route == MedicineQaRoute.MEDICINE_QA
+    assert "inventory" in decision.source
+
+
+def test_home_inventory_routes_medicine_qa_with_expanded_history():
+    """get_medicine_qa_session_context の role/content 履歴でも inventory 継続。"""
+    history = [
+        {"role": "user", "content": "ロキソニンの写真を見せてください"},
+        {"role": "assistant", "content": "ロキソニンSのパッケージ画像です。"},
+    ]
+    decision = resolve_medicine_qa_route(
+        "家にもあります",
+        conversation_history=history,
+        client=None,
+    )
+    assert decision.route == MedicineQaRoute.MEDICINE_QA
+    assert "inventory" in decision.source
+
+
 def test_gitlab_github_routes_to_concierge_not_medicine_qa():
     decision = resolve_medicine_qa_route("GitlabとGithubの違いは？", client=None)
     assert decision.route == MedicineQaRoute.CONCIERGE
@@ -92,7 +164,11 @@ def test_llm_fallback_for_ambiguous_question(_llm, _enabled):
     )
     assert decision.route == MedicineQaRoute.CONCIERGE
     assert decision.concierge_intent == "chitchat"
-    assert decision.source in ("llm_meta_triage", "fast_concierge_meta")
+    assert decision.source in (
+        "llm_meta_triage",
+        "fast_concierge_meta",
+        "general_chitchat_no_product",
+    )
 
 
 def test_recommended_medicine_anaphora_routes_to_qa():

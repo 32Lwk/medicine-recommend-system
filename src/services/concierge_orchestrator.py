@@ -229,6 +229,8 @@ def enrich_other_concierge_intent(
             text,
             prior_meta_intent=prior_intent,
             conversation_history=conversation_history,
+            session=session,
+            sid=session_id,
         )
         if structural:
             out["concierge_intent"] = structural

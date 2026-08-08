@@ -134,6 +134,7 @@ def _resolve_medicine_qa_gate_decision(
     return resolve_medicine_qa_route(
         sanitized_message or user_message,
         session=session,
+        sid=sid,
         triage_result=triage,
         conversation_history=history,
         client=recommendation_client,
@@ -163,6 +164,26 @@ def _try_concierge_instead_of_medicine_qa(
     )
     if decision.route != MedicineQaRoute.CONCIERGE:
         return None
+
+    from src.handlers.chat.chat_ambiguous_drug_clarify_route import (
+        try_ambiguous_drug_clarification,
+    )
+
+    clarify_resp = try_ambiguous_drug_clarification(
+        session,
+        client_info,
+        sid,
+        sanitized_message,
+        user_message,
+        route_source=decision.source or "",
+    )
+    if clarify_resp is not None:
+        return QuestionFlowResult(
+            response=clarify_resp,
+            is_question=False,
+            user_message=user_message,
+            sanitized_message=sanitized_message,
+        )
 
     triage = dict(
         (getattr(routing, "triage_result", None) if routing else None)

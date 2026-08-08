@@ -1,0 +1,382 @@
+{
+  "meta": {
+    "date": "2026-08-08",
+    "report_suffix": "tier1-gpt-v3",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-08T02:48:49.757872+00:00",
+    "elapsed_sec": 218.0,
+    "scenario_count": 4,
+    "total_turns": 16,
+    "auto_pass": 4,
+    "use_gpt_user": true,
+    "gpt_scale": true,
+    "v2_enabled": true
+  },
+  "metrics": {
+    "intent_router_shadow_skipped": true,
+    "latency_this_run": {
+      "turns_measured": 16,
+      "e2e_ms_p50": 14143.0,
+      "e2e_ms_p95": 22445.0,
+      "e2e_ms_max": 23294.0,
+      "phase_breakdown": {
+        "pipeline_perf_requests": 16,
+        "total_ms_p50": 13781.2,
+        "total_ms_p95": 22102.22,
+        "total_ms_max": 22943.62,
+        "llm_calls_total": 78,
+        "llm_calls_per_request_avg": 4.88,
+        "llm_by_path": {
+          "medicine_qa/focus_llm": {
+            "count": 39,
+            "latency_ms_sum": 40038.94,
+            "latency_ms_p50": 977.65,
+            "latency_ms_p95": 1345.99
+          },
+          "medicine_response_builder.chat_context": {
+            "count": 5,
+            "latency_ms_sum": 24513.19,
+            "latency_ms_p50": 5301.18,
+            "latency_ms_p95": 6194.39
+          },
+          "llm_triage.stage1": {
+            "count": 12,
+            "latency_ms_sum": 19092.02,
+            "latency_ms_p50": 1594.3,
+            "latency_ms_p95": 1646.66
+          },
+          "explanation_generator.batch_usage_notes": {
+            "count": 4,
+            "latency_ms_sum": 16735.45,
+            "latency_ms_p50": 4258.56,
+            "latency_ms_p95": 4266.05
+          },
+          "missing_info_service": {
+            "count": 5,
+            "latency_ms_sum": 12189.98,
+            "latency_ms_p50": 2348.5,
+            "latency_ms_p95": 2677.03
+          },
+          "dialogue.medicine_context_classifier": {
+            "count": 7,
+            "latency_ms_sum": 9964.43,
+            "latency_ms_p50": 1461.38,
+            "latency_ms_p95": 1575.88
+          },
+          "chat_response_service.personalized_advice": {
+            "count": 4,
+            "latency_ms_sum": 5924.88,
+            "latency_ms_p50": 1642.62,
+            "latency_ms_p95": 1647.17
+          },
+          "llm_triage.stage2": {
+            "count": 2,
+            "latency_ms_sum": 2844.5,
+            "latency_ms_p50": 1271.68,
+            "latency_ms_p95": 1572.82
+          }
+        },
+        "breakdown_steps_avg_ms": {
+          "after_counseling_flow": 1558.48,
+          "after_get_session_db": 12.21,
+          "after_medicine_qa_route": 2530.35,
+          "after_security": 80.1,
+          "after_triage": 1486.02,
+          "after_triage_follow_ups": 1512.24,
+          "before_emoji_route": 80.78,
+          "before_llm_setup": 14.41,
+          "before_medicine_qa_route": 1923.92,
+          "before_orchestrator": 2126.22,
+          "before_security": 18.05,
+          "before_triage": 80.79,
+          "emit_cards_early": 9266.48,
+          "explanation_phase_done": 17191.41,
+          "explanation_phase_start": 17191.4,
+          "line_carousel_push": 17181.46,
+          "medicine_information_qa_end": 9837.16,
+          "medicine_information_qa_start": 4678.83,
+          "medicine_qa_early_route_end": 4246.44,
+          "medicine_qa_early_route_start": 3508.31,
+          "medicine_qa_physical_priority": 1548.04,
+          "medicine_qa_thread_route_end": 9043.4,
+          "medicine_qa_thread_route_start": 3605.9,
+          "moderation_done": 1558.52,
+          "nlu_batch_done": 4260.7,
+          "nlu_batch_start": 2595.47,
+          "parsed_message": 9.96,
+          "personalized_advice": 18682.78,
+          "post_start": 9.86,
+          "product_image_fast_path_end": 9837.17,
+          "product_image_fast_path_start": 4678.83,
+          "rb_explain_batch_done": 17179.95,
+          "rb_missing_info_done": 6754.12,
+          "rb_scoring_only_done": 9266.45,
+          "rule_based_scoring_only_done": 14893.53,
+          "rule_based_start": 4307.93,
+          "safety_gate_done": 1510.91,
+          "session_db_read": 9.99,
+          "short_symptom_triage_skip_llm": 93.54
+        }
+      }
+    },
+    "turn_eval_kpi": {
+      "turns_evaluated": 0,
+      "turn_rule_pass": 0,
+      "reject_no_reco": 0,
+      "comparison_loop": 0,
+      "judge_turns": 0,
+      "judge_aligned": 0,
+      "turn_rows": []
+    }
+  },
+  "results": [
+    {
+      "scenario_id": "gpt-gpt-correction-user",
+      "category": "tier1_correction",
+      "wave": "gpt-scale",
+      "session_id": "1786157329760015514850",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "鼻水が止まらない",
+          "http_status": 200,
+          "elapsed_ms": 17079,
+          "diagnosis_kind": null,
+          "response_snippet": "鼻水が止まらないのはつらいですね。鼻水が中心なら、まずは鼻づまりやくしゃみにも使いやすいスカイブブロンHIや、鼻に直接使えるスカイブブロンNAスプレーが合いやすいです。発熱・強いだるさがあれば風邪やインフルエンザの可能性もあるので受診を。持病や妊娠中なら購入前にご相談ください。",
+          "response_full": "鼻水が止まらないのはつらいですね。鼻水が中心なら、まずは鼻づまりやくしゃみにも使いやすいスカイブブロンHIや、鼻に直接使えるスカイブブロンNAスプレーが合いやすいです。発熱・強いだるさがあれば風邪やインフルエンザの可能性もあるので受診を。持病や妊娠中なら購入前にご相談ください。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "やっぱ咳の方がキツい。どんな薬がいい？",
+          "http_status": 200,
+          "elapsed_ms": 15670,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "今回の推奨医薬品の中には、咳を主な対象にした薬は含まれていません。スカイブブロンHI・スカイブブロンNAスプレー・スカイブゴールドはいずれも鼻症状向けで、イブは痛みや発熱向けのため、咳がつらい場合に合うとは言えません。咳に合う薬の選択は、この情報だけでは適切に案内できないため、お近くの登録販売者にご相談ください。",
+          "response_full": "今回の推奨医薬品の中には、咳を主な対象にした薬は含まれていません。スカイブブロンHI・スカイブブロンNAスプレー・スカイブゴールドはいずれも鼻症状向けで、イブは痛みや発熱向けのため、咳がつらい場合に合うとは言えません。咳に合う薬の選択は、この情報だけでは適切に案内できないため、お近くの登録販売者にご相談ください。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 2,
+          "user_message": "咳がひどくて夜も眠れないんだけど、何かいい市販薬ある？",
+          "http_status": 200,
+          "elapsed_ms": 15005,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "スカイブブロンHI：花粉,ハウスダスト(室内塵)などによる次のような鼻のアレルギー症状の緩和:くしゃみ,鼻みず,鼻づまりなどの症状緩和に用いる一般用医薬品です。スカイブブロンNAスプレー：急性鼻炎,アレルギー性鼻炎又は副鼻腔炎による次の諸症状の緩和:",
+          "response_full": "スカイブブロンHI：花粉,ハウスダスト(室内塵)などによる次のような鼻のアレルギー症状の緩和:くしゃみ,鼻みず,鼻づまりなどの症状緩和に用いる一般用医薬品です。スカイブブロンNAスプレー：急性鼻炎,アレルギー性鼻炎又は副鼻腔炎による次の諸症状の緩和:",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 3,
+          "user_message": "咳がひどくて、特に夜が辛いんだけど、咳に効く市販薬はないの？",
+          "http_status": 200,
+          "elapsed_ms": 23294,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "今回の推奨医薬品の中には、咳を主な対象にした市販薬はありません。スカイブブロンHI・スカイブブロンNAスプレー・スカイブゴールドはいずれも鼻症状向けで、イブは痛みや発熱向けのため、夜につらい咳に合うとは言えません。咳に効く市販薬の選択はこの情報だけでは適切に案内できないため、お近くの登録販売者にご相談ください。",
+          "response_full": "今回の推奨医薬品の中には、咳を主な対象にした市販薬はありません。スカイブブロンHI・スカイブブロンNAスプレー・スカイブゴールドはいずれも鼻症状向けで、イブは痛みや発熱向けのため、夜につらい咳に合うとは言えません。咳に効く市販薬の選択はこの情報だけでは適切に案内できないため、お近くの登録販売者にご相談ください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "症状訂正",
+      "persona_id": "gpt-correction-user",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": []
+    },
+    {
+      "scenario_id": "gpt-gpt-allergy-check",
+      "category": "tier1_allergen",
+      "wave": "gpt-scale",
+      "session_id": "1786157404574643787800",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "蕁麻疹出た",
+          "http_status": 200,
+          "elapsed_ms": 5951,
+          "diagnosis_kind": "physical_no_recommendation",
+          "response_snippet": "皮膚の症状ですね、つらいですね。かゆみ止めの内服や外用で様子を見られることもあります。広がる・呼吸が苦しい・唇や顔が腫れる場合は、すぐに医療機関へ。出始めた時期や範囲を教えていただくと、より安全な市販薬をご案内できます。",
+          "response_full": "皮膚の症状ですね、つらいですね。かゆみ止めの内服や外用で様子を見られることもあります。広がる・呼吸が苦しい・唇や顔が腫れる場合は、すぐに医療機関へ。出始めた時期や範囲を教えていただくと、より安全な市販薬をご案内できます。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "最近、卵料理を食べた後に出たんです。卵アレルギーの可能性が心配です。",
+          "http_status": 200,
+          "elapsed_ms": 22445,
+          "diagnosis_kind": null,
+          "response_snippet": "卵料理の後に蕁麻疹やかゆみが出たなら、卵アレルギーの可能性もあります。まずは卵をいったん避けて、症状が強い時はかゆみ・発疹を抑える市販薬で様子見を。総合感冒薬は今回の主症状には合いにくいです。息苦しさ、唇や顔の腫れ、広がる発疹はすぐ受診してください。",
+          "response_full": "卵料理の後に蕁麻疹やかゆみが出たなら、卵アレルギーの可能性もあります。まずは卵をいったん避けて、症状が強い時はかゆみ・発疹を抑える市販薬で様子見を。総合感冒薬は今回の主症状には合いにくいです。息苦しさ、唇や顔の腫れ、広がる発疹はすぐ受診してください。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 2,
+          "user_message": "やっぱり、卵アレルギーの可能性があるなら、気をつけた方がいいよね。どんな市販薬が使えるの？",
+          "http_status": 200,
+          "elapsed_ms": 6973,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "卵アレルギーがある場合、エスタックイブファイン顆粒に卵由来添加物が含まれていないか、包装の成分表記でご確認ください。不安がある場合は登録販売者に相談してください。",
+          "response_full": "卵アレルギーがある場合、エスタックイブファイン顆粒に卵由来添加物が含まれていないか、包装の成分表記でご確認ください。不安がある場合は登録販売者に相談してください。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 3,
+          "user_message": "エスタックイブファイン顆粒の成分表記、確認してみるね。卵由来のものが入ってなければ大丈夫かな？",
+          "http_status": 200,
+          "elapsed_ms": 4628,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "イブを海外へ持ち込む際の一般的な注意点です。① 元の包装・成分表記ラベルを残す ② 個人使用の量に収める（大量持ち込みは別審査になりやすい） ③ 必要に応じて医師の診断書・処方箋写し・使用目的メモを用意 ④ 入国カードや税関で申告が求められる場合がある ⑤ 最新の規制は外務省「海外安全ホームページ」や渡航先大使館で確認。不安があれば出発前に登録販売者や航空会社にもご確認ください。",
+          "response_full": "イブを海外へ持ち込む際の一般的な注意点です。① 元の包装・成分表記ラベルを残す ② 個人使用の量に収める（大量持ち込みは別審査になりやすい） ③ 必要に応じて医師の診断書・処方箋写し・使用目的メモを用意 ④ 入国カードや税関で申告が求められる場合がある ⑤ 最新の規制は外務省「海外安全ホームページ」や渡航先大使館で確認。不安があれば出発前に登録販売者や航空会社にもご確認ください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "アレルギー確認",
+      "persona_id": "gpt-allergy-check",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": []
+    },
+    {
+      "scenario_id": "gpt-gpt-vague-to-specific",
+      "category": "tier1_triage",
+      "wave": "gpt-scale",
+      "session_id": "1786157448468482463049",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "なんか調子悪い",
+          "http_status": 200,
+          "elapsed_ms": 17772,
+          "diagnosis_kind": null,
+          "response_snippet": "「なんか調子悪い」ときは、まず無理せず休んでください。倦怠感・疲労感があるので、ハイチオールC系で体のだるさのケア、もしむくみや頭重感、水分バランスの乱れが気になるならアルピタンγも候補です。発熱や咳、のど痛みがあればインフルエンザも疑って受診を。症状が続く・強い場合は早めに相談してください。",
+          "response_full": "「なんか調子悪い」ときは、まず無理せず休んでください。倦怠感・疲労感があるので、ハイチオールC系で体のだるさのケア、もしむくみや頭重感、水分バランスの乱れが気になるならアルピタンγも候補です。発熱や咳、のど痛みがあればインフルエンザも疑って受診を。症状が続く・強い場合は早めに相談してください。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "なんか体がだるくて、頭も重い感じがする。",
+          "http_status": 200,
+          "elapsed_ms": 4319,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "ハイチオールCプラスはアスコルビン酸 パントテン酸カルシウム L−システイン（解熱鎮痛）、ハイチオールCホワイティアはアスコルビン酸 パントテン酸カルシウム L−システイン（解熱鎮痛）、アルピタンγ(五苓散)はインチンコウ 桂枝 タクシャ チョレイ ビャクジュツ ブクリョウ（解熱鎮痛）。まず主成分の系統（解熱鎮痛薬 / アセトアミノフェン）で絞り込むと選びやすくなります。",
+          "response_full": "ハイチオールCプラスはアスコルビン酸 パントテン酸カルシウム L−システイン（解熱鎮痛）、ハイチオールCホワイティアはアスコルビン酸 パントテン酸カルシウム L−システイン（解熱鎮痛）、アルピタンγ(五苓散)はインチンコウ 桂枝 タクシャ チョレイ ビャクジュツ ブクリョウ（解熱鎮痛）。まず主成分の系統（解熱鎮痛薬 / アセトアミノフェン）で絞り込むと選びやすくなります。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 2,
+          "user_message": "ハイチオールCプラスってどんな効果があるの？",
+          "http_status": 200,
+          "elapsed_ms": 9527,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "ハイチオールCプラスは、アスコルビン酸・パントテン酸カルシウム・L-システインを含む製品で、今回の候補では全身のだるさ（全身倦怠）や二日酔いのケアに使えるのが特徴です。ハイチオールCホワイティアも主成分は同じなので、効き目の強さや胃への負担に大きな差はつきにくく、使い分けは製品名や入手しやすさで選ぶイメージです。いっぽうアルピタンγ(五苓散)は漢方処方で、のどの渇きや尿量が少ない、むくみ感を伴う二日酔い寄りの不調に向きやすく、だるさ中心ならハイチオールCプラスのほうが候補にしやすいです。",
+          "response_full": "ハイチオールCプラスは、アスコルビン酸・パントテン酸カルシウム・L-システインを含む製品で、今回の候補では全身のだるさ（全身倦怠）や二日酔いのケアに使えるのが特徴です。ハイチオールCホワイティアも主成分は同じなので、効き目の強さや胃への負担に大きな差はつきにくく、使い分けは製品名や入手しやすさで選ぶイメージです。いっぽうアルピタンγ(五苓散)は漢方処方で、のどの渇きや尿量が少ない、むくみ感を伴う二日酔い寄りの不調に向きやすく、だるさ中心ならハイチオールCプラスのほうが候補にしやすいです。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 3,
+          "user_message": "ハイチオールCプラスは飲める？",
+          "http_status": 200,
+          "elapsed_ms": 12484,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "はい、ハイチオールCプラスは飲めます。今回の候補の中では、全身のだるさ（全身倦怠）や二日酔いに使える製品です。用法・用量は成人（15才以上）で1回2錠を1日3回、7才〜14才は1回1錠を1日3回、水またはぬるま湯で服用し、7才未満は服用しないでください。",
+          "response_full": "はい、ハイチオールCプラスは飲めます。今回の候補の中では、全身のだるさ（全身倦怠）や二日酔いに使える製品です。用法・用量は成人（15才以上）で1回2錠を1日3回、7才〜14才は1回1錠を1日3回、水またはぬるま湯で服用し、7才未満は服用しないでください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "曖昧→具体化",
+      "persona_id": "gpt-vague-to-specific",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": []
+    },
+    {
+      "scenario_id": "gpt-gpt-implicit-short",
+      "category": "tier1_anaphora",
+      "wave": "gpt-scale",
+      "session_id": "1786157496211417699561",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "のど痛い",
+          "http_status": 200,
+          "elapsed_ms": 18969,
+          "diagnosis_kind": null,
+          "response_snippet": "のど痛いのはつらいですね。まずはスカイブブロンのどスプレーやルルのどスプレーで、痛む部分を直接ケアすると楽になりやすいです。発熱や強いだるさがあれば、イブスリーショットプレミアムも候補です。水分と加湿を心がけ、息苦しさや高熱、インフルエンザが疑われる時は受診してください。",
+          "response_full": "のど痛いのはつらいですね。まずはスカイブブロンのどスプレーやルルのどスプレーで、痛む部分を直接ケアすると楽になりやすいです。発熱や強いだるさがあれば、イブスリーショットプレミアムも候補です。水分と加湿を心がけ、息苦しさや高熱、インフルエンザが疑われる時は受診してください。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "それ？",
+          "http_status": 200,
+          "elapsed_ms": 8341,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "スカイブブロンのどスプレーはポビドンヨード（解熱鎮痛）、イブスリーショットプレミアムはアセトアミノフェン NSAID 無水カフェイン 酸化マグネシウム（解熱鎮痛（炎症を伴う痛みはNSAIDsより弱いことが多い））、ルルのどスプレーはアズレンスルホン酸ナトリウム水和物（解熱鎮痛）。胃が弱い・NSAIDsが合わない場合はアセトアミノフェン系が候補になりやすいです。",
+          "response_full": "スカイブブロンのどスプレーはポビドンヨード（解熱鎮痛）、イブスリーショットプレミアムはアセトアミノフェン NSAID 無水カフェイン 酸化マグネシウム（解熱鎮痛（炎症を伴う痛みはNSAIDsより弱いことが多い））、ルルのどスプレーはアズレンスルホン酸ナトリウム水和物（解熱鎮痛）。胃が弱い・NSAIDsが合わない場合はアセトアミノフェン系が候補になりやすいです。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 2,
+          "user_message": "平気？",
+          "http_status": 200,
+          "elapsed_ms": 14143,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "はい、一般には使えますが、どれが「平気」かは症状と体質で少し変わります。のどの痛み中心ならスカイブブロンのどスプレーやルルのどスプレーが候補で、発熱や全身の痛みもあるならイブスリーショットプレミアムが候補です。過去に薬で具合が悪くなったことがある、妊娠中・授乳中、持病がある場合は自己判断せず、お近くの登録販売者にご相談ください。",
+          "response_full": "はい、一般には使えますが、どれが「平気」かは症状と体質で少し変わります。のどの痛み中心ならスカイブブロンのどスプレーやルルのどスプレーが候補で、発熱や全身の痛みもあるならイブスリーショットプレミアムが候補です。過去に薬で具合が悪くなったことがある、妊娠中・授乳中、持病がある場合は自己判断せず、お近くの登録販売者にご相談ください。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 3,
+          "user_message": "1番？",
+          "http_status": 200,
+          "elapsed_ms": 7333,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "スカイブブロンのどスプレーはポビドンヨード（解熱鎮痛）、イブスリーショットプレミアムはアセトアミノフェン NSAID 無水カフェイン 酸化マグネシウム（解熱鎮痛（炎症を伴う痛みはNSAIDsより弱いことが多い））、ルルのどスプレーはアズレンスルホン酸ナトリウム水和物（解熱鎮痛）。胃が弱い・NSAIDsが合わない場合はアセトアミノフェン系が候補になりやすいです。",
+          "response_full": "スカイブブロンのどスプレーはポビドンヨード（解熱鎮痛）、イブスリーショットプレミアムはアセトアミノフェン NSAID 無水カフェイン 酸化マグネシウム（解熱鎮痛（炎症を伴う痛みはNSAIDsより弱いことが多い））、ルルのどスプレーはアズレンスルホン酸ナトリウム水和物（解熱鎮痛）。胃が弱い・NSAIDsが合わない場合はアセトアミノフェン系が候補になりやすいです。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "has_response"
+      ],
+      "auto_failures": [],
+      "description": "超短文指示語",
+      "persona_id": "gpt-implicit-short",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": []
+    }
+  ]
+}

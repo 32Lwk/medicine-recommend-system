@@ -1,0 +1,2931 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "expanded-v3-casual",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-07T14:10:24.647653+00:00",
+    "elapsed_sec": 522.3,
+    "scenario_count": 25,
+    "total_turns": 31,
+    "auto_pass": 24,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "metrics": {
+    "since_unix": 1786111824.6476498,
+    "pipeline_baseline": {
+      "exit_code": 0,
+      "data": {
+        "counseling_detail_path": "D:\\Programing\\medicine-recommend\\log\\counseling_detail_log.jsonl",
+        "counseling_detail_total": 11127,
+        "with_response": 11127,
+        "response_missing": 0,
+        "response_missing_rate_pct": 0.0,
+        "intent_router": {
+          "shadow_total": 2599,
+          "shadow_mismatch": 374,
+          "shadow_mismatch_rate_pct": 14.39,
+          "shadow_improvement_mismatch": 253,
+          "shadow_improvement_mismatch_rate_pct": 9.73,
+          "shadow_regression_mismatch": 104,
+          "shadow_regression_mismatch_rate_pct": 4.0,
+          "shadow_exempt": 17,
+          "shadow_exempt_rate_pct": 0.65,
+          "shadow_by_mismatch_kind": {
+            "agree": 2225,
+            "gate_improvement": 253,
+            "exempt": 17,
+            "regression": 104
+          },
+          "shadow_by_primary_route": {
+            "Physical": 1535,
+            "Concierge": 789,
+            "Counseling": 111,
+            "Emergency": 49,
+            "Store": 63,
+            "Unknown": 21,
+            "Security": 10,
+            "SessionOps": 21
+          },
+          "shadow_by_resolved_by": {
+            "gate": 1209,
+            "legacy": 44,
+            "llm": 964,
+            "guard": 382
+          },
+          "shadow_with_fever_context_flag": 95,
+          "shadow_with_pending_cancelled_flag": 0,
+          "dispatch_with_fever_context_flag": 76,
+          "dispatch_with_pending_cancelled_flag": 0,
+          "dispatch_total": 1175,
+          "dispatch_handled": 1152,
+          "dispatch_unhandled": 23,
+          "dispatch_success_rate_pct": 98.04,
+          "dispatch_by_handler": {
+            "concierge_agent": 379,
+            "physical_agent": 627,
+            "counseling_processor": 77,
+            "store_inquiry": 65,
+            "emergency_agent": 15,
+            "security_gate": 6,
+            "session_ops": 6
+          },
+          "execution_total": 0,
+          "execution_mismatch": 0,
+          "execution_mismatch_rate_pct": 0.0,
+          "execution_by_layer_used": {},
+          "execution_side_effect_qa": 0,
+          "mismatch_samples": [
+            {
+              "session_id": "1782973789622525865487",
+              "user_input": "近くの薬局",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973917916280451456",
+              "user_input": "近くの薬局を教えて",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973931406085911208",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973944286547860166",
+              "user_input": "OTCを買える店",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973958078709834251",
+              "user_input": "処方箋なしで買える場所",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973972138396339780",
+              "user_input": "マツキヨは近くにありますか",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782973985776412873150",
+              "user_input": "市販薬の購入先",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782974025130304889943",
+              "user_input": "マツキヨは近くにありますか",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782974034953233964996",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782974044763563580264",
+              "user_input": "2週間くらいです",
+              "primary_route": "Counseling",
+              "triage_category": "Ask",
+              "mismatch_kind": "exempt",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976790703085148705",
+              "user_input": "近くの薬局を教えて",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976803771382313097",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976817282718313459",
+              "user_input": "OTCを買える店",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976831242466417989",
+              "user_input": "処方箋なしで買える場所",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976844060063906193",
+              "user_input": "マツキヨは近くにありますか",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976857874404248980",
+              "user_input": "市販薬の購入先",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976871542386910077",
+              "user_input": "マツキヨは近くにありますか",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782976882031883795208",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782978124369208942322",
+              "user_input": "近くの薬局を教えて",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            },
+            {
+              "session_id": "1782978137413880726841",
+              "user_input": "ドラッグストアはどこ？",
+              "primary_route": "Store",
+              "triage_category": "Other",
+              "mismatch_kind": "gate_improvement",
+              "dialogue_flags": null
+            }
+          ]
+        },
+        "latency": {
+          "pipeline_perf_requests": 3637,
+          "total_ms_p50": 9846.38,
+          "total_ms_p95": 38209.24,
+          "total_ms_max": 227145.5,
+          "llm_calls_total": 10861,
+          "llm_calls_per_request_avg": 2.99,
+          "llm_by_path": {
+            "explanation_generator.batch_usage_notes": {
+              "count": 761,
+              "latency_ms_sum": 5642303.51,
+              "latency_ms_p50": 6851.16,
+              "latency_ms_p95": 12831.52
+            },
+            "medicine_qa/focus_llm": {
+              "count": 3616,
+              "latency_ms_sum": 4280589.71,
+              "latency_ms_p50": 1085.8,
+              "latency_ms_p95": 1810.69
+            },
+            "llm_triage.stage1": {
+              "count": 2000,
+              "latency_ms_sum": 3195829.59,
+              "latency_ms_p50": 1453.64,
+              "latency_ms_p95": 2521.18
+            },
+            "medicine_response_builder.chat_context": {
+              "count": 393,
+              "latency_ms_sum": 2497049.07,
+              "latency_ms_p50": 5999.57,
+              "latency_ms_p95": 13564.32
+            },
+            "missing_info_service": {
+              "count": 862,
+              "latency_ms_sum": 2071288.29,
+              "latency_ms_p50": 2246.59,
+              "latency_ms_p95": 3202.57
+            },
+            "chat_response_service.personalized_advice": {
+              "count": 638,
+              "latency_ms_sum": 1104984.94,
+              "latency_ms_p50": 1516.4,
+              "latency_ms_p95": 2821.43
+            },
+            "dialogue.intent_router_llm": {
+              "count": 700,
+              "latency_ms_sum": 917467.45,
+              "latency_ms_p50": 1221.78,
+              "latency_ms_p95": 1807.5
+            },
+            "llm_triage.stage2": {
+              "count": 517,
+              "latency_ms_sum": 743559.89,
+              "latency_ms_p50": 1284.27,
+              "latency_ms_p95": 2251.24
+            },
+            "concierge_agent.meta_architecture": {
+              "count": 295,
+              "latency_ms_sum": 525229.26,
+              "latency_ms_p50": 1706.61,
+              "latency_ms_p95": 2371.86
+            },
+            "concierge_agent.greeting": {
+              "count": 165,
+              "latency_ms_sum": 302134.17,
+              "latency_ms_p50": 1700.29,
+              "latency_ms_p95": 2788.28
+            },
+            "counseling_generator.main": {
+              "count": 220,
+              "latency_ms_sum": 275538.55,
+              "latency_ms_p50": 1141.95,
+              "latency_ms_p95": 1832.24
+            },
+            "counseling_followup.alt": {
+              "count": 175,
+              "latency_ms_sum": 256975.07,
+              "latency_ms_p50": 1320.89,
+              "latency_ms_p95": 1981.2
+            },
+            "concierge_agent.meta_architecture_deep": {
+              "count": 68,
+              "latency_ms_sum": 152809.2,
+              "latency_ms_p50": 2219.77,
+              "latency_ms_p95": 3016.74
+            },
+            "concierge_agent.chitchat": {
+              "count": 72,
+              "latency_ms_sum": 102091.96,
+              "latency_ms_p50": 1263.97,
+              "latency_ms_p95": 1687.88
+            },
+            "concierge_agent.meta_capabilities": {
+              "count": 49,
+              "latency_ms_sum": 70351.52,
+              "latency_ms_p50": 1320.44,
+              "latency_ms_p95": 2327.98
+            },
+            "dialogue.medicine_context_classifier": {
+              "count": 44,
+              "latency_ms_sum": 63909.77,
+              "latency_ms_p50": 1279.23,
+              "latency_ms_p95": 1933.1
+            },
+            "concierge_agent.doc_changelog_intro": {
+              "count": 45,
+              "latency_ms_sum": 62888.77,
+              "latency_ms_p50": 1308.98,
+              "latency_ms_p95": 1862.15
+            },
+            "llm_medicine_service.select_symptoms": {
+              "count": 58,
+              "latency_ms_sum": 49605.2,
+              "latency_ms_p50": 798.85,
+              "latency_ms_p95": 1162.21
+            },
+            "llm_triage.combined": {
+              "count": 21,
+              "latency_ms_sum": 34766.56,
+              "latency_ms_p50": 1544.03,
+              "latency_ms_p95": 2305.76
+            },
+            "counseling_followup": {
+              "count": 14,
+              "latency_ms_sum": 33885.87,
+              "latency_ms_p50": 2203.79,
+              "latency_ms_p95": 2538.24
+            },
+            "medicine_response_builder.chat_context.answer_stream": {
+              "count": 14,
+              "latency_ms_sum": 28119.14,
+              "latency_ms_p50": 2011.12,
+              "latency_ms_p95": 2400.1
+            },
+            "concierge_agent.doc_privacy": {
+              "count": 9,
+              "latency_ms_sum": 27845.57,
+              "latency_ms_p50": 2996.27,
+              "latency_ms_p95": 3532.23
+            },
+            "meta_triage.classify": {
+              "count": 26,
+              "latency_ms_sum": 24731.98,
+              "latency_ms_p50": 850.55,
+              "latency_ms_p95": 1220.22
+            },
+            "medicine_thread/continuation_llm": {
+              "count": 17,
+              "latency_ms_sum": 23321.45,
+              "latency_ms_p50": 1111.45,
+              "latency_ms_p95": 1465.74
+            },
+            "explanation_generator.individual_usage": {
+              "count": 5,
+              "latency_ms_sum": 22762.64,
+              "latency_ms_p50": 4602.66,
+              "latency_ms_p95": 6168.72
+            },
+            "concierge_agent.thanks": {
+              "count": 19,
+              "latency_ms_sum": 20259.42,
+              "latency_ms_p50": 1080.14,
+              "latency_ms_p95": 1310.63
+            },
+            "concierge_agent.legal_crossdoc": {
+              "count": 8,
+              "latency_ms_sum": 19833.02,
+              "latency_ms_p50": 2297.45,
+              "latency_ms_p95": 3938.74
+            },
+            "concierge_agent.meta_app_about": {
+              "count": 13,
+              "latency_ms_sum": 18840.74,
+              "latency_ms_p50": 1375.62,
+              "latency_ms_p95": 1914.02
+            },
+            "store_inquiry_handler.classify": {
+              "count": 10,
+              "latency_ms_sum": 12035.17,
+              "latency_ms_p50": 1160.04,
+              "latency_ms_p95": 1737.55
+            },
+            "local_rag/context_rewrite": {
+              "count": 8,
+              "latency_ms_sum": 7628.73,
+              "latency_ms_p50": 915.72,
+              "latency_ms_p95": 1377.9
+            },
+            "episode_summary_agent": {
+              "count": 2,
+              "latency_ms_sum": 4641.46,
+              "latency_ms_p50": 2320.73,
+              "latency_ms_p95": 2320.73
+            },
+            "concierge_agent.doc_operator_intro": {
+              "count": 2,
+              "latency_ms_sum": 2829.12,
+              "latency_ms_p50": 1359.87,
+              "latency_ms_p95": 1469.25
+            },
+            "concierge_agent.doc_changelog": {
+              "count": 1,
+              "latency_ms_sum": 2019.84,
+              "latency_ms_p50": 2019.84,
+              "latency_ms_p95": 2019.84
+            },
+            "counseling_topic_shift": {
+              "count": 1,
+              "latency_ms_sum": 1872.9,
+              "latency_ms_p50": 1872.9,
+              "latency_ms_p95": 1872.9
+            },
+            "counseling_processor": {
+              "count": 1,
+              "latency_ms_sum": 1780.43,
+              "latency_ms_p50": 1780.43,
+              "latency_ms_p95": 1780.43
+            },
+            "triage.stage1": {
+              "count": 11,
+              "latency_ms_sum": 1357.4,
+              "latency_ms_p50": 123.4,
+              "latency_ms_p95": 123.4
+            },
+            "moderation_agent": {
+              "count": 1,
+              "latency_ms_sum": 1236.76,
+              "latency_ms_p50": 1236.76,
+              "latency_ms_p95": 1236.76
+            }
+          },
+          "breakdown_steps_avg_ms": {
+            "after_counseling_flow": 1796.67,
+            "after_get_session_db": 155.67,
+            "after_medicine_qa_route": 2707.62,
+            "after_security": 585.56,
+            "after_triage": 2522.3,
+            "after_triage_follow_ups": 1753.28,
+            "before_emoji_route": 598.73,
+            "before_llm_setup": 278.76,
+            "before_medicine_qa_route": 1954.4,
+            "before_orchestrator": 5537.0,
+            "before_security": 513.77,
+            "before_triage": 600.7,
+            "concierge_build_payload_end": 6671.78,
+            "concierge_build_payload_start": 4844.45,
+            "concierge_resolve_intent_end": 4844.06,
+            "concierge_resolve_intent_start": 4843.99,
+            "confidence_gate_done": 7594.97,
+            "delivery_mode": 242.23,
+            "emit_cards": 30701.99,
+            "emit_cards_early": 13357.05,
+            "explanation_phase_done": 27783.64,
+            "explanation_phase_start": 27783.64,
+            "first": 0.0,
+            "line_carousel_push": 27955.28,
+            "line_loading_start": 0.07,
+            "line_profile_fetch": 0.6,
+            "line_reply_done": 95.4,
+            "medicine_information_qa_end": 9489.67,
+            "medicine_information_qa_start": 2927.68,
+            "medicine_qa_concierge_early_end": 2896.97,
+            "medicine_qa_early_route_end": 10069.93,
+            "medicine_qa_early_route_start": 3039.63,
+            "medicine_qa_thread_route_end": 10542.44,
+            "medicine_qa_thread_route_start": 3491.79,
+            "meta_triage_end": 9584.14,
+            "meta_triage_start": 8230.78,
+            "moderation_done": 1796.71,
+            "nlu_batch_done": 8585.3,
+            "nlu_batch_start": 5803.0,
+            "non_human_patient_redirect": 3686.5,
+            "orch_enrich_end": 9337.62,
+            "orch_enrich_start": 8808.64,
+            "orch_handoff": 7603.57,
+            "orch_pre_social_intent": 7610.44,
+            "orch_route_concierge_end": 12272.94,
+            "orch_route_concierge_start": 9343.1,
+            "orch_route_end": 10070.82,
+            "orch_router_locked_end": 4935.96,
+            "orch_router_locked_start": 4933.57,
+            "orchestrator_end": 6645.03,
+            "parsed_message": 7.37,
+            "personalized_advice": 30039.83,
+            "post_start": 6.89,
+            "product_image_fast_path_end": 10138.31,
+            "product_image_fast_path_start": 3073.38,
+            "rb_explain_batch_done": 28083.21,
+            "rb_missing_info_done": 11440.71,
+            "rb_scoring_only_done": 15547.03,
+            "rule_based_scoring_only_done": 26461.57,
+            "rule_based_start": 9396.18,
+            "safety_gate_done": 3371.35,
+            "second": 0.01,
+            "session_db_read": 7.43
+          }
+        },
+        "gcp_analysis": {
+          "source_md": "log\\analysis\\2026-08-06_downloaded-logs-20260729-20260806-20260806-141635.md"
+        },
+        "notes": {
+          "fast_path_ratio": "requires triage skip fields in structured logs (Wave 0 TODO)",
+          "end_guard_redirect_rate": "requires pipeline_end_guard field in session/logs"
+        }
+      },
+      "stderr": ""
+    },
+    "intent_router_shadow": {
+      "sources": {
+        "shadow_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_shadow_log.jsonl",
+        "dispatch_jsonl": "D:\\Programing\\medicine-recommend\\log\\dialogue_route_dispatch_log.jsonl",
+        "gcp_log": null
+      },
+      "local": {
+        "shadow_total": 2599,
+        "shadow_mismatch": 374,
+        "shadow_mismatch_rate_pct": 14.39,
+        "shadow_improvement_mismatch": 253,
+        "shadow_improvement_mismatch_rate_pct": 9.73,
+        "shadow_regression_mismatch": 104,
+        "shadow_regression_mismatch_rate_pct": 4.0,
+        "shadow_exempt": 17,
+        "shadow_exempt_rate_pct": 0.65,
+        "shadow_by_mismatch_kind": {
+          "agree": 2225,
+          "gate_improvement": 253,
+          "exempt": 17,
+          "regression": 104
+        },
+        "shadow_by_primary_route": {
+          "Physical": 1535,
+          "Concierge": 789,
+          "Counseling": 111,
+          "Emergency": 49,
+          "Store": 63,
+          "Unknown": 21,
+          "Security": 10,
+          "SessionOps": 21
+        },
+        "shadow_by_resolved_by": {
+          "gate": 1209,
+          "legacy": 44,
+          "llm": 964,
+          "guard": 382
+        },
+        "shadow_with_fever_context_flag": 95,
+        "shadow_with_pending_cancelled_flag": 0,
+        "dispatch_with_fever_context_flag": 76,
+        "dispatch_with_pending_cancelled_flag": 0,
+        "dispatch_total": 1175,
+        "dispatch_handled": 1152,
+        "dispatch_unhandled": 23,
+        "dispatch_success_rate_pct": 98.04,
+        "dispatch_by_handler": {
+          "concierge_agent": 379,
+          "physical_agent": 627,
+          "counseling_processor": 77,
+          "store_inquiry": 65,
+          "emergency_agent": 15,
+          "security_gate": 6,
+          "session_ops": 6
+        },
+        "execution_total": 0,
+        "execution_mismatch": 0,
+        "execution_mismatch_rate_pct": 0.0,
+        "execution_by_layer_used": {},
+        "execution_side_effect_qa": 0,
+        "mismatch_samples": [
+          {
+            "session_id": "1782973789622525865487",
+            "user_input": "近くの薬局",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973917916280451456",
+            "user_input": "近くの薬局を教えて",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973931406085911208",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973944286547860166",
+            "user_input": "OTCを買える店",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973958078709834251",
+            "user_input": "処方箋なしで買える場所",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973972138396339780",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782973985776412873150",
+            "user_input": "市販薬の購入先",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782974025130304889943",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782974034953233964996",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782974044763563580264",
+            "user_input": "2週間くらいです",
+            "primary_route": "Counseling",
+            "triage_category": "Ask",
+            "mismatch_kind": "exempt",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976790703085148705",
+            "user_input": "近くの薬局を教えて",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976803771382313097",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976817282718313459",
+            "user_input": "OTCを買える店",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976831242466417989",
+            "user_input": "処方箋なしで買える場所",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976844060063906193",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976857874404248980",
+            "user_input": "市販薬の購入先",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976871542386910077",
+            "user_input": "マツキヨは近くにありますか",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782976882031883795208",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782978124369208942322",
+            "user_input": "近くの薬局を教えて",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1782978137413880726841",
+            "user_input": "ドラッグストアはどこ？",
+            "primary_route": "Store",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          }
+        ]
+      }
+    },
+    "intent_evaluation": {
+      "sessions_tracked": 25,
+      "counseling_rows_matched": 31,
+      "route_rows_matched": 46,
+      "per_session": {
+        "1786112066180223784634": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 1,
+          "routes": {
+            "Physical": 1
+          },
+          "intent_samples": [
+            {
+              "user_input": "助けて…頭痛すぎて仕事にならない",
+              "has_response": true
+            }
+          ]
+        },
+        "1786111993870008585537": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 3,
+          "routes": {
+            "Physical": 3
+          },
+          "intent_samples": [
+            {
+              "user_input": "肩こりひどくて限界",
+              "has_response": true
+            },
+            {
+              "user_input": "1番目ので胃弱いけど大丈夫？",
+              "has_response": true
+            }
+          ]
+        },
+        "1786111941188819337817": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "風邪っぽいんやけど、市販薬何がええ？",
+              "has_response": true
+            }
+          ]
+        },
+        "1786111991461614340780": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 1,
+          "routes": {
+            "Physical": 1
+          },
+          "intent_samples": [
+            {
+              "user_input": "母ちゃん血圧の薬飲んでて、風邪薬一緒に飲んでも平気？",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112245683300482420": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 1,
+          "routes": {
+            "Physical": 1
+          },
+          "intent_samples": [
+            {
+              "user_input": "headache ひどい、薬ある？",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112221768126489555": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "頭痛い😢",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112068783422650368": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Emergency": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "コーヒー飲みすぎてなんかドキドキする",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112185898056690193": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 3,
+          "routes": {
+            "Physical": 2,
+            "Concierge": 1
+          },
+          "intent_samples": [
+            {
+              "user_input": "頭痛い",
+              "has_response": true
+            },
+            {
+              "user_input": "ありがとう、助かった",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112037506773705054": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 4,
+          "routes": {
+            "Physical": 4
+          },
+          "intent_samples": [
+            {
+              "user_input": "鼻水が止まらない",
+              "has_response": true
+            },
+            {
+              "user_input": "いや、やっぱ咳の方がキツいわ",
+              "has_response": true
+            }
+          ]
+        },
+        "1786111905383870645580": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 3,
+          "routes": {
+            "Physical": 3
+          },
+          "intent_samples": [
+            {
+              "user_input": "二日酔いやばい、頭割れそう",
+              "has_response": true
+            },
+            {
+              "user_input": "さっき言われたやつ、お酒飲んだあとでも飲める？",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112114727937553591": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 2,
+          "routes": {
+            "Physical": 1,
+            "Concierge": 1
+          },
+          "intent_samples": [
+            {
+              "user_input": "タイ旅行にロキソニン持っていきたい",
+              "has_response": true
+            },
+            {
+              "user_input": "空港で引っかかったりしない？",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112275539663345414": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 1,
+          "routes": {
+            "Physical": 1
+          },
+          "intent_samples": [
+            {
+              "user_input": "海行って真っ赤になった",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112260114184143167": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 1,
+          "routes": {
+            "Physical": 1
+          },
+          "intent_samples": [
+            {
+              "user_input": "ライブ叫びすぎて声出ない",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112166267567214732": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 1,
+          "routes": {
+            "Physical": 1
+          },
+          "intent_samples": [
+            {
+              "user_input": "インスリン打ってるけど風邪薬OK？",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112097859030357198": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 1,
+          "routes": {
+            "Counseling": 1
+          },
+          "intent_samples": [
+            {
+              "user_input": "最近全然寝れないんだよね",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112182043402797007": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 1,
+          "routes": {
+            "Physical": 1
+          },
+          "intent_samples": [
+            {
+              "user_input": "うちの猫、人間の風邪薬あげていい？",
+              "has_response": true
+            }
+          ]
+        },
+        "1786111874753875591705": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "めっちゃ鼻水止まらん",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112305205063672203": {
+          "counseling_turns": 2,
+          "counseling_with_response": 2,
+          "route_events": 3,
+          "routes": {
+            "Physical": 3
+          },
+          "intent_samples": [
+            {
+              "user_input": "在宅で肩こり限界",
+              "has_response": true
+            },
+            {
+              "user_input": "それ、胃弱い人でも大丈夫？",
+              "has_response": true
+            }
+          ]
+        },
+        "1786111851710199730000": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "喉イガイガするんですけど",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112112410737776234": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 1,
+          "routes": {
+            "Physical": 1
+          },
+          "intent_samples": [
+            {
+              "user_input": "今飲んでるやつあるんだけど、他の薬一緒に飲める？",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112103302392418503": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "子供38度ある、市販薬いい？",
+              "has_response": true
+            }
+          ]
+        },
+        "1786111824660289523345": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "なんか頭痛いんだけど",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112142606912550683": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 1,
+          "routes": {
+            "Physical": 1
+          },
+          "intent_samples": [
+            {
+              "user_input": "筋肉痛、湿布と飲み薬どっちがいいの？",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112074090116220539": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "目が痒い、花粉症かもしれない",
+              "has_response": true
+            }
+          ]
+        },
+        "1786112280983381193605": {
+          "counseling_turns": 1,
+          "counseling_with_response": 1,
+          "route_events": 2,
+          "routes": {
+            "Physical": 2
+          },
+          "intent_samples": [
+            {
+              "user_input": "お通じが悪くて困っております",
+              "has_response": true
+            }
+          ]
+        }
+      },
+      "intent_router_metrics": {
+        "shadow_total": 31,
+        "shadow_mismatch": 2,
+        "shadow_mismatch_rate_pct": 6.45,
+        "shadow_improvement_mismatch": 1,
+        "shadow_improvement_mismatch_rate_pct": 3.23,
+        "shadow_regression_mismatch": 1,
+        "shadow_regression_mismatch_rate_pct": 3.23,
+        "shadow_exempt": 0,
+        "shadow_exempt_rate_pct": 0.0,
+        "shadow_by_mismatch_kind": {
+          "agree": 29,
+          "regression": 1,
+          "gate_improvement": 1
+        },
+        "shadow_by_primary_route": {
+          "Physical": 27,
+          "Emergency": 1,
+          "Counseling": 1,
+          "Concierge": 2
+        },
+        "shadow_by_resolved_by": {
+          "guard": 12,
+          "llm": 9,
+          "gate": 10
+        },
+        "shadow_with_fever_context_flag": 1,
+        "shadow_with_pending_cancelled_flag": 0,
+        "dispatch_with_fever_context_flag": 1,
+        "dispatch_with_pending_cancelled_flag": 0,
+        "dispatch_total": 15,
+        "dispatch_handled": 15,
+        "dispatch_unhandled": 0,
+        "dispatch_success_rate_pct": 100.0,
+        "dispatch_by_handler": {
+          "physical_agent": 14,
+          "emergency_agent": 1
+        },
+        "execution_total": 0,
+        "execution_mismatch": 0,
+        "execution_mismatch_rate_pct": 0.0,
+        "execution_by_layer_used": {},
+        "execution_side_effect_qa": 0,
+        "mismatch_samples": [
+          {
+            "session_id": "1786112068783422650368",
+            "user_input": "コーヒー飲みすぎてなんかドキドキする",
+            "primary_route": "Emergency",
+            "triage_category": "Physical",
+            "mismatch_kind": "regression",
+            "dialogue_flags": null
+          },
+          {
+            "session_id": "1786112182043402797007",
+            "user_input": "うちの猫、人間の風邪薬あげていい？",
+            "primary_route": "Physical",
+            "triage_category": "Other",
+            "mismatch_kind": "gate_improvement",
+            "dialogue_flags": null
+          }
+        ]
+      }
+    },
+    "counseling_detail_log.jsonl_lines_since_run": 31,
+    "dialogue_route_shadow_log.jsonl_lines_since_run": 31,
+    "dialogue_route_dispatch_log.jsonl_lines_since_run": 15,
+    "latency_this_run": {
+      "turns_measured": 31,
+      "e2e_ms_p50": 15694.0,
+      "e2e_ms_p95": 30310.0,
+      "e2e_ms_max": 49947.0,
+      "phase_breakdown": {
+        "pipeline_perf_requests": 31,
+        "total_ms_p50": 15355.78,
+        "total_ms_p95": 30077.7,
+        "total_ms_max": 49740.28,
+        "llm_calls_total": 115,
+        "llm_calls_per_request_avg": 3.71,
+        "llm_by_path": {
+          "explanation_generator.batch_usage_notes": {
+            "count": 12,
+            "latency_ms_sum": 68249.64,
+            "latency_ms_p50": 5525.34,
+            "latency_ms_p95": 6176.82
+          },
+          "llm_triage.stage1": {
+            "count": 31,
+            "latency_ms_sum": 61661.89,
+            "latency_ms_p50": 1615.2,
+            "latency_ms_p95": 3229.35
+          },
+          "medicine_qa/focus_llm": {
+            "count": 35,
+            "latency_ms_sum": 43719.27,
+            "latency_ms_p50": 1211.87,
+            "latency_ms_p95": 1990.54
+          },
+          "missing_info_service": {
+            "count": 12,
+            "latency_ms_sum": 35843.91,
+            "latency_ms_p50": 2517.32,
+            "latency_ms_p95": 5324.99
+          },
+          "medicine_response_builder.chat_context": {
+            "count": 4,
+            "latency_ms_sum": 30746.38,
+            "latency_ms_p50": 7554.31,
+            "latency_ms_p95": 11569.65
+          },
+          "chat_response_service.personalized_advice": {
+            "count": 12,
+            "latency_ms_sum": 23257.33,
+            "latency_ms_p50": 1662.83,
+            "latency_ms_p95": 1864.79
+          },
+          "llm_triage.stage2": {
+            "count": 3,
+            "latency_ms_sum": 5352.08,
+            "latency_ms_p50": 1843.59,
+            "latency_ms_p95": 1877.85
+          },
+          "concierge_agent.greeting": {
+            "count": 2,
+            "latency_ms_sum": 3210.27,
+            "latency_ms_p50": 1373.65,
+            "latency_ms_p95": 1836.62
+          },
+          "dialogue.intent_router_llm": {
+            "count": 2,
+            "latency_ms_sum": 3155.02,
+            "latency_ms_p50": 1237.33,
+            "latency_ms_p95": 1917.69
+          },
+          "dialogue.medicine_context_classifier": {
+            "count": 2,
+            "latency_ms_sum": 2606.8,
+            "latency_ms_p50": 1219.56,
+            "latency_ms_p95": 1387.24
+          }
+        },
+        "breakdown_steps_avg_ms": {
+          "after_counseling_flow": 2368.12,
+          "after_get_session_db": 13.04,
+          "after_medicine_qa_route": 3063.33,
+          "after_security": 88.41,
+          "after_triage": 2298.31,
+          "after_triage_follow_ups": 2335.98,
+          "before_emoji_route": 89.21,
+          "before_llm_setup": 16.23,
+          "before_medicine_qa_route": 2454.22,
+          "before_orchestrator": 2758.31,
+          "before_security": 19.71,
+          "before_triage": 89.25,
+          "concierge_build_payload_end": 4840.05,
+          "concierge_build_payload_start": 3225.15,
+          "concierge_resolve_intent_end": 3224.94,
+          "concierge_resolve_intent_start": 3224.78,
+          "emit_cards_early": 14766.83,
+          "explanation_phase_done": 25213.2,
+          "explanation_phase_start": 25213.2,
+          "line_carousel_push": 25201.53,
+          "medicine_information_qa_end": 17278.74,
+          "medicine_information_qa_start": 4894.4,
+          "medicine_qa_concierge_early_end": 3349.86,
+          "medicine_qa_early_route_end": 17279.53,
+          "medicine_qa_early_route_start": 4894.38,
+          "medicine_qa_thread_route_end": 11556.11,
+          "medicine_qa_thread_route_start": 3894.85,
+          "moderation_done": 2368.15,
+          "nlu_batch_done": 7539.08,
+          "nlu_batch_start": 4311.21,
+          "non_human_patient_redirect": 3268.43,
+          "parsed_message": 10.91,
+          "personalized_advice": 27162.65,
+          "post_start": 10.81,
+          "product_image_fast_path_end": 17278.75,
+          "product_image_fast_path_start": 4894.4,
+          "rb_explain_batch_done": 25199.82,
+          "rb_missing_info_done": 10496.77,
+          "rb_scoring_only_done": 14766.81,
+          "rule_based_scoring_only_done": 25201.11,
+          "rule_based_start": 7501.18,
+          "safety_gate_done": 2334.49,
+          "session_db_read": 10.95
+        }
+      }
+    },
+    "turn_eval_kpi": {
+      "turns_evaluated": 31,
+      "turn_rule_pass": 30,
+      "reject_no_reco": 1,
+      "comparison_loop": 0,
+      "judge_turns": 1,
+      "judge_aligned": 0,
+      "turn_rows": [
+        {
+          "scenario_id": "casual-headache-vague",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-throat-igagiga",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-nose-runny-slang",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-hangover-yabai",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": 1,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-hangover-yabai",
+          "turn_index": 1,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": 1,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-kansai-cold",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-mom-medicine",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-stomach-weak-followup",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": 1,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-stomach-weak-followup",
+          "turn_index": 1,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": 1,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-correction-cough",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-correction-cough",
+          "turn_index": 1,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-help-headache-not-crisis",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-palpitation-coffee",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": 1,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-pollen-itchy-eye",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-insomnia-casual",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": 1,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-child-fever-short",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": 1,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-ambiguous-drug",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-travel-followup",
+          "turn_index": 0,
+          "rule_pass": false,
+          "judge_grade": "misaligned",
+          "prompt_turns": 2,
+          "failures": [
+            "reject_no_reco"
+          ]
+        },
+        {
+          "scenario_id": "casual-travel-followup",
+          "turn_index": 1,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": 2,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-patch-vs-pill",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": 1,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-insulin-ok",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": 1,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-pet-wrong",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-thanks-after-advice",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-thanks-after-advice",
+          "turn_index": 1,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-emoji-symptom",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-english-mixed",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": 1,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-voice-hoarse-event",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-sunburn-beach",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": 1,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-constipation-polite",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": 1,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-anaphora-that-one",
+          "turn_index": 0,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        },
+        {
+          "scenario_id": "casual-anaphora-that-one",
+          "turn_index": 1,
+          "rule_pass": true,
+          "judge_grade": null,
+          "prompt_turns": null,
+          "failures": []
+        }
+      ]
+    }
+  },
+  "results": [
+    {
+      "scenario_id": "casual-headache-vague",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786111824660289523345",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "なんか頭痛いんだけど",
+          "http_status": 200,
+          "elapsed_ms": 26769,
+          "diagnosis_kind": null,
+          "response_snippet": "頭痛つらいですね。イブやバファリンEXは、急な頭痛をしっかり和らげたい時に使いやすく、カロナールAは胃にやさしめです。空腹での服用は避け、用法用量を守ってください。発熱や関節痛もある、インフルっぽい時は無理せず受診を。妊娠中・持病・他の薬がある場合は、先に確認しましょう。",
+          "response_full": "頭痛つらいですね。イブやバファリンEXは、急な頭痛をしっかり和らげたい時に使いやすく、カロナールAは胃にやさしめです。空腹での服用は避け、用法用量を守ってください。発熱や関節痛もある、インフルっぽい時は無理せず受診を。妊娠中・持病・他の薬がある場合は、先に確認しましょう。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-throat-igagiga",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786111851710199730000",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "喉イガイガするんですけど",
+          "http_status": 200,
+          "elapsed_ms": 22761,
+          "diagnosis_kind": null,
+          "response_snippet": "喉イガイガするの、つらいですね。のどの炎症や乾燥が考えられるので、まずはスカイブブロンのどスプレーやルルのどスプレーで直接ケアすると合いやすいです。発熱や強いだるさ、関節痛があればインフルエンザの可能性もあるので、早めの受診を。水分を多めにとり、刺激物は控えてください。",
+          "response_full": "喉イガイガするの、つらいですね。のどの炎症や乾燥が考えられるので、まずはスカイブブロンのどスプレーやルルのどスプレーで直接ケアすると合いやすいです。発熱や強いだるさ、関節痛があればインフルエンザの可能性もあるので、早めの受診を。水分を多めにとり、刺激物は控えてください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-nose-runny-slang",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786111874753875591705",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "めっちゃ鼻水止まらん",
+          "http_status": 200,
+          "elapsed_ms": 30310,
+          "diagnosis_kind": null,
+          "response_snippet": "めっちゃ鼻水止まらんのはつらいですね。鼻水が中心なら、鼻の症状に合わせて「スカイブブロンNAスプレー」で鼻づまり・鼻水を和らげるのが使いやすいです。かぜっぽくて熱、のど痛み、だるさもあるなら総合薬の「スカイブブロンHI」「スカイブゴールド」も候補です。強い眠気や持病、妊娠中は服用前に確認してください。発熱や関節痛があればインフルエンザも注意です。",
+          "response_full": "めっちゃ鼻水止まらんのはつらいですね。鼻水が中心なら、鼻の症状に合わせて「スカイブブロンNAスプレー」で鼻づまり・鼻水を和らげるのが使いやすいです。かぜっぽくて熱、のど痛み、だるさもあるなら総合薬の「スカイブブロンHI」「スカイブゴールド」も候補です。強い眠気や持病、妊娠中は服用前に確認してください。発熱や関節痛があればインフルエンザも注意です。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-hangover-yabai",
+      "category": "medicine_thread",
+      "wave": "casual-expressions",
+      "session_id": "1786111905383870645580",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "二日酔いやばい、頭割れそう",
+          "http_status": 200,
+          "elapsed_ms": 31521,
+          "diagnosis_kind": null,
+          "response_snippet": "二日酔いで頭が割れそうなんですね、しんどいですね。胃のむかつきや吐き気もあるなら、第一三共胃腸薬コアブロック散剤やサクロンQ、液キャベコーワLのような胃腸薬が合いやすいです。水分を少しずつ取り、空腹なら消化のよい物を。強い頭痛が続く、何度も吐く、発熱もあれば別の病気もあるので受診してください。",
+          "response_full": "二日酔いで頭が割れそうなんですね、しんどいですね。胃のむかつきや吐き気もあるなら、第一三共胃腸薬コアブロック散剤やサクロンQ、液キャベコーワLのような胃腸薬が合いやすいです。水分を少しずつ取り、空腹なら消化のよい物を。強い頭痛が続く、何度も吐く、発熱もあれば別の病気もあるので受診してください。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "さっき言われたやつ、お酒飲んだあとでも飲める？",
+          "http_status": 200,
+          "elapsed_ms": 3350,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "「第一三共胃腸薬コアブロック散剤」を飲酒後に使ってよいかは、成分によって注意が異なります。一般にアセトアミノフェン系はアルコール摂取後の服用で肝障害リスクが上がることがあり、NSAIDs系は胃への負担が増すことがあります。飲酒直後や大量飲酒後は自己判断を避え、お近くの登録販売者に成分名を伝えてご相談ください。",
+          "response_full": "「第一三共胃腸薬コアブロック散剤」を飲酒後に使ってよいかは、成分によって注意が異なります。一般にアセトアミノフェン系はアルコール摂取後の服用で肝障害リスクが上がることがあり、NSAIDs系は胃への負担が増すことがあります。飲酒直後や大量飲酒後は自己判断を避え、お近くの登録販売者に成分名を伝えてご相談ください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response",
+        "t1:global_rules_ok",
+        "t1:has_response",
+        "t1:must_answer_question:ok"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": 1,
+          "prompt_audit_ok": null
+        },
+        {
+          "turn_index": 1,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response",
+            "must_answer_question:ok"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": 1,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-kansai-cold",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786111941188819337817",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "風邪っぽいんやけど、市販薬何がええ？",
+          "http_status": 200,
+          "elapsed_ms": 49947,
+          "diagnosis_kind": null,
+          "response_snippet": "風邪っぽくて、発熱・咳・鼻水・のどの痛み・寒気があるなら、複数の症状をまとめて抑えられる総合感冒薬が合っています。新エスタックイブエース顆粒/カプセルや新スカイブブロンゴールド錠は候補です。熱が高い、関節痛が強い、周りで流行っているならインフルも疑って、早めの受診も考えてくださいね。用法用量は守り、他の風邪薬との重複に注意です。",
+          "response_full": "風邪っぽくて、発熱・咳・鼻水・のどの痛み・寒気があるなら、複数の症状をまとめて抑えられる総合感冒薬が合っています。新エスタックイブエース顆粒/カプセルや新スカイブブロンゴールド錠は候補です。熱が高い、関節痛が強い、周りで流行っているならインフルも疑って、早めの受診も考えてくださいね。用法用量は守り、他の風邪薬との重複に注意です。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response",
+        "t0:must_answer_question:ok"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response",
+            "must_answer_question:ok"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-mom-medicine",
+      "category": "medicine_thread",
+      "wave": "casual-expressions",
+      "session_id": "1786111991461614340780",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "母ちゃん血圧の薬飲んでて、風邪薬一緒に飲んでも平気？",
+          "http_status": 200,
+          "elapsed_ms": 2137,
+          "diagnosis_kind": "concierge_clarify",
+          "response_snippet": "どのお薬同士の飲み合わせか教えていただけますか？お薬名が分かれば、こちらで一般的な情報をお伝えします。",
+          "response_full": "どのお薬同士の飲み合わせか教えていただけますか？お薬名が分かれば、こちらで一般的な情報をお伝えします。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response",
+        "t0:must_answer_question:ok"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response",
+            "must_answer_question:ok"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-stomach-weak-followup",
+      "category": "medicine_thread",
+      "wave": "casual-expressions",
+      "session_id": "1786111993870008585537",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "肩こりひどくて限界",
+          "http_status": 200,
+          "elapsed_ms": 27408,
+          "diagnosis_kind": null,
+          "response_snippet": "肩こりがひどくて限界なんですね、つらいです。バンテリンコーワゲルLTやアンメルツゴールドEXNEO、ダイハップFRは、こわばった肩や筋肉の痛みに外から使いやすいです。赤み・かぶれが出たら中止し、目や傷には使わないでください。発熱やしびれ、急な強い痛みがあれば受診を。",
+          "response_full": "肩こりがひどくて限界なんですね、つらいです。バンテリンコーワゲルLTやアンメルツゴールドEXNEO、ダイハップFRは、こわばった肩や筋肉の痛みに外から使いやすいです。赤み・かぶれが出たら中止し、目や傷には使わないでください。発熱やしびれ、急な強い痛みがあれば受診を。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "1番目ので胃弱いけど大丈夫？",
+          "http_status": 200,
+          "elapsed_ms": 15694,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "胃が弱い方でも、1番目のバンテリンコーワゲルLTは皮膚に塗る外用薬なので、一般に飲み薬の痛み止めより胃への負担は少ないと考えられます。主成分はインドメタシンで、肩こりに伴う肩の痛みなどに使われます。 ただし、外用薬でも体質によっては刺激感やかぶれなどが出ることがあります。胃弱との関係について、この製品情報だけでは断定しきれないため、胃潰瘍の既往がある、痛み止めで体調を崩したことがある、他のNSAIDsで合わなかったことがある場合は、お近くの登録販売者にご相談ください。",
+          "response_full": "胃が弱い方でも、1番目のバンテリンコーワゲルLTは皮膚に塗る外用薬なので、一般に飲み薬の痛み止めより胃への負担は少ないと考えられます。主成分はインドメタシンで、肩こりに伴う肩の痛みなどに使われます。 ただし、外用薬でも体質によっては刺激感やかぶれなどが出ることがあります。胃弱との関係について、この製品情報だけでは断定しきれないため、胃潰瘍の既往がある、痛み止めで体調を崩したことがある、他のNSAIDsで合わなかったことがある場合は、お近くの登録販売者にご相談ください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response",
+        "t1:global_rules_ok",
+        "t1:has_response",
+        "t1:must_reference_prior:ok",
+        "t1:must_answer_question:ok"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": 1,
+          "prompt_audit_ok": null
+        },
+        {
+          "turn_index": 1,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response",
+            "must_reference_prior:ok",
+            "must_answer_question:ok"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": 1,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-correction-cough",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786112037506773705054",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "鼻水が止まらない",
+          "http_status": 200,
+          "elapsed_ms": 22370,
+          "diagnosis_kind": null,
+          "response_snippet": "鼻水が止まらないのはつらいですね。まずは鼻水をしっかり抑えやすい**スカイブブロンNAスプレー**が使いやすいです。かぜ症状も出ているなら**スカイブブロンHI/ゴールド**も候補です。眠気や持病、妊娠中は注意してください。発熱や強いだるさがあればインフルエンザも疑い、受診をおすすめします。",
+          "response_full": "鼻水が止まらないのはつらいですね。まずは鼻水をしっかり抑えやすい**スカイブブロンNAスプレー**が使いやすいです。かぜ症状も出ているなら**スカイブブロンHI/ゴールド**も候補です。眠気や持病、妊娠中は注意してください。発熱や強いだるさがあればインフルエンザも疑い、受診をおすすめします。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "いや、やっぱ咳の方がキツいわ",
+          "http_status": 200,
+          "elapsed_ms": 5777,
+          "diagnosis_kind": "recommendation_summary",
+          "response_snippet": "先ほどのご相談（鼻水）では、スカイブブロンHI、スカイブブロンNAスプレー、スカイブゴールド などをご案内しました。用法用量や飲み合わせについて、ほかに知りたいことはありますか？",
+          "response_full": "先ほどのご相談（鼻水）では、スカイブブロンHI、スカイブブロンNAスプレー、スカイブゴールド などをご案内しました。用法用量や飲み合わせについて、ほかに知りたいことはありますか？",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response",
+        "t1:global_rules_ok",
+        "t1:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        },
+        {
+          "turn_index": 1,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-help-headache-not-crisis",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786112066180223784634",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "助けて…頭痛すぎて仕事にならない",
+          "http_status": 200,
+          "elapsed_ms": 2325,
+          "diagnosis_kind": "emergency_store_incident",
+          "response_snippet": "🚑 緊急事案が検出されました\n\n安全確保を最優先にしてください\n\n【安全確保・避難】\n・すぐに安全な場所に避難してください\n・落ち着いて行動してください\n・応急処置が可能な場合は、安全に配慮して行ってください\n\n【緊急連絡先】\n・緊急の場合は119番（救急・消防）または110番（警察）にご連絡ください\n・症状がある場合は医療機関の受診もご検討ください\n\n【警察への連絡】\n・緊急の場合は、すぐに110番（警察）に連絡してください\n・不審者や暴力行為がある場合は、すぐに110番に連絡してください",
+          "response_full": "🚑 緊急事案が検出されました\n\n安全確保を最優先にしてください\n\n【安全確保・避難】\n・すぐに安全な場所に避難してください\n・落ち着いて行動してください\n・応急処置が可能な場合は、安全に配慮して行ってください\n\n【緊急連絡先】\n・緊急の場合は119番（救急・消防）または110番（警察）にご連絡ください\n・症状がある場合は医療機関の受診もご検討ください\n\n【警察への連絡】\n・緊急の場合は、すぐに110番（警察）に連絡してください\n・不審者や暴力行為がある場合は、すぐに110番に連絡してください",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-palpitation-coffee",
+      "category": "chitchat",
+      "wave": "casual-expressions",
+      "session_id": "1786112068783422650368",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "コーヒー飲みすぎてなんかドキドキする",
+          "http_status": 200,
+          "elapsed_ms": 5029,
+          "diagnosis_kind": "emergency_medical_self",
+          "response_snippet": "緊急の可能性があります。119番への連絡または医療機関への受診をご検討ください。",
+          "response_full": "緊急の可能性があります。119番への連絡または医療機関への受診をご検討ください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": 1,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-pollen-itchy-eye",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786112074090116220539",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "目が痒い、花粉症かもしれない",
+          "http_status": 200,
+          "elapsed_ms": 23496,
+          "diagnosis_kind": null,
+          "response_snippet": "目が痒いのは花粉症の可能性がありますね。花粉による目のかゆみには、まず抗菌アイリスやアイエースVクールのような目薬でつらさを和らげるのが合っています。こすらず、コンタクト使用中なら外して使ってください。赤みや痛み、目やにが強い、視界の異常があれば受診をおすすめします。",
+          "response_full": "目が痒いのは花粉症の可能性がありますね。花粉による目のかゆみには、まず抗菌アイリスやアイエースVクールのような目薬でつらさを和らげるのが合っています。こすらず、コンタクト使用中なら外して使ってください。赤みや痛み、目やにが強い、視界の異常があれば受診をおすすめします。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-insomnia-casual",
+      "category": "chitchat",
+      "wave": "casual-expressions",
+      "session_id": "1786112097859030357198",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "最近全然寝れないんだよね",
+          "http_status": 200,
+          "elapsed_ms": 5161,
+          "diagnosis_kind": "concierge_greeting",
+          "response_snippet": "最近寝つきが悪いのですね。私たちは市販薬に関する相談をお手伝いする窓口ですので、例えば不眠や頭痛、のどの痛みなど、気になる症状についてお話ししていただければ、適切な市販薬をご案内できますよ。どうぞお気軽にご相談ください。",
+          "response_full": "最近寝つきが悪いのですね。私たちは市販薬に関する相談をお手伝いする窓口ですので、例えば不眠や頭痛、のどの痛みなど、気になる症状についてお話ししていただければ、適切な市販薬をご案内できますよ。どうぞお気軽にご相談ください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": 1,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-child-fever-short",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786112103302392418503",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "子供38度ある、市販薬いい？",
+          "http_status": 200,
+          "elapsed_ms": 8837,
+          "diagnosis_kind": "pediatric_age_required",
+          "response_snippet": "お子さまの年齢が分かると、より安全な市販薬をご案内できます。何歳か教えていただけますか。高熱が続く場合や状態が悪い場合は、早めに医療機関へご相談ください。",
+          "response_full": "お子さまの年齢が分かると、より安全な市販薬をご案内できます。何歳か教えていただけますか。高熱が続く場合や状態が悪い場合は、早めに医療機関へご相談ください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response",
+        "t0:must_answer_question:ok"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response",
+            "must_answer_question:ok"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": 1,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-ambiguous-drug",
+      "category": "clarify",
+      "wave": "casual-expressions",
+      "session_id": "1786112112410737776234",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "今飲んでるやつあるんだけど、他の薬一緒に飲める？",
+          "http_status": 200,
+          "elapsed_ms": 2045,
+          "diagnosis_kind": "concierge_clarify",
+          "response_snippet": "どのお薬同士の飲み合わせか教えていただけますか？お薬名が分かれば、こちらで一般的な情報をお伝えします。",
+          "response_full": "どのお薬同士の飲み合わせか教えていただけますか？お薬名が分かれば、こちらで一般的な情報をお伝えします。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response",
+        "t0:expects_clarify:ok"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response",
+            "expects_clarify:ok"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-travel-followup",
+      "category": "medicine_qa",
+      "wave": "casual-expressions",
+      "session_id": "1786112114727937553591",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "タイ旅行にロキソニン持っていきたい",
+          "http_status": 200,
+          "elapsed_ms": 8087,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。",
+          "response_full": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "空港で引っかかったりしない？",
+          "http_status": 200,
+          "elapsed_ms": 17181,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "この質問については、推奨医薬品の情報だけでは空港で問題になるかどうかを判断できません。一般に国内で通常量の市販薬を持ち込むだけで直ちに問題になるとは限りませんが、渡航先の国・持ち込み量・成分によって扱いが異なるため、お近くの登録販売者にご相談ください。",
+          "response_full": "この質問については、推奨医薬品の情報だけでは空港で問題になるかどうかを判断できません。一般に国内で通常量の市販薬を持ち込むだけで直ちに問題になるとは限りませんが、渡航先の国・持ち込み量・成分によって扱いが異なるため、お近くの登録販売者にご相談ください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": false,
+      "auto_notes": [
+        "t0:has_response",
+        "t1:global_rules_ok",
+        "t1:has_response",
+        "t1:must_answer_question:ok"
+      ],
+      "auto_failures": [
+        "t0:reject_no_reco",
+        "t0:reject_no_reco"
+      ],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": false,
+          "notes": [
+            "has_response"
+          ],
+          "failures": [
+            "reject_no_reco"
+          ],
+          "rule_ids": [
+            "reject_no_reco"
+          ],
+          "status": "fail",
+          "judge": {
+            "on_topic": 0.0,
+            "context_aware": 0.0,
+            "user_focus": 0.0,
+            "intent_fulfillment": 0.0,
+            "grade": "misaligned",
+            "pass": false,
+            "reason": "ユーザーの質問に対する具体的な回答がなく、意図を満たしていないため。"
+          },
+          "prompt_turns": 2,
+          "prompt_audit_ok": null
+        },
+        {
+          "turn_index": 1,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response",
+            "must_answer_question:ok"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": 2,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-patch-vs-pill",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786112142606912550683",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "筋肉痛、湿布と飲み薬どっちがいいの？",
+          "http_status": 200,
+          "elapsed_ms": 23388,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "トキワイブプロエースAはアリルイソプロピルアセチル尿素 NSAID 無水カフェイン（解熱鎮痛）、ネオノーラクAはアセトアミノフェン エテンザミド ブロモバレリル尿素 無水カフェイン（解熱鎮痛（炎症を伴う痛みはNSAIDsより弱いことが多い））、ズッキノンaはサリチル酸メチル ユーカリ油 l−メントール（解熱鎮痛）。まず主成分の系統（解熱鎮痛薬 / アセトアミノフェン）で絞り込むと選びやすくなります。",
+          "response_full": "トキワイブプロエースAはアリルイソプロピルアセチル尿素 NSAID 無水カフェイン（解熱鎮痛）、ネオノーラクAはアセトアミノフェン エテンザミド ブロモバレリル尿素 無水カフェイン（解熱鎮痛（炎症を伴う痛みはNSAIDsより弱いことが多い））、ズッキノンaはサリチル酸メチル ユーカリ油 l−メントール（解熱鎮痛）。まず主成分の系統（解熱鎮痛薬 / アセトアミノフェン）で絞り込むと選びやすくなります。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response",
+        "t0:must_answer_question:ok"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response",
+            "must_answer_question:ok"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": 1,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-insulin-ok",
+      "category": "medicine_thread",
+      "wave": "casual-expressions",
+      "session_id": "1786112166267567214732",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "インスリン打ってるけど風邪薬OK？",
+          "http_status": 200,
+          "elapsed_ms": 15499,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "インスリンを使用中でも風邪薬が絶対に使えないわけではありませんが、成分によっては血糖に影響したり、低血糖リスクに注意が必要です。今回の参照情報では、風邪薬や外用薬などに使われることがあるプロピレングリコールで低血糖に注意、またクロラムフェニコールではインスリンの血糖降下作用が強まることがあります。風邪薬は製品ごとに配合成分が異なるため、購入前に成分を確認し、お近くの登録販売者にご相談ください。",
+          "response_full": "インスリンを使用中でも風邪薬が絶対に使えないわけではありませんが、成分によっては血糖に影響したり、低血糖リスクに注意が必要です。今回の参照情報では、風邪薬や外用薬などに使われることがあるプロピレングリコールで低血糖に注意、またクロラムフェニコールではインスリンの血糖降下作用が強まることがあります。風邪薬は製品ごとに配合成分が異なるため、購入前に成分を確認し、お近くの登録販売者にご相談ください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response",
+        "t0:must_answer_question:ok"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response",
+            "must_answer_question:ok"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": 1,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-pet-wrong",
+      "category": "redirect",
+      "wave": "casual-expressions",
+      "session_id": "1786112182043402797007",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "うちの猫、人間の風邪薬あげていい？",
+          "http_status": 200,
+          "elapsed_ms": 3575,
+          "diagnosis_kind": "non_human_patient_redirect",
+          "response_snippet": "人間用の市販薬を犬や猫などのペットに使うことは、成分や用量が異なるため避けてください。ペットの症状がある場合は、獣医師に相談するのが安全です。緊急時はかかりつけの動物病院または夜間・休日の動物救急をご利用ください。",
+          "response_full": "人間用の市販薬を犬や猫などのペットに使うことは、成分や用量が異なるため避けてください。ペットの症状がある場合は、獣医師に相談するのが安全です。緊急時はかかりつけの動物病院または夜間・休日の動物救急をご利用ください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response",
+        "t0:must_answer_question:ok"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response",
+            "must_answer_question:ok"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-thanks-after-advice",
+      "category": "chitchat",
+      "wave": "casual-expressions",
+      "session_id": "1786112185898056690193",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "頭痛い",
+          "http_status": 200,
+          "elapsed_ms": 25041,
+          "diagnosis_kind": null,
+          "response_snippet": "頭痛いのですね、つらいですよね。イブやバファリンEXは、つらい頭痛に使いやすいお薬です。胃が弱い方や、他のお薬を飲んでいる場合は注意してください。発熱やのどの痛みもある、強い頭痛が急に出た、いつもと違う痛みなら受診も考えてください。妊娠中の可能性があればカロナールAが無難です。",
+          "response_full": "頭痛いのですね、つらいですよね。イブやバファリンEXは、つらい頭痛に使いやすいお薬です。胃が弱い方や、他のお薬を飲んでいる場合は注意してください。発熱やのどの痛みもある、強い頭痛が急に出た、いつもと違う痛みなら受診も考えてください。妊娠中の可能性があればカロナールAが無難です。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "ありがとう、助かった",
+          "http_status": 200,
+          "elapsed_ms": 10295,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "イブはNSAID（解熱鎮痛）、バファリンEXはロキソプロフェンナトリウム水和物 乾燥水酸化アルミニウムゲル（効き目が比較的早く・強めとされることが多い）、カロナールAはアセトアミノフェン（解熱鎮痛（炎症を伴う痛みはNSAIDsより弱いことが多い））。同系統の解熱鎮痛薬は同時期に重ねて使わないでください。",
+          "response_full": "イブはNSAID（解熱鎮痛）、バファリンEXはロキソプロフェンナトリウム水和物 乾燥水酸化アルミニウムゲル（効き目が比較的早く・強めとされることが多い）、カロナールAはアセトアミノフェン（解熱鎮痛（炎症を伴う痛みはNSAIDsより弱いことが多い））。同系統の解熱鎮痛薬は同時期に重ねて使わないでください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response",
+        "t1:global_rules_ok",
+        "t1:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        },
+        {
+          "turn_index": 1,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-emoji-symptom",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786112221768126489555",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "頭痛い😢",
+          "http_status": 200,
+          "elapsed_ms": 23641,
+          "diagnosis_kind": null,
+          "response_snippet": "頭痛いの、つらいですね😢 まずは無理せず休んで、水分をとってください。イブやバファリンEXはつらい頭痛に使いやすく、胃が弱い方は食後に。カロナールAは比較的使いやすい選択です。発熱やのどの痛みもある、急に強くなった、いつもと違う頭痛なら受診を。インフルエンザの流行時は特に注意してください。",
+          "response_full": "頭痛いの、つらいですね😢 まずは無理せず休んで、水分をとってください。イブやバファリンEXはつらい頭痛に使いやすく、胃が弱い方は食後に。カロナールAは比較的使いやすい選択です。発熱やのどの痛みもある、急に強くなった、いつもと違う頭痛なら受診を。インフルエンザの流行時は特に注意してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-english-mixed",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786112245683300482420",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "headache ひどい、薬ある？",
+          "http_status": 200,
+          "elapsed_ms": 14159,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "頭痛がひどいとのことですが、この画面の推奨医薬品情報が提示されていないため、どの市販薬を具体的におすすめできるか判断できません。お近くの登録販売者にご相談ください。なお、突然の激しい頭痛、発熱・首のこわばり、手足のしびれ、ろれつが回らない、意識がもうろうとする、頭をぶつけた後の頭痛がある場合は、早めに医療機関を受診してください。",
+          "response_full": "頭痛がひどいとのことですが、この画面の推奨医薬品情報が提示されていないため、どの市販薬を具体的におすすめできるか判断できません。お近くの登録販売者にご相談ください。なお、突然の激しい頭痛、発熱・首のこわばり、手足のしびれ、ろれつが回らない、意識がもうろうとする、頭をぶつけた後の頭痛がある場合は、早めに医療機関を受診してください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": 1,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-voice-hoarse-event",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786112260114184143167",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "ライブ叫びすぎて声出ない",
+          "http_status": 200,
+          "elapsed_ms": 15153,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "ライブで叫びすぎて声が出ない場合、推奨医薬品の「イブ」は主にのどの痛みがあるときの痛み止めとしては使えますが、声がかれる・出にくいこと自体を治す薬ではありません。声の酷使後はまず発声を控えてのどを休めることが大切で、強いのどの痛みがある場合に限って使用を検討できます。声が全く出ない、息苦しい、発熱がある、数日たっても改善しない場合は医療機関を受診してください。なお、声枯れに対する適切な市販薬の選択はこの情報だけでは十分に案内できないため、お近くの登録販売者にご相談ください。",
+          "response_full": "ライブで叫びすぎて声が出ない場合、推奨医薬品の「イブ」は主にのどの痛みがあるときの痛み止めとしては使えますが、声がかれる・出にくいこと自体を治す薬ではありません。声の酷使後はまず発声を控えてのどを休めることが大切で、強いのどの痛みがある場合に限って使用を検討できます。声が全く出ない、息苦しい、発熱がある、数日たっても改善しない場合は医療機関を受診してください。なお、声枯れに対する適切な市販薬の選択はこの情報だけでは十分に案内できないため、お近くの登録販売者にご相談ください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-sunburn-beach",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786112275539663345414",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "海行って真っ赤になった",
+          "http_status": 200,
+          "elapsed_ms": 5166,
+          "diagnosis_kind": "concierge_greeting",
+          "response_snippet": "海での日焼け、大変でしたね。赤くなってしまったお肌には、冷却効果のある市販薬が役立つかもしれませんよ。その他にも、頭痛やのどの痛みなどの症状についても気軽に相談してくださいね。",
+          "response_full": "海での日焼け、大変でしたね。赤くなってしまったお肌には、冷却効果のある市販薬が役立つかもしれませんよ。その他にも、頭痛やのどの痛みなどの症状についても気軽に相談してくださいね。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": 1,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-constipation-polite",
+      "category": "physical",
+      "wave": "casual-expressions",
+      "session_id": "1786112280983381193605",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "お通じが悪くて困っております",
+          "http_status": 200,
+          "elapsed_ms": 23951,
+          "diagnosis_kind": null,
+          "response_snippet": "お通じが悪くてつらいですね。便秘には、便を出しやすくする浣腸薬のミカサ浣腸N40・コトブキ浣腸40が使いやすいです。大柴胡湯はお腹の張りや便秘に合うことがあります。強い腹痛、吐き気、血便がある時は使わず受診してください。水分と食物繊維も意識してみてください。",
+          "response_full": "お通じが悪くてつらいですね。便秘には、便を出しやすくする浣腸薬のミカサ浣腸N40・コトブキ浣腸40が使いやすいです。大柴胡湯はお腹の張りや便秘に合うことがあります。強い腹痛、吐き気、血便がある時は使わず受診してください。水分と食物繊維も意識してみてください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": 1,
+          "prompt_audit_ok": null
+        }
+      ]
+    },
+    {
+      "scenario_id": "casual-anaphora-that-one",
+      "category": "medicine_thread",
+      "wave": "casual-expressions",
+      "session_id": "1786112305205063672203",
+      "turns": [
+        {
+          "turn_index": 0,
+          "user_message": "在宅で肩こり限界",
+          "http_status": 200,
+          "elapsed_ms": 22516,
+          "diagnosis_kind": null,
+          "response_snippet": "在宅で肩こりが限界なんですね、つらいですね。バンテリンコーワゲルLTやアンメルツゴールドEXNEO、ダイハップFRは、肩や首のこりに直接使いやすいです。まずは温めて軽く動かし、同じ姿勢を続けないようにしましょう。皮膚のかぶれ、傷、目の近くは避けてください。しびれや強い痛みが続く時は受診を。",
+          "response_full": "在宅で肩こりが限界なんですね、つらいですね。バンテリンコーワゲルLTやアンメルツゴールドEXNEO、ダイハップFRは、肩や首のこりに直接使いやすいです。まずは温めて軽く動かし、同じ姿勢を続けないようにしましょう。皮膚のかぶれ、傷、目の近くは避けてください。しびれや強い痛みが続く時は受診を。",
+          "transport": "post",
+          "error": ""
+        },
+        {
+          "turn_index": 1,
+          "user_message": "それ、胃弱い人でも大丈夫？",
+          "http_status": 200,
+          "elapsed_ms": 18676,
+          "diagnosis_kind": "medicine_qa",
+          "response_snippet": "胃が弱い方でも、今回の候補はいずれも肩こりに伴う肩の痛みに使う外用薬なので、一般に飲み薬よりは胃への負担は少ないと考えられます。特にバンテリンコーワゲルLT（インドメタシン）、アンメルツゴールドEXNEO（ジクロフェナクナトリウム）、ダイハップFR（フェルビナク）は患部に塗る・貼るタイプで、主な注意点は胃よりも皮膚刺激やかぶれです。ただし、アンメルツゴールドEXNEOの主成分ジクロフェナクでは悪心・嘔吐などの胃腸症状が副作用として知られているため、胃が弱くて心配な場合はまず少量で様子を見るか、お近くの登録販売者にご相談ください。",
+          "response_full": "胃が弱い方でも、今回の候補はいずれも肩こりに伴う肩の痛みに使う外用薬なので、一般に飲み薬よりは胃への負担は少ないと考えられます。特にバンテリンコーワゲルLT（インドメタシン）、アンメルツゴールドEXNEO（ジクロフェナクナトリウム）、ダイハップFR（フェルビナク）は患部に塗る・貼るタイプで、主な注意点は胃よりも皮膚刺激やかぶれです。ただし、アンメルツゴールドEXNEOの主成分ジクロフェナクでは悪心・嘔吐などの胃腸症状が副作用として知られているため、胃が弱くて心配な場合はまず少量で様子を見るか、お近くの登録販売者にご相談ください。",
+          "transport": "post",
+          "error": ""
+        }
+      ],
+      "auto_pass": true,
+      "auto_notes": [
+        "t0:global_rules_ok",
+        "t0:has_response",
+        "t1:global_rules_ok",
+        "t1:has_response",
+        "t1:must_reference_prior:ok",
+        "t1:must_answer_question:ok"
+      ],
+      "auto_failures": [],
+      "description": "",
+      "persona_id": "",
+      "intent_eval": {},
+      "judge": {},
+      "turn_evals": [
+        {
+          "turn_index": 0,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        },
+        {
+          "turn_index": 1,
+          "passed": true,
+          "notes": [
+            "global_rules_ok",
+            "has_response",
+            "must_reference_prior:ok",
+            "must_answer_question:ok"
+          ],
+          "failures": [],
+          "rule_ids": [],
+          "status": "pass",
+          "judge": {},
+          "prompt_turns": null,
+          "prompt_audit_ok": null
+        }
+      ]
+    }
+  ]
+}

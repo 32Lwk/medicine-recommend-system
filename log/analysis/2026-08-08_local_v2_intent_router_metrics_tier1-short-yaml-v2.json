@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "report_suffix": "tier1-short-yaml-v2",
+    "date": "2026-08-08",
+    "started_at": "2026-08-08T02:40:12.809861+00:00",
+    "elapsed_sec": 27.0,
+    "scenario_count": 3,
+    "total_turns": 3
+  },
+  "skipped": true
+}

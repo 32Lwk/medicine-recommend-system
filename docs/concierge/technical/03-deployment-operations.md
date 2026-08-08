@@ -40,7 +40,8 @@
 
 - **トリガー**: GitHub `main` push → CodeStar Connection → CodePipeline `medicine-recommend-main`
 - **ビルド**: CodeBuild `medicine-recommend-build` — `buildspec.yml` で Docker build（linux/amd64）→ ECR push
-- **デプロイ**: `ecs update-service --force-new-deployment` → ECS Express @ `aws.medicine.yutok.dev`
+- **デプロイ**: `ecs update-service --force-new-deployment` → ECS Fargate @ `origin-aws-medicine.yutok.dev`（Tunnel 経由）
+- **入口**: Cloudflare Worker @ `aws-medicine.yutok.dev`（Wake + プロキシ）
 - **post_build**（`scripts/codebuild-post-deploy.sh`）:
   1. `/health` で新 `git_commit` を待機（`services-stable` より早く実応答を確認）
   2. **条件付き** static S3 + CloudFront 同期（`static/` 変更時）
@@ -60,8 +61,12 @@
 
 ---
 
-## AWS ステージング（aws.medicine.yutok.dev）
+## AWS ステージング（aws-medicine.yutok.dev）
 
+> **2026-08-07**: ECS Express + ALB から **Fargate + Cloudflare Tunnel** へ移行。詳細: [AWS_FARGATE_TUNNEL.md](../../ops/AWS_FARGATE_TUNNEL.md)
+
+- **入口 URL**: `https://aws-medicine.yutok.dev`（Worker + Wake — **ブックマーク推奨**）
+- **オリジン**: `https://origin-aws-medicine.yutok.dev`（Tunnel）
 - **CI**: CodePipeline `medicine-recommend-main`
   1. GitHub Source（CodeStar Connection、`CODEBUILD_CLONE_REF` 推奨）
   2. CodeBuild `medicine-recommend-build` — Docker build → ECR push
@@ -69,7 +74,8 @@
   4. （任意）`start-managed-kb-ingestion.sh` — KB 変更時
 - **確認**: `GET /health` の `git_commit`、`GET /health/aws` の機能利用有無
 - **手動デプロイ**: `scripts/deploy-aws-ecs.sh`
-- **設定更新**: `scripts/update-aws-express-env.sh`（ECS Express — PassRole 不要）
+- **停止 / 再開**: `scripts/stop-aws-staging.sh` / `resume-aws-staging.sh`（通常は Worker wake で可）
+- **Cloud Run 型運用**: [AWS_WAKE_ON_ACCESS.md](../../ops/AWS_WAKE_ON_ACCESS.md)
 - **詳細**: [docs/ops/AWS_CODEPIPELINE.md](../../ops/AWS_CODEPIPELINE.md)
 
 ---

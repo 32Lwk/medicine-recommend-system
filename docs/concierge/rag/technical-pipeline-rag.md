@@ -227,3 +227,36 @@
 - 比較・副作用質問を症状 reco に入れないことで、LLM 創作薬名リスクを Physical 推奨本体から隔離
 - medicine_qa もブランド CSV 文脈 + 構造化回答。最終 reco スコアリングは CSV 正本
 - 関連: `08-technical-decisions.md`、`02-chat-pipeline-agents.md`
+
+## Q: 市販薬候補が 0 件（no_candidates）のときどう答えるか
+
+<!-- rag-keywords: no_candidates 候補なし 見つかりません physical_no_recommendation 該当する医薬品 -->
+
+**回答要点**
+
+- **What**: ルールベーススコアリングで CSV 候補 0 件 → `physical_no_recommendation`（Physical ルート維持）
+- **Why**: エラー表示だけでは route が unknown になり、ユーザーに文脈のない拒否に見える
+- **本文**: `physical_no_reco_guidance` が皮膚・耳鼻等のカテゴリ別に受診目安・追加質問を提示（**追加 LLM なし**）
+- **NLU 前置**: `refine_nlu_symptoms_from_context` で「炎症」等の汎用 NLU を原文から補正し、0 件率を下げる
+- **Trade-off**: 候補 0 でも Physical として丁寧に案内。実推奨リストはスコアリング改善で別途向上
+
+**この場合は別 doc を参照**
+
+- SSOT → `docs/dev/PHYSICAL_SYMPTOM_E2E.md`
+- パイプライン → `docs/dev/CHAT_PIPELINE_V2.md`
+
+## Q: 短文症状（蕁麻疹・耳が痛い等）のルーティング
+
+<!-- rag-keywords: 短文 症状 Physical triage 蕁麻疹 耳が痛い refine NLU -->
+
+**回答要点**
+
+- **Tier1 fast-path**: コールドスタート・≤80 文字・明示症状で LLM triage をスキップ可能
+- **Override**: Concierge greeting 誤判定時 `apply_explicit_symptom_triage_override` で Physical へ
+- **NLU 補正**: ユーザー原文から canonical 症状（耳の痛み・じんましん等）をルールで追加
+- **同義語**: スコアリングで 蕁麻疹 ↔ じんましん ↔ 発疹 を展開
+- **検証**: `v2_tier1_short_symptom.yaml` + physical YAML 10（2026-08-08: 13/13 PASS）
+
+**答えないこと**
+
+- 個別テスト用フレーズのハードコード一覧（実装はパターン一般化）

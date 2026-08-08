@@ -612,6 +612,13 @@ def rule_based_recommendation(
             nlu_result["user_body_part"] = user_body_part
             if DEBUG_MODE or logger.level <= logging.DEBUG:
                 logger.debug(f"部位情報を抽出: {user_body_part} (症状: {symptom_name})")
+
+    try:
+        from src.utils.symptom_helpers import refine_nlu_symptoms_from_context
+
+        nlu_result = refine_nlu_symptoms_from_context(user_text, nlu_result)
+    except ImportError:
+        pass
     
     # confidenceチェック（0.4未満の場合はGPTフォールバックを検討）
     confidence_score = nlu_result.get('confidence_score', 0.0)
@@ -1673,6 +1680,35 @@ def rule_based_recommendation(
         logger.debug(f"最終的な順序復元: original_rankに基づいて順序を復元: {len(validated_candidates)}件")
 
     _mark_rb_pipeline_step("rb_scoring_only_done")
+
+    if session_id and validated_candidates:
+        try:
+            from src.services.sse_emit import emit_cards
+
+            early_cards: list[dict] = []
+            for i, candidate in enumerate(validated_candidates[:3], 1):
+                early_cards.append(
+                    {
+                        "rank": i,
+                        "product_name": candidate.get("product_name", ""),
+                        "manufacturer": candidate.get("manufacturer", ""),
+                        "medicine_type": candidate.get("medicine_type", ""),
+                        "efficacy": candidate.get("efficacy", ""),
+                        "explanation": "",
+                        "display_score": candidate.get("display_score"),
+                        "relative_score": candidate.get("relative_score"),
+                        "score": candidate.get("final_score"),
+                        "score_level": candidate.get("score_level", ""),
+                        "completeness_penalty": completeness_penalty,
+                        "age_restriction": candidate.get("age_restriction", ""),
+                        "risk_warning": candidate.get("risk_warning") or "",
+                        "low_score_warning": bool(candidate.get("low_score_warning")),
+                    }
+                )
+            emit_cards(early_cards, session_id=session_id)
+            _mark_rb_pipeline_step("emit_cards_early")
+        except Exception:
+            logger.debug("early emit_cards skipped", exc_info=True)
 
     # ステップ6: 説明生成
     if DEBUG_MODE or logger.level <= logging.DEBUG:

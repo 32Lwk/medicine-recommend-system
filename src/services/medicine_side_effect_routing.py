@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re
-from typing import Optional
+from typing import Any, Optional
 
 from src.dialogue.routing.context_signals import (
     extract_drug_entities,
@@ -49,6 +49,44 @@ def resolve_side_effect_query_subject(text: str) -> Optional[str]:
     return extract_side_effect_subject(text) or (
         extract_drug_entities(text)[0] if extract_drug_entities(text) else None
     )
+
+
+def resolve_side_effect_subject_with_context(
+    text: str,
+    *,
+    session: Any = None,
+    sid: str | None = None,
+    conversation_history: list | None = None,
+) -> Optional[str]:
+    """副作用 Q&A 対象品目 — 発話内 → dialogue_state → 会話履歴の順。"""
+    subject = resolve_side_effect_query_subject(text)
+    if subject and subject.strip() != (text or "").strip():
+        return subject
+    try:
+        from src.dialogue.context import get_dialogue_thread_state
+
+        thread = get_dialogue_thread_state(session)
+        topic = thread.get("thread_topic")
+        if topic:
+            return str(topic)
+        products = thread.get("active_products") or []
+        if products:
+            return str(products[0])
+    except Exception:
+        pass
+    try:
+        from src.services.medicine_thread_context import collect_active_medicine_products
+
+        active = collect_active_medicine_products(
+            session,
+            sid=sid,
+            messages=conversation_history,
+        )
+        if active:
+            return str(active[0].get("product_name") or "")
+    except Exception:
+        pass
+    return subject
 
 
 def mentions_drowsiness_side_effect(text: str) -> bool:

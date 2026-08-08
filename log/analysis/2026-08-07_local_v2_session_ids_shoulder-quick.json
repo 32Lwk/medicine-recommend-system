@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "shoulder-quick",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-07T12:55:39.879780+00:00",
+    "elapsed_sec": 38.3,
+    "scenario_count": 1,
+    "total_turns": 2,
+    "auto_pass": 0,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "persona-freelance-shoulder",
+      "session_id": "1786107339892300462574",
+      "category": "medicine_thread",
+      "persona_id": "persona-freelance-shoulder",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

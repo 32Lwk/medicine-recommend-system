@@ -1,0 +1,1085 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 37,
+    "by_status": {
+      "401": 3,
+      "404": 34
+    },
+    "by_path": {
+      "GET /robots.txt (404)": 16,
+      "GET /api/main_session (404)": 10,
+      "GET /apple-touch-icon-precomposed.png (404)": 4,
+      "GET /apple-touch-icon.png (404)": 4,
+      "GET /api/main_sessions (401)": 3
+    },
+    "slow_endpoints_ge_5s": {
+      "GET /api/sessions": {
+        "count": 1722,
+        "min": 0.291,
+        "max": 16.246,
+        "avg": 0.709,
+        "median": 0.624,
+        "p95": 1.074
+      },
+      "PATCH /api/sessions/activity": {
+        "count": 841,
+        "min": 0.292,
+        "max": 16.328,
+        "avg": 0.849,
+        "median": 0.899,
+        "p95": 1.523
+      },
+      "GET /": {
+        "count": 39,
+        "min": 0.005,
+        "max": 29.7,
+        "avg": 6.454,
+        "median": 0.26,
+        "p95": 21.313
+      },
+      "GET /static/css/sage_terrace.css": {
+        "count": 11,
+        "min": 0.007,
+        "max": 22.178,
+        "avg": 2.06,
+        "median": 0.033,
+        "p95": 22.178
+      },
+      "GET /static/js/ui/safety_rail.js": {
+        "count": 15,
+        "min": 0.005,
+        "max": 15.832,
+        "avg": 1.156,
+        "median": 0.059,
+        "p95": 0.753
+      },
+      "GET /static/js/ui/tts_builder.js": {
+        "count": 16,
+        "min": 0.007,
+        "max": 13.068,
+        "avg": 0.913,
+        "median": 0.056,
+        "p95": 0.745
+      },
+      "POST /api/chat/stream": {
+        "count": 7,
+        "min": 12.001,
+        "max": 121.635,
+        "avg": 36.299,
+        "median": 19.619,
+        "p95": 121.635
+      },
+      "GET /static/favicon.ico.png": {
+        "count": 7,
+        "min": 0.02,
+        "max": 15.402,
+        "avg": 2.586,
+        "median": 0.62,
+        "p95": 15.402
+      },
+      "POST /line/webhook": {
+        "count": 19,
+        "min": 0.003,
+        "max": 21.735,
+        "avg": 4.689,
+        "median": 0.685,
+        "p95": 16.646
+      },
+      "GET /static/img/about/generated/about/demo/demo-ipad-product.png": {
+        "count": 1,
+        "min": 13.074,
+        "max": 13.074,
+        "avg": 13.074,
+        "median": 13.074,
+        "p95": 13.074
+      },
+      "GET /static/img/summer/%E3%81%B2%E3%81%BE%E3%82%8F%E3%82%8A.png": {
+        "count": 6,
+        "min": 0.013,
+        "max": 21.88,
+        "avg": 3.687,
+        "median": 0.058,
+        "p95": 21.88
+      },
+      "GET /static/img/about/generated/tech/icon-neon.png": {
+        "count": 1,
+        "min": 29.039,
+        "max": 29.039,
+        "avg": 29.039,
+        "median": 29.039,
+        "p95": 29.039
+      },
+      "GET /robots.txt": {
+        "count": 16,
+        "min": 0.084,
+        "max": 31.257,
+        "avg": 16.578,
+        "median": 16.239,
+        "p95": 21.36
+      },
+      "GET /static/img/summer/%E3%81%8F%E3%81%BE%E3%81%8B%E3%81%8D%E6%B0%B7.png": {
+        "count": 6,
+        "min": 0.007,
+        "max": 13.039,
+        "avg": 2.232,
+        "median": 0.097,
+        "p95": 13.039
+      },
+      "GET /static/img/about/generated/tech/icon-openai.png": {
+        "count": 1,
+        "min": 21.048,
+        "max": 21.048,
+        "avg": 21.048,
+        "median": 21.048,
+        "p95": 21.048
+      },
+      "GET /static/img/about/generated/tech/icon-deepl.png": {
+        "count": 1,
+        "min": 13.026,
+        "max": 13.026,
+        "avg": 13.026,
+        "median": 13.026,
+        "p95": 13.026
+      },
+      "GET /static/img/about/generated/about/hero/hero-pharmacy-chat.png": {
+        "count": 1,
+        "min": 13.045,
+        "max": 13.045,
+        "avg": 13.045,
+        "median": 13.045,
+        "p95": 13.045
+      },
+      "GET /admin": {
+        "count": 7,
+        "min": 0.008,
+        "max": 13.062,
+        "avg": 3.747,
+        "median": 0.04,
+        "p95": 13.062
+      },
+      "GET /apple-touch-icon-precomposed.png": {
+        "count": 4,
+        "min": 0.011,
+        "max": 16.091,
+        "avg": 4.237,
+        "median": 0.423,
+        "p95": 16.091
+      },
+      "GET /favicon.ico": {
+        "count": 5,
+        "min": 0.01,
+        "max": 15.501,
+        "avg": 3.186,
+        "median": 0.014,
+        "p95": 15.501
+      },
+      "GET /apple-touch-icon.png": {
+        "count": 4,
+        "min": 0.005,
+        "max": 16.252,
+        "avg": 4.161,
+        "median": 0.194,
+        "p95": 16.252
+      },
+      "GET /admin/login": {
+        "count": 4,
+        "min": 0.008,
+        "max": 21.081,
+        "avg": 5.346,
+        "median": 0.148,
+        "p95": 21.081
+      },
+      "GET /api/main_sessions": {
+        "count": 21,
+        "min": 0.003,
+        "max": 14.529,
+        "avg": 3.11,
+        "median": 1.195,
+        "p95": 8.158
+      },
+      "GET /api/main_manual_reply_queue": {
+        "count": 15,
+        "min": 0.427,
+        "max": 13.5,
+        "avg": 1.557,
+        "median": 0.624,
+        "p95": 1.915
+      }
+    },
+    "samples": [
+      {
+        "timestamp": "2026-07-29T12:38:28.657333Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 13.47223594,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00229-49q",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-29T12:40:24.048352Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.08363482,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00229-49q",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T10:09:04.494352Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 21.279235485,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00229-49q",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T10:32:23.524327Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.375412046,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00229-49q",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T10:32:23.525789Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.374986666,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00229-49q",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T23:43:06.989843Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 21.360061229,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00232-kvm",
+        "commit_sha": "038d1bedd36b571be2ee2e810801a5fa20aaafb2"
+      },
+      {
+        "timestamp": "2026-07-31T03:46:23.157627Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.471530784,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00232-kvm",
+        "commit_sha": "038d1bedd36b571be2ee2e810801a5fa20aaafb2"
+      },
+      {
+        "timestamp": "2026-07-31T03:46:23.158402Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.012575251,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00232-kvm",
+        "commit_sha": "038d1bedd36b571be2ee2e810801a5fa20aaafb2"
+      },
+      {
+        "timestamp": "2026-07-31T11:53:25.485702Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 21.320083618,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00233-cqb",
+        "commit_sha": "3da910f4ce7b6ba19b28c68565ddce7737176dc6"
+      },
+      {
+        "timestamp": "2026-08-01T01:08:19.960943Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 15.286665948,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00233-cqb",
+        "commit_sha": "3da910f4ce7b6ba19b28c68565ddce7737176dc6"
+      },
+      {
+        "timestamp": "2026-08-01T13:48:29.722013Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 14.68022739,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00235-wpc",
+        "commit_sha": "454d1702e7166c8152096904266299e2f1d7f9a8"
+      },
+      {
+        "timestamp": "2026-08-02T02:20:35.047304Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 15.083672336,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00235-wpc",
+        "commit_sha": "454d1702e7166c8152096904266299e2f1d7f9a8"
+      },
+      {
+        "timestamp": "2026-08-02T08:10:40.835281Z",
+        "status": 401,
+        "method": "GET",
+        "path": "/api/main_sessions",
+        "latency_s": 14.529466203,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00235-wpc",
+        "commit_sha": "454d1702e7166c8152096904266299e2f1d7f9a8"
+      },
+      {
+        "timestamp": "2026-08-02T08:10:53.257278Z",
+        "status": 401,
+        "method": "GET",
+        "path": "/api/main_sessions",
+        "latency_s": 0.033164328,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00235-wpc",
+        "commit_sha": "454d1702e7166c8152096904266299e2f1d7f9a8"
+      },
+      {
+        "timestamp": "2026-08-02T08:11:01.733203Z",
+        "status": 401,
+        "method": "GET",
+        "path": "/api/main_sessions",
+        "latency_s": 0.002928549,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00235-wpc",
+        "commit_sha": "454d1702e7166c8152096904266299e2f1d7f9a8"
+      },
+      {
+        "timestamp": "2026-08-02T14:57:33.413318Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 14.836838198,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00235-wpc",
+        "commit_sha": "454d1702e7166c8152096904266299e2f1d7f9a8"
+      },
+      {
+        "timestamp": "2026-08-02T15:37:32.783912Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/api/main_session",
+        "latency_s": 0.346864593,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00236-jgg",
+        "commit_sha": "f4967ecab5db8acd95bb438e76e90fdae9062e0e"
+      },
+      {
+        "timestamp": "2026-08-02T15:37:33.163016Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/api/main_session",
+        "latency_s": 0.354192982,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00236-jgg",
+        "commit_sha": "f4967ecab5db8acd95bb438e76e90fdae9062e0e"
+      },
+      {
+        "timestamp": "2026-08-02T15:37:52.396440Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/api/main_session",
+        "latency_s": 0.368575054,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00236-jgg",
+        "commit_sha": "f4967ecab5db8acd95bb438e76e90fdae9062e0e"
+      },
+      {
+        "timestamp": "2026-08-02T15:37:52.398013Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/api/main_session",
+        "latency_s": 0.331780383,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00236-jgg",
+        "commit_sha": "f4967ecab5db8acd95bb438e76e90fdae9062e0e"
+      },
+      {
+        "timestamp": "2026-08-03T04:06:49.260293Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 21.281776992,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00238-4cs",
+        "commit_sha": "647d073086d6bc10e2784bdc163601477978f143"
+      },
+      {
+        "timestamp": "2026-08-03T11:46:41.948587Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 16.090687767,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00238-4cs",
+        "commit_sha": "647d073086d6bc10e2784bdc163601477978f143"
+      },
+      {
+        "timestamp": "2026-08-03T11:46:41.950120Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 16.25185934,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00238-4cs",
+        "commit_sha": "647d073086d6bc10e2784bdc163601477978f143"
+      },
+      {
+        "timestamp": "2026-08-03T11:47:45.212132Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.011346374,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00238-4cs",
+        "commit_sha": "647d073086d6bc10e2784bdc163601477978f143"
+      },
+      {
+        "timestamp": "2026-08-03T11:47:45.240674Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.004591441,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00238-4cs",
+        "commit_sha": "647d073086d6bc10e2784bdc163601477978f143"
+      },
+      {
+        "timestamp": "2026-08-03T16:59:16.223008Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 16.506835558,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00238-4cs",
+        "commit_sha": "647d073086d6bc10e2784bdc163601477978f143"
+      },
+      {
+        "timestamp": "2026-08-04T06:00:46.840818Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 31.257362483,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00238-4cs",
+        "commit_sha": "647d073086d6bc10e2784bdc163601477978f143"
+      },
+      {
+        "timestamp": "2026-08-04T19:21:26.012551Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.251472726,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00245-pgm",
+        "commit_sha": "e3c16a6048b3dc4e93c5591defa72eaa1f51c553"
+      },
+      {
+        "timestamp": "2026-08-05T07:35:33.868814Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 21.251296229,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00245-pgm",
+        "commit_sha": "e3c16a6048b3dc4e93c5591defa72eaa1f51c553"
+      },
+      {
+        "timestamp": "2026-08-05T21:22:02.758691Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 21.331155129,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00245-pgm",
+        "commit_sha": "e3c16a6048b3dc4e93c5591defa72eaa1f51c553"
+      },
+      {
+        "timestamp": "2026-08-06T09:51:31.579325Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 15.970240877,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00250-dtf",
+        "commit_sha": "f908d0d6d8ed607b508b8008b61724f1329f607c"
+      },
+      {
+        "timestamp": "2026-08-06T14:09:47.529769Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/api/main_session",
+        "latency_s": 0.360897477,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00252-5xk",
+        "commit_sha": "40260f242a678367bfe5865d5e5aead5179ed385"
+      },
+      {
+        "timestamp": "2026-08-06T14:10:02.532130Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/api/main_session",
+        "latency_s": 0.327690333,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00252-5xk",
+        "commit_sha": "40260f242a678367bfe5865d5e5aead5179ed385"
+      },
+      {
+        "timestamp": "2026-08-06T14:10:17.534283Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/api/main_session",
+        "latency_s": 0.389840541,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00252-5xk",
+        "commit_sha": "40260f242a678367bfe5865d5e5aead5179ed385"
+      },
+      {
+        "timestamp": "2026-08-06T14:10:32.029404Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/api/main_session",
+        "latency_s": 0.330400786,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00252-5xk",
+        "commit_sha": "40260f242a678367bfe5865d5e5aead5179ed385"
+      },
+      {
+        "timestamp": "2026-08-06T14:10:47.023376Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/api/main_session",
+        "latency_s": 0.349831104,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00252-5xk",
+        "commit_sha": "40260f242a678367bfe5865d5e5aead5179ed385"
+      },
+      {
+        "timestamp": "2026-08-06T14:11:02.018439Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/api/main_session",
+        "latency_s": 0.336040832,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00252-5xk",
+        "commit_sha": "40260f242a678367bfe5865d5e5aead5179ed385"
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 131,
+    "top_patterns": [
+      {
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, i",
+        "count": 120
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/medicine_qa_focus_llm.py\", line 247, in enrich_medicine_qa_",
+        "count": 6
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/llm_triage.py\", line 613, in llm_triage\n    response = chat",
+        "count": 3
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/app/src/dialogue/routing/intent_router_llm.py\", line 298, in call_intent_rou",
+        "count": 2
+      }
+    ],
+    "samples": [
+      {
+        "timestamp": "2026-07-29T07:36:32.824031Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:32.954536Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:33.416555Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:33.416570Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:33.595314Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:33.595336Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:34.664490Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:34.664504Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:34.664516Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:35.149308Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:35.149323Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:35.149335Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:35.157365Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/llm_triage.py\", line 613, in llm_triage\n    response = chat_completion_create(\n               ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 236, in chat_completion_create\n    response, api_kind = _invoke_llm(\n                         ^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 220, in _invoke_llm\n    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), \"completions\"\n    ",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:37.929178Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:38.533705Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:38.676670Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:38.676685Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:39.158295Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:39.158309Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:39.740650Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:39.740667Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:39.740679Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:39.742672Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/medicine_qa_focus_llm.py\", line 247, in enrich_medicine_qa_focuses_llm\n    resp = chat_completion_create(\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 236, in chat_completion_create\n    response, api_kind = _invoke_llm(\n                         ^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 220, in _invoke_llm\n    return client.chat.completions.create(model=model, messages=messages, **chat_kwar",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:40.290014Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:40.290036Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:40.290054Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:40.291545Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/medicine_qa_focus_llm.py\", line 247, in enrich_medicine_qa_focuses_llm\n    resp = chat_completion_create(\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 236, in chat_completion_create\n    response, api_kind = _invoke_llm(\n                         ^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 220, in _invoke_llm\n    return client.chat.completions.create(model=model, messages=messages, **chat_kwar",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:41.035097Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:41.632853Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:41.632870Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:42.612209Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:42.612227Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:42.612242Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:42.614432Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/dialogue/routing/intent_router_llm.py\", line 298, in call_intent_router_llm\n    response = chat_completion_create(\n               ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 236, in chat_completion_create\n    response, api_kind = _invoke_llm(\n                         ^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 220, in _invoke_llm\n    return client.chat.completions.create(model=model, messages=messages, **chat_",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:43.032606Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:43.636309Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:43.636323Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:44.787643Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:44.787657Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:36:44.787672Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:00.721582Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:01.342485Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:01.342500Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:01.490009Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:01.695652Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:02.091373Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:02.091388Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:02.258147Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:02.258170Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:02.315151Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:02.315190Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:02.315208Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:02.317261Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/llm_triage.py\", line 613, in llm_triage\n    response = chat_completion_create(\n               ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 236, in chat_completion_create\n    response, api_kind = _invoke_llm(\n                         ^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 220, in _invoke_llm\n    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), \"completions\"\n    ",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:03.023041Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:03.023056Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:03.023069Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:03.287065Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:03.287086Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T07:37:03.287102Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:15.848049Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:16.033257Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:16.280347Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:16.438340Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:16.438365Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:16.669181Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:16.669205Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:17.289129Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:17.289153Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:17.672827Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:17.672862Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:17.672882Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:17.684186Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/medicine_qa_focus_llm.py\", line 247, in enrich_medicine_qa_focuses_llm\n    resp = chat_completion_create(\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 236, in chat_completion_create\n    response, api_kind = _invoke_llm(\n                         ^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 220, in _invoke_llm\n    return client.chat.completions.create(model=model, messages=messages, **chat_kwar",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:17.775277Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:17.775306Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:17.775328Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:17.935057Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:18.369673Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:18.369699Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:18.369720Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/openai/_base_client.py\", line 1037, in _request\n    response.raise_for_status()\n  File \"/usr/local/lib/python3.11/site-packages/httpx/_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '429 Too Many Requests' for url 'https://api.openai.com/v1/chat/completions'",
+        "revision": "medicine-recommend-dev-00229-49q"
+      },
+      {
+        "timestamp": "2026-07-29T09:36:18.371398Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/medicine_qa_focus_llm.py\", line 247, in enrich_medicine_qa_focuses_llm\n    resp = chat_completion_create(\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 236, in chat_completion_create\n    response, api_kind = _invoke_llm(\n                         ^^^^^^^^^^^^\n  File \"/app/src/core/llm_client.py\", line 220, in _invoke_llm\n    return client.chat.completions.create(model=model, messages=messages, **chat_kwar",
+        "revision": "medicine-recommend-dev-00229-49q"
+      }
+    ]
+  }
+}

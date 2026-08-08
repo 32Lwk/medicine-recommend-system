@@ -1,0 +1,54 @@
+{
+  "source_path": "D:\\Programing\\medicine-recommend\\log\\raw\\downloaded-logs-20260729-20260806-20260806-141635.json",
+  "source_name": "downloaded-logs-20260729-20260806-20260806-141635.json",
+  "entry_count": 17170,
+  "time_range": {
+    "start": "2026-07-29T04:31:15.447436Z",
+    "end": "2026-08-06T14:16:32.324205Z"
+  },
+  "services": {
+    "medicine-recommend-dev": 17170
+  },
+  "primary_service": "medicine-recommend-dev",
+  "revisions": {
+    "medicine-recommend-dev-00252-5xk": 3779,
+    "medicine-recommend-dev-00245-pgm": 3501,
+    "medicine-recommend-dev-00229-49q": 2963,
+    "medicine-recommend-dev-00235-wpc": 1924,
+    "medicine-recommend-dev-00238-4cs": 891,
+    "medicine-recommend-dev-00228-dsp": 589,
+    "medicine-recommend-dev-00253-sjx": 542,
+    "medicine-recommend-dev-00242-kp9": 480,
+    "medicine-recommend-dev-00233-cqb": 380,
+    "medicine-recommend-dev-00232-kvm": 268,
+    "medicine-recommend-dev-00243-2ns": 260,
+    "medicine-recommend-dev-00236-jgg": 241,
+    "medicine-recommend-dev-00250-dtf": 190,
+    "medicine-recommend-dev-00234-pll": 152,
+    "medicine-recommend-dev-00247-p99": 147,
+    "medicine-recommend-dev-00244-vn5": 142,
+    "medicine-recommend-dev-00241-9s4": 112,
+    "medicine-recommend-dev-00240-fv9": 76,
+    "medicine-recommend-dev-00246-9dk": 76,
+    "medicine-recommend-dev-00230-22x": 75
+  },
+  "commit_shas": {
+    "40260f242a678367bfe5865d5e5aead5179ed385": 3812,
+    "e909a8cea744d22cd96b3b995046ca352bf9266a": 3550,
+    "e3c16a6048b3dc4e93c5591defa72eaa1f51c553": 3499,
+    "454d1702e7166c8152096904266299e2f1d7f9a8": 1922,
+    "647d073086d6bc10e2784bdc163601477978f143": 889,
+    "5881bdb1d4191180f6478a5d589446081b142e74": 540,
+    "4e40f90cafcc3033b581a803b33523be934ff2e2": 478,
+    "3da910f4ce7b6ba19b28c68565ddce7737176dc6": 379,
+    "038d1bedd36b571be2ee2e810801a5fa20aaafb2": 267,
+    "3863207cf349d539f8d687caa8d4cd392d3f302f": 258
+  },
+  "severity_counts": {
+    "INFO": 3491,
+    "DEFAULT": 13486,
+    "NOTICE": 25,
+    "ERROR": 131,
+    "WARNING": 37
+  }
+}

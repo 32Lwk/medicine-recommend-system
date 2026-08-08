@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "report_suffix": "tier1-physical10-v2",
+    "date": "2026-08-08",
+    "started_at": "2026-08-08T02:40:12.810859+00:00",
+    "elapsed_sec": 137.2,
+    "scenario_count": 10,
+    "total_turns": 10
+  },
+  "skipped": true
+}

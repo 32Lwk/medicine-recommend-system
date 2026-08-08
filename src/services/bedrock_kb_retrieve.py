@@ -281,6 +281,7 @@ def build_medicine_retrieval_query(
     concomitant_medications: Optional[List[str]] = None,
     conversation_history: Optional[List[Dict[str, Any]]] = None,
     use_comprehend: bool = True,
+    rag_tier: Optional[str] = None,
 ) -> str:
     """Ask / Explanation 向け retrieve クエリ（製品名・症状・併用薬・Comprehend 薬剤名を合成）。"""
     parts: List[str] = []
@@ -293,6 +294,7 @@ def build_medicine_retrieval_query(
             cleaned,
             conversation_history,
             recommended_medicines=recommended_medicines,
+            rag_tier=rag_tier,  # type: ignore[arg-type]
         )
         if contextual:
             base = contextual
@@ -475,6 +477,7 @@ def retrieve_medicine_context(
     use_cache: bool = True,
     use_comprehend: bool = True,
     qa_focuses: Optional[List[str]] = None,
+    session: Any = None,
 ) -> Dict[str, Any]:
     """医薬品 Q&A / 説明補強用 KB retrieve。"""
     from config.aws_features import (
@@ -483,12 +486,26 @@ def retrieve_medicine_context(
         get_medicine_rag_provider,
         use_medicine_bedrock_kb_rag,
     )
-    from src.services.local_rag_context import normalize_conversation_history
+    from src.services.local_rag_context import (
+        normalize_conversation_history,
+        rag_tier_retrieve_params,
+        resolve_rag_tier,
+    )
 
     if get_medicine_rag_provider() == MEDICINE_RAG_NONE:
         return _empty_result()
 
     hist = normalize_conversation_history(conversation_history)
+    rag_tier = resolve_rag_tier(
+        query,
+        conversation_history=hist or None,
+        recommended_medicines=recommended_medicines,
+        session=session,
+    )
+    tier_params = rag_tier_retrieve_params(rag_tier)
+    effective_top_k = top_k if top_k != 5 else int(tier_params.get("top_k") or 5)
+    force_multi = bool(tier_params.get("force_multi_doc"))
+
     retrieval_query = build_medicine_retrieval_query(
         query,
         recommended_medicines,
@@ -496,6 +513,7 @@ def retrieve_medicine_context(
         concomitant_medications=concomitant_medications,
         conversation_history=hist or None,
         use_comprehend=use_comprehend,
+        rag_tier=rag_tier,
     )
     if not retrieval_query:
         return _empty_result()
@@ -520,16 +538,17 @@ def retrieve_medicine_context(
                 )
                 if f != "general"
             ]
-        if len(fs) >= 2 or "comparison" in fs:
+        if force_multi or len(fs) >= 2 or "comparison" in fs:
             multi_result = retrieve_medicine_docs_multi(
                 retrieval_query,
                 recommended_medicines=recommended_medicines,
                 focuses=fs,
                 conversation_history=hist or None,
-                max_docs=min(top_k, 4),
+                max_docs=min(effective_top_k, 4),
                 min_score=_min_kb_score(),
             )
             if multi_result.get("chunks"):
+                multi_result["rag_tier"] = rag_tier
                 return multi_result
 
         category = infer_medicine_category(
@@ -546,15 +565,18 @@ def retrieve_medicine_context(
         elif "interaction" in fs:
             category = "interaction"
 
-        return retrieve_local_context(
+        result = retrieve_local_context(
             retrieval_query,
             namespace="medicine",
-            top_k=top_k,
+            top_k=effective_top_k,
             min_score=_min_kb_score(),
             recommended_medicines=recommended_medicines,
             category=category,
             use_cache=use_cache,
         )
+        if isinstance(result, dict):
+            result["rag_tier"] = rag_tier
+        return result
 
     kb_id = get_bedrock_medicine_kb_id()
     if not kb_id:
@@ -563,13 +585,16 @@ def retrieve_medicine_context(
         )
         return _empty_result()
 
-    return retrieve_kb_context(
+    result = retrieve_kb_context(
         retrieval_query,
         kb_id=kb_id,
         cache_namespace="medicine",
-        top_k=top_k,
+        top_k=effective_top_k,
         use_cache=use_cache,
     )
+    if isinstance(result, dict):
+        result["rag_tier"] = rag_tier
+    return result
 
 
 def format_kb_context_block(

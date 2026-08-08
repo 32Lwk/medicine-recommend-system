@@ -134,14 +134,15 @@ def run_medicine_question_qa(
         return is_medicine_qa_generation_stale(session, sid, qa_generation)
 
     session_data = get_session_from_db(sid) if sid else {}
-    latest_recommended_medicines = []
-    for msg in reversed(session_data.get("messages", [])):
-        if msg.get("type") == "bot" and msg.get("diagnosis"):
-            diagnosis = msg.get("diagnosis", {})
-            if diagnosis.get("recommended_medicines"):
-                latest_recommended_medicines = diagnosis.get("recommended_medicines", [])
-                break
-    conversation_history = session_data.get("messages", [])[-10:]
+    messages = list(session_data.get("messages") or [])
+    from src.services.medicine_thread_context import resolve_session_recommended_medicines
+
+    latest_recommended_medicines = resolve_session_recommended_medicines(
+        session,
+        sid=sid,
+        messages=messages,
+    )
+    conversation_history = messages[-10:]
     user_attributes = session_data.get("user_attributes") or {}
 
     from src.services.medicine_qa_routing import needs_medicine_clarification

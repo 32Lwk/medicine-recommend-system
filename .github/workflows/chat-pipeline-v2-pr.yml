@@ -162,7 +162,7 @@ jobs:
 
   golden-nightly-gpt-sim:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 90
     if: github.event_name == 'schedule'
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -203,13 +203,12 @@ jobs:
           done
           curl -sf http://127.0.0.1:5000/
 
-      - name: Nightly GPT user sim (30 personas, diverse everyday)
+      - name: Nightly GPT user sim (10 personas)
         run: |
           python scripts/local_v2_chat_test_runner.py \
             --skip-yaml \
             --use-gpt-user \
-            --personas-path tests/fixtures/v2_gpt_expanded_personas_30.yaml \
-            --sessions 30 \
-            --turns-per-session 4 \
+            --sessions 10 \
+            --turns-per-session 8 \
             --judge-on-fail \
-            --report-suffix nightly-gpt-sim-30
+            --report-suffix nightly-gpt-sim

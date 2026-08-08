@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "date": "2026-08-07",
+    "report_suffix": "expanded-0807-v3",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-06T20:56:34.902849+00:00",
+    "elapsed_sec": 41.6,
+    "scenario_count": 2,
+    "total_turns": 4,
+    "auto_pass": 1,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "exp-concierge-pivot-01",
+      "session_id": "1786049794912876459446",
+      "category": "medicine_thread_casual",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "exp-store-after-reco-01",
+      "session_id": "1786049806933200233486",
+      "category": "store",
+      "persona_id": "",
+      "turns": 2,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

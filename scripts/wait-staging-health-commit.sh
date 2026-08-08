@@ -18,7 +18,7 @@ PRIMARY_URL="${AWS_STAGING_URL:-https://aws.medicine.yutok.dev}"
 PRIMARY_URL="${PRIMARY_URL%/}"
 FALLBACK_URL="${AWS_STAGING_FALLBACK_URL:-}"
 if [[ -z "$FALLBACK_URL" ]]; then
-  FALLBACK_URL="$(resolve_express_staging_url 2>/dev/null || true)"
+  FALLBACK_URL="$(resolve_staging_health_url 2>/dev/null || true)"
 fi
 FALLBACK_URL="${FALLBACK_URL%/}"
 

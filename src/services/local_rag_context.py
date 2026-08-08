@@ -68,6 +68,18 @@ def normalize_conversation_history(
 
 def _history_user_texts(history: Sequence[Dict[str, Any]], *, max_turns: int = 6) -> List[str]:
     texts: List[str] = []
+    try:
+        from src.services.medicine_thread_context import expand_messages_for_llm
+
+        expanded = expand_messages_for_llm(list(history), max_turns=max_turns)
+        for turn in expanded:
+            content = normalize_text(str(turn.get("content") or ""))
+            if content:
+                texts.append(content)
+        if texts:
+            return texts
+    except Exception:
+        pass
     for turn in normalize_conversation_history(history)[-max_turns:]:
         if turn.get("role") in _HISTORY_ROLES:
             content = normalize_text(str(turn.get("content") or ""))
@@ -125,6 +137,7 @@ def build_contextual_retrieval_query(
     *,
     recommended_medicines: Optional[List[Dict[str, Any]]] = None,
     use_llm: Optional[bool] = None,
+    rag_tier: Optional[RagTier] = None,
 ) -> str:
     """
     省略・指示語の follow-up を、会話履歴と推奨薬で自己完結クエリにする。
@@ -163,14 +176,8 @@ def build_contextual_retrieval_query(
 
     merged = expand_concepts(" ".join(parts).strip())
 
-    if use_llm is None:
-        use_llm = os.getenv("LOCAL_RAG_CONTEXT_LLM", "").strip().lower() in (
-            "1",
-            "true",
-            "yes",
-            "on",
-        )
-    if use_llm and prior_hist and needs_context_enrichment(cleaned, prior_hist):
+    llm_enabled = contextual_query_use_llm(rag_tier=rag_tier, use_llm=use_llm)
+    if llm_enabled and prior_hist and needs_context_enrichment(cleaned, prior_hist):
         rewritten = _llm_rewrite_query(cleaned, prior_hist, merged)
         if rewritten:
             return expand_concepts(rewritten)
@@ -224,4 +231,93 @@ def _llm_rewrite_query(
         return normalize_text(text.split("\n")[0][:300])
     except Exception as exc:
         logger.debug("local_rag_context LLM rewrite skipped: %s", exc)
-        return ""
+    return ""
+
+
+RagTier = str  # tier0 | tier1 | tier2 | none
+
+
+def resolve_rag_tier(
+    query: str,
+    *,
+    conversation_history: Optional[Sequence[Dict[str, Any]]] = None,
+    recommended_medicines: Optional[List[Dict[str, Any]]] = None,
+    session: Any = None,
+) -> RagTier:
+    """
+    RAG 検索深度 — Tier0: 品目ピン / Tier1: 曖昧・指示語 / Tier2: 比較。
+    """
+    cleaned = normalize_text(query or "")
+    if not cleaned:
+        return "none"
+
+    try:
+        from src.services.medicine_qa_routing import _has_comparison_intent
+
+        if _has_comparison_intent(
+            cleaned,
+            conversation_history=list(conversation_history or []),
+            recommended_medicines=list(recommended_medicines or []),
+        ) and len(recommended_medicines or []) >= 2:
+            return "tier2"
+    except Exception:
+        logger.debug("resolve_rag_tier comparison check skipped", exc_info=True)
+
+    if extract_brand_tokens(cleaned):
+        return "tier0"
+
+    try:
+        from src.services.medicine_qa_session_pins import get_session_brand_pins
+
+        if session is not None and get_session_brand_pins(session):
+            return "tier0"
+    except Exception:
+        pass
+
+    try:
+        from src.dialogue.context import get_dialogue_thread_state
+
+        thread = get_dialogue_thread_state(session)
+        if thread.get("active_products") and not extract_brand_tokens(cleaned):
+            hist = normalize_conversation_history(conversation_history)
+            if hist and needs_context_enrichment(cleaned, hist):
+                return "tier1"
+    except Exception:
+        logger.debug("resolve_rag_tier thread state skipped", exc_info=True)
+
+    hist = normalize_conversation_history(conversation_history)
+    if hist and needs_context_enrichment(cleaned, hist):
+        return "tier1"
+
+    return "tier0"
+
+
+def rag_tier_retrieve_params(tier: RagTier) -> dict[str, Any]:
+    """Tier 別 retrieve 深度 — Tier0=ピン / Tier1=文脈補完 / Tier2=比較 multi-doc。"""
+    if tier == "tier2":
+        return {"top_k": 4, "use_llm_rewrite": False, "force_multi_doc": True}
+    if tier == "tier1":
+        return {"top_k": 5, "use_llm_rewrite": True, "force_multi_doc": False}
+    if tier == "tier0":
+        return {"top_k": 3, "use_llm_rewrite": False, "force_multi_doc": False}
+    return {"top_k": 5, "use_llm_rewrite": False, "force_multi_doc": False}
+
+
+def contextual_query_use_llm(
+    *,
+    rag_tier: Optional[RagTier] = None,
+    use_llm: Optional[bool] = None,
+) -> bool:
+    """rag_tier が指定されていれば Tier 方針を優先。"""
+    if rag_tier == "tier0":
+        return False
+    if rag_tier == "tier1":
+        return True
+    if use_llm is not None:
+        return use_llm
+    return os.getenv("LOCAL_RAG_CONTEXT_LLM", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )

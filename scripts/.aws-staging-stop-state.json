@@ -1,0 +1,19 @@
+{
+  "stopped_at": "2026-08-06T19:23:55Z",
+  "reason": "Budget stop (reversible)",
+  "ecs": {
+    "cluster": "default",
+    "service": "medicine-recommend",
+    "previous_desired_count": 1,
+    "previous_min_capacity": 1,
+    "previous_max_capacity": 1
+  },
+  "codepipeline": {
+    "name": "medicine-recommend-main",
+    "disabled_transition": {
+      "stage": "Source",
+      "transition_type": "Outbound",
+      "reason": "Budget stop (reversible) - 2026-08-06T19:23Z"
+    }
+  }
+}

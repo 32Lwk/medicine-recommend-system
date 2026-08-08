@@ -2376,6 +2376,46 @@ function updateChatTitleFromSession(session, sessionId) {
     const sid = session && session.session_id ? session.session_id : sessionId;
     const name = resolveChatDisplayName(session);
     chatTitle.textContent = `${name} (${sid})`;
+    loadTurnTracePanel(sid, session);
+}
+
+function loadTurnTracePanel(sessionId, session) {
+    const panel = document.getElementById('turn-trace-panel');
+    if (!panel) return;
+    if (!sessionId || !isV2LocalTestSession(session || {})) {
+        panel.hidden = true;
+        panel.innerHTML = '';
+        return;
+    }
+    panel.hidden = false;
+    panel.innerHTML = '<div class="turn-trace-panel__loading">turn trace 読込中…</div>';
+    const normalizedId = normalizeLineSessionId(sessionId) || sessionId;
+    adminFetchJson('/api/admin/sessions/' + encodeURIComponent(normalizedId) + '/turn_trace')
+        .then(function (data) {
+            const traces = (data && data.traces) || [];
+            const thread = (data && data.dialogue_thread_state) || {};
+            if (!traces.length) {
+                panel.innerHTML = '<div class="turn-trace-panel__empty">turn trace なし（dialogue_turn_trace.jsonl）</div>';
+                return;
+            }
+            let html = '<details open class="turn-trace-panel__details"><summary>v2 turn trace (' + traces.length + ')</summary>';
+            html += '<div class="turn-trace-panel__thread">topic: ' + escapeHtml(String(thread.thread_topic || '—')) +
+                ' | goal: ' + escapeHtml(String(thread.last_user_goal || '—')) +
+                ' | products: ' + escapeHtml((thread.active_products || []).join(', ') || '—') + '</div>';
+            html += '<table class="turn-trace-panel__table"><thead><tr><th>#</th><th>route</th><th>goal</th><th>RAG</th><th>prompt</th><th>user</th></tr></thead><tbody>';
+            traces.forEach(function (row, i) {
+                html += '<tr><td>' + (i + 1) + '</td><td>' + escapeHtml(String(row.route || '')) + '</td>';
+                html += '<td>' + escapeHtml(String(row.user_goal || '')) + '</td>';
+                html += '<td>' + escapeHtml(String(row.rag_tier || '')) + '</td>';
+                html += '<td>' + escapeHtml(String(row.prompt_turns || '')) + '</td>';
+                html += '<td>' + escapeHtml(String(row.user_message || '').slice(0, 48)) + '</td></tr>';
+            });
+            html += '</tbody></table></details>';
+            panel.innerHTML = html;
+        })
+        .catch(function () {
+            panel.innerHTML = '<div class="turn-trace-panel__empty">turn trace の取得に失敗しました</div>';
+        });
 }
 
 function isLineSessionId(sessionId) {

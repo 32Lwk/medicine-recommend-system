@@ -1,0 +1,311 @@
+{
+  "revision_timeline": [
+    {
+      "timestamp": "2026-07-29T04:31:15.447436Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00228-dsp",
+      "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+    },
+    {
+      "timestamp": "2026-07-29T07:34:53.169804Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00229-49q",
+      "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:09.210959Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00229-49q",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-07-30T16:15:33.321510Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00230-22x",
+      "commit_sha": "d61ac6f9a11c097b88e564fd4fd11e5938c2d7db"
+    },
+    {
+      "timestamp": "2026-07-30T16:16:05.799384Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00230-22x",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-07-30T17:27:58.358091Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00231-n9d",
+      "commit_sha": "6e169ae3bce27695881679f274d4f2d178192e4d"
+    },
+    {
+      "timestamp": "2026-07-30T17:28:11.941202Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00231-n9d",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-07-30T17:57:52.732632Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00232-kvm",
+      "commit_sha": "038d1bedd36b571be2ee2e810801a5fa20aaafb2"
+    },
+    {
+      "timestamp": "2026-07-30T17:58:06.872303Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00232-kvm",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-07-31T04:09:06.748771Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00233-cqb",
+      "commit_sha": "3da910f4ce7b6ba19b28c68565ddce7737176dc6"
+    },
+    {
+      "timestamp": "2026-07-31T04:09:28.302719Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00233-cqb",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-01T07:07:19.097603Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00234-pll",
+      "commit_sha": "507d7cde37835936c0295709b187fa2a759cd881"
+    },
+    {
+      "timestamp": "2026-08-01T07:07:32.512862Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00234-pll",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-01T11:04:18.936096Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00235-wpc",
+      "commit_sha": "454d1702e7166c8152096904266299e2f1d7f9a8"
+    },
+    {
+      "timestamp": "2026-08-01T11:04:34.629791Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00235-wpc",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-02T15:32:58.310548Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00236-jgg",
+      "commit_sha": "f4967ecab5db8acd95bb438e76e90fdae9062e0e"
+    },
+    {
+      "timestamp": "2026-08-02T15:33:12.023632Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00236-jgg",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-02T17:10:15.694060Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00237-kw8",
+      "commit_sha": "ee97c22c105961a58cc0f5b256e916e02fecfb5e"
+    },
+    {
+      "timestamp": "2026-08-02T17:10:29.175329Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00237-kw8",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-02T17:19:11.016870Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00238-4cs",
+      "commit_sha": "647d073086d6bc10e2784bdc163601477978f143"
+    },
+    {
+      "timestamp": "2026-08-02T17:19:25.599730Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00238-4cs",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-04T07:43:54.306462Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00239-555",
+      "commit_sha": "43722e454f4d2963654af8c59e5b581e2fedf2c1"
+    },
+    {
+      "timestamp": "2026-08-04T07:44:07.773106Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00239-555",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-04T08:04:26.540847Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00240-fv9",
+      "commit_sha": "5324b5e52913880dd0bd85c0c8c0e4bb9c3ebd55"
+    },
+    {
+      "timestamp": "2026-08-04T08:04:40.703601Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00240-fv9",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-04T08:18:29.356065Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00241-9s4",
+      "commit_sha": "d6d48e18cb4c0c77cd92fb7cf09a55dceecb7622"
+    },
+    {
+      "timestamp": "2026-08-04T08:18:44.110497Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00241-9s4",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-04T08:28:18.282928Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00242-kp9",
+      "commit_sha": "4e40f90cafcc3033b581a803b33523be934ff2e2"
+    },
+    {
+      "timestamp": "2026-08-04T08:28:34.839179Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00242-kp9",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-04T17:31:15.903007Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00243-2ns",
+      "commit_sha": "3863207cf349d539f8d687caa8d4cd392d3f302f"
+    },
+    {
+      "timestamp": "2026-08-04T17:31:31.347994Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00243-2ns",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-04T18:10:31.135466Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00244-vn5",
+      "commit_sha": "7de029fa192018ee10a10b901aac33544ca208f4"
+    },
+    {
+      "timestamp": "2026-08-04T18:10:45.812767Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00244-vn5",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-04T18:31:38.589938Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00245-pgm",
+      "commit_sha": "e3c16a6048b3dc4e93c5591defa72eaa1f51c553"
+    },
+    {
+      "timestamp": "2026-08-04T18:31:53.228519Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00245-pgm",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-06T02:14:15.143666Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00246-9dk",
+      "commit_sha": "6a4075923cc8e12908e5ce31a29c96d8a3370bfd"
+    },
+    {
+      "timestamp": "2026-08-06T02:14:28.898291Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00246-9dk",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-06T02:27:52.181158Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00247-p99",
+      "commit_sha": "280df63f2cb3f89019feca0f98d6b897dc07a354"
+    },
+    {
+      "timestamp": "2026-08-06T02:28:07.783505Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00247-p99",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-06T04:19:52.570884Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00248-vqp",
+      "commit_sha": "5471c411fc0724b233f666444796b4363a109c6f"
+    },
+    {
+      "timestamp": "2026-08-06T04:20:07.670479Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00248-vqp",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-06T04:20:59.456122Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00249-msl",
+      "commit_sha": "5d5ea3f2d16892728f5103e7d789cd98fb723af7"
+    },
+    {
+      "timestamp": "2026-08-06T04:21:14.141365Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00249-msl",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-06T04:22:54.543614Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00250-dtf",
+      "commit_sha": "f908d0d6d8ed607b508b8008b61724f1329f607c"
+    },
+    {
+      "timestamp": "2026-08-06T04:23:09.464690Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00250-dtf",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-06T13:07:31.834390Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00251-87c",
+      "commit_sha": "40260f242a678367bfe5865d5e5aead5179ed385"
+    },
+    {
+      "timestamp": "2026-08-06T13:07:46.006100Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00251-87c",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-06T13:08:29.719714Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00252-5xk",
+      "commit_sha": "40260f242a678367bfe5865d5e5aead5179ed385"
+    },
+    {
+      "timestamp": "2026-08-06T13:08:44.484536Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00252-5xk",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-06T14:10:46.430838Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00253-sjx",
+      "commit_sha": "5881bdb1d4191180f6478a5d589446081b142e74"
+    },
+    {
+      "timestamp": "2026-08-06T14:11:02.125578Z",
+      "service": "medicine-recommend-dev",
+      "revision": "medicine-recommend-dev-00253-sjx",
+      "commit_sha": null
+    }
+  ],
+  "revision_count": 51
+}

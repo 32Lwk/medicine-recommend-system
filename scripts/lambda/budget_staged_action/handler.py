@@ -33,6 +33,8 @@ LOG_GROUP = os.environ.get("LOG_GROUP", f"/ecs/{PROJECT_PREFIX}")
 TARGET_CPU = os.environ.get("TARGET_CPU", "512")
 TARGET_MEMORY = os.environ.get("TARGET_MEMORY", "1024")
 LOG_RETENTION_DAYS = int(os.environ.get("LOG_RETENTION_DAYS", "7"))
+ECS_DEPLOY_MODE = os.environ.get("ECS_DEPLOY_MODE", "express")
+FARGATE_TASK_FAMILY = os.environ.get("FARGATE_TASK_FAMILY", "medicine-recommend-tunnel")
 
 SERVICE_ARN = (
     f"arn:aws:ecs:{REGION}:{ACCOUNT_ID}:service/{ECS_CLUSTER}/{ECS_SERVICE}"
@@ -74,7 +76,70 @@ def _logs():
     return boto3.client("logs", region_name=REGION)
 
 
+def _is_fargate_tunnel() -> bool:
+    return ECS_DEPLOY_MODE == "fargate_tunnel"
+
+
+def _latest_task_definition() -> dict[str, Any]:
+    ecs = _ecs()
+    return ecs.describe_task_definition(taskDefinition=FARGATE_TASK_FAMILY)["taskDefinition"]
+
+
+def _register_task_definition(td: dict[str, Any]) -> str:
+    ecs = _ecs()
+    for key in (
+        "taskDefinitionArn",
+        "revision",
+        "status",
+        "requiresAttributes",
+        "compatibilities",
+        "registeredAt",
+        "registeredBy",
+    ):
+        td.pop(key, None)
+    resp = ecs.register_task_definition(**td)
+    arn = resp["taskDefinition"]["taskDefinitionArn"]
+    ecs.update_service(
+        cluster=ECS_CLUSTER,
+        service=ECS_SERVICE,
+        taskDefinition=arn,
+        forceNewDeployment=True,
+    )
+    return arn
+
+
+def _app_container(td: dict[str, Any]) -> dict[str, Any]:
+    for container in td.get("containerDefinitions") or []:
+        if container.get("name") == "app":
+            return container
+    raise ValueError("app container not found in task definition")
+
+
 def action_downsize() -> dict[str, Any]:
+    if _is_fargate_tunnel():
+        td = _latest_task_definition()
+        current_cpu = str(td.get("cpu"))
+        current_memory = str(td.get("memory"))
+        if current_cpu == TARGET_CPU and current_memory == TARGET_MEMORY:
+            return {
+                "action": "downsize",
+                "status": "already_at_target",
+                "cpu": current_cpu,
+                "memory": current_memory,
+                "mode": "fargate_tunnel",
+            }
+        td["cpu"] = TARGET_CPU
+        td["memory"] = TARGET_MEMORY
+        arn = _register_task_definition(td)
+        return {
+            "action": "downsize",
+            "status": "updated",
+            "mode": "fargate_tunnel",
+            "taskDefinition": arn,
+            "from": {"cpu": current_cpu, "memory": current_memory},
+            "to": {"cpu": TARGET_CPU, "memory": TARGET_MEMORY},
+        }
+
     ecs = _ecs()
     resp = ecs.describe_express_gateway_service(serviceArn=SERVICE_ARN)
     cfg = resp["service"]["activeConfigurations"][0]
@@ -107,6 +172,33 @@ def action_downsize() -> dict[str, Any]:
 
 
 def action_minimal_env() -> dict[str, Any]:
+    if _is_fargate_tunnel():
+        td = _latest_task_definition()
+        app = _app_container(td)
+        env_map = {
+            e["name"]: e["value"]
+            for e in (app.get("environment") or [])
+            if e.get("name")
+        }
+        env_map["TRANSLATION_PROVIDER"] = "deepl"
+        env_map["CONCIERGE_RAG_PROVIDER"] = "local"
+        env_map["MEDICINE_RAG_PROVIDER"] = "local"
+        env_map["TTS_PROVIDER"] = "webspeech"
+        env_map["COMPREHEND_MEDICAL_ENABLED"] = "false"
+        env_map.setdefault("MEDICINE_IMAGE_CDN_BASE", "https://images.yutok.dev/otc/")
+        for key in (
+            "BEDROCK_KB_ID",
+            "BEDROCK_MEDICINE_KB_ID",
+            "BEDROCK_KB_SEARCH_MODE",
+            "REDIS_URL",
+            "PERSONALIZE_CAMPAIGN_ARN",
+            "PERSONALIZE_TRACKING_ID",
+        ):
+            env_map.pop(key, None)
+        app["environment"] = [{"name": k, "value": v} for k, v in sorted(env_map.items())]
+        arn = _register_task_definition(td)
+        return {"action": "minimal_env", "status": "applied", "mode": "fargate_tunnel", "taskDefinition": arn}
+
     ecs = _ecs()
     resp = ecs.describe_express_gateway_service(serviceArn=SERVICE_ARN)
     cfg = resp["service"]["activeConfigurations"][0]

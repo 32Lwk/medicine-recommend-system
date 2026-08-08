@@ -194,11 +194,13 @@ def _dispatch_physical(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
     gate_decision = resolve_medicine_qa_route(
         user_msg,
         session=ctx.session,
+        sid=ctx.sid,
         triage_result=ctx.triage_result,
         conversation_history=qa_ctx_early["conversation_history"],
         recommended_medicines=qa_ctx_early["recommended_medicines"],
         client=getattr(ctx, "recommendation_client", None),
     )
+    concierge_gate_handled = False
     if gate_decision.route == MedicineQaRoute.CONCIERGE:
         triage = dict(ctx.triage_result or {})
         if gate_decision.concierge_intent:
@@ -208,9 +210,15 @@ def _dispatch_physical(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
             session = ctx.session
             if session is not None:
                 session["last_triage_result"] = triage
+                disp = dict(session.get("_intent_router_dispatch") or {})
+                disp["primary_route"] = "Concierge"
+                disp["sub_route"] = gate_decision.concierge_intent or disp.get("sub_route")
+                session["_intent_router_dispatch"] = disp
         conc = _dispatch_concierge(ctx, monitor)
         if conc is not None:
             return conc
+        concierge_gate_handled = True
+        gate_decision = None
     elif gate_decision.route != MedicineQaRoute.MEDICINE_QA:
         gate_decision = None  # Physical / defer → medicine_qa ブロックをスキップ
 
@@ -233,13 +241,17 @@ def _dispatch_physical(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
         )
         from src.services.medicine_qa_eligibility import should_route_medicine_information_qa
 
-        medicine_info_qa = gate_decision is not None and (
+        medicine_info_qa = (
+            not concierge_gate_handled
+            and gate_decision is not None
+            and (
             sub == "medicine_qa"
             or is_medicine_information_question(
                 user_msg,
                 conversation_history=qa_ctx["conversation_history"],
                 recommended_medicines=qa_ctx["recommended_medicines"],
             )
+        )
         )
         if medicine_info_qa and should_route_medicine_information_qa(
             user_msg,
@@ -457,6 +469,49 @@ _DISPATCH_TABLE: dict[str, Callable[[Any, Any], Optional[ResponseTuple]]] = {
 }
 
 
+def _dispatch_medicine_inventory_if_needed(ctx: Any) -> Optional[ResponseTuple]:
+    """家に/うちにも/S表記 — Router/Concierge より medicine_qa を優先。"""
+    from src.handlers.chat.medicine_context_handlers import handle_medicine_information_qa
+    from src.services.medicine_qa_eligibility import (
+        MedicineQaRoute,
+        looks_like_medicine_thread_inventory_followup,
+        resolve_medicine_qa_route,
+    )
+    from src.services.medicine_qa_routing import get_medicine_qa_session_context
+
+    user_msg = ctx.sanitized_message or ctx.user_message or ""
+    qa_ctx = get_medicine_qa_session_context(ctx.session, ctx.sid)
+    if not looks_like_medicine_thread_inventory_followup(
+        user_msg,
+        session=ctx.session,
+        sid=ctx.sid,
+        conversation_history=qa_ctx["conversation_history"],
+        recommended_medicines=qa_ctx["recommended_medicines"],
+    ):
+        return None
+    gate = resolve_medicine_qa_route(
+        user_msg,
+        session=ctx.session,
+        sid=ctx.sid,
+        triage_result=ctx.triage_result,
+        conversation_history=qa_ctx["conversation_history"],
+        recommended_medicines=qa_ctx["recommended_medicines"],
+        client=getattr(ctx, "recommendation_client", None),
+    )
+    if gate.route != MedicineQaRoute.MEDICINE_QA:
+        return None
+    logger.info(
+        "💊 AgentDispatcher inventory override → medicine_qa source=%s",
+        gate.source,
+    )
+    return handle_medicine_information_qa(
+        ctx.session,
+        ctx.client_info,
+        ctx.sid,
+        ctx.original_user_message or user_msg,
+    )
+
+
 def try_agent_dispatch(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
     """
     IntentRouter 決定に従い legacy handler へ dispatch。
@@ -475,6 +530,11 @@ def try_agent_dispatch(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
         "handler": resolve_handler_name(decision),
     }
     ctx.session["_router_dispatch_attempted"] = True
+
+    inv_resp = _dispatch_medicine_inventory_if_needed(ctx)
+    if inv_resp is not None:
+        _log_dispatch(ctx, decision, handled=True)
+        return inv_resp
 
     dispatch_fn = _DISPATCH_TABLE.get(decision.primary_route)
     if dispatch_fn is None:

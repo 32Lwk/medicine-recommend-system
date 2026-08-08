@@ -82,6 +82,65 @@ resolve_target_group_arn() {
     --output text 2>/dev/null || true
 }
 
+FARGATE_TASK_FAMILY="${FARGATE_TASK_FAMILY:-medicine-recommend-tunnel}"
+
+_aws_common_root() {
+  if [[ -n "${ROOT:-}" ]]; then
+    printf '%s' "$ROOT"
+    return 0
+  fi
+  cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd
+}
+
+_fargate_deploy_mode_file() {
+  printf '%s/scripts/.aws-deploy-mode' "$(_aws_common_root)"
+}
+
+_fargate_tunnel_state_file() {
+  printf '%s/scripts/.aws-fargate-tunnel.json' "$(_aws_common_root)"
+}
+
+is_fargate_tunnel_mode() {
+  if [[ "${ECS_DEPLOY_MODE:-}" == "fargate_tunnel" ]]; then
+    return 0
+  fi
+  local mode_file state_file
+  mode_file="$(_fargate_deploy_mode_file)"
+  state_file="$(_fargate_tunnel_state_file)"
+  if [[ -f "$mode_file" ]] && [[ "$(tr -d '\r\n' < "$mode_file")" == "fargate_tunnel" ]]; then
+    return 0
+  fi
+  if [[ -f "$state_file" ]]; then
+    return 0
+  fi
+  return 1
+}
+
+resolve_tunnel_origin_url() {
+  local state_file
+  state_file="$(_fargate_tunnel_state_file)"
+  if [[ ! -f "$state_file" ]]; then
+    return 1
+  fi
+  python3 - "$state_file" <<'PY'
+import json, sys
+try:
+    data = json.load(open(sys.argv[1], encoding="utf-8"))
+    url = (data.get("origin_url") or "").rstrip("/")
+    if url:
+        print(url)
+except Exception:
+    pass
+PY
+}
+
+resolve_staging_health_url() {
+  if is_fargate_tunnel_mode; then
+    resolve_tunnel_origin_url 2>/dev/null && return 0
+  fi
+  resolve_express_staging_url 2>/dev/null || true
+}
+
 # ECS Express 既定 HTTPS エンドポイント（カスタムドメイン TLS 未設定時のフォールバック）
 resolve_express_staging_url() {
   local service_arn endpoint

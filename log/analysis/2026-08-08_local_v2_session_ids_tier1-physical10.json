@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "date": "2026-08-08",
+    "report_suffix": "tier1-physical10",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-08T02:35:26.109664+00:00",
+    "elapsed_sec": 189.6,
+    "scenario_count": 10,
+    "total_turns": 10,
+    "auto_pass": 9,
+    "use_gpt_user": false,
+    "gpt_scale": false,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "physical-symptom-01",
+      "session_id": "1786156526135936928124",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-02",
+      "session_id": "1786156547516243492722",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-03",
+      "session_id": "1786156568539965445828",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-04",
+      "session_id": "1786156588667175116322",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-05",
+      "session_id": "1786156611157264636763",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-06",
+      "session_id": "1786156634478457676144",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-07",
+      "session_id": "1786156651935379931684",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-08",
+      "session_id": "1786156671477089498188",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-09",
+      "session_id": "1786156688188751752599",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "physical-symptom-10",
+      "session_id": "1786156708413644615122",
+      "category": "physical",
+      "persona_id": "",
+      "turns": 1,
+      "auto_pass": false,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

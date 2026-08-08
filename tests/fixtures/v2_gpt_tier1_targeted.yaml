@@ -1,0 +1,50 @@
+# Tier1 検証用 targeted GPT ペルソナ（4×4=16t、コスト抑制）
+version: 2
+source: tier1-targeted-2026-08-08
+personas:
+  - id: gpt-correction-user
+    label: 症状訂正
+    category: tier1_correction
+    turns: 4
+    opening: 鼻水が止まらない
+    goal: 3ターン目「やっぱ咳の方がキツい」と訂正。再推奨を期待。
+    demographics:
+      age: "30代"
+      gender: male
+    system: |
+      口語。患者ロールのみ。
+
+  - id: gpt-allergy-check
+    label: アレルギー確認
+    category: tier1_allergen
+    turns: 4
+    opening: 蕁麻疹出た
+    goal: 初回Physical後、成分・卵アレルギーを確認。reject 不可。
+    demographics:
+      age: "30代"
+      gender: female
+    system: |
+      アレルギー心配。患者ロール。
+
+  - id: gpt-vague-to-specific
+    label: 曖昧→具体化
+    category: tier1_triage
+    turns: 4
+    opening: なんか調子悪い
+    goal: だんだん具体化。市販薬相談。
+    demographics:
+      age: "20代"
+    system: |
+      最初ぼんやり、後半具体化。
+
+  - id: gpt-implicit-short
+    label: 超短文指示語
+    category: tier1_anaphora
+    turns: 4
+    opening: のど痛い
+    goal: 推奨後「それ？」「平気？」「1番？」と超短文。
+    demographics:
+      age: "20代"
+      gender: male
+    system: |
+      極短文のみ多め。

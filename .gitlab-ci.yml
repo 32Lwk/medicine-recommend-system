@@ -27,6 +27,8 @@ dialogue-contract-tests:
   extends: .chat-pipeline-v2-test
   script:
     - python scripts/check_w1a_scope.py
+    - python scripts/validate_e2e_corpus.py
+    - pytest tests/analysis/test_e2e_corpus_builder.py tests/routing/test_medicine_qa_route_pivot.py tests/services/test_medicine_thread_context.py -q --tb=short
     - pytest tests/dialogue/ tests/contract/ tests/chat/test_chat_post_pipeline_v2.py tests/handlers/test_chat_post_pipeline_sync.py tests/analysis/test_intent_router_log_analysis.py tests/dialogue/routing/ tests/handlers/test_nlu_resolve_v2_history.py tests/services/test_line_memory_context_v2.py tests/services/test_chat_response_service_v2.py tests/routing/test_routing_context.py -q --tb=short
 
 local-rag-retrieve-eval:

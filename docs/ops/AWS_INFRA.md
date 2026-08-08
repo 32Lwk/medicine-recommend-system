@@ -1,8 +1,10 @@
-# AWS Phase 1 インフラ（CloudWatch / WAF / CloudFront）
+# AWS Phase 1 インフラ（CloudWatch / CloudFront / Fargate Tunnel）
 
-AWS ステージング `aws.medicine.yutok.dev` 向け。GCP 本番には **env を設定しない**。
+AWS ステージング `aws-medicine.yutok.dev` / `aws.medicine.yutok.dev` 向け。GCP 本番には **env を設定しない**。
 
-**CLI プロファイル**: すべての `scripts/setup-aws-*.sh` は [scripts/lib/aws_common.sh](../../scripts/lib/aws_common.sh) 経由で **`medicine-recommend-dev`** を既定にします（`~/.aws/credentials`）。PowerShell では `. .\scripts\aws-env.ps1` を先に実行。
+> **2026-08-07**: ランタイム入口は **ECS Express + ALB + WAF** から **Fargate + Cloudflare Tunnel** に移行。WAF / ALB はステージング入口から **削除済**。詳細: [AWS_FARGATE_TUNNEL.md](./AWS_FARGATE_TUNNEL.md)
+
+**CLI プロファイル**: 新アカウント作業は `AWS_PROFILE=default`（`620992446973`）。旧バックアップは `medicine-recommend-dev`（`290780119994`）。`scripts/lib/aws_common.sh` 参照。
 
 ## 一括セットアップ
 
@@ -17,11 +19,13 @@ chmod +x scripts/setup-aws-infra.sh scripts/setup-aws-*.sh scripts/sync-static-t
 | スクリプト | 内容 |
 |-----------|------|
 | [setup-aws-cloudwatch.sh](../../scripts/setup-aws-cloudwatch.sh) | Log Group `/ecs/medicine-recommend`、ECS awslogs、CPU/5xx/Pipeline アラーム |
-| [setup-aws-waf.sh](../../scripts/setup-aws-waf.sh) | WAF Web ACL（Rate limit + CommonRuleSet）→ ALB |
+| ~~setup-aws-waf.sh~~ | **レガシー** — Express+ALB 時代。Tunnel 移行後は入口 WAF 不要 |
+| [setup-aws-fargate-tunnel.sh](../../scripts/setup-aws-fargate-tunnel.sh) | **Fargate + cloudflared** ECS サービス（ALB なし） |
 | [setup-aws-cloudfront.sh](../../scripts/setup-aws-cloudfront.sh) | S3 + CloudFront + `static/` 同期 |
 | [sync-static-to-s3.sh](../../scripts/sync-static-to-s3.sh) | デプロイ後の static 再同期（`--invalidate` で CF キャッシュ削除） |
 | [setup-aws-ecs-secrets.sh](../../scripts/setup-aws-ecs-secrets.sh) | Secrets + ECS env（**Classic ECS 向け**。Express は下記） |
-| [update-aws-express-env.sh](../../scripts/update-aws-express-env.sh) | **ECS Express** env マージ（PassRole 不要） |
+| [update-aws-express-env.sh](../../scripts/update-aws-express-env.sh) | **レガシー** — ECS Express env（移行前） |
+| [migrate-aws-express-to-fargate-tunnel.sh](../../scripts/migrate-aws-express-to-fargate-tunnel.sh) | Express → Fargate + Tunnel 一括移行 |
 
 共通設定: [scripts/lib/aws_common.sh](../../scripts/lib/aws_common.sh)（Git Bash では `MSYS2_ARG_CONV_EXCL=*` で `/ecs/` パス変換を無効化）
 
@@ -70,14 +74,16 @@ Permission Boundary がある場合は `wafv2:*`, `cloudfront:*`, `logs:*` が�
 ## 検証
 
 ```bash
-curl -sI https://aws.medicine.yutok.dev/health
+curl -s https://aws-medicine.yutok.dev/health
+curl -s https://origin-aws-medicine.yutok.dev/health
 # CloudFront 設定後（ブラウザ DevTools）:
 #   /static/css/main.css が cloudfront.net または STATIC_CDN_BASE_URL から読み込まれる
 ```
 
 ## 関連
 
-- [AWS_CODEPIPELINE.md](./AWS_CODEPIPELINE.md)
+- [AWS_FARGATE_TUNNEL.md](./AWS_FARGATE_TUNNEL.md) — **移行後 SSOT**
+- [AWS_WAKE_ON_ACCESS.md](./AWS_WAKE_ON_ACCESS.md) — Cloud Run 型運用
 - [AWS_FEATURES_ROLLOUT.md](./AWS_FEATURES_ROLLOUT.md)
 - Phase 3: `scripts/setup-aws-bedrock-kb.sh`, `scripts/sync-concierge-kb-to-s3.sh`
 - Phase 4: `scripts/setup-aws-elasticache.sh`, `scripts/setup-aws-personalize.sh`

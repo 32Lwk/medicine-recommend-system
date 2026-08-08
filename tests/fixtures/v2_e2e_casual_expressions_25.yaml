@@ -1,0 +1,346 @@
+version: 2
+source: casual-expressions-e2e-2026-08-07
+count: 25
+description: 日常口語・方言・曖昧表現 E2E — turn_expects は拒否禁止・質問応答・文脈参照を一般化評価。
+scenarios:
+- id: casual-headache-vague
+  category: physical
+  wave: casual-expressions
+  input: なんか頭痛いんだけど
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-throat-igagiga
+  category: physical
+  wave: casual-expressions
+  input: 喉イガイガするんですけど
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-nose-runny-slang
+  category: physical
+  wave: casual-expressions
+  input: めっちゃ鼻水止まらん
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-hangover-yabai
+  category: medicine_thread
+  wave: casual-expressions
+  setup: [二日酔いやばい、頭割れそう]
+  input: さっき言われたやつ、お酒飲んだあとでも飲める？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+  - turn: 1
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not: [greeting_only]
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 2
+
+- id: casual-kansai-cold
+  category: physical
+  wave: casual-expressions
+  input: 風邪っぽいんやけど、市販薬何がええ？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-mom-medicine
+  category: medicine_thread
+  wave: casual-expressions
+  input: 母ちゃん血圧の薬飲んでて、風邪薬一緒に飲んでも平気？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-stomach-weak-followup
+  category: medicine_thread
+  wave: casual-expressions
+  setup: [肩こりひどくて限界]
+  input: 1番目ので胃弱いけど大丈夫？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+  - turn: 1
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_reference_prior: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 2
+
+- id: casual-correction-cough
+  category: physical
+  wave: casual-expressions
+  setup: [鼻水が止まらない]
+  input: いや、やっぱ咳の方がキツいわ
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+  - turn: 1
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not: [greeting_only]
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 2
+
+- id: casual-help-headache-not-crisis
+  category: physical
+  wave: casual-expressions
+  input: 助けて…頭痛すぎて仕事にならない
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_not_contain: [推奨医薬品の情報では回答できません, 相談窓口のご案内]
+  expect:
+    min_turns: 1
+
+- id: casual-palpitation-coffee
+  category: chitchat
+  wave: casual-expressions
+  input: コーヒー飲みすぎてなんかドキドキする
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-pollen-itchy-eye
+  category: physical
+  wave: casual-expressions
+  input: 目が痒い、花粉症かもしれない
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-insomnia-casual
+  category: chitchat
+  wave: casual-expressions
+  input: 最近全然寝れないんだよね
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-child-fever-short
+  category: physical
+  wave: casual-expressions
+  input: 子供38度ある、市販薬いい？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-ambiguous-drug
+  category: clarify
+  wave: casual-expressions
+  input: 今飲んでるやつあるんだけど、他の薬一緒に飲める？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      expects_clarify: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-travel-followup
+  category: medicine_qa
+  wave: casual-expressions
+  setup: [タイ旅行にロキソニン持っていきたい]
+  input: 空港で引っかかったりしない？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+  - turn: 1
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not: [greeting_only]
+  expect:
+    min_turns: 2
+
+- id: casual-patch-vs-pill
+  category: physical
+  wave: casual-expressions
+  input: 筋肉痛、湿布と飲み薬どっちがいいの？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-insulin-ok
+  category: medicine_thread
+  wave: casual-expressions
+  input: インスリン打ってるけど風邪薬OK？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain: [推奨医薬品の情報では回答できません, 緊急事案が検出]
+  expect:
+    min_turns: 1
+
+- id: casual-pet-wrong
+  category: redirect
+  wave: casual-expressions
+  input: うちの猫、人間の風邪薬あげていい？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-thanks-after-advice
+  category: chitchat
+  wave: casual-expressions
+  setup: [頭痛い]
+  input: ありがとう、助かった
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+  - turn: 1
+    expect:
+      must_have_response: true
+      must_not: [greeting_only]
+  expect:
+    min_turns: 2
+
+- id: casual-emoji-symptom
+  category: physical
+  wave: casual-expressions
+  input: 頭痛い😢
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-english-mixed
+  category: physical
+  wave: casual-expressions
+  input: headache ひどい、薬ある？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-voice-hoarse-event
+  category: physical
+  wave: casual-expressions
+  input: ライブ叫びすぎて声出ない
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_not_contain: [推奨医薬品の情報では回答できません, sage_reco]
+  expect:
+    min_turns: 1
+
+- id: casual-sunburn-beach
+  category: physical
+  wave: casual-expressions
+  input: 海行って真っ赤になった
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-constipation-polite
+  category: physical
+  wave: casual-expressions
+  input: お通じが悪くて困っております
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 1
+
+- id: casual-anaphora-that-one
+  category: medicine_thread
+  wave: casual-expressions
+  setup: [在宅で肩こり限界]
+  input: それ、胃弱い人でも大丈夫？
+  turn_expects:
+  - turn: 0
+    expect:
+      must_have_response: true
+  - turn: 1
+    expect:
+      must_have_response: true
+      must_answer_question: true
+      must_reference_prior: true
+      must_not_contain: [推奨医薬品の情報では回答できません]
+  expect:
+    min_turns: 2

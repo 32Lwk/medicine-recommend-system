@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from src.services.medicine_side_effect_routing import (
     mentions_drowsiness_side_effect,
     resolve_side_effect_query_subject,
+    resolve_side_effect_subject_with_context,
 )
 from src.services.medicine_side_effect_section import (
     build_side_effect_section,
@@ -37,6 +38,19 @@ def _try_kb_fallback(
         from src.services.bedrock_kb_retrieve import retrieve_medicine_context
 
         query = f"{product_name} 副作用 {user_message}"
+        try:
+            from src.services.local_rag_context import build_contextual_retrieval_query
+
+            contextual = build_contextual_retrieval_query(
+                query,
+                conversation_history,
+                recommended_medicines=recommended_medicines
+                or [{"product_name": product_name}],
+            )
+            if contextual:
+                query = contextual
+        except Exception:
+            pass
         kb = retrieve_medicine_context(
             query,
             recommended_medicines=recommended_medicines
@@ -88,7 +102,12 @@ def handle_medicine_side_effect_qa(
 
         return handle_medicine_information_qa(session, client_info, sid, user_message)
 
-    subject = resolve_side_effect_query_subject(user_message) or user_message
+    subject = resolve_side_effect_subject_with_context(
+        user_message,
+        session=session,
+        sid=sid,
+        conversation_history=conversation_history,
+    ) or user_message
     products = find_products_for_side_effect(subject)
     product_name = (
         str(products[0].get("product_name") or subject)

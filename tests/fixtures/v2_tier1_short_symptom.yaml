@@ -1,0 +1,32 @@
+# Tier1 短文症状 rule triage 検証（固定 YAML・GPT sim なし）
+version: 1
+scenarios:
+  - id: tier1-short-urticaria
+    category: physical
+    wave: tier1
+    input: 蕁麻疹出た
+    expect:
+      primary_route: Physical
+      must_not:
+        - response_missing
+        - reject_no_reco
+      must_not_contain:
+        - 推奨医薬品の情報では回答できません
+
+  - id: tier1-short-cough
+    category: physical
+    wave: tier1
+    input: 咳がひどい
+    expect:
+      primary_route: Physical
+      must_not:
+        - response_missing
+
+  - id: tier1-short-fever-child
+    category: physical
+    wave: tier1
+    input: 子供熱出た
+    expect:
+      primary_route: Physical
+      must_not:
+        - response_missing

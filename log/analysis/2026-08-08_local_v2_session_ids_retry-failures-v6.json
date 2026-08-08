@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "date": "2026-08-08",
+    "report_suffix": "retry-failures-v6",
+    "base_url": "http://127.0.0.1:5000/",
+    "started_at": "2026-08-07T16:20:59.259798+00:00",
+    "elapsed_sec": 268.8,
+    "scenario_count": 3,
+    "total_turns": 8,
+    "auto_pass": 2,
+    "use_gpt_user": true,
+    "gpt_scale": true,
+    "v2_enabled": true
+  },
+  "sessions": [
+    {
+      "scenario_id": "gpt-gpt-sports-prep",
+      "session_id": "1786119811420206556608",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-sports-prep",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    },
+    {
+      "scenario_id": "gpt-gpt-allergy-check",
+      "session_id": "1786119887654675972636",
+      "category": "gpt_diverse",
+      "persona_id": "gpt-allergy-check",
+      "turns": 4,
+      "auto_pass": true,
+      "admin_url": "http://127.0.0.1:5000/admin"
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+version: 1
+source: context-intent-e2e-2026-08-06
+count: 12
+scenarios:
+- id: ctx-abdominal-timeout-01
+  category: physical_context
+  wave: regression
+  input: お腹が痛い
+  description: 腹痛推奨が120秒以内に返る（KB citation タイムアウト回帰）
+  expect:
+    primary_route: Physical
+    must_have_response: true
+    must_not:
+    - response_missing
+
+- id: ctx-loxonin-followup-home-01
+  category: medicine_thread
+  wave: regression
+  input: 家にもあります
+  setup:
+  - ロキソニンの写真を見せてください
+  description: ロキソニン画像QA後の「家にもあります」は greeting ではなく医薬品フォロー
+  expect:
+    primary_route: Physical
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+    must_not_contain:
+    - お話しできて良かった
+    context_keywords:
+    - ロキソニン
+
+- id: ctx-loxonin-followup-s-variant-01
+  category: medicine_thread
+  wave: regression
+  input: Sはついていません
+  setup:
+  - ロキソニンの写真を見せてください
+  - 家にもあります
+  description: 製剤Sの有無確認は医薬品スレッド継続（会話終了テンプレ禁止）
+  expect:
+    primary_route: Physical
+    must_have_response: true
+    min_turns: 3
+    must_not:
+    - greeting_only
+    must_not_contain:
+    - お話しできて良かった
+    context_keywords:
+    - ロキソニン
+
+- id: ctx-loxonin-followup-s-found-01
+  category: medicine_thread
+  wave: regression
+  input: 見てみたらSがついていました
+  setup:
+  - ロキソニンの写真を見せてください
+  - 家にもあります
+  - Sはついていません
+  description: S表記の訂正報告もロキソニン文脈を維持（azのど等への誤参照禁止）
+  expect:
+    primary_route: Physical
+    must_have_response: true
+    min_turns: 4
+    must_not:
+    - greeting_only
+    must_not_contain:
+    - お話しできて良かった
+    - azのど
+    context_keywords:
+    - ロキソニン
+
+- id: ctx-loxonin-side-effect-01
+  category: medicine_thread
+  wave: regression
+  input: 眠くなりますか？
+  setup:
+  - ロキソニンって何？
+  description: 副作用追質問は sleep symptom reco にエスカレートしない
+  expect:
+    primary_route: Physical
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+    context_keywords:
+    - ロキソニン
+
+- id: ctx-reco-followup-compare-01
+  category: medicine_thread
+  wave: regression
+  input: どっちがいい？
+  setup:
+  - 頭が痛い
+  description: 推奨後の比較質問は Physical/QA 文脈維持
+  expect:
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+
+- id: ctx-insomnia-duration-01
+  category: counseling_context
+  wave: regression
+  input: 2週間くらいです
+  setup:
+  - 最近眠れません
+  description: 不眠カウンセリングの期間フォローアップ
+  expect:
+    primary_route: Counseling
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+
+- id: ctx-concierge-followup-01
+  category: concierge_followup
+  wave: regression
+  input: もっと詳しく
+  setup:
+  - 技術スタックは？
+  description: Concierge フォローは greeting のみにならない
+  expect:
+    primary_route: Concierge
+    must_not:
+    - greeting_only
+    context_keywords:
+    - API
+
+- id: ctx-ambiguous-ack-01
+  category: medicine_thread
+  wave: regression
+  input: そうなんです
+  setup:
+  - ロキソニンとイブの違いは？
+  description: 曖昧な相づちも医薬品スレッド継続
+  expect:
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+
+- id: ctx-warafin-followup-01
+  category: medicine_thread
+  wave: regression
+  input: それと一緒に飲んでも大丈夫？
+  setup:
+  - 今ロキソニンを飲んでいます
+  description: 代名詞「それ」で併用質問 — ロキソニン文脈
+  expect:
+    primary_route: Physical
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
+    context_keywords:
+    - ロキソニン
+
+- id: ctx-fever-followup-01
+  category: physical_context
+  wave: regression
+  input: 38.5度です
+  setup:
+  - 熱があります
+  description: 発熱フォローアップで体温報告
+  expect:
+    primary_route: Physical
+    must_have_response: true
+    min_turns: 2
+
+- id: ctx-thanks-not-greeting-01
+  category: medicine_thread
+  wave: regression
+  input: ありがとう
+  setup:
+  - ロキソニンの副作用教えて
+  description: 医薬品QA後の感謝は会話終了テンプレではなく適切な締め
+  expect:
+    must_have_response: true
+    min_turns: 2
+    must_not:
+    - greeting_only
