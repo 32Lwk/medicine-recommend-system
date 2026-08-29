@@ -1,11 +1,16 @@
 {
+  "saved_at": "2026-08-28T05:04:00Z",
+  "note": "Pre-event baseline before moderate tier apply (ECS was deleted; recreated as medicine-recommend-event)",
   "cpu": "512",
   "memory": "1024",
-  "desired_count": 1,
+  "desired_count": 0,
   "min_tasks": 1,
-  "max_tasks": 10,
+  "max_tasks": 2,
   "cpu_target": 70,
   "gunicorn_workers": "2",
   "waf_rate_limit_before": 2000,
-  "saved_at": "2026-08-04T15:20:20Z"
+  "applied_tier": "moderate",
+  "applied_service": "medicine-recommend-event",
+  "applied_endpoint": "https://me-cccd3625661c4e918863feaef5fb674d.ecs.ap-northeast-1.on.aws",
+  "applied_alb_dns": "ecs-express-gateway-alb-3ee0f78d-296272208.ap-northeast-1.elb.amazonaws.com"
 }
