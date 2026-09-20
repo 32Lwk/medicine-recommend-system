@@ -88,6 +88,47 @@ def _norm_sub(value: Any) -> Optional[str]:
     return text
 
 
+# Shadow / eval 比較用の sub-route 別名。実行ルーティングは変更しない。
+_EMERGENCY_SUB_ALIASES: dict[str, str] = {
+    "chest_pain_breathing_difficulty": "emergency_dispatch",
+    "chest_pain_breathlessness": "emergency_dispatch",
+    "chest_pain_shortness_of_breath": "emergency_dispatch",
+}
+_SESSION_SUB_ALIASES: dict[str, str] = {
+    "delete_confirm": "delete",
+}
+
+
+def normalize_sub_route(primary: Any, sub: Any) -> Optional[str]:
+    """primary 文脈で sub-route 別名を正規化する（比較専用）。
+
+    Emergency の chest_pain_* と SessionOps の delete_confirm は臨床差分ではなく
+    naming alias として同一扱いする。実行パスには使わない。
+    """
+    text = _norm_sub(sub)
+    if text is None:
+        return None
+    primary_key = (_norm_route(primary) or "").lower()
+    lowered = text.lower()
+    if primary_key == "emergency":
+        return _EMERGENCY_SUB_ALIASES.get(lowered, text)
+    if primary_key == "sessionops":
+        return _SESSION_SUB_ALIASES.get(lowered, text)
+    return text
+
+
+_HIGH_RISK_PRIMARIES = frozenset({"emergency", "security"})
+DISAGREEMENT_CLASSES = frozenset(
+    {
+        "none",
+        "primary_route",
+        "sub_route",
+        "high_risk_signal",
+        "execution_effect",
+    }
+)
+
+
 def compute_matched(
     legacy_decision: Any,
     jev_decision: Any,
@@ -97,13 +138,14 @@ def compute_matched(
     jev = _route_fields(jev_decision) if jev_decision is not None else {}
 
     primary = _norm_route(legacy.get("primary_route")) == _norm_route(jev.get("primary_route"))
-    sub = _norm_sub(legacy.get("sub_route")) == _norm_sub(jev.get("sub_route"))
+    sub = normalize_sub_route(
+        legacy.get("primary_route"), legacy.get("sub_route")
+    ) == normalize_sub_route(jev.get("primary_route"), jev.get("sub_route"))
 
     legacy_primary = (_norm_route(legacy.get("primary_route")) or "").lower()
     jev_primary = (_norm_route(jev.get("primary_route")) or "").lower()
-    high_risk = {"emergency", "security"}
     safety = True
-    if legacy_primary in high_risk or jev_primary in high_risk:
+    if legacy_primary in _HIGH_RISK_PRIMARIES or jev_primary in _HIGH_RISK_PRIMARIES:
         safety = legacy_primary == jev_primary
 
     exact = bool(primary and sub and safety)
@@ -113,6 +155,44 @@ def compute_matched(
         "safety": bool(safety and jev_decision is not None),
         "exact": exact and jev_decision is not None,
     }
+
+
+def _routes_equal(a: Any, b: Any) -> bool:
+    fa = _route_fields(a)
+    fb = _route_fields(b)
+    return _norm_route(fa.get("primary_route")) == _norm_route(
+        fb.get("primary_route")
+    ) and normalize_sub_route(
+        fa.get("primary_route"), fa.get("sub_route")
+    ) == normalize_sub_route(fb.get("primary_route"), fb.get("sub_route"))
+
+
+def compute_disagreement_class(
+    legacy_decision: Any,
+    jev_decision: Any,
+    executed_decision: Any = None,
+) -> str:
+    """差分分類: primary_route / sub_route / high_risk_signal / execution_effect / none。
+
+    優先順位: high_risk_signal > primary_route > sub_route > execution_effect > none。
+    jev_decision 欠損時は比較不能のため none。
+    """
+    if jev_decision is None:
+        return "none"
+
+    matched = compute_matched(legacy_decision, jev_decision)
+    if not matched["safety"]:
+        return "high_risk_signal"
+    if not matched["primary"]:
+        return "primary_route"
+    if not matched["sub"]:
+        return "sub_route"
+
+    if executed_decision is not None and not _routes_equal(
+        legacy_decision, executed_decision
+    ):
+        return "execution_effect"
+    return "none"
 
 
 def trace_hash_for_sid(sid: Optional[str]) -> Optional[str]:
@@ -227,6 +307,8 @@ def _state_shape_payload(state_shape: Any) -> dict[str, Any]:
         return {}
     allowed = {
         "recent_turn_count",
+        "recent_context_count",
+        "recent_context_mismatch",
         "recommended_medicine_count",
         "has_active_symptoms",
         "has_medicine_qa_focus",
@@ -244,7 +326,7 @@ def _state_shape_payload(state_shape: Any) -> dict[str, Any]:
                 out[key] = int(value)
             except (TypeError, ValueError):
                 continue
-        elif key.startswith("has_"):
+        elif key.startswith("has_") or key == "recent_context_mismatch":
             out[key] = bool(value)
         elif key in ("channel",):
             out[key] = str(value) if value is not None else None
@@ -255,26 +337,61 @@ def _state_shape_payload(state_shape: Any) -> dict[str, Any]:
     return out
 
 
+def _list_len(value: Any) -> Optional[int]:
+    if isinstance(value, list):
+        return len(value)
+    if value is None:
+        return None
+    return -1  # present but not a list
+
+
 def build_state_shape(state: Optional[Mapping[str, Any]]) -> dict[str, Any]:
-    """送信 state から shape のみ抽出（本文なし）。"""
+    """送信 state から shape のみ抽出（本文なし）。
+
+    recent_turns（契約）と recent_context（eval alias）の両方を数え、
+    長さ不一致を recent_context_mismatch で可視化する。
+    """
     if not isinstance(state, Mapping):
         return {}
     recent = state.get("recent_turns")
+    recent_ctx = state.get("recent_context")
+    has_turns_key = "recent_turns" in state
+    has_context_key = "recent_context" in state
+    turns_count = _list_len(recent) if has_turns_key else None
+    context_count = _list_len(recent_ctx) if has_context_key else None
+    if turns_count is None and isinstance(recent, list):
+        turns_count = len(recent)
+    if turns_count is None:
+        turns_count = 0
+
+    mismatch = False
+    if has_turns_key and has_context_key:
+        if turns_count != context_count:
+            mismatch = True
+    # 片方欠落は eval/legacy shape でも起きうるため mismatch にはしない。
+    # production builder は常に両方を同一 list で埋める。
+
     meta = state.get("meta") if isinstance(state.get("meta"), Mapping) else {}
     medicines = meta.get("last_recommended_medicines") if isinstance(meta, Mapping) else None
     symptoms = meta.get("active_symptoms") if isinstance(meta, Mapping) else None
     focus = meta.get("medicine_qa_focus") if isinstance(meta, Mapping) else None
     user_input = state.get("user_input")
-    return {
+    shape: dict[str, Any] = {
         "state_keys": sorted(str(k) for k in state.keys()),
         "meta_keys": sorted(str(k) for k in (meta or {}).keys()),
-        "recent_turn_count": len(recent) if isinstance(recent, list) else 0,
+        "recent_turn_count": int(turns_count) if turns_count is not None and turns_count >= 0 else 0,
         "recommended_medicine_count": len(medicines) if isinstance(medicines, list) else 0,
         "has_active_symptoms": bool(symptoms),
         "has_medicine_qa_focus": bool(focus),
         "channel": state.get("channel"),
         "user_input_len": len(str(user_input)) if user_input is not None else 0,
+        "recent_context_mismatch": bool(mismatch),
     }
+    if context_count is not None and context_count >= 0:
+        shape["recent_context_count"] = int(context_count)
+    elif has_context_key:
+        shape["recent_context_count"] = -1
+    return shape
 
 
 def record_shadow_event(
@@ -317,11 +434,32 @@ def record_shadow_event(
         matched_payload = dict(matched) if isinstance(matched, Mapping) else compute_matched(
             legacy_decision, jev_decision
         )
+        disagreement = compute_disagreement_class(
+            legacy_decision, jev_decision, executed_decision=executed
+        )
 
         risk = risk_flags
         if risk is None and jev_decision is not None:
             d = _safe_dict(jev_decision)
             risk = d.get("risk_flags")
+
+        shape_payload = (
+            _state_shape_payload(state_shape) if state_shape is not None else None
+        )
+        effective_error = error_class
+        if (
+            isinstance(shape_payload, Mapping)
+            and shape_payload.get("recent_context_mismatch")
+            and not effective_error
+        ):
+            effective_error = "recent_context_mismatch"
+            logger.error(
+                "jev state_shape recent_turns/recent_context length mismatch "
+                "turns=%s context=%s correlation_id=%s",
+                shape_payload.get("recent_turn_count"),
+                shape_payload.get("recent_context_count"),
+                correlation_id,
+            )
 
         payload: dict[str, Any] = {
             "log_type": LOG_TYPE,
@@ -342,18 +480,19 @@ def record_shadow_event(
                 "safety": bool(matched_payload.get("safety")),
                 "exact": bool(matched_payload.get("exact")),
             },
+            "disagreement_class": disagreement,
             "jev_confidence": confidence or None,
             "risk_flags": risk,
             "attempted": bool(attempted),
             "succeeded": bool(succeeded),
             "retry_count": int(retry_count or 0),
             "fallback_reason": fallback_reason,
-            "error_class": error_class,
+            "error_class": effective_error,
             "latency_ms": latency_ms,
             "usage": usage_payload or None,
             "jev_cost_usd": cost,
             "legacy_saved_calls": int(legacy_saved_calls or 0),
-            "state_shape": _state_shape_payload(state_shape) if state_shape is not None else None,
+            "state_shape": shape_payload,
         }
         release_id = _resolve_release_id()
         if release_id:
@@ -409,12 +548,15 @@ __all__ = [
     "LOG_FILE",
     "LOG_TYPE",
     "ADAPTER_MODE",
+    "DISAGREEMENT_CLASSES",
     "JEV_INPUT_COST_USD_PER_MTOK",
     "build_state_shape",
     "clear_execution_registry_for_tests",
+    "compute_disagreement_class",
     "compute_matched",
     "estimate_jev_cost_usd",
     "lookup_executed_decision",
+    "normalize_sub_route",
     "notify_executed_decision",
     "record_shadow_event",
     "trace_hash_for_sid",

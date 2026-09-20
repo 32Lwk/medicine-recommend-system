@@ -244,3 +244,103 @@ def test_meta_includes_last_routes_from_dialogue_state_not_shadow():
     state = build_jev_router_state("痛み", session, "sid")
     assert state["meta"]["last_primary_route"] == "Physical"
     assert state["meta"]["last_sub_route"] == "medicine_qa"
+
+
+def test_forbidden_keys_raise_not_assert():
+    """assert ではなく ForbiddenJevStateError（python -O でも有効）。"""
+    from src.dialogue.routing import jev_router as jr
+
+    poisoned = {
+        "channel": "web",
+        "user_input": "x",
+        "recent_turns": [],
+        "recent_context": [],
+        "meta": {},
+        "app_context": "ctx",
+        "baseline_triage_hint": "Physical",
+    }
+    try:
+        jr.validate_jev_state_contract(poisoned)
+        raised = False
+    except jr.ForbiddenJevStateError as exc:
+        raised = True
+        assert "baseline_triage_hint" in exc.keys
+    assert raised is True
+
+    scrubbed = dict(poisoned)
+    removed = jr.scrub_forbidden_jev_state_keys(scrubbed)
+    assert "baseline_triage_hint" in removed
+    assert "baseline_triage_hint" not in scrubbed
+
+
+def test_medicine_qa_focus_kwarg_api_accepts_injection():
+    """resolve_route 未注入でも build API は medicine_qa_focus を受け取る。"""
+    state = build_jev_router_state(
+        "比較して",
+        {"messages": []},
+        "sid",
+        medicine_qa_focus="comparison",
+    )
+    assert state["meta"]["medicine_qa_focus"] == ["comparison"]
+
+
+def test_recent_context_alias_same_object_and_length():
+    state = build_jev_router_state("x", {"messages": _msgs(3)}, "sid")
+    assert state["recent_turns"] is state["recent_context"]
+    assert len(state["recent_turns"]) == len(state["recent_context"]) == 3
+
+
+def test_schedule_scrubs_poisoned_recent_alias_divergence():
+    import sys
+
+    turns = [{"role": "user", "content": "a"}]
+    poisoned = {
+        "channel": "web",
+        "user_input": "hi",
+        "recent_turns": turns,
+        "recent_context": turns + [{"role": "assistant", "content": "b"}],
+        "meta": {},
+        "app_context": "ctx",
+        "baseline_triage_hint": "leak",
+    }
+    captured_states = []
+
+    def _fake_eval(*, state, questions, model):
+        captured_states.append(state)
+        return SimpleNamespace(
+            ok=True,
+            answers={},
+            usage={},
+            retry_count=0,
+            model=model,
+            error_class=None,
+        )
+
+    client_mod = MagicMock()
+    client_mod.evaluate_system_one = MagicMock(side_effect=_fake_eval)
+    decisions_mod = MagicMock()
+    decisions_mod.parse_jev_answers = MagicMock(
+        return_value={"primary_route": "Unknown", "valid": True}
+    )
+    decisions_mod.INTENT_ROUTER_QUESTIONS = []
+
+    with patch.dict(
+        sys.modules,
+        {
+            "src.services.jev_client": client_mod,
+            "src.services.jev_decisions": decisions_mod,
+        },
+    ), patch("src.services.jev_metrics.record_shadow_event", return_value={}):
+        schedule_jev_shadow(
+            state=poisoned,
+            legacy_decision={"primary_route": "Unknown"},
+            correlation_id="scrub-1",
+            sync=True,
+            force=True,
+        )
+
+    assert captured_states
+    sent = captured_states[0]
+    assert "baseline_triage_hint" not in sent
+    assert len(sent["recent_turns"]) == len(sent["recent_context"])
+    assert sent["recent_turns"] is sent["recent_context"]

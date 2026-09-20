@@ -1,7 +1,7 @@
 # Jev 実装計画・テスト計画更新
 
 作成日: 2026-09-21  
-更新: 2026-09-21 — Phase 0 契約凍結を Synthesis §9 / 実行計画と同期（§8–§9）  
+更新: 2026-09-21 — Phase 0 契約凍結同期 + 実装後ドリフト是正（Gate A-code/accuracy 二層、§8.4 誤記修正）  
 対象: `medicine-recommend` Chat Pipeline v2 / IntentRouter / classifier 層  
 関連セッション: `01a0ba8c-b8e9-7f83-afdd-9e6771b85121`  
 契約凍結サマリ: `docs/planning/codex-parallel-jev-20260921/JEV_PHASE0_CONTRACT_FREEZE_20260921.md`
@@ -313,11 +313,13 @@ Phase 0: 契約凍結と計測整備
 
 Phase 1: IntentRouter local shadow implementation
 
-- `jev_client` と `jev_router` を追加。スコープは **local shadow のみ**（dev 有効化は Gate B 後）。
-- 差し込みは `resolve_route()` で legacy 確定後。**常に同一 legacy を返す**。
-- `JEV_INTENT_ROUTER_PRIMARY` は予約値。Phase 1 では true でも **実行 route に影響させない**（構造で禁止）。
-- shadow log: `log/jev_intent_router_shadow.jsonl` で legacy / Jev / executed route を比較。
-- 既存 10 ケースは pilot。expanded fixture + routing golden + emergency/security を CI 化。
+- `jev_client` / `jev_router` / metrics **実装済**（Gate A-code）。スコープは **local shadow のみ**。
+- 差し込みは `resolve_route()` で legacy 確定後。**常に同一 legacy を返す**。PRIMARY は構造的 ignore。
+- state: 契約名 `recent_turns` + eval 互換 `recent_context` alias。`deterministic_signals` は shadow 比較用に配線（実行不変）。corr clear 実装済。
+- shadow log: `log/jev_intent_router_shadow.jsonl`。
+- 既存 10 ケースは **pilot のみ**。expanded fixture は **draft — CI hard-fail 禁止**。
+- **Gate A-accuracy（live 再評価）未完。Gate B（dev shadow）は Hard No-Go。**
+- 「精度検証が済み次第に自動で dev へ」は **禁止**。Gate B 条件を全部満たすまで flag ON しない。
 
 Phase 2: IntentRouter primary canary
 
@@ -364,12 +366,16 @@ Phase 5: Store / follow-up / missing info
 
 1. `channel`
 2. 現在の `user_input`
-3. **直近 5 turn** の会話（role + content）。現行 `TRIAGE_HISTORY_MESSAGES=5` と揃える
+3. **直近 5 turn** の会話（role + content）。契約キー名は **`recent_turns`**。本番 builder は pilot eval 互換で **`recent_context` に同一 list を alias**（現行 `TRIAGE_HISTORY_MESSAGES=5` と揃える）
 4. 短い構造化メタ（あれば）:
    - `last_primary_route` / `last_sub_route`
    - `last_recommended_medicines`（商品名のみ、最大 3）
-   - `active_symptoms` / `medicine_qa_focus`（既に session にある場合のみ）
+   - `active_symptoms` / `medicine_qa_focus`（既に session にある場合のみ。**router からの focus 注入は未完の負債**）
 5. 固定の短い `app_context`（ドメイン説明 + route 選択肢）
+
+Shadow 比較用（HTTP state には載せない）:
+
+- `deterministic_signals`（legacy / triage 由来の高リスク陽性）。実行 route は変えない。
 
 送らないもの:
 
@@ -382,21 +388,22 @@ Phase 5: Store / follow-up / missing info
 
 見直しトリガー: shadow で follow-up 誤判定が目立つ場合のみ、5 → 8 turn、または「直近 assistant 推奨ブロックを必ず残す」を追加検証する。
 
-### 8.4 canary / 本番
+### 8.4 canary / 本番（辛口）
 
-- いま: **dev shadow まで**（本線は legacy）。
-- **精度検証が済み次第**、dev primary canary → staging → production の順。
-- production は Emergency / Security 二重確認と disagreement 監視が揃ってから。
+- **いま（2026-09-21）: local のみ。dev shadow すら Hard No-Go。**
+- 「精度検証が済み次第」を自動入場条件にしない。入場は Gate 表（§9.5）の **全項目明示合格** のみ。
+- 順序: Gate A-accuracy → Gate B（dev shadow）→ Gate C（primary 設計）→ staging → production。
+- production は Emergency / Security 二重確認と disagreement 監視が揃ってから。**pilot 100% や unit 緑では飛ばせない。**
 
-### 8.5 Go/No-Go 閾値（正式採用）
+### 8.5 Go/No-Go 閾値（正式採用・辛口）
 
 | 指標 | 閾値 |
 | --- | --- |
 | 精度の定義 | **primary + 必須 sub-route の joint**。primary confidence 単独では不合格判定に使わない |
 | Emergency / Security / medical_examination **false negative** | **0（厳守）** |
 | 上記高リスクの Jev 単独確定 | **禁止**。既存 SafetyGate / deterministic gate と二重確認。**既存陽性を Jev 陰性で解除しない** |
-| IntentRouter 10 ケース | **pilot smoke のみ**。Gate B（dev shadow）/ Gate C（primary）の十分条件にはしない |
-| IntentRouter 10 ケース + expanded emergency/security fixture | joint **100%**（Gate A / Gate B 前の必須条件） |
+| IntentRouter 10 ケース | **pilot smoke のみ**。Gate A-accuracy クローズ条件でも Gate B/C 入場条件でも **ない** |
+| expanded fixture（draft） | **医療レビュー承認後**に初めて joint 100% / combined FN=0 を Gate B 条件に使える。draft のまま hard-fail / Gate 通過扱い **禁止** |
 | primary 化条件 | `confidence >= JEV_HIGH_CONFIDENCE(0.85)` かつ低リスク route。不一致時は legacy 優先。**SessionOps は primary 対象外** |
 | shadow disagreement（全体） | 初期は直近 150 件と累積を併記。目標 **≤0.5%**。高リスク disagreement は **0 を目標に全件レビュー** |
 | Emergency **false positive** | 上限は緩め（例: ≤2%）。安全側への振りすぎは FN より許容 |
@@ -408,7 +415,7 @@ Phase 5: Store / follow-up / missing info
 
 - IntentRouter primary 化後、`dialogue.intent_router_llm` の OpenAI cost を **≥70% 削減**（fallback 残りは許容）— 指標名: **OpenAI IntentRouter saved**。
 - Jev 追加コストは公式単価で別途記録し、**Jev 込み総分類費（total classification cost including Jev）** を別指標として監視する。両者を混同しない。
-- `pipeline_perf` / shadow log に両指標を出す。
+- `pipeline_perf` / shadow log に両指標を出す。**Phase 1 shadow では saved 実測未完でも Gate A-code は通せるが、Gate C では必須。**
 
 ### 8.7 timeout / rate limit / retry（正式採用）
 
@@ -448,11 +455,13 @@ Phase 5: Store / follow-up / missing info
 ### 9.2 Phase 1 shadow の非干渉契約
 
 - 差し込み点は `resolve_route()` で legacy 確定後。
-- Phase 1 は常に legacy decision を返し、Jev は dispatch / session key を書き換えない。
+- Phase 1 は常に legacy decision を返し、Jev は dispatch / routing decision key を書き換えない。
 - **`JEV_INTENT_ROUTER_PRIMARY` の値にかかわらず実行 route を変えない**。
 - background worker には immutable snapshot のみ渡し、bounded executor を使う。
 - shadow ON/OFF、Jev failure、log failure の全条件で executed route と response の差を 0 件とする。
 - shadow log パス: **`log/jev_intent_router_shadow.jsonl`**（raw text / secret / 生 ID 禁止）。
+- `_jev_shadow_correlation_id` は join 用のみ。schedule 失敗時・notify 後に clear（実装済）。
+- `deterministic_signals` は shadow 比較用に渡す（HTTP state 非載、実行不変・実装済）。
 
 ### 9.3 confidence / safety 契約
 
@@ -470,12 +479,18 @@ Phase 5: Store / follow-up / missing info
 - model 解決 version、fixture hash、git SHA、timeout/retry、host を成果レポートへ保存する。
 - Gate B 前に expanded fixture の **医療安全レビュー** が必須（ラベル初稿は実装者）。
 
-### 9.5 Gate の修正
+### 9.5 Gate の修正（辛口・二層）
 
-- Gate A（local）: unit/mock green、default OFF 挙動差 0、shadow ON/障害時も本線不変、禁止 payload 0。
-- Gate B 前: expanded fixture joint accuracy 100%、combined high-risk FN=0、禁止 payload 0、性能 CI 条件を必須とする。
-- Gate C 前: dev shadow 最低 150 eligible decisions、全体 disagreement ≤0.5%、高リスク差分の未レビュー 0。
-- cost: **`dialogue.intent_router_llm` OpenAI IntentRouter saved（≥70%）** と **Jev 込み総分類費** を別指標として報告する。
+Gate を曖昧な「Go（条件付き）」でまとめない。**code と accuracy を分離**する。
+
+| ゲート | Pass 条件（全部必須） | 明示的に足りないもの |
+| --- | --- | --- |
+| **Gate A-code** | unit/mock green、default OFF 挙動差 0、PRIMARY ignore、shadow ON/障害時も実行 route・response 差 0、禁止 payload 0（unit）、`JEV_API_KEY` のみ、`minimal` のみ、corr clear | 精度・医療ラベル・dev 運用。**これで Gate A 完了と呼ぶな** |
+| **Gate A-accuracy** | production 契約（`recent_turns` 優先）での live 再評価完走、接続失敗を accuracy 分母から除外、性能 CI（avg≥900ms 短縮 or P95≥2500ms）を再確認、shadow JSONL の禁止フィールド目視 0 | expanded 医療承認・dev secret。**pilot 30/30 単独では Pass にしない** |
+| **Gate B** | A-accuracy Pass + expanded **医療安全レビュー承認** + joint 100% + combined high-risk FN=0 + 禁止 payload 0（本番ログサンプリング含む）+ dev `JEV_API_KEY`/ログ権限/rollback 準備 | primary / staging。**draft fixture や unit 緑では入場禁止（Hard No-Go）** |
+| **Gate C** | Gate B 後の dev shadow ≥150 eligible、全体 disagreement ≤0.5%、高リスク未レビュー 0、FN=0、fallback/usage/latency/log completeness 欠損なし | staging/prod。ここで初めて primary **設計**可 |
+
+cost: **OpenAI IntentRouter saved（≥70%）** と **Jev 込み総分類費**は Gate C / primary の報告必須。Phase 1 では未実測を許容するが「コスト目標達成」とは書かない。
 
 ### 9.6 次ターゲット順（Phase 1 完了後）
 
@@ -494,5 +509,15 @@ Phase 5: Store / follow-up / missing info
 | Retry | 429 / 5xx のみ最大 1 回 |
 | Adapter | `jev:minimal` のみ |
 | Shadow log | `log/jev_intent_router_shadow.jsonl` |
-| 履歴 | 直近 5 turn |
+| 履歴 | 直近 5 turn。契約キー `recent_turns`（`recent_context` は alias） |
 | 商品名メタ | 最大 3 |
+| Shadow 比較 | `deterministic_signals`（非 HTTP state） |
+
+### 9.8 実装現実（2026-09-21・ドリフト是正）
+
+参照: `JEV_PHASE1_LOCAL_SHADOW_SUPERVISOR_REPORT_20260921.md`。
+
+- Gate A-code **Passed**。Gate A-accuracy **Not Passed**。Gate B **Hard No-Go**。
+- 実装済: alias、`deterministic_signals` 配線、corr clear。
+- 残債: live 再評価、医療ラベル承認、`medicine_qa_focus` router 注入、cost 分離実測、eval スクリプトの契約名寄せ、eval の `TYPESAFE` fallback 残存。
+- Test Plan 旧 §8.4「いま: dev shadow まで」は **誤記**（本版で削除）。現状は local のみ。

@@ -6,7 +6,7 @@
 
 ## 1. 現在の進捗
 
-並列Codexの成果物はすべて生成済み。実装コード、dev設定、本番設定、commit / push はまだ行っていない。
+並列Codexの成果物はすべて生成済み。**Phase 1 local shadow コードは実装済**（Gate A-code Passed）。dev 設定・本番設定・commit / push 方針は別途。dev shadow 有効化は Hard No-Go。
 
 | Agent | 成果物 | 状態 | 要点 |
 | --- | --- | --- | --- |
@@ -16,6 +16,7 @@
 | D | `JEV_NEXT_TARGETS_HYPOTHESIS_20260921.md` | 完了 | Phase 1 後は Focus -> Eligibility -> triage stage2 -> triage stage1 -> Store |
 | E | `JEV_EXECUTION_PLAN_PHASE0-2_20260921.md` | 完了 | Phase 0-2 の依存、ゲート、rollback、監視、未解決質問を整理 |
 | F | `JEV_PARALLEL_SYNTHESIS_20260921.md` | 完了 | 精度優先で最終統合。Phase 1 local shadow は Go、dev shadow 以降は No-Go |
+| 実装 | Phase 1 local shadow + Supervisor | **コード済 / 監修済** | alias・deterministic_signals・corr clear 反映。詳細は Supervisor report |
 
 補足:
 
@@ -29,9 +30,9 @@
 | --- | --- | --- |
 | `jev:minimal` adapter 方針 | Go | 10ケース x 3回で 30/30、latency も条件達成 |
 | `with_baseline_triage` | No-Go / 廃止 | 10ケース中1件で medicine comparison の sub-route を落とした |
-| Phase 1 local shadow 実装 | Go | 本線非干渉の設計が固まった。default OFF で実装できる |
-| dev shadow 有効化 | No-Go | expanded safety fixture、live再評価、dev secret/log/rollback準備が未完 |
-| primary canary | No-Go | dev shadow 150 eligible decisions、disagreement、FN、fallback監査が未完 |
+| Phase 1 local shadow 実装 | **Gate A-code Passed** | 本線非干渉・PRIMARY ignore・フォローアップ配線済。**A-accuracy 未完** |
+| dev shadow 有効化 | **Hard No-Go** | 医療ラベル未承認、live 再評価未、dev secret/log/rollback 未確認 |
+| primary canary | **Hard No-Go** | Gate B 未達 |
 | staging / production | No-Go | dev primary 未完。別途明示承認が必要 |
 | OpenAI token-cost 70%削減 | 未判定 | primary運用ログと `legacy_saved_calls` 実測がまだない |
 
@@ -244,13 +245,44 @@ primary canary の最低条件:
 7. shadow ON/OFF で executed route 不変の integration を作る。
 8. local live再評価を、接続が安定している環境で再実行する。
 
-現在地: **Phase 1 local shadow 実装は計画上 Go。ただし dev shadow、primary canary、staging、production はまだ No-Go。**
+現在地: **Phase 1 local shadow の Gate A-code は Passed。Gate A-accuracy 未完。dev shadow / primary / staging / production は Hard No-Go。**
 
 ## 9. Phase 0 契約凍結ステータス（2026-09-21）
 
-Phase 0 の契約は文書上凍結済み。
+Phase 0 の契約は文書上凍結済み。実装後ドリフト是正済み（同日）。
 
 - 凍結サマリ: `JEV_PHASE0_CONTRACT_FREEZE_20260921.md`
-- Test Plan 同期: `docs/planning/JEV_IMPLEMENTATION_TEST_PLAN_2026-09-21.md` §8–§9（joint accuracy、`JEV_API_KEY` のみ、10 シナリオは pilot、`jev:minimal` のみ、PRIMARY 無視、高リスク二重ゲート、SessionOps 除外、cost 分離、shadow log パス、timeout/retry）
-- 次: Phase 1 local shadow 実装（Gate A）。dev shadow は Gate B（expanded fixture 医療安全レビュー含む）まで No-Go
+- Test Plan 同期: `docs/planning/JEV_IMPLEMENTATION_TEST_PLAN_2026-09-21.md` §8–§9
+- Supervisor: `JEV_PHASE1_LOCAL_SHADOW_SUPERVISOR_REPORT_20260921.md`（未配線記述を実装現実へ置換）
 - §7 未解決のうち secret / 5 turn / 商品名最大3 / shadow log 専用パスは凍結値で確定。label owner・dev 権限は Gate B 前に別途確定
+
+## 10. PDCA Round 進捗メモ（2026-09-21）
+
+| Round | Plan | Do | Check | Act |
+| --- | --- | --- | --- | --- |
+| **R0** 契約凍結 | Synthesis §9 / Phase0 freeze | Test Plan §8–§9 同期、freeze 文書作成 | 契約表は実装方針と一致 | 凍結値を Gate 入場条件に固定 |
+| **R1** local shadow 実装 | Phase1A–B（client/DTO/metrics/resolve_route） | コード実装 + unit 111 | Supervisor: 構造 OK、ただし R1–R3 未配線指摘 | 指摘どおり alias / deterministic_signals / corr clear を実装 |
+| **R2** 監修フォローアップ | R1 残差を Gate A-code 残件として閉じる | 上記3点を production path に配線 | コード上は解消。**ドキュメント本体が「未配線」のまま残るドリフト** | Docs 辛口監査で freeze / Test Plan / Supervisor / Progress を現実同期（本 Round） |
+| **R3**（次）Gate A-accuracy | production 契約で live 再評価 | 未着手 | — | pilot 100% を Gate 通過に使わない |
+| **R4**（次）Gate B prep | 医療ラベル承認 + 運用準備 | 未着手 | — | 未承認のまま `JEV_*=true` 禁止 |
+
+残ドキュメント負債（次の Act）:
+
+1. eval スクリプトを契約名 `recent_turns` へ寄せる記述・実装（docs は負債として明示済み、コードは本 Round 対象外）
+2. `medicine_qa_focus` 注入方針の Test Plan 確定（現状「未注入」）→ 次フロー §4 / §5.2 参照
+3. Gate A-accuracy / Gate B の実行ログを `log/analysis/` に残し Progress へリンク
+4. §7 未解決 Q1–Q2（実装許可・dev 禁止）は事実上確定済みだが質問リストが古い — 次回整理時に「決定済み」へ移す
+5. Synthesis §5 追記案「元ファイル未変更」は **既に反映済み** — 並列成果物側の stale 注記が残る可能性
+
+## 11. 次フロー正本ポインタ（2026-09-21）
+
+Phase 1 local shadow（Gate A-code）完了後の実行計画は次を正本とする。
+
+- **`JEV_NEXT_FLOW_PHASE1C-FOCUS_20260921.md`**
+  - Phase **1C** live 再評価（joint 100% / latency OR / cost 分離）
+  - Phase **1D** dev 準備（**enable 禁止**）
+  - Gate **B**（150 decisions / disagreement ≤0.5% / FN=0）
+  - 次差し込み: `medicine_qa_focus_llm` shadow-only（Eligibility 非マージ）
+  - 並列改善（Emergency harness / session focus 決定 / cost dashboard）と Explicit No-Go
+
+本書 §4–§8 の概要は維持するが、ゲート数値・Focus 差し込み・No-Go の詳細は上記次フローに従う。

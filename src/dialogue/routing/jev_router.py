@@ -42,6 +42,87 @@ _FORBIDDEN_STATE_KEYS = frozenset(
     }
 )
 
+_ALLOWED_TOP_LEVEL_KEYS = frozenset(
+    {
+        "channel",
+        "user_input",
+        "recent_turns",
+        "recent_context",
+        "meta",
+        "app_context",
+    }
+)
+
+
+class ForbiddenJevStateError(ValueError):
+    """Allowlist 契約違反（-O でも消えない明示例外）。"""
+
+    def __init__(self, keys: list[str]):
+        self.keys = list(keys)
+        super().__init__(f"forbidden jev state keys: {self.keys}")
+
+
+def _collect_forbidden_keys(state: Mapping[str, Any]) -> list[str]:
+    found: list[str] = []
+    for key in state.keys():
+        if key in _FORBIDDEN_STATE_KEYS:
+            found.append(str(key))
+    meta = state.get("meta")
+    if isinstance(meta, Mapping):
+        for key in meta.keys():
+            if key in _FORBIDDEN_STATE_KEYS:
+                found.append(f"meta.{key}")
+    return found
+
+
+def validate_jev_state_contract(state: Mapping[str, Any]) -> None:
+    """禁止キー混入を -O でも検出して raise。本番向け契約ガード。"""
+    found = _collect_forbidden_keys(state)
+    if found:
+        logger.error("jev_router forbidden state keys detected: %s", found)
+        raise ForbiddenJevStateError(found)
+
+
+def scrub_forbidden_jev_state_keys(state: dict[str, Any]) -> list[str]:
+    """送信直前の防衛的 scrub。削除したキー名を返す（本文は残さない）。"""
+    removed: list[str] = []
+    for key in list(state.keys()):
+        if key in _FORBIDDEN_STATE_KEYS:
+            state.pop(key, None)
+            removed.append(str(key))
+    meta = state.get("meta")
+    if isinstance(meta, dict):
+        for key in list(meta.keys()):
+            if key in _FORBIDDEN_STATE_KEYS:
+                meta.pop(key, None)
+                removed.append(f"meta.{key}")
+    if removed:
+        logger.error("jev_router scrubbed forbidden state keys: %s", removed)
+    return removed
+
+
+def _sync_recent_aliases(state: dict[str, Any]) -> None:
+    """recent_turns と recent_context を同一参照に揃える（長さ不一致防止）。"""
+    turns = state.get("recent_turns")
+    ctx = state.get("recent_context")
+    if isinstance(turns, list) and isinstance(ctx, list):
+        if turns is not ctx and (
+            len(turns) != len(ctx) or turns != ctx
+        ):
+            logger.error(
+                "jev_router recent_turns/recent_context diverged "
+                "(turns=%s context=%s); forcing alias sync",
+                len(turns),
+                len(ctx),
+            )
+        state["recent_context"] = turns
+    elif isinstance(turns, list):
+        state["recent_context"] = turns
+    elif isinstance(ctx, list):
+        state["recent_turns"] = ctx
+        state["recent_context"] = ctx
+
+
 
 def _get_executor() -> ThreadPoolExecutor:
     global _executor
@@ -300,11 +381,12 @@ def build_jev_router_state(
         "app_context": _APP_CONTEXT,
     }
 
-    # 契約: 禁止キーが混入していないこと
-    assert "baseline_triage_hint" not in state
-    assert "baseline_triage_hint" not in meta
-    for key in _FORBIDDEN_STATE_KEYS:
-        assert key not in state, f"forbidden state key: {key}"
+    # 契約: 禁止キー検査は assert ではなく明示 raise（python -O でも有効）
+    validate_jev_state_contract(state)
+    unknown = [k for k in state.keys() if k not in _ALLOWED_TOP_LEVEL_KEYS]
+    if unknown:
+        logger.error("jev_router unexpected top-level keys: %s", unknown)
+        raise ForbiddenJevStateError([f"unexpected:{k}" for k in unknown])
 
     return state
 
@@ -401,9 +483,8 @@ def _shadow_worker(
             return
 
         immutable = copy.deepcopy(state)
-        # 二重確認: 禁止キーがワーカー投入前に混入していないこと
-        if "baseline_triage_hint" in immutable:
-            immutable.pop("baseline_triage_hint", None)
+        scrub_forbidden_jev_state_keys(immutable)
+        _sync_recent_aliases(immutable)
 
         result = evaluate_system_one(
             state=immutable,
@@ -514,8 +595,8 @@ def schedule_jev_shadow(
             return False
 
         snapshot = copy.deepcopy(dict(state))
-        if "baseline_triage_hint" in snapshot:
-            snapshot.pop("baseline_triage_hint", None)
+        scrub_forbidden_jev_state_keys(snapshot)
+        _sync_recent_aliases(snapshot)
 
         kwargs = {
             "state": snapshot,
@@ -604,7 +685,10 @@ def run_jev_shadow_sync(
 
 
 __all__ = [
+    "ForbiddenJevStateError",
     "build_jev_router_state",
     "run_jev_shadow_sync",
     "schedule_jev_shadow",
+    "scrub_forbidden_jev_state_keys",
+    "validate_jev_state_contract",
 ]

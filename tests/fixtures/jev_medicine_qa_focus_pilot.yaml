@@ -1,0 +1,117 @@
+version: 1
+updated: "2026-09-21"
+label_status_default: draft
+description: >
+  Pilot draft for Jev medicine_qa_focus shadow (Phase 1C parallel track).
+  Compares current infer_medicine_qa_focuses (rule ± Focus LLM) against a
+  future Jev Focus adapter. Eligibility / resolve_medicine_qa_route is
+  explicitly OUT OF SCOPE — do not score route pivot here.
+  Labels are draft only; never CI hard-fail or Gate B evidence.
+
+notes:
+  - Eligibility is NOT in scope (T2: Focus ≠ Eligibility).
+  - physical_pivot_symptom cases document the FN risk surface only;
+    Focus shadow must not claim route ownership.
+  - Expand toward 60-case fixture before any enable discussion.
+
+scenarios:
+  - id: focus-comparison-loxonin-ibu
+    channel: web
+    tag: comparison
+    input: ロキソニンとイブの違いは何ですか？
+    recommended_medicines: []
+    history: []
+    expect:
+      label_status: draft
+      primary_focus: comparison
+      accept_focuses: [comparison]
+      physical_symptom_pivot: false
+
+  - id: focus-side-effect-drowsiness
+    channel: web
+    tag: side_effect
+    input: ロキソニンって眠くなりますか？
+    recommended_medicines:
+      - { name: ロキソニンS }
+    history: []
+    expect:
+      label_status: draft
+      primary_focus: side_effect
+      accept_focuses: [side_effect]
+      physical_symptom_pivot: false
+
+  - id: focus-dosage-usage
+    channel: web
+    tag: dosage
+    input: 1日何回まで飲んでいいですか？
+    recommended_medicines:
+      - { name: ロキソニンS }
+    history:
+      - { role: assistant, content: "痛み止めとしてロキソニンSをご案内しました。" }
+    expect:
+      label_status: draft
+      primary_focus: usage
+      accept_focuses: [usage]
+      notes: "dosage maps to MedicineQaFocus=usage"
+      physical_symptom_pivot: false
+
+  - id: focus-photo-product-image
+    channel: web
+    tag: photo
+    input: 箱の写真を見せてください
+    recommended_medicines:
+      - { name: イブA錠 }
+    history: []
+    expect:
+      label_status: draft
+      primary_focus: product_image
+      accept_focuses: [product_image]
+      notes: "photo maps to MedicineQaFocus=product_image"
+      physical_symptom_pivot: false
+
+  - id: focus-age-limit
+    channel: web
+    tag: age_limit
+    input: 15歳でも飲める薬ですか？
+    recommended_medicines:
+      - { name: パブロンゴールドA }
+    history: []
+    expect:
+      label_status: draft
+      primary_focus: age
+      accept_focuses: [age]
+      physical_symptom_pivot: false
+
+  - id: focus-ambiguous-anaphora
+    channel: web
+    tag: ambiguous
+    input: それって大丈夫？
+    recommended_medicines:
+      - { name: カロナール }
+    history:
+      - { role: user, content: "熱があるのでカロナールを勧められました" }
+      - { role: assistant, content: "カロナールについてご案内しました。" }
+    expect:
+      label_status: draft
+      primary_focus: general
+      accept_focuses: [general, usage, side_effect]
+      notes: "Structurally ambiguous; rule/LLM enrichment may disagree — draft only"
+      physical_symptom_pivot: false
+
+  - id: focus-physical-pivot-symptom
+    channel: web
+    tag: physical_pivot_symptom
+    input: 薬の話は後でいいので、いま胸が痛くて息が苦しいです
+    recommended_medicines:
+      - { name: ロキソニンS }
+    history:
+      - { role: assistant, content: "ロキソニンSの飲み方についてご案内しました。" }
+    expect:
+      label_status: draft
+      primary_focus: general
+      accept_focuses: [general]
+      physical_symptom_pivot: true
+      notes: >
+        Symptom pivot belongs to Eligibility / SafetyGate — NOT Focus scoring.
+        Focus adapter must not treat this as medicine_qa focus confirmation.
+        physical_symptom_pivot FN = 0 is a Focus shadow gate (see next-flow §4.4).

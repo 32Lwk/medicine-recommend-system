@@ -35,6 +35,67 @@ def test_compute_matched_exact():
     assert m["exact"] is True
 
 
+def test_normalize_sub_route_emergency_aliases():
+    assert (
+        jm.normalize_sub_route("Emergency", "chest_pain_breathing_difficulty")
+        == "emergency_dispatch"
+    )
+    assert (
+        jm.normalize_sub_route("Emergency", "chest_pain_breathlessness")
+        == "emergency_dispatch"
+    )
+    assert jm.normalize_sub_route("Emergency", "emergency_dispatch") == "emergency_dispatch"
+    # Non-Emergency primary must not rewrite chest_pain_* labels.
+    assert (
+        jm.normalize_sub_route("Physical", "chest_pain_breathing_difficulty")
+        == "chest_pain_breathing_difficulty"
+    )
+
+
+def test_normalize_sub_route_session_delete_alias():
+    assert jm.normalize_sub_route("SessionOps", "delete_confirm") == "delete"
+    assert jm.normalize_sub_route("SessionOps", "delete") == "delete"
+    assert jm.normalize_sub_route("Physical", "delete_confirm") == "delete_confirm"
+
+
+def test_compute_matched_sub_route_aliases():
+    m_em = jm.compute_matched(
+        {"primary_route": "Emergency", "sub_route": "chest_pain_breathing_difficulty"},
+        {"primary_route": "Emergency", "sub_route": "emergency_dispatch"},
+    )
+    assert m_em["primary"] is True
+    assert m_em["sub"] is True
+    assert m_em["exact"] is True
+    assert m_em["safety"] is True
+
+    m_em2 = jm.compute_matched(
+        {"primary_route": "Emergency", "sub_route": "chest_pain_breathlessness"},
+        {"primary_route": "Emergency", "sub_route": "emergency_dispatch"},
+    )
+    assert m_em2["sub"] is True
+    assert m_em2["exact"] is True
+
+    m_sess = jm.compute_matched(
+        {"primary_route": "SessionOps", "sub_route": "delete"},
+        {"primary_route": "SessionOps", "sub_route": "delete_confirm"},
+    )
+    assert m_sess["primary"] is True
+    assert m_sess["sub"] is True
+    assert m_sess["exact"] is True
+
+    # Real sub mismatch remains a disagreement.
+    m_real = jm.compute_matched(
+        {"primary_route": "Physical", "sub_route": "fever"},
+        {"primary_route": "Physical", "sub_route": "medicine_qa"},
+    )
+    assert m_real["sub"] is False
+    assert m_real["exact"] is False
+    assert jm.compute_disagreement_class(
+        {"primary_route": "Emergency", "sub_route": "chest_pain_breathing_difficulty"},
+        {"primary_route": "Emergency", "sub_route": "emergency_dispatch"},
+    ) == "none"
+
+
 def test_compute_matched_safety_mismatch():
     legacy = {"primary_route": "Emergency", "sub_route": None}
     jev = {"primary_route": "Physical", "sub_route": None}
@@ -148,3 +209,113 @@ def test_notify_failure_non_propagating():
         side_effect=RuntimeError("nope"),
     ):
         jm.notify_executed_decision("x", {"primary_route": "X"})  # must not raise
+
+
+def test_disagreement_class_priority():
+    assert (
+        jm.compute_disagreement_class(
+            {"primary_route": "Physical", "sub_route": "a"},
+            {"primary_route": "Physical", "sub_route": "a"},
+        )
+        == "none"
+    )
+    assert (
+        jm.compute_disagreement_class(
+            {"primary_route": "Emergency", "sub_route": None},
+            {"primary_route": "Physical", "sub_route": None},
+        )
+        == "high_risk_signal"
+    )
+    assert (
+        jm.compute_disagreement_class(
+            {"primary_route": "Store", "sub_route": "locator"},
+            {"primary_route": "Physical", "sub_route": "fever"},
+        )
+        == "primary_route"
+    )
+    assert (
+        jm.compute_disagreement_class(
+            {"primary_route": "Physical", "sub_route": "fever"},
+            {"primary_route": "Physical", "sub_route": "medicine_qa"},
+        )
+        == "sub_route"
+    )
+    assert (
+        jm.compute_disagreement_class(
+            {"primary_route": "Physical", "sub_route": "fever"},
+            {"primary_route": "Physical", "sub_route": "fever"},
+            executed_decision={"primary_route": "Counseling", "sub_route": None},
+        )
+        == "execution_effect"
+    )
+    assert (
+        jm.compute_disagreement_class(
+            {"primary_route": "Physical"},
+            None,
+        )
+        == "none"
+    )
+
+
+def test_record_includes_disagreement_class():
+    captured = {}
+
+    def _capture(log_file, data):
+        captured["data"] = data
+
+    with patch("src.utils.structured_logger._write_to_jsonl", side_effect=_capture):
+        jm.record_shadow_event(
+            correlation_id="d1",
+            legacy_decision={"primary_route": "Store", "sub_route": "locator"},
+            jev_decision={"primary_route": "Physical", "sub_route": None},
+            executed_decision={"primary_route": "Store", "sub_route": "locator"},
+            succeeded=True,
+        )
+    assert captured["data"]["disagreement_class"] == "primary_route"
+    assert captured["data"]["disagreement_class"] in jm.DISAGREEMENT_CLASSES
+
+
+def test_state_shape_counts_both_aliases_and_flags_mismatch():
+    ok_shape = jm.build_state_shape(
+        {
+            "channel": "web",
+            "user_input": "x",
+            "recent_turns": [{"role": "user", "content": "a"}],
+            "recent_context": [{"role": "user", "content": "a"}],
+            "meta": {},
+            "app_context": "c",
+        }
+    )
+    assert ok_shape["recent_turn_count"] == 1
+    assert ok_shape["recent_context_count"] == 1
+    assert ok_shape["recent_context_mismatch"] is False
+
+    bad_shape = jm.build_state_shape(
+        {
+            "recent_turns": [{"role": "user", "content": "a"}],
+            "recent_context": [
+                {"role": "user", "content": "a"},
+                {"role": "assistant", "content": "b"},
+            ],
+            "meta": {},
+        }
+    )
+    assert bad_shape["recent_turn_count"] == 1
+    assert bad_shape["recent_context_count"] == 2
+    assert bad_shape["recent_context_mismatch"] is True
+
+    captured = {}
+
+    def _capture(log_file, data):
+        captured["data"] = data
+
+    with patch("src.utils.structured_logger._write_to_jsonl", side_effect=_capture):
+        jm.record_shadow_event(
+            correlation_id="mismatch-1",
+            legacy_decision={"primary_route": "Physical"},
+            jev_decision={"primary_route": "Physical"},
+            state_shape=bad_shape,
+            succeeded=True,
+        )
+    assert captured["data"]["error_class"] == "recent_context_mismatch"
+    assert captured["data"]["state_shape"]["recent_context_mismatch"] is True

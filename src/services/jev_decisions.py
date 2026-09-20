@@ -51,6 +51,41 @@ class JevSessionSubRoute(str, Enum):
 DEFAULT_NOUL_THRESHOLD = 0.75
 ADAPTER_MODE = "minimal"
 
+# Noul high-risk precedence for shadow labels (must match eval_jev_intent_router_10.py).
+# Clinical FN=0 bias: Emergency wins when both emergency and security Noul are high.
+# Security remains visible via risk_flags even when Emergency is selected.
+# Pharmacist review (2026-09-21) supports this Emergency-first Noul order for FN=0.
+NOUL_HIGH_RISK_PRIORITY: tuple[str, ...] = ("emergency_required", "security_risk")
+
+# Fixture / Gate-B label policy (not Choice/Noul fields — Jev has no prescription axis).
+# Pharmacist: prescription demand may keep Physical as a placeholder primary for existing
+# inappropriate/prescription handlers, but must NEVER enter OTC recommend flow.
+# See JEV_SAFETY_FIXTURE_PHARMACIST_REVIEW_20260921.md §2.8.
+PRESCRIPTION_FORBIDDEN_PHYSICAL_SUB_ROUTES: frozenset[str] = frozenset(
+    {
+        JevPhysicalSubRoute.RULE_BASED_RECOMMEND.value,
+        JevPhysicalSubRoute.FEVER_FLOW.value,
+    }
+)
+PRESCRIPTION_ALLOWED_PHYSICAL_SUB_ROUTES: frozenset[str] = frozenset(
+    {
+        JevPhysicalSubRoute.NONE.value,
+        JevPhysicalSubRoute.MEDICINE_QA.value,
+    }
+)
+
+
+def is_prescription_forbidden_sub_route(sub_route: str | None) -> bool:
+    """True when a Physical sub would be unsafe for prescription-demand labels.
+
+    Pure documentation helper for fixture/harness scoring. Does not change execution
+    routes (Phase 1 shadow only; no Jev primary for prescription/controlled).
+    """
+    if sub_route is None:
+        return False
+    return sub_route in PRESCRIPTION_FORBIDDEN_PHYSICAL_SUB_ROUTES
+
+
 PRIMARY_CRITERIA: dict[str, str] = {
     "Physical": (
         "Symptoms, OTC medicine consultation, product comparison, dosing, side effects, "
@@ -230,7 +265,9 @@ def parse_jev_answers(
     raw_answers = answers if isinstance(answers, dict) else {}
 
     noul_values, noul_error = _parse_noul_block(raw_answers)
-    override = _deterministic_override(signals, noul_values)
+    override = _deterministic_override(
+        signals, noul_values, noul_threshold=noul_threshold
+    )
     if override is not None:
         return override
 
@@ -240,12 +277,14 @@ def parse_jev_answers(
             invalid_reason=error,
             noul=noul_values,
             primary_confidence=_safe_primary_confidence(raw_answers),
+            noul_threshold=noul_threshold,
         )
     if noul_error is not None:
         return _invalid_decision(
             invalid_reason=noul_error,
             noul=noul_values,
             primary_confidence=parsed["primary_confidence"],
+            noul_threshold=noul_threshold,
         )
 
     return _compose_from_parsed(
@@ -265,6 +304,8 @@ def parse_jev_answers(
 def _deterministic_override(
     signals: dict[str, Any],
     noul: dict[str, float],
+    *,
+    noul_threshold: float = DEFAULT_NOUL_THRESHOLD,
 ) -> JevShadowDecision | None:
     security_blocked = bool(
         signals.get("security_blocked")
@@ -279,9 +320,7 @@ def _deterministic_override(
 
     if security_blocked:
         sub = signals.get("security_sub_route") or "known_attack"
-        flags = _risk_flags_from(
-            noul, threshold=DEFAULT_NOUL_THRESHOLD, extra=["security"]
-        )
+        flags = _risk_flags_from(noul, threshold=noul_threshold, extra=["security"])
         return JevShadowDecision(
             primary_route=JevPrimaryRoute.SECURITY.value,
             sub_route=str(sub),
@@ -306,9 +345,7 @@ def _deterministic_override(
             if medical_examination:
                 extra.append("medical_examination")
             source = "deterministic_emergency_override"
-        flags = _risk_flags_from(
-            noul, threshold=DEFAULT_NOUL_THRESHOLD, extra=extra
-        )
+        flags = _risk_flags_from(noul, threshold=noul_threshold, extra=extra)
         return JevShadowDecision(
             primary_route=JevPrimaryRoute.EMERGENCY.value,
             sub_route=str(sub),
@@ -348,17 +385,18 @@ def _compose_from_parsed(
     selected_sub_confidence: float | None = None
     source = "jev_systemone_shadow"
 
-    # Security before emergency for shadow comparison labels (Phase 0/1A contract).
-    if security_n >= noul_threshold:
-        primary = JevPrimaryRoute.SECURITY.value
-        sub_route = "known_attack"
-        selected_sub_confidence = security_n
-        source = "jev_noul_security_override"
-    elif emergency_n >= noul_threshold:
+    # Match eval_jev_intent_router_10._compose_jev_decision: emergency before security.
+    # When both are high, primary is Emergency; security stays in risk_flags.
+    if emergency_n >= noul_threshold:
         primary = JevPrimaryRoute.EMERGENCY.value
         sub_route = "emergency_dispatch"
         selected_sub_confidence = emergency_n
         source = "jev_noul_emergency_override"
+    elif security_n >= noul_threshold:
+        primary = JevPrimaryRoute.SECURITY.value
+        sub_route = "known_attack"
+        selected_sub_confidence = security_n
+        source = "jev_noul_security_override"
     elif primary == JevPrimaryRoute.PHYSICAL.value:
         sub_route, selected_sub_confidence = _map_physical_sub(physical_sub, physical_conf)
     elif primary == JevPrimaryRoute.CONCIERGE.value:
@@ -465,21 +503,20 @@ def _parse_choice_block(answers: dict[str, Any]) -> tuple[dict[str, Any] | None,
 
 
 def _parse_noul_block(answers: dict[str, Any]) -> tuple[dict[str, float], str | None]:
-    values: dict[str, float] = {}
+    """Parse Noul answers. On error, keep best-effort values already parsed for risk_flags."""
+    values: dict[str, float] = {k: 0.0 for k in _NOUL_KEYS}
     for key in _NOUL_KEYS:
         entry = answers.get(key)
         if entry is None:
-            values[key] = 0.0
             continue
         if not isinstance(entry, dict):
-            return {k: 0.0 for k in _NOUL_KEYS}, f"noul_malformed:{key}"
+            return values, f"noul_malformed:{key}"
         if "noul" not in entry:
-            values[key] = 0.0
             continue
         parsed, err = _parse_unit_interval(entry.get("noul"), field_name=f"{key}.noul")
         if err:
-            return {k: 0.0 for k in _NOUL_KEYS}, err
-        values[key] = parsed
+            return values, err
+        values[key] = parsed  # type: ignore[assignment]
     return values, None
 
 
@@ -563,7 +600,9 @@ def _invalid_decision(
     invalid_reason: str,
     noul: dict[str, float],
     primary_confidence: float,
+    noul_threshold: float = DEFAULT_NOUL_THRESHOLD,
 ) -> JevShadowDecision:
+    # Keep risk_flags even on invalid schema so shadow audits do not hide high-risk Noul.
     return JevShadowDecision(
         primary_route=JevPrimaryRoute.UNKNOWN.value,
         sub_route=None,
@@ -573,6 +612,6 @@ def _invalid_decision(
         source="jev_invalid",
         valid=False,
         invalid_reason=invalid_reason,
-        risk_flags=[],
+        risk_flags=_risk_flags_from(noul, threshold=noul_threshold),
         adapter_mode=ADAPTER_MODE,
     )

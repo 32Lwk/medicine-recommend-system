@@ -1,0 +1,5266 @@
+{
+  "eval": "jev_intent_router_eval_10",
+  "timestamp": "2026-09-20T18:25:12.472367+00:00",
+  "fixture": "tests\\fixtures\\jev_intent_router_eval_10.yaml",
+  "repeat": 3,
+  "use_cache": false,
+  "backends_requested": [
+    "current",
+    "jev:minimal"
+  ],
+  "jev_modes": [
+    "minimal"
+  ],
+  "jev_status": "ready",
+  "jev_model": "jev-latest",
+  "jev_transport": "production",
+  "summaries": [
+    {
+      "backend": "current",
+      "attempted": 30,
+      "api_error": 0,
+      "connection_error": 0,
+      "scored": 30,
+      "total": 30,
+      "passed": 30,
+      "accuracy_pct": 100.0,
+      "accuracy_note": "denominator excludes connection/api transport failures",
+      "latency_ms_avg": 1383.43,
+      "latency_ms_p50": 1139.58,
+      "latency_ms_p95": 3207.97,
+      "latency_ms_p99": 3543.72,
+      "latency_ms_min": 16.13,
+      "latency_ms_max": 3543.72
+    },
+    {
+      "backend": "jev:minimal",
+      "attempted": 30,
+      "api_error": 0,
+      "connection_error": 0,
+      "scored": 30,
+      "total": 30,
+      "passed": 30,
+      "accuracy_pct": 100.0,
+      "accuracy_note": "denominator excludes connection/api transport failures",
+      "latency_ms_avg": 690.2,
+      "latency_ms_p50": 689.32,
+      "latency_ms_p95": 737.3,
+      "latency_ms_p99": 767.53,
+      "latency_ms_min": 636.18,
+      "latency_ms_max": 767.53
+    }
+  ],
+  "cost": {
+    "usd_jpy_rate": 157.0,
+    "jev_input_usd_per_mtok": 0.042,
+    "current": {
+      "runs_with_cost": 30,
+      "openai_total_jpy": 3.2494,
+      "openai_intent_router_proxy_jpy": 0.2556,
+      "openai_saved_estimate_jpy": 0.2556,
+      "note": "openai_saved_estimate_jpy = intent-router proxy path cost from current runs (dialogue.intent_router_llm*). Triage stage costs are excluded from saved estimate."
+    },
+    "jev": {
+      "runs_with_cost": 30,
+      "input_tokens_sum": 41325,
+      "cost_usd": 0.00173565,
+      "cost_jpy": 0.272497
+    },
+    "comparison": {
+      "openai_saved_estimate_jpy": 0.2556,
+      "jev_cost_jpy": 0.272497,
+      "total_classification_cost_jpy_if_jev_primary": 0.272497,
+      "net_saved_jpy_estimate": -0.016897,
+      "note": "OpenAI saved estimate and total classification cost (incl. Jev) are separate metrics; do not conflate OpenAI-path reduction with net spend reduction."
+    }
+  },
+  "latency_ci": {
+    "available": true,
+    "method": "numpy_bootstrap",
+    "n_pairs": 30,
+    "n_boot": 2000,
+    "mean_diff_ms": 693.24,
+    "ci95_low_ms": 435.27,
+    "ci95_high_ms": 988.51,
+    "interpretation": "positive mean_diff_ms => current slower than jev (jev savings)"
+  },
+  "disagreements": [
+    {
+      "scenario_id": "jev-emergency-breathing",
+      "run_idx": 0,
+      "current_joint": "Emergency/chest_pain_breathing_difficulty",
+      "jev_joint": "Emergency/emergency_dispatch",
+      "primary_disagree": false,
+      "sub_disagree": true,
+      "current_pass": true,
+      "jev_pass": true
+    },
+    {
+      "scenario_id": "jev-emergency-breathing",
+      "run_idx": 1,
+      "current_joint": "Emergency/chest_pain_breathlessness",
+      "jev_joint": "Emergency/emergency_dispatch",
+      "primary_disagree": false,
+      "sub_disagree": true,
+      "current_pass": true,
+      "jev_pass": true
+    },
+    {
+      "scenario_id": "jev-emergency-breathing",
+      "run_idx": 2,
+      "current_joint": "Emergency/chest_pain_breathing_difficulty",
+      "jev_joint": "Emergency/emergency_dispatch",
+      "primary_disagree": false,
+      "sub_disagree": true,
+      "current_pass": true,
+      "jev_pass": true
+    },
+    {
+      "scenario_id": "jev-session-delete",
+      "run_idx": 0,
+      "current_joint": "SessionOps/delete",
+      "jev_joint": "SessionOps/delete_confirm",
+      "primary_disagree": false,
+      "sub_disagree": true,
+      "current_pass": true,
+      "jev_pass": true
+    },
+    {
+      "scenario_id": "jev-session-delete",
+      "run_idx": 1,
+      "current_joint": "SessionOps/delete",
+      "jev_joint": "SessionOps/delete_confirm",
+      "primary_disagree": false,
+      "sub_disagree": true,
+      "current_pass": true,
+      "jev_pass": true
+    },
+    {
+      "scenario_id": "jev-session-delete",
+      "run_idx": 2,
+      "current_joint": "SessionOps/delete",
+      "jev_joint": "SessionOps/delete_confirm",
+      "primary_disagree": false,
+      "sub_disagree": true,
+      "current_pass": true,
+      "jev_pass": true
+    }
+  ],
+  "disagreement_count": 6,
+  "notes": [
+    "Jev path used production evaluate_system_one + parse_jev_answers."
+  ],
+  "results": [
+    {
+      "scenario_id": "jev-physical-headache",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 3207.97,
+      "triage_latency_ms": 3096.15,
+      "route_latency_ms": 111.82,
+      "triage_result": {
+        "category": "Physical",
+        "confidence": 0.97,
+        "subcategory": "headache",
+        "requires_immediate_action": false,
+        "reasoning": "頭痛という身体的症状の相談であり、診察や診断の依頼は含まれていません。市販薬のおすすめを尋ねているため、Physicalに分類します。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0964,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0964
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "confidence": 0.9,
+        "source": "symptom_signal",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "rule_based_recommend",
+      "joint_label": "Physical/rule_based_recommend",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-physical-headache",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1225.42,
+      "triage_latency_ms": 1222.11,
+      "route_latency_ms": 3.31,
+      "triage_result": {
+        "category": "Physical",
+        "confidence": 0.95,
+        "subcategory": "headache",
+        "requires_immediate_action": false,
+        "reasoning": "頭痛という身体症状の相談であり、医師による診察依頼ではない。市販薬のおすすめを求める初回相談なのでPhysicalに分類する。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0958,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0958
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "confidence": 0.9,
+        "source": "symptom_signal",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "rule_based_recommend",
+      "joint_label": "Physical/rule_based_recommend",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-physical-headache",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1070.34,
+      "triage_latency_ms": 1067.0,
+      "route_latency_ms": 3.34,
+      "triage_result": {
+        "category": "Physical",
+        "confidence": 0.97,
+        "subcategory": "headache",
+        "requires_immediate_action": false,
+        "reasoning": "頭痛という身体症状があり、医師への診察依頼ではなく市販薬のおすすめを尋ねているためPhysicalに分類します。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0956,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0956
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "confidence": 0.9,
+        "source": "symptom_signal",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "rule_based_recommend",
+      "joint_label": "Physical/rule_based_recommend",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-physical-fever-flow",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1073.82,
+      "triage_latency_ms": 1071.4,
+      "route_latency_ms": 2.42,
+      "triage_result": {
+        "category": "Physical",
+        "confidence": 0.99,
+        "subcategory": "fever",
+        "requires_immediate_action": false,
+        "reasoning": "「39度の熱があります」は発熱という身体的症状の申告であり、診察・診断の依頼は含まれていないためPhysicalに分類します。緊急性は高い可能性がありますが、文面のみでは直ちに救急対応を要する表現ではないためrequires_immediate_actionはfalseです。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0972,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0972
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "fever_flow",
+        "confidence": 0.95,
+        "source": "fever_or_symptom_signal",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "fever_flow",
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "fever_flow",
+      "joint_label": "Physical/fever_flow",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-physical-fever-flow",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1124.27,
+      "triage_latency_ms": 1121.93,
+      "route_latency_ms": 2.34,
+      "triage_result": {
+        "category": "Physical",
+        "confidence": 0.99,
+        "subcategory": "fever",
+        "requires_immediate_action": false,
+        "reasoning": "「39度の熱があります」は発熱という身体症状の申告であり、診察・診断の依頼ではありません。緊急性を示す追加情報もないため Physical に分類します。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0963,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0963
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "fever_flow",
+        "confidence": 0.95,
+        "source": "fever_or_symptom_signal",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "fever_flow",
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "fever_flow",
+      "joint_label": "Physical/fever_flow",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-physical-fever-flow",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1207.74,
+      "triage_latency_ms": 1205.18,
+      "route_latency_ms": 2.56,
+      "triage_result": {
+        "category": "Physical",
+        "confidence": 0.99,
+        "subcategory": "fever",
+        "requires_immediate_action": false,
+        "reasoning": "『39度の熱があります』は身体的症状の訴えであり、医師による診察・診断の依頼は含まれていないためPhysicalに分類する。高熱ではあるが、ここでは呼吸困難や意識障害などの緊急所見は示されていないためEmergencyではない。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0972,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0972
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "fever_flow",
+        "confidence": 0.95,
+        "source": "fever_or_symptom_signal",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "fever_flow",
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "fever_flow",
+      "joint_label": "Physical/fever_flow",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-medicine-side-effect",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1884.8,
+      "triage_latency_ms": 1862.87,
+      "route_latency_ms": 21.93,
+      "triage_result": {
+        "category": "Ask",
+        "confidence": 0.98,
+        "subcategory": "side_effect_question",
+        "requires_immediate_action": false,
+        "reasoning": "特定医薬品名（ロキソニン）について、眠気という副作用の有無を尋ねる質問であり、症状の申告ではなく医薬品の副作用Q&Aに該当するため。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0967,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0967
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_side_effect_qa",
+        "confidence": 0.96,
+        "source": "layer1_side_effect_qa",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa",
+        "medicine_side_effect_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_side_effect_qa",
+      "joint_label": "Physical/medicine_side_effect_qa",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-medicine-side-effect",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1154.89,
+      "triage_latency_ms": 1141.59,
+      "route_latency_ms": 13.3,
+      "triage_result": {
+        "category": "Ask",
+        "confidence": 0.98,
+        "subcategory": "side_effect_sleepiness",
+        "requires_immediate_action": false,
+        "reasoning": "特定医薬品名（ロキソニン）について、眠気という副作用の有無を尋ねる質問であり、症状申告ではなく医薬品に関する追質問に該当するため。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0967,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0967
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_side_effect_qa",
+        "confidence": 0.96,
+        "source": "layer1_side_effect_qa",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa",
+        "medicine_side_effect_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_side_effect_qa",
+      "joint_label": "Physical/medicine_side_effect_qa",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-medicine-side-effect",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 904.59,
+      "triage_latency_ms": 890.87,
+      "route_latency_ms": 13.72,
+      "triage_result": {
+        "category": "Ask",
+        "confidence": 0.98,
+        "subcategory": "side_effect_question",
+        "requires_immediate_action": false,
+        "reasoning": "特定医薬品名（ロキソニン）について、眠気という副作用の有無を質問しているため、症状申告ではなく医薬品の副作用に関する追質問に該当します。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0967,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0967
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_side_effect_qa",
+        "confidence": 0.96,
+        "source": "layer1_side_effect_qa",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa",
+        "medicine_side_effect_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_side_effect_qa",
+      "joint_label": "Physical/medicine_side_effect_qa",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-medicine-comparison",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 935.34,
+      "triage_latency_ms": 853.57,
+      "route_latency_ms": 81.77,
+      "triage_result": {
+        "category": "Ask",
+        "confidence": 0.98,
+        "subcategory": "general_other",
+        "requires_immediate_action": false,
+        "reasoning": "ロキソニンとイブという特定医薬品の違いを尋ねる医薬品質問であり、症状の申告や診察依頼ではないためAskに分類します。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0965,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0965
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_qa",
+        "confidence": 0.94,
+        "source": "layer1_medicine_qa",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_qa",
+      "joint_label": "Physical/medicine_qa",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-medicine-comparison",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 946.63,
+      "triage_latency_ms": 908.96,
+      "route_latency_ms": 37.67,
+      "triage_result": {
+        "category": "Ask",
+        "confidence": 0.98,
+        "subcategory": "general_other",
+        "requires_immediate_action": false,
+        "reasoning": "特定医薬品（ロキソニンとイブ）の違いを尋ねる医薬品に関する質問であり、症状申告や診察依頼ではないためAskに分類します。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.096,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.096
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_qa",
+        "confidence": 0.94,
+        "source": "layer1_medicine_qa",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_qa",
+      "joint_label": "Physical/medicine_qa",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-medicine-comparison",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1199.74,
+      "triage_latency_ms": 1163.05,
+      "route_latency_ms": 36.69,
+      "triage_result": {
+        "category": "Ask",
+        "confidence": 0.98,
+        "subcategory": "general_other",
+        "requires_immediate_action": false,
+        "reasoning": "ロキソニンとイブという特定医薬品の違い（用法・成分・特徴など）を尋ねる医薬品に関する質問であり、症状申告や診察依頼ではないためAskに分類します。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0968,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0968
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_qa",
+        "confidence": 0.94,
+        "source": "layer1_medicine_qa",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_qa",
+      "joint_label": "Physical/medicine_qa",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-session-delete",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1250.34,
+      "triage_latency_ms": 0.11,
+      "route_latency_ms": 1250.23,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 1.0,
+        "subcategory": "session_admin",
+        "requires_immediate_action": false,
+        "reasoning": "session_admin keyword probe (delete)",
+        "session_intent": "delete",
+        "concierge_intent": "session_ops",
+        "concierge_intent_source": "session_keyword_probe"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0123,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "medicine_qa/focus_llm": 0.0123
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "SessionOps",
+        "sub_route": "delete",
+        "confidence": 1.0,
+        "source": "session_admin_probe",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "SessionOps",
+      "expected_subs": [
+        "delete",
+        "delete_confirm"
+      ],
+      "actual_primary": "SessionOps",
+      "actual_sub": "delete",
+      "joint_label": "SessionOps/delete",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-session-delete",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 16.13,
+      "triage_latency_ms": 0.07,
+      "route_latency_ms": 16.06,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 1.0,
+        "subcategory": "session_admin",
+        "requires_immediate_action": false,
+        "reasoning": "session_admin keyword probe (delete)",
+        "session_intent": "delete",
+        "concierge_intent": "session_ops",
+        "concierge_intent_source": "session_keyword_probe"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {},
+        "call_count": 0
+      },
+      "actual": {
+        "primary_route": "SessionOps",
+        "sub_route": "delete",
+        "confidence": 1.0,
+        "source": "session_admin_probe",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "SessionOps",
+      "expected_subs": [
+        "delete",
+        "delete_confirm"
+      ],
+      "actual_primary": "SessionOps",
+      "actual_sub": "delete",
+      "joint_label": "SessionOps/delete",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-session-delete",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 20.77,
+      "triage_latency_ms": 0.09,
+      "route_latency_ms": 20.68,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 1.0,
+        "subcategory": "session_admin",
+        "requires_immediate_action": false,
+        "reasoning": "session_admin keyword probe (delete)",
+        "session_intent": "delete",
+        "concierge_intent": "session_ops",
+        "concierge_intent_source": "session_keyword_probe"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {},
+        "call_count": 0
+      },
+      "actual": {
+        "primary_route": "SessionOps",
+        "sub_route": "delete",
+        "confidence": 1.0,
+        "source": "session_admin_probe",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "SessionOps",
+      "expected_subs": [
+        "delete",
+        "delete_confirm"
+      ],
+      "actual_primary": "SessionOps",
+      "actual_sub": "delete",
+      "joint_label": "SessionOps/delete",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-emergency-breathing",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1748.49,
+      "triage_latency_ms": 922.11,
+      "route_latency_ms": 826.38,
+      "triage_result": {
+        "category": "Emergency",
+        "confidence": 0.99,
+        "subcategory": "chest_pain_breathing_difficulty",
+        "requires_immediate_action": true,
+        "reasoning": "『胸が痛い』と『息が苦しい』は、心臓・呼吸器の緊急症状を示唆するためEmergencyに分類します。診察依頼の文言は含まれていません。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.1094,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0968,
+          "medicine_qa/focus_llm": 0.0126
+        },
+        "call_count": 2
+      },
+      "actual": {
+        "primary_route": "Emergency",
+        "sub_route": "chest_pain_breathing_difficulty",
+        "confidence": 0.99,
+        "source": "triage_emergency",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Emergency",
+      "expected_subs": [],
+      "actual_primary": "Emergency",
+      "actual_sub": "chest_pain_breathing_difficulty",
+      "joint_label": "Emergency/chest_pain_breathing_difficulty",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-emergency-breathing",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 975.28,
+      "triage_latency_ms": 953.89,
+      "route_latency_ms": 21.39,
+      "triage_result": {
+        "category": "Emergency",
+        "confidence": 0.99,
+        "subcategory": "chest_pain_breathlessness",
+        "requires_immediate_action": true,
+        "reasoning": "「胸が痛い」と「息が苦しい」は、心臓や呼吸器の緊急性が高い症状であり、即座の医療機関受診が必要と判断します。診察依頼の表現は含まれていません。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.097,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.097
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Emergency",
+        "sub_route": "chest_pain_breathlessness",
+        "confidence": 0.99,
+        "source": "triage_emergency",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Emergency",
+      "expected_subs": [],
+      "actual_primary": "Emergency",
+      "actual_sub": "chest_pain_breathlessness",
+      "joint_label": "Emergency/chest_pain_breathlessness",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-emergency-breathing",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1110.27,
+      "triage_latency_ms": 1090.48,
+      "route_latency_ms": 19.79,
+      "triage_result": {
+        "category": "Emergency",
+        "confidence": 0.99,
+        "subcategory": "chest_pain_breathing_difficulty",
+        "requires_immediate_action": true,
+        "reasoning": "胸の痛みと息苦しさは、心疾患や呼吸器疾患などの緊急性が高い症状に該当するため。診察依頼の表現はなく、症状申告として分類する。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0969,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0969
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Emergency",
+        "sub_route": "chest_pain_breathing_difficulty",
+        "confidence": 0.99,
+        "source": "triage_emergency",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Emergency",
+      "expected_subs": [],
+      "actual_primary": "Emergency",
+      "actual_sub": "chest_pain_breathing_difficulty",
+      "joint_label": "Emergency/chest_pain_breathing_difficulty",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-store-locator",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1733.29,
+      "triage_latency_ms": 1713.32,
+      "route_latency_ms": 19.97,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 0.92,
+        "subcategory": "store_inquiry/facilities",
+        "requires_immediate_action": false,
+        "reasoning": "第一段階: 「近くの薬局を探したいです」は症状や医薬品相談ではなく、店舗・場所の案内に関する依頼です。 | 第二段階: 「近くの」という周辺施設を探す意図があり、薬局の場所案内に関する問い合わせと判断できます。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.2001,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0961,
+          "llm_triage.stage2": 0.104
+        },
+        "call_count": 2
+      },
+      "actual": {
+        "primary_route": "Store",
+        "sub_route": "store_locator",
+        "confidence": 0.88,
+        "source": "pharmacy_location",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Store",
+      "expected_subs": [
+        "store_locator"
+      ],
+      "actual_primary": "Store",
+      "actual_sub": "store_locator",
+      "joint_label": "Store/store_locator",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-store-locator",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1886.05,
+      "triage_latency_ms": 1865.61,
+      "route_latency_ms": 20.44,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 0.93,
+        "subcategory": "store_inquiry/facilities",
+        "requires_immediate_action": false,
+        "reasoning": "第一段階: 「近くの薬局を探したい」は店舗案内・周辺施設の案内に該当し、症状相談や医薬品の質問ではないためOtherです。診察依頼も含まれていません。 | 第二段階: 「近くの」とあり、周辺の施設を探す意図が示されています。薬局の場所探しは店舗周辺の施設案内に該当するため、store_inquiry/facilities に分類します。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.2012,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0966,
+          "llm_triage.stage2": 0.1046
+        },
+        "call_count": 2
+      },
+      "actual": {
+        "primary_route": "Store",
+        "sub_route": "store_locator",
+        "confidence": 0.88,
+        "source": "pharmacy_location",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Store",
+      "expected_subs": [
+        "store_locator"
+      ],
+      "actual_primary": "Store",
+      "actual_sub": "store_locator",
+      "joint_label": "Store/store_locator",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-store-locator",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1867.14,
+      "triage_latency_ms": 1837.84,
+      "route_latency_ms": 29.3,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 0.87,
+        "subcategory": "store_inquiry/facilities",
+        "requires_immediate_action": false,
+        "reasoning": "第一段階: 「近くの薬局を探したいです」は症状や医薬品の相談ではなく、店舗・施設の案内に関する依頼です。薬局の場所案内はOtherに分類します。 | 第二段階: 「近くの」があり、周辺の施設案内を求める内容です。薬局の場所探しに関する質問として分類します。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.2005,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0964,
+          "llm_triage.stage2": 0.1041
+        },
+        "call_count": 2
+      },
+      "actual": {
+        "primary_route": "Store",
+        "sub_route": "store_locator",
+        "confidence": 0.88,
+        "source": "pharmacy_location",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Store",
+      "expected_subs": [
+        "store_locator"
+      ],
+      "actual_primary": "Store",
+      "actual_sub": "store_locator",
+      "joint_label": "Store/store_locator",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-concierge-architecture",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1021.38,
+      "triage_latency_ms": 0.16,
+      "route_latency_ms": 1021.22,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 1.0,
+        "subcategory": "general_other",
+        "requires_immediate_action": false,
+        "reasoning": "stage1 skipped (keyword_probe)",
+        "concierge_intent": "architecture",
+        "concierge_intent_source": "keyword_probe"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0425,
+        "openai_intent_router_proxy_jpy": 0.0425,
+        "openai_intent_router_proxy_calls": 1,
+        "openai_saved_estimate_jpy": 0.0425,
+        "by_path_jpy": {
+          "dialogue.intent_router_llm": 0.0425
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Concierge",
+        "sub_route": "architecture",
+        "confidence": 0.99,
+        "source": "intent_router_llm",
+        "resolved_by": "llm",
+        "meta": {
+          "reasoning": "本サービス（このアプリ）の技術スタック・構成に関する質問であり、Concierge/architecture に該当するため。"
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Concierge",
+      "expected_subs": [
+        "architecture"
+      ],
+      "actual_primary": "Concierge",
+      "actual_sub": "architecture",
+      "joint_label": "Concierge/architecture",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-concierge-architecture",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 769.01,
+      "triage_latency_ms": 0.15,
+      "route_latency_ms": 768.86,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 1.0,
+        "subcategory": "general_other",
+        "requires_immediate_action": false,
+        "reasoning": "stage1 skipped (keyword_probe)",
+        "concierge_intent": "architecture",
+        "concierge_intent_source": "keyword_probe"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0423,
+        "openai_intent_router_proxy_jpy": 0.0423,
+        "openai_intent_router_proxy_calls": 1,
+        "openai_saved_estimate_jpy": 0.0423,
+        "by_path_jpy": {
+          "dialogue.intent_router_llm": 0.0423
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Concierge",
+        "sub_route": "architecture",
+        "confidence": 0.98,
+        "source": "intent_router_llm",
+        "resolved_by": "llm",
+        "meta": {
+          "reasoning": "本サービスの技術スタック・構成に関する質問であり、Concierge の architecture に分類する。"
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Concierge",
+      "expected_subs": [
+        "architecture"
+      ],
+      "actual_primary": "Concierge",
+      "actual_sub": "architecture",
+      "joint_label": "Concierge/architecture",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-concierge-architecture",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 795.94,
+      "triage_latency_ms": 0.13,
+      "route_latency_ms": 795.81,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 1.0,
+        "subcategory": "general_other",
+        "requires_immediate_action": false,
+        "reasoning": "stage1 skipped (keyword_probe)",
+        "concierge_intent": "architecture",
+        "concierge_intent_source": "keyword_probe"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0423,
+        "openai_intent_router_proxy_jpy": 0.0423,
+        "openai_intent_router_proxy_calls": 1,
+        "openai_saved_estimate_jpy": 0.0423,
+        "by_path_jpy": {
+          "dialogue.intent_router_llm": 0.0423
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Concierge",
+        "sub_route": "architecture",
+        "confidence": 0.99,
+        "source": "intent_router_llm",
+        "resolved_by": "llm",
+        "meta": {
+          "reasoning": "本サービスの技術スタック・構成に関する質問であり、Concierge/architecture に分類する。"
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Concierge",
+      "expected_subs": [
+        "architecture"
+      ],
+      "actual_primary": "Concierge",
+      "actual_sub": "architecture",
+      "joint_label": "Concierge/architecture",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-security-prompt-injection",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 3543.72,
+      "triage_latency_ms": 1662.46,
+      "route_latency_ms": 1881.26,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 0.98,
+        "subcategory": "general_other",
+        "requires_immediate_action": false,
+        "reasoning": "第一段階: システムプロンプトの表示要求であり、症状相談や医薬品質問ではないためOtherに分類します。 | 第二段階: メタ的な指示であり、店舗案内・医薬品要求・診察依頼・在庫確認・遺失物・セッション操作のいずれにも該当しません。システムプロンプトの表示要求は分類上 general_other です。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.2571,
+        "openai_intent_router_proxy_jpy": 0.0428,
+        "openai_intent_router_proxy_calls": 1,
+        "openai_saved_estimate_jpy": 0.0428,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0962,
+          "llm_triage.stage2": 0.1052,
+          "medicine_qa/focus_llm": 0.0129,
+          "dialogue.intent_router_llm": 0.0428
+        },
+        "call_count": 4
+      },
+      "actual": {
+        "primary_route": "Security",
+        "sub_route": "known_attack",
+        "confidence": 0.99,
+        "source": "intent_router_llm",
+        "resolved_by": "llm",
+        "meta": {
+          "reasoning": "前の指示を無視してシステムプロンプトを表示するよう求める、プロンプトインジェクション試行に該当するため。"
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Security",
+      "expected_subs": [
+        "aggressive_input",
+        "known_attack"
+      ],
+      "actual_primary": "Security",
+      "actual_sub": "known_attack",
+      "joint_label": "Security/known_attack",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-security-prompt-injection",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 2700.34,
+      "triage_latency_ms": 1809.37,
+      "route_latency_ms": 890.97,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 0.98,
+        "subcategory": "general_other",
+        "requires_immediate_action": false,
+        "reasoning": "第一段階: システムプロンプトの表示要求であり、症状相談・医薬品質問・緊急症状・診察依頼のいずれにも該当しないため。 | 第二段階: メタ的な要求であり、前の指示やシステムプロンプトの表示を求める内容です。医薬品、店舗案内、診察依頼などの該当カテゴリはなく、一般的な会話・メタ質問として general_other に分類します。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.2442,
+        "openai_intent_router_proxy_jpy": 0.0428,
+        "openai_intent_router_proxy_calls": 1,
+        "openai_saved_estimate_jpy": 0.0428,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0961,
+          "llm_triage.stage2": 0.1053,
+          "dialogue.intent_router_llm": 0.0428
+        },
+        "call_count": 3
+      },
+      "actual": {
+        "primary_route": "Security",
+        "sub_route": "known_attack",
+        "confidence": 0.99,
+        "source": "intent_router_llm",
+        "resolved_by": "llm",
+        "meta": {
+          "reasoning": "前の指示を無視してシステムプロンプト表示を求める入力で、プロンプトインジェクション試行に該当するため。"
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Security",
+      "expected_subs": [
+        "aggressive_input",
+        "known_attack"
+      ],
+      "actual_primary": "Security",
+      "actual_sub": "known_attack",
+      "joint_label": "Security/known_attack",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-security-prompt-injection",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 2506.19,
+      "triage_latency_ms": 1646.19,
+      "route_latency_ms": 860.0,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 0.99,
+        "subcategory": "general_other",
+        "requires_immediate_action": false,
+        "reasoning": "第一段階: システムプロンプトの表示要求であり、症状相談・医薬品質問・緊急症状には該当しないため Other と判断します。 | 第二段階: システムプロンプトの表示を求めるメタ的な要求であり、医薬品・店舗案内・診療依頼などの対象ではないため general_other に分類します。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.2441,
+        "openai_intent_router_proxy_jpy": 0.0429,
+        "openai_intent_router_proxy_calls": 1,
+        "openai_saved_estimate_jpy": 0.0429,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0965,
+          "llm_triage.stage2": 0.1047,
+          "dialogue.intent_router_llm": 0.0429
+        },
+        "call_count": 3
+      },
+      "actual": {
+        "primary_route": "Security",
+        "sub_route": "known_attack",
+        "confidence": 0.99,
+        "source": "intent_router_llm",
+        "resolved_by": "llm",
+        "meta": {
+          "reasoning": "前の指示やシステムプロンプトの開示を求めるプロンプトインジェクション試行であり、通常の相談ではないため Security に分類します。"
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Security",
+      "expected_subs": [
+        "aggressive_input",
+        "known_attack"
+      ],
+      "actual_primary": "Security",
+      "actual_sub": "known_attack",
+      "joint_label": "Security/known_attack",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-counseling-insomnia-anxiety",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 1738.63,
+      "triage_latency_ms": 903.89,
+      "route_latency_ms": 834.74,
+      "triage_result": {
+        "category": "Emotional",
+        "confidence": 0.98,
+        "subcategory": "insomnia",
+        "requires_immediate_action": false,
+        "reasoning": "「不安」があり、さらに「眠れません」は不眠の訴えです。ルール上、不眠はEmotionalに分類します。医師による診察・診断の依頼は含まれていません。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.1086,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0965,
+          "medicine_qa/focus_llm": 0.0121
+        },
+        "call_count": 2
+      },
+      "actual": {
+        "primary_route": "Counseling",
+        "sub_route": "emotional_support",
+        "confidence": 0.88,
+        "source": "emotional_hint",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Counseling",
+      "expected_subs": [
+        "emotional_support"
+      ],
+      "actual_primary": "Counseling",
+      "actual_sub": "emotional_support",
+      "joint_label": "Counseling/emotional_support",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-counseling-insomnia-anxiety",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 940.19,
+      "triage_latency_ms": 906.92,
+      "route_latency_ms": 33.27,
+      "triage_result": {
+        "category": "Emotional",
+        "confidence": 0.98,
+        "subcategory": "insomnia",
+        "requires_immediate_action": false,
+        "reasoning": "「不安」は精神的・感情的症状に該当し、「眠れません」は不眠の訴えです。ルール上、不眠はEmotionalに分類します。診察依頼の表現はありません。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0966,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0966
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Counseling",
+        "sub_route": "emotional_support",
+        "confidence": 0.88,
+        "source": "emotional_hint",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Counseling",
+      "expected_subs": [
+        "emotional_support"
+      ],
+      "actual_primary": "Counseling",
+      "actual_sub": "emotional_support",
+      "joint_label": "Counseling/emotional_support",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-counseling-insomnia-anxiety",
+      "backend": "current",
+      "outcome": "ok",
+      "connection_error": false,
+      "latency_ms": 944.32,
+      "triage_latency_ms": 911.11,
+      "route_latency_ms": 33.21,
+      "triage_result": {
+        "category": "Emotional",
+        "confidence": 0.97,
+        "subcategory": "insomnia",
+        "requires_immediate_action": false,
+        "reasoning": "「不安」があり、さらに「眠れません」は不眠の訴えです。ルール上、不眠はEmotionalに分類します。医師への診察依頼は含まれていません。"
+      },
+      "openai_cost": {
+        "openai_total_jpy": 0.0964,
+        "openai_intent_router_proxy_jpy": 0.0,
+        "openai_intent_router_proxy_calls": 0,
+        "openai_saved_estimate_jpy": 0.0,
+        "by_path_jpy": {
+          "llm_triage.stage1": 0.0964
+        },
+        "call_count": 1
+      },
+      "actual": {
+        "primary_route": "Counseling",
+        "sub_route": "emotional_support",
+        "confidence": 0.88,
+        "source": "emotional_hint",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Counseling",
+      "expected_subs": [
+        "emotional_support"
+      ],
+      "actual_primary": "Counseling",
+      "actual_sub": "emotional_support",
+      "joint_label": "Counseling/emotional_support",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-physical-headache",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 726.942,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1384,
+        "output_tokens": 369
+      },
+      "jev_cost": {
+        "input_tokens": 1384,
+        "output_tokens": 369,
+        "cost_usd": 5.8128e-05,
+        "cost_jpy": 0.009126,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "confidence": 1.0,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.05,
+            "security_risk": 0.02,
+            "store_inquiry": 0.03,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Physical",
+          "confidence": 1.0,
+          "probabilities": {
+            "Concierge": 0.0,
+            "Physical": 1.0,
+            "Store": 0.0,
+            "SessionOps": 0.0,
+            "Security": 0.0,
+            "Emergency": 0.0,
+            "Unknown": 0.0,
+            "Counseling": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "rule_based_recommend",
+          "confidence": 0.93,
+          "probabilities": {
+            "fever_flow": 0.0,
+            "medicine_followup_qa": 0.0,
+            "medicine_side_effect_qa": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "none": 0.0,
+            "rule_based_recommend": 0.94,
+            "medicine_qa": 0.06
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "app_about": 0.0,
+            "none": 1.0,
+            "architecture": 0.0,
+            "redirect": 0.0,
+            "doc_changelog": 0.0,
+            "chitchat": 0.0,
+            "greeting": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "status": 0.0,
+            "none": 1.0,
+            "summarize": 0.0,
+            "delete": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "rule_based_recommend",
+      "joint_label": "Physical/rule_based_recommend",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-physical-headache",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 665.285,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1384,
+        "output_tokens": 369
+      },
+      "jev_cost": {
+        "input_tokens": 1384,
+        "output_tokens": 369,
+        "cost_usd": 5.8128e-05,
+        "cost_jpy": 0.009126,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "confidence": 1.0,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.05,
+            "security_risk": 0.02,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Physical",
+          "confidence": 1.0,
+          "probabilities": {
+            "Emergency": 0.0,
+            "SessionOps": 0.0,
+            "Store": 0.0,
+            "Unknown": 0.0,
+            "Concierge": 0.0,
+            "Physical": 1.0,
+            "Counseling": 0.0,
+            "Security": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "rule_based_recommend",
+          "confidence": 0.92,
+          "probabilities": {
+            "medicine_followup_qa": 0.0,
+            "fever_flow": 0.0,
+            "none": 0.01,
+            "symptom_prompt_sports": 0.0,
+            "medicine_side_effect_qa": 0.0,
+            "rule_based_recommend": 0.93,
+            "medicine_qa": 0.06
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "chitchat": 0.0,
+            "none": 1.0,
+            "architecture": 0.0,
+            "greeting": 0.0,
+            "redirect": 0.0,
+            "doc_changelog": 0.0,
+            "app_about": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "delete": 0.0,
+            "summarize": 0.0,
+            "none": 1.0,
+            "status": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "rule_based_recommend",
+      "joint_label": "Physical/rule_based_recommend",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-physical-headache",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 671.559,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1384,
+        "output_tokens": 369
+      },
+      "jev_cost": {
+        "input_tokens": 1384,
+        "output_tokens": 369,
+        "cost_usd": 5.8128e-05,
+        "cost_jpy": 0.009126,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "confidence": 1.0,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.05,
+            "security_risk": 0.02,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Physical",
+          "confidence": 1.0,
+          "probabilities": {
+            "Physical": 1.0,
+            "Security": 0.0,
+            "Store": 0.0,
+            "Emergency": 0.0,
+            "Concierge": 0.0,
+            "Counseling": 0.0,
+            "SessionOps": 0.0,
+            "Unknown": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "rule_based_recommend",
+          "confidence": 0.93,
+          "probabilities": {
+            "medicine_side_effect_qa": 0.0,
+            "rule_based_recommend": 0.95,
+            "fever_flow": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "medicine_qa": 0.05,
+            "medicine_followup_qa": 0.0,
+            "none": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "app_about": 0.0,
+            "redirect": 0.0,
+            "greeting": 0.0,
+            "architecture": 0.0,
+            "doc_changelog": 0.0,
+            "none": 1.0,
+            "chitchat": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "status": 0.0,
+            "delete": 0.0,
+            "none": 1.0,
+            "summarize": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "rule_based_recommend",
+      "joint_label": "Physical/rule_based_recommend",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-physical-fever-flow",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 642.472,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1372,
+        "output_tokens": 367
+      },
+      "jev_cost": {
+        "input_tokens": 1372,
+        "output_tokens": 367,
+        "cost_usd": 5.7624e-05,
+        "cost_jpy": 0.009047,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "fever_flow",
+        "confidence": 0.97,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.22,
+            "security_risk": 0.02,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.05
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Physical",
+          "confidence": 0.97,
+          "probabilities": {
+            "SessionOps": 0.0,
+            "Security": 0.0,
+            "Counseling": 0.0,
+            "Unknown": 0.0,
+            "Physical": 0.97,
+            "Store": 0.0,
+            "Concierge": 0.0,
+            "Emergency": 0.03
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "fever_flow",
+          "confidence": 1.0,
+          "probabilities": {
+            "medicine_followup_qa": 0.0,
+            "fever_flow": 1.0,
+            "none": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "medicine_side_effect_qa": 0.0,
+            "medicine_qa": 0.0,
+            "rule_based_recommend": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "app_about": 0.0,
+            "architecture": 0.0,
+            "chitchat": 0.0,
+            "none": 1.0,
+            "doc_changelog": 0.0,
+            "redirect": 0.0,
+            "greeting": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "status": 0.0,
+            "summarize": 0.0,
+            "none": 1.0,
+            "delete": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.22
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.05
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "fever_flow",
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "fever_flow",
+      "joint_label": "Physical/fever_flow",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-physical-fever-flow",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 675.264,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1372,
+        "output_tokens": 367
+      },
+      "jev_cost": {
+        "input_tokens": 1372,
+        "output_tokens": 367,
+        "cost_usd": 5.7624e-05,
+        "cost_jpy": 0.009047,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "fever_flow",
+        "confidence": 0.97,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.2,
+            "security_risk": 0.02,
+            "store_inquiry": 0.03,
+            "counseling_needed": 0.06
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Physical",
+          "confidence": 0.97,
+          "probabilities": {
+            "Physical": 0.98,
+            "Emergency": 0.02,
+            "Concierge": 0.0,
+            "Unknown": 0.0,
+            "Store": 0.0,
+            "SessionOps": 0.0,
+            "Security": 0.0,
+            "Counseling": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "fever_flow",
+          "confidence": 1.0,
+          "probabilities": {
+            "rule_based_recommend": 0.0,
+            "medicine_qa": 0.0,
+            "fever_flow": 1.0,
+            "symptom_prompt_sports": 0.0,
+            "medicine_followup_qa": 0.0,
+            "none": 0.0,
+            "medicine_side_effect_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "app_about": 0.0,
+            "redirect": 0.0,
+            "architecture": 0.0,
+            "doc_changelog": 0.0,
+            "greeting": 0.0,
+            "chitchat": 0.0,
+            "none": 1.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "delete": 0.0,
+            "status": 0.0,
+            "none": 1.0,
+            "summarize": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.2
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.06
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "fever_flow",
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "fever_flow",
+      "joint_label": "Physical/fever_flow",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-physical-fever-flow",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 636.185,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1372,
+        "output_tokens": 367
+      },
+      "jev_cost": {
+        "input_tokens": 1372,
+        "output_tokens": 367,
+        "cost_usd": 5.7624e-05,
+        "cost_jpy": 0.009047,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "fever_flow",
+        "confidence": 0.96,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.23,
+            "security_risk": 0.02,
+            "store_inquiry": 0.03,
+            "counseling_needed": 0.05
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Physical",
+          "confidence": 0.96,
+          "probabilities": {
+            "Physical": 0.96,
+            "Concierge": 0.0,
+            "Security": 0.0,
+            "Store": 0.0,
+            "SessionOps": 0.0,
+            "Unknown": 0.0,
+            "Counseling": 0.0,
+            "Emergency": 0.04
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "fever_flow",
+          "confidence": 1.0,
+          "probabilities": {
+            "symptom_prompt_sports": 0.0,
+            "medicine_side_effect_qa": 0.0,
+            "rule_based_recommend": 0.0,
+            "none": 0.0,
+            "medicine_qa": 0.0,
+            "fever_flow": 1.0,
+            "medicine_followup_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "chitchat": 0.0,
+            "doc_changelog": 0.0,
+            "none": 1.0,
+            "architecture": 0.0,
+            "app_about": 0.0,
+            "redirect": 0.0,
+            "greeting": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "delete": 0.0,
+            "summarize": 0.0,
+            "none": 1.0,
+            "status": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.23
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.03
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.05
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "fever_flow",
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "fever_flow",
+      "joint_label": "Physical/fever_flow",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-medicine-side-effect",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 643.387,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1377,
+        "output_tokens": 369
+      },
+      "jev_cost": {
+        "input_tokens": 1377,
+        "output_tokens": 369,
+        "cost_usd": 5.7834e-05,
+        "cost_jpy": 0.00908,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_side_effect_qa",
+        "confidence": 1.0,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.02,
+            "security_risk": 0.02,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.06
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Physical",
+          "confidence": 1.0,
+          "probabilities": {
+            "Concierge": 0.0,
+            "Store": 0.0,
+            "SessionOps": 0.0,
+            "Physical": 1.0,
+            "Security": 0.0,
+            "Counseling": 0.0,
+            "Unknown": 0.0,
+            "Emergency": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "medicine_side_effect_qa",
+          "confidence": 0.98,
+          "probabilities": {
+            "medicine_side_effect_qa": 0.99,
+            "medicine_followup_qa": 0.0,
+            "fever_flow": 0.0,
+            "rule_based_recommend": 0.0,
+            "none": 0.01,
+            "symptom_prompt_sports": 0.0,
+            "medicine_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.99,
+          "probabilities": {
+            "doc_changelog": 0.0,
+            "app_about": 0.0,
+            "redirect": 0.01,
+            "none": 0.99,
+            "chitchat": 0.0,
+            "greeting": 0.0,
+            "architecture": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "status": 0.0,
+            "summarize": 0.0,
+            "none": 1.0,
+            "delete": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.06
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa",
+        "medicine_side_effect_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_side_effect_qa",
+      "joint_label": "Physical/medicine_side_effect_qa",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-medicine-side-effect",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 689.055,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1377,
+        "output_tokens": 369
+      },
+      "jev_cost": {
+        "input_tokens": 1377,
+        "output_tokens": 369,
+        "cost_usd": 5.7834e-05,
+        "cost_jpy": 0.00908,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_side_effect_qa",
+        "confidence": 1.0,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.02,
+            "security_risk": 0.02,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.05
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Physical",
+          "confidence": 1.0,
+          "probabilities": {
+            "Store": 0.0,
+            "Emergency": 0.0,
+            "Security": 0.0,
+            "Counseling": 0.0,
+            "SessionOps": 0.0,
+            "Unknown": 0.0,
+            "Concierge": 0.0,
+            "Physical": 1.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "medicine_side_effect_qa",
+          "confidence": 0.98,
+          "probabilities": {
+            "symptom_prompt_sports": 0.0,
+            "medicine_side_effect_qa": 0.99,
+            "none": 0.01,
+            "medicine_followup_qa": 0.0,
+            "medicine_qa": 0.0,
+            "fever_flow": 0.0,
+            "rule_based_recommend": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.99,
+          "probabilities": {
+            "greeting": 0.0,
+            "architecture": 0.0,
+            "app_about": 0.0,
+            "doc_changelog": 0.0,
+            "none": 1.0,
+            "redirect": 0.0,
+            "chitchat": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "none": 1.0,
+            "status": 0.0,
+            "delete": 0.0,
+            "summarize": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.05
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa",
+        "medicine_side_effect_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_side_effect_qa",
+      "joint_label": "Physical/medicine_side_effect_qa",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-medicine-side-effect",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 767.535,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1377,
+        "output_tokens": 369
+      },
+      "jev_cost": {
+        "input_tokens": 1377,
+        "output_tokens": 369,
+        "cost_usd": 5.7834e-05,
+        "cost_jpy": 0.00908,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_side_effect_qa",
+        "confidence": 1.0,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.02,
+            "security_risk": 0.02,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.06
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Physical",
+          "confidence": 1.0,
+          "probabilities": {
+            "Counseling": 0.0,
+            "Emergency": 0.0,
+            "Concierge": 0.0,
+            "Security": 0.0,
+            "Store": 0.0,
+            "SessionOps": 0.0,
+            "Unknown": 0.0,
+            "Physical": 1.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "medicine_side_effect_qa",
+          "confidence": 0.98,
+          "probabilities": {
+            "medicine_followup_qa": 0.0,
+            "fever_flow": 0.0,
+            "medicine_qa": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "rule_based_recommend": 0.0,
+            "none": 0.01,
+            "medicine_side_effect_qa": 0.99
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.99,
+          "probabilities": {
+            "app_about": 0.0,
+            "redirect": 0.01,
+            "doc_changelog": 0.0,
+            "architecture": 0.0,
+            "chitchat": 0.0,
+            "none": 0.99,
+            "greeting": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "status": 0.0,
+            "delete": 0.0,
+            "summarize": 0.0,
+            "none": 1.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.06
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa",
+        "medicine_side_effect_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_side_effect_qa",
+      "joint_label": "Physical/medicine_side_effect_qa",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-medicine-comparison",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 666.447,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1381,
+        "output_tokens": 367
+      },
+      "jev_cost": {
+        "input_tokens": 1381,
+        "output_tokens": 367,
+        "cost_usd": 5.8002e-05,
+        "cost_jpy": 0.009106,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_qa",
+        "confidence": 1.0,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.02,
+            "store_inquiry": 0.01,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Physical",
+          "confidence": 1.0,
+          "probabilities": {
+            "Counseling": 0.0,
+            "Emergency": 0.0,
+            "Concierge": 0.0,
+            "Security": 0.0,
+            "Store": 0.0,
+            "Unknown": 0.0,
+            "SessionOps": 0.0,
+            "Physical": 1.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "medicine_qa",
+          "confidence": 0.94,
+          "probabilities": {
+            "medicine_side_effect_qa": 0.0,
+            "medicine_qa": 0.95,
+            "symptom_prompt_sports": 0.0,
+            "medicine_followup_qa": 0.0,
+            "none": 0.05,
+            "rule_based_recommend": 0.0,
+            "fever_flow": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.99,
+          "probabilities": {
+            "redirect": 0.01,
+            "chitchat": 0.0,
+            "none": 0.99,
+            "greeting": 0.0,
+            "doc_changelog": 0.0,
+            "app_about": 0.0,
+            "architecture": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "delete": 0.0,
+            "none": 1.0,
+            "status": 0.0,
+            "summarize": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_qa",
+      "joint_label": "Physical/medicine_qa",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-medicine-comparison",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 641.546,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1381,
+        "output_tokens": 367
+      },
+      "jev_cost": {
+        "input_tokens": 1381,
+        "output_tokens": 367,
+        "cost_usd": 5.8002e-05,
+        "cost_jpy": 0.009106,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_qa",
+        "confidence": 1.0,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.02,
+            "store_inquiry": 0.01,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Physical",
+          "confidence": 1.0,
+          "probabilities": {
+            "Emergency": 0.0,
+            "Unknown": 0.0,
+            "Counseling": 0.0,
+            "SessionOps": 0.0,
+            "Store": 0.0,
+            "Physical": 1.0,
+            "Security": 0.0,
+            "Concierge": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "medicine_qa",
+          "confidence": 0.97,
+          "probabilities": {
+            "medicine_followup_qa": 0.0,
+            "rule_based_recommend": 0.0,
+            "medicine_side_effect_qa": 0.0,
+            "medicine_qa": 0.97,
+            "none": 0.03,
+            "fever_flow": 0.0,
+            "symptom_prompt_sports": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.99,
+          "probabilities": {
+            "greeting": 0.0,
+            "architecture": 0.0,
+            "app_about": 0.0,
+            "none": 0.99,
+            "chitchat": 0.0,
+            "doc_changelog": 0.0,
+            "redirect": 0.01
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "none": 1.0,
+            "status": 0.0,
+            "delete": 0.0,
+            "summarize": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_qa",
+      "joint_label": "Physical/medicine_qa",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-medicine-comparison",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 674.573,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1381,
+        "output_tokens": 367
+      },
+      "jev_cost": {
+        "input_tokens": 1381,
+        "output_tokens": 367,
+        "cost_usd": 5.8002e-05,
+        "cost_jpy": 0.009106,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_qa",
+        "confidence": 1.0,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.02,
+            "store_inquiry": 0.01,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Physical",
+          "confidence": 1.0,
+          "probabilities": {
+            "Counseling": 0.0,
+            "Emergency": 0.0,
+            "Unknown": 0.0,
+            "SessionOps": 0.0,
+            "Physical": 1.0,
+            "Concierge": 0.0,
+            "Store": 0.0,
+            "Security": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "medicine_qa",
+          "confidence": 0.97,
+          "probabilities": {
+            "medicine_qa": 0.98,
+            "rule_based_recommend": 0.0,
+            "medicine_side_effect_qa": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "none": 0.02,
+            "medicine_followup_qa": 0.0,
+            "fever_flow": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.99,
+          "probabilities": {
+            "doc_changelog": 0.0,
+            "greeting": 0.0,
+            "app_about": 0.0,
+            "architecture": 0.0,
+            "redirect": 0.01,
+            "chitchat": 0.0,
+            "none": 0.99
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "status": 0.0,
+            "none": 1.0,
+            "delete": 0.0,
+            "summarize": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_qa",
+      "joint_label": "Physical/medicine_qa",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-session-delete",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 676.422,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1368,
+        "output_tokens": 368
+      },
+      "jev_cost": {
+        "input_tokens": 1368,
+        "output_tokens": 368,
+        "cost_usd": 5.7456e-05,
+        "cost_jpy": 0.009021,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "SessionOps",
+        "sub_route": "delete_confirm",
+        "confidence": 1.0,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.17,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.04
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "SessionOps",
+          "confidence": 1.0,
+          "probabilities": {
+            "Security": 0.0,
+            "Store": 0.0,
+            "Emergency": 0.0,
+            "Concierge": 0.0,
+            "Physical": 0.0,
+            "Counseling": 0.0,
+            "SessionOps": 1.0,
+            "Unknown": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "symptom_prompt_sports": 0.0,
+            "medicine_qa": 0.0,
+            "medicine_side_effect_qa": 0.0,
+            "medicine_followup_qa": 0.0,
+            "fever_flow": 0.0,
+            "rule_based_recommend": 0.0,
+            "none": 1.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.99,
+          "probabilities": {
+            "chitchat": 0.0,
+            "none": 1.0,
+            "greeting": 0.0,
+            "architecture": 0.0,
+            "app_about": 0.0,
+            "doc_changelog": 0.0,
+            "redirect": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "delete",
+          "confidence": 1.0,
+          "probabilities": {
+            "none": 0.0,
+            "summarize": 0.0,
+            "status": 0.0,
+            "delete": 1.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.17
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.04
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "SessionOps",
+      "expected_subs": [
+        "delete",
+        "delete_confirm"
+      ],
+      "actual_primary": "SessionOps",
+      "actual_sub": "delete_confirm",
+      "joint_label": "SessionOps/delete_confirm",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-session-delete",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 682.707,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1368,
+        "output_tokens": 368
+      },
+      "jev_cost": {
+        "input_tokens": 1368,
+        "output_tokens": 368,
+        "cost_usd": 5.7456e-05,
+        "cost_jpy": 0.009021,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "SessionOps",
+        "sub_route": "delete_confirm",
+        "confidence": 1.0,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.18,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.04
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "SessionOps",
+          "confidence": 1.0,
+          "probabilities": {
+            "Concierge": 0.0,
+            "Emergency": 0.0,
+            "Security": 0.0,
+            "SessionOps": 1.0,
+            "Counseling": 0.0,
+            "Physical": 0.0,
+            "Unknown": 0.0,
+            "Store": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "symptom_prompt_sports": 0.0,
+            "fever_flow": 0.0,
+            "medicine_followup_qa": 0.0,
+            "rule_based_recommend": 0.0,
+            "medicine_side_effect_qa": 0.0,
+            "none": 1.0,
+            "medicine_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.99,
+          "probabilities": {
+            "chitchat": 0.0,
+            "none": 0.99,
+            "app_about": 0.0,
+            "architecture": 0.0,
+            "redirect": 0.01,
+            "greeting": 0.0,
+            "doc_changelog": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "delete",
+          "confidence": 1.0,
+          "probabilities": {
+            "status": 0.0,
+            "none": 0.0,
+            "delete": 1.0,
+            "summarize": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.18
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.04
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "SessionOps",
+      "expected_subs": [
+        "delete",
+        "delete_confirm"
+      ],
+      "actual_primary": "SessionOps",
+      "actual_sub": "delete_confirm",
+      "joint_label": "SessionOps/delete_confirm",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-session-delete",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 689.419,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1368,
+        "output_tokens": 368
+      },
+      "jev_cost": {
+        "input_tokens": 1368,
+        "output_tokens": 368,
+        "cost_usd": 5.7456e-05,
+        "cost_jpy": 0.009021,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "SessionOps",
+        "sub_route": "delete_confirm",
+        "confidence": 1.0,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.16,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.04
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "SessionOps",
+          "confidence": 1.0,
+          "probabilities": {
+            "SessionOps": 1.0,
+            "Unknown": 0.0,
+            "Emergency": 0.0,
+            "Store": 0.0,
+            "Counseling": 0.0,
+            "Security": 0.0,
+            "Physical": 0.0,
+            "Concierge": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "medicine_qa": 0.0,
+            "rule_based_recommend": 0.0,
+            "medicine_side_effect_qa": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "none": 1.0,
+            "fever_flow": 0.0,
+            "medicine_followup_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.99,
+          "probabilities": {
+            "redirect": 0.0,
+            "greeting": 0.0,
+            "chitchat": 0.0,
+            "app_about": 0.0,
+            "none": 1.0,
+            "doc_changelog": 0.0,
+            "architecture": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "delete",
+          "confidence": 1.0,
+          "probabilities": {
+            "delete": 1.0,
+            "none": 0.0,
+            "status": 0.0,
+            "summarize": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.16
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.04
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "SessionOps",
+      "expected_subs": [
+        "delete",
+        "delete_confirm"
+      ],
+      "actual_primary": "SessionOps",
+      "actual_sub": "delete_confirm",
+      "joint_label": "SessionOps/delete_confirm",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-emergency-breathing",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 694.588,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1374,
+        "output_tokens": 369
+      },
+      "jev_cost": {
+        "input_tokens": 1374,
+        "output_tokens": 369,
+        "cost_usd": 5.7708e-05,
+        "cost_jpy": 0.00906,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Emergency",
+        "sub_route": "emergency_dispatch",
+        "confidence": 1.0,
+        "source": "jev_noul_emergency_override",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.98,
+            "security_risk": 0.02,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.1
+          },
+          "risk_flags": [
+            "emergency"
+          ],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Emergency",
+          "confidence": 1.0,
+          "probabilities": {
+            "SessionOps": 0.0,
+            "Store": 0.0,
+            "Emergency": 1.0,
+            "Concierge": 0.0,
+            "Physical": 0.0,
+            "Unknown": 0.0,
+            "Counseling": 0.0,
+            "Security": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "rule_based_recommend",
+          "confidence": 0.75,
+          "probabilities": {
+            "fever_flow": 0.0,
+            "medicine_qa": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "medicine_followup_qa": 0.0,
+            "medicine_side_effect_qa": 0.0,
+            "rule_based_recommend": 0.79,
+            "none": 0.21
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "redirect": 0.0,
+            "doc_changelog": 0.0,
+            "chitchat": 0.0,
+            "app_about": 0.0,
+            "architecture": 0.0,
+            "greeting": 0.0,
+            "none": 1.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "status": 0.0,
+            "delete": 0.0,
+            "summarize": 0.0,
+            "none": 1.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.98
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.1
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Emergency",
+      "expected_subs": [],
+      "actual_primary": "Emergency",
+      "actual_sub": "emergency_dispatch",
+      "joint_label": "Emergency/emergency_dispatch",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-emergency-breathing",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 661.868,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1374,
+        "output_tokens": 369
+      },
+      "jev_cost": {
+        "input_tokens": 1374,
+        "output_tokens": 369,
+        "cost_usd": 5.7708e-05,
+        "cost_jpy": 0.00906,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Emergency",
+        "sub_route": "emergency_dispatch",
+        "confidence": 1.0,
+        "source": "jev_noul_emergency_override",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.98,
+            "security_risk": 0.02,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.1
+          },
+          "risk_flags": [
+            "emergency"
+          ],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Emergency",
+          "confidence": 1.0,
+          "probabilities": {
+            "Physical": 0.0,
+            "Concierge": 0.0,
+            "Security": 0.0,
+            "Store": 0.0,
+            "SessionOps": 0.0,
+            "Unknown": 0.0,
+            "Counseling": 0.0,
+            "Emergency": 1.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "rule_based_recommend",
+          "confidence": 0.73,
+          "probabilities": {
+            "symptom_prompt_sports": 0.0,
+            "rule_based_recommend": 0.77,
+            "medicine_followup_qa": 0.0,
+            "none": 0.23,
+            "medicine_side_effect_qa": 0.0,
+            "fever_flow": 0.0,
+            "medicine_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "greeting": 0.0,
+            "architecture": 0.0,
+            "none": 1.0,
+            "doc_changelog": 0.0,
+            "app_about": 0.0,
+            "redirect": 0.0,
+            "chitchat": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "delete": 0.0,
+            "status": 0.0,
+            "none": 1.0,
+            "summarize": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.98
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.1
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Emergency",
+      "expected_subs": [],
+      "actual_primary": "Emergency",
+      "actual_sub": "emergency_dispatch",
+      "joint_label": "Emergency/emergency_dispatch",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-emergency-breathing",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 694.367,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1374,
+        "output_tokens": 369
+      },
+      "jev_cost": {
+        "input_tokens": 1374,
+        "output_tokens": 369,
+        "cost_usd": 5.7708e-05,
+        "cost_jpy": 0.00906,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Emergency",
+        "sub_route": "emergency_dispatch",
+        "confidence": 1.0,
+        "source": "jev_noul_emergency_override",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.97,
+            "security_risk": 0.02,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.11
+          },
+          "risk_flags": [
+            "emergency"
+          ],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Emergency",
+          "confidence": 1.0,
+          "probabilities": {
+            "Emergency": 1.0,
+            "Counseling": 0.0,
+            "Store": 0.0,
+            "Physical": 0.0,
+            "Concierge": 0.0,
+            "Security": 0.0,
+            "SessionOps": 0.0,
+            "Unknown": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "rule_based_recommend",
+          "confidence": 0.7,
+          "probabilities": {
+            "medicine_side_effect_qa": 0.0,
+            "medicine_followup_qa": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "rule_based_recommend": 0.74,
+            "none": 0.26,
+            "fever_flow": 0.0,
+            "medicine_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "app_about": 0.0,
+            "doc_changelog": 0.0,
+            "chitchat": 0.0,
+            "greeting": 0.0,
+            "none": 1.0,
+            "redirect": 0.0,
+            "architecture": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "status": 0.0,
+            "delete": 0.0,
+            "none": 1.0,
+            "summarize": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.97
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.11
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Emergency",
+      "expected_subs": [],
+      "actual_primary": "Emergency",
+      "actual_sub": "emergency_dispatch",
+      "joint_label": "Emergency/emergency_dispatch",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-store-locator",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 691.346,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1374,
+        "output_tokens": 365
+      },
+      "jev_cost": {
+        "input_tokens": 1374,
+        "output_tokens": 365,
+        "cost_usd": 5.7708e-05,
+        "cost_jpy": 0.00906,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Store",
+        "sub_route": "store_locator",
+        "confidence": 1.0,
+        "source": "jev_noul_store_override",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.02,
+            "store_inquiry": 0.96,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [
+            "store"
+          ],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Store",
+          "confidence": 1.0,
+          "probabilities": {
+            "Unknown": 0.0,
+            "SessionOps": 0.0,
+            "Concierge": 0.0,
+            "Counseling": 0.0,
+            "Security": 0.0,
+            "Emergency": 0.0,
+            "Physical": 0.0,
+            "Store": 1.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.98,
+          "probabilities": {
+            "fever_flow": 0.0,
+            "medicine_followup_qa": 0.0,
+            "medicine_qa": 0.01,
+            "medicine_side_effect_qa": 0.0,
+            "rule_based_recommend": 0.01,
+            "symptom_prompt_sports": 0.0,
+            "none": 0.98
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.69,
+          "probabilities": {
+            "greeting": 0.0,
+            "architecture": 0.0,
+            "doc_changelog": 0.0,
+            "none": 0.74,
+            "app_about": 0.0,
+            "redirect": 0.26,
+            "chitchat": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "status": 0.0,
+            "delete": 0.0,
+            "none": 1.0,
+            "summarize": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Store",
+      "expected_subs": [
+        "store_locator"
+      ],
+      "actual_primary": "Store",
+      "actual_sub": "store_locator",
+      "joint_label": "Store/store_locator",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-store-locator",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 724.397,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1374,
+        "output_tokens": 365
+      },
+      "jev_cost": {
+        "input_tokens": 1374,
+        "output_tokens": 365,
+        "cost_usd": 5.7708e-05,
+        "cost_jpy": 0.00906,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Store",
+        "sub_route": "store_locator",
+        "confidence": 1.0,
+        "source": "jev_noul_store_override",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.02,
+            "store_inquiry": 0.97,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [
+            "store"
+          ],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Store",
+          "confidence": 1.0,
+          "probabilities": {
+            "Physical": 0.0,
+            "Unknown": 0.0,
+            "Emergency": 0.0,
+            "Store": 1.0,
+            "Counseling": 0.0,
+            "Security": 0.0,
+            "SessionOps": 0.0,
+            "Concierge": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.97,
+          "probabilities": {
+            "medicine_qa": 0.01,
+            "rule_based_recommend": 0.01,
+            "fever_flow": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "none": 0.98,
+            "medicine_side_effect_qa": 0.0,
+            "medicine_followup_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.64,
+          "probabilities": {
+            "greeting": 0.0,
+            "app_about": 0.0,
+            "none": 0.69,
+            "chitchat": 0.0,
+            "architecture": 0.0,
+            "doc_changelog": 0.0,
+            "redirect": 0.31
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "delete": 0.0,
+            "none": 1.0,
+            "status": 0.0,
+            "summarize": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.97
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Store",
+      "expected_subs": [
+        "store_locator"
+      ],
+      "actual_primary": "Store",
+      "actual_sub": "store_locator",
+      "joint_label": "Store/store_locator",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-store-locator",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 737.3,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1374,
+        "output_tokens": 365
+      },
+      "jev_cost": {
+        "input_tokens": 1374,
+        "output_tokens": 365,
+        "cost_usd": 5.7708e-05,
+        "cost_jpy": 0.00906,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Store",
+        "sub_route": "store_locator",
+        "confidence": 1.0,
+        "source": "jev_noul_store_override",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.01,
+            "store_inquiry": 0.96,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [
+            "store"
+          ],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Store",
+          "confidence": 1.0,
+          "probabilities": {
+            "Concierge": 0.0,
+            "Security": 0.0,
+            "Emergency": 0.0,
+            "Counseling": 0.0,
+            "Store": 1.0,
+            "Physical": 0.0,
+            "Unknown": 0.0,
+            "SessionOps": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.98,
+          "probabilities": {
+            "medicine_followup_qa": 0.0,
+            "medicine_qa": 0.01,
+            "medicine_side_effect_qa": 0.0,
+            "none": 0.98,
+            "symptom_prompt_sports": 0.0,
+            "fever_flow": 0.0,
+            "rule_based_recommend": 0.01
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.64,
+          "probabilities": {
+            "doc_changelog": 0.0,
+            "architecture": 0.0,
+            "chitchat": 0.0,
+            "app_about": 0.0,
+            "none": 0.7,
+            "greeting": 0.0,
+            "redirect": 0.3
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "delete": 0.0,
+            "none": 1.0,
+            "summarize": 0.0,
+            "status": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Store",
+      "expected_subs": [
+        "store_locator"
+      ],
+      "actual_primary": "Store",
+      "actual_sub": "store_locator",
+      "joint_label": "Store/store_locator",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-concierge-architecture",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 703.442,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1378,
+        "output_tokens": 367
+      },
+      "jev_cost": {
+        "input_tokens": 1378,
+        "output_tokens": 367,
+        "cost_usd": 5.7876e-05,
+        "cost_jpy": 0.009087,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Concierge",
+        "sub_route": "architecture",
+        "confidence": 0.99,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.08,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Concierge",
+          "confidence": 0.99,
+          "probabilities": {
+            "Physical": 0.0,
+            "Emergency": 0.0,
+            "Unknown": 0.0,
+            "Security": 0.01,
+            "Store": 0.0,
+            "Concierge": 0.99,
+            "SessionOps": 0.0,
+            "Counseling": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "fever_flow": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "medicine_side_effect_qa": 0.0,
+            "medicine_followup_qa": 0.0,
+            "none": 1.0,
+            "medicine_qa": 0.0,
+            "rule_based_recommend": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "architecture",
+          "confidence": 0.74,
+          "probabilities": {
+            "none": 0.21,
+            "doc_changelog": 0.0,
+            "architecture": 0.79,
+            "greeting": 0.0,
+            "redirect": 0.0,
+            "app_about": 0.0,
+            "chitchat": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "delete": 0.0,
+            "status": 0.0,
+            "summarize": 0.0,
+            "none": 1.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.08
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Concierge",
+      "expected_subs": [
+        "architecture"
+      ],
+      "actual_primary": "Concierge",
+      "actual_sub": "architecture",
+      "joint_label": "Concierge/architecture",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-concierge-architecture",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 657.783,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1378,
+        "output_tokens": 367
+      },
+      "jev_cost": {
+        "input_tokens": 1378,
+        "output_tokens": 367,
+        "cost_usd": 5.7876e-05,
+        "cost_jpy": 0.009087,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Concierge",
+        "sub_route": "architecture",
+        "confidence": 0.99,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.08,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Concierge",
+          "confidence": 0.99,
+          "probabilities": {
+            "Concierge": 0.99,
+            "Store": 0.0,
+            "SessionOps": 0.0,
+            "Physical": 0.0,
+            "Security": 0.01,
+            "Counseling": 0.0,
+            "Unknown": 0.0,
+            "Emergency": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "medicine_side_effect_qa": 0.0,
+            "medicine_followup_qa": 0.0,
+            "fever_flow": 0.0,
+            "rule_based_recommend": 0.0,
+            "none": 1.0,
+            "medicine_qa": 0.0,
+            "symptom_prompt_sports": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "architecture",
+          "confidence": 0.82,
+          "probabilities": {
+            "app_about": 0.0,
+            "doc_changelog": 0.0,
+            "redirect": 0.0,
+            "none": 0.15,
+            "chitchat": 0.0,
+            "greeting": 0.0,
+            "architecture": 0.85
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "status": 0.0,
+            "summarize": 0.0,
+            "none": 1.0,
+            "delete": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.08
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Concierge",
+      "expected_subs": [
+        "architecture"
+      ],
+      "actual_primary": "Concierge",
+      "actual_sub": "architecture",
+      "joint_label": "Concierge/architecture",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-concierge-architecture",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 703.636,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1378,
+        "output_tokens": 367
+      },
+      "jev_cost": {
+        "input_tokens": 1378,
+        "output_tokens": 367,
+        "cost_usd": 5.7876e-05,
+        "cost_jpy": 0.009087,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Concierge",
+        "sub_route": "architecture",
+        "confidence": 0.99,
+        "source": "jev_systemone_shadow",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.08,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Concierge",
+          "confidence": 0.99,
+          "probabilities": {
+            "SessionOps": 0.0,
+            "Counseling": 0.0,
+            "Physical": 0.0,
+            "Unknown": 0.0,
+            "Concierge": 0.99,
+            "Emergency": 0.0,
+            "Store": 0.0,
+            "Security": 0.01
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "medicine_followup_qa": 0.0,
+            "medicine_side_effect_qa": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "none": 1.0,
+            "rule_based_recommend": 0.0,
+            "fever_flow": 0.0,
+            "medicine_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "architecture",
+          "confidence": 0.69,
+          "probabilities": {
+            "redirect": 0.0,
+            "greeting": 0.0,
+            "app_about": 0.01,
+            "architecture": 0.73,
+            "none": 0.26,
+            "doc_changelog": 0.0,
+            "chitchat": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "summarize": 0.0,
+            "none": 1.0,
+            "status": 0.0,
+            "delete": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.08
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Concierge",
+      "expected_subs": [
+        "architecture"
+      ],
+      "actual_primary": "Concierge",
+      "actual_sub": "architecture",
+      "joint_label": "Concierge/architecture",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-security-prompt-injection",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 689.218,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1392,
+        "output_tokens": 365
+      },
+      "jev_cost": {
+        "input_tokens": 1392,
+        "output_tokens": 365,
+        "cost_usd": 5.8464e-05,
+        "cost_jpy": 0.009179,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Security",
+        "sub_route": "known_attack",
+        "confidence": 1.0,
+        "source": "jev_noul_security_override",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.99,
+            "store_inquiry": 0.01,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [
+            "security"
+          ],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Security",
+          "confidence": 1.0,
+          "probabilities": {
+            "SessionOps": 0.0,
+            "Physical": 0.0,
+            "Store": 0.0,
+            "Concierge": 0.0,
+            "Emergency": 0.0,
+            "Unknown": 0.0,
+            "Security": 1.0,
+            "Counseling": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "fever_flow": 0.0,
+            "rule_based_recommend": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "medicine_followup_qa": 0.0,
+            "none": 1.0,
+            "medicine_side_effect_qa": 0.0,
+            "medicine_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.94,
+          "probabilities": {
+            "doc_changelog": 0.0,
+            "chitchat": 0.0,
+            "greeting": 0.0,
+            "app_about": 0.0,
+            "redirect": 0.01,
+            "architecture": 0.04,
+            "none": 0.95
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.94,
+          "probabilities": {
+            "delete": 0.04,
+            "none": 0.96,
+            "summarize": 0.0,
+            "status": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.99
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Security",
+      "expected_subs": [
+        "aggressive_input",
+        "known_attack"
+      ],
+      "actual_primary": "Security",
+      "actual_sub": "known_attack",
+      "joint_label": "Security/known_attack",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-security-prompt-injection",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 690.219,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1392,
+        "output_tokens": 365
+      },
+      "jev_cost": {
+        "input_tokens": 1392,
+        "output_tokens": 365,
+        "cost_usd": 5.8464e-05,
+        "cost_jpy": 0.009179,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Security",
+        "sub_route": "known_attack",
+        "confidence": 1.0,
+        "source": "jev_noul_security_override",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.98,
+            "store_inquiry": 0.01,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [
+            "security"
+          ],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Security",
+          "confidence": 1.0,
+          "probabilities": {
+            "Concierge": 0.0,
+            "Emergency": 0.0,
+            "Physical": 0.0,
+            "Counseling": 0.0,
+            "SessionOps": 0.0,
+            "Store": 0.0,
+            "Security": 1.0,
+            "Unknown": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "medicine_side_effect_qa": 0.0,
+            "medicine_qa": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "fever_flow": 0.0,
+            "rule_based_recommend": 0.0,
+            "none": 1.0,
+            "medicine_followup_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.93,
+          "probabilities": {
+            "architecture": 0.04,
+            "greeting": 0.0,
+            "redirect": 0.01,
+            "doc_changelog": 0.0,
+            "app_about": 0.0,
+            "none": 0.95,
+            "chitchat": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.92,
+          "probabilities": {
+            "summarize": 0.0,
+            "delete": 0.05,
+            "none": 0.95,
+            "status": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.98
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Security",
+      "expected_subs": [
+        "aggressive_input",
+        "known_attack"
+      ],
+      "actual_primary": "Security",
+      "actual_sub": "known_attack",
+      "joint_label": "Security/known_attack",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-security-prompt-injection",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 722.373,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1392,
+        "output_tokens": 365
+      },
+      "jev_cost": {
+        "input_tokens": 1392,
+        "output_tokens": 365,
+        "cost_usd": 5.8464e-05,
+        "cost_jpy": 0.009179,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Security",
+        "sub_route": "known_attack",
+        "confidence": 1.0,
+        "source": "jev_noul_security_override",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.01,
+            "security_risk": 0.99,
+            "store_inquiry": 0.01,
+            "counseling_needed": 0.02
+          },
+          "risk_flags": [
+            "security"
+          ],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Security",
+          "confidence": 1.0,
+          "probabilities": {
+            "Counseling": 0.0,
+            "Emergency": 0.0,
+            "Store": 0.0,
+            "Security": 1.0,
+            "Concierge": 0.0,
+            "SessionOps": 0.0,
+            "Unknown": 0.0,
+            "Physical": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "fever_flow": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "medicine_qa": 0.0,
+            "medicine_followup_qa": 0.0,
+            "rule_based_recommend": 0.0,
+            "none": 1.0,
+            "medicine_side_effect_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.95,
+          "probabilities": {
+            "redirect": 0.01,
+            "doc_changelog": 0.0,
+            "app_about": 0.0,
+            "architecture": 0.04,
+            "chitchat": 0.0,
+            "none": 0.95,
+            "greeting": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.91,
+          "probabilities": {
+            "status": 0.0,
+            "delete": 0.07,
+            "summarize": 0.0,
+            "none": 0.93
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.99
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.01
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.02
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Security",
+      "expected_subs": [
+        "aggressive_input",
+        "known_attack"
+      ],
+      "actual_primary": "Security",
+      "actual_sub": "known_attack",
+      "joint_label": "Security/known_attack",
+      "run_idx": 2
+    },
+    {
+      "scenario_id": "jev-counseling-insomnia-anxiety",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 726.283,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1375,
+        "output_tokens": 371
+      },
+      "jev_cost": {
+        "input_tokens": 1375,
+        "output_tokens": 371,
+        "cost_usd": 5.775e-05,
+        "cost_jpy": 0.009067,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Counseling",
+        "sub_route": "emotional_support",
+        "confidence": 0.97,
+        "source": "jev_noul_counseling_override",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.14,
+            "security_risk": 0.02,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.79
+          },
+          "risk_flags": [
+            "counseling"
+          ],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Counseling",
+          "confidence": 0.97,
+          "probabilities": {
+            "Security": 0.0,
+            "Concierge": 0.0,
+            "SessionOps": 0.0,
+            "Emergency": 0.0,
+            "Store": 0.0,
+            "Counseling": 0.97,
+            "Unknown": 0.0,
+            "Physical": 0.03
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "rule_based_recommend",
+          "confidence": 0.49,
+          "probabilities": {
+            "medicine_side_effect_qa": 0.0,
+            "medicine_followup_qa": 0.0,
+            "medicine_qa": 0.0,
+            "fever_flow": 0.0,
+            "none": 0.43,
+            "symptom_prompt_sports": 0.0,
+            "rule_based_recommend": 0.5700000000000001
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.98,
+          "probabilities": {
+            "redirect": 0.0,
+            "app_about": 0.0,
+            "greeting": 0.0,
+            "doc_changelog": 0.0,
+            "architecture": 0.0,
+            "chitchat": 0.01,
+            "none": 0.99
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "status": 0.0,
+            "delete": 0.0,
+            "summarize": 0.0,
+            "none": 1.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.14
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.79
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Counseling",
+      "expected_subs": [
+        "emotional_support"
+      ],
+      "actual_primary": "Counseling",
+      "actual_sub": "emotional_support",
+      "joint_label": "Counseling/emotional_support",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-counseling-insomnia-anxiety",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 733.948,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1375,
+        "output_tokens": 371
+      },
+      "jev_cost": {
+        "input_tokens": 1375,
+        "output_tokens": 371,
+        "cost_usd": 5.775e-05,
+        "cost_jpy": 0.009067,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Counseling",
+        "sub_route": "emotional_support",
+        "confidence": 0.97,
+        "source": "jev_noul_counseling_override",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.14,
+            "security_risk": 0.02,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.81
+          },
+          "risk_flags": [
+            "counseling"
+          ],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Counseling",
+          "confidence": 0.97,
+          "probabilities": {
+            "Unknown": 0.0,
+            "Counseling": 0.97,
+            "Security": 0.0,
+            "Physical": 0.03,
+            "Concierge": 0.0,
+            "Store": 0.0,
+            "Emergency": 0.0,
+            "SessionOps": 0.0
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "rule_based_recommend",
+          "confidence": 0.55,
+          "probabilities": {
+            "symptom_prompt_sports": 0.0,
+            "rule_based_recommend": 0.62,
+            "medicine_side_effect_qa": 0.0,
+            "medicine_followup_qa": 0.0,
+            "none": 0.38,
+            "fever_flow": 0.0,
+            "medicine_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.97,
+          "probabilities": {
+            "redirect": 0.0,
+            "app_about": 0.0,
+            "chitchat": 0.02,
+            "doc_changelog": 0.0,
+            "greeting": 0.0,
+            "none": 0.98,
+            "architecture": 0.0
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "summarize": 0.0,
+            "none": 1.0,
+            "delete": 0.0,
+            "status": 0.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.14
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.81
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Counseling",
+      "expected_subs": [
+        "emotional_support"
+      ],
+      "actual_primary": "Counseling",
+      "actual_sub": "emotional_support",
+      "joint_label": "Counseling/emotional_support",
+      "run_idx": 1
+    },
+    {
+      "scenario_id": "jev-counseling-insomnia-anxiety",
+      "backend": "jev:minimal",
+      "outcome": "ok",
+      "connection_error": false,
+      "transport_ok": true,
+      "latency_ms": 726.374,
+      "jev_model": "jev-1.13.0",
+      "jev_usage": {
+        "input_tokens": 1375,
+        "output_tokens": 371
+      },
+      "jev_cost": {
+        "input_tokens": 1375,
+        "output_tokens": 371,
+        "cost_usd": 5.775e-05,
+        "cost_jpy": 0.009067,
+        "usd_jpy_rate": 157.0,
+        "jev_input_usd_per_mtok": 0.042
+      },
+      "actual": {
+        "primary_route": "Counseling",
+        "sub_route": "emotional_support",
+        "confidence": 0.97,
+        "source": "jev_noul_counseling_override",
+        "resolved_by": "jev",
+        "valid": true,
+        "invalid_reason": null,
+        "meta": {
+          "noul": {
+            "emergency_required": 0.15,
+            "security_risk": 0.02,
+            "store_inquiry": 0.02,
+            "counseling_needed": 0.81
+          },
+          "risk_flags": [
+            "counseling"
+          ],
+          "adapter_mode": "minimal"
+        }
+      },
+      "answers": {
+        "primary_route": {
+          "type": "choice",
+          "choice": "Counseling",
+          "confidence": 0.97,
+          "probabilities": {
+            "Physical": 0.03,
+            "Emergency": 0.0,
+            "Concierge": 0.0,
+            "Unknown": 0.0,
+            "Store": 0.0,
+            "Security": 0.0,
+            "SessionOps": 0.0,
+            "Counseling": 0.97
+          }
+        },
+        "physical_sub_route": {
+          "type": "choice",
+          "choice": "rule_based_recommend",
+          "confidence": 0.57,
+          "probabilities": {
+            "rule_based_recommend": 0.64,
+            "medicine_qa": 0.0,
+            "fever_flow": 0.0,
+            "symptom_prompt_sports": 0.0,
+            "medicine_followup_qa": 0.0,
+            "none": 0.36,
+            "medicine_side_effect_qa": 0.0
+          }
+        },
+        "concierge_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 0.98,
+          "probabilities": {
+            "app_about": 0.0,
+            "chitchat": 0.02,
+            "architecture": 0.0,
+            "doc_changelog": 0.0,
+            "greeting": 0.0,
+            "redirect": 0.0,
+            "none": 0.98
+          }
+        },
+        "session_sub_route": {
+          "type": "choice",
+          "choice": "none",
+          "confidence": 1.0,
+          "probabilities": {
+            "status": 0.0,
+            "delete": 0.0,
+            "summarize": 0.0,
+            "none": 1.0
+          }
+        },
+        "emergency_required": {
+          "type": "noul",
+          "noul": 0.15
+        },
+        "security_risk": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "store_inquiry": {
+          "type": "noul",
+          "noul": 0.02
+        },
+        "counseling_needed": {
+          "type": "noul",
+          "noul": 0.81
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Counseling",
+      "expected_subs": [
+        "emotional_support"
+      ],
+      "actual_primary": "Counseling",
+      "actual_sub": "emotional_support",
+      "joint_label": "Counseling/emotional_support",
+      "run_idx": 2
+    }
+  ]
+}

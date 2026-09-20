@@ -261,3 +261,46 @@ def test_state_never_includes_baseline_hint(session: dict[str, Any]) -> None:
     dumped = str(state)
     assert "baseline_triage_hint" not in dumped
     assert "Physical" not in dumped or "last_primary" in str(state.get("meta"))
+
+
+def test_resolve_route_passes_session_medicine_qa_focus_into_state(
+    session: dict[str, Any],
+) -> None:
+    """session 既存 focus のみ meta へ。無ければ欠落。実行 route は legacy のまま。"""
+    legacy = _legacy_decision()
+    captured_states: list[dict[str, Any]] = []
+
+    def _capture_schedule(**kwargs: Any) -> bool:
+        state = kwargs.get("state")
+        if isinstance(state, dict):
+            captured_states.append(state)
+        return True
+
+    with patch(
+        "src.dialogue.routing.router.resolve_route_unified_or_legacy",
+        return_value=legacy,
+    ), patch(
+        "config.llm_flags.is_jev_intent_router_shadow_enabled",
+        return_value=True,
+    ), patch(
+        "src.dialogue.routing.jev_router.schedule_jev_shadow",
+        side_effect=_capture_schedule,
+    ):
+        from src.dialogue.routing.router import resolve_route
+
+        out_missing = resolve_route("比較して", session, "sid-focus-miss")
+        assert out_missing is legacy
+        assert captured_states
+        assert "medicine_qa_focus" not in (captured_states[0].get("meta") or {})
+
+        captured_states.clear()
+        session["medicine_qa_focuses"] = ["comparison", "side_effect"]
+        out_present = resolve_route("比較して", session, "sid-focus-hit")
+        assert out_present is legacy
+        assert captured_states
+        assert captured_states[0]["meta"].get("medicine_qa_focus") == [
+            "comparison",
+            "side_effect",
+        ]
+        assert out_present.primary_route == legacy.primary_route
+        assert out_present.sub_route == legacy.sub_route

@@ -1,20 +1,33 @@
 """Unit tests for Jev answer → shadow decision mapping."""
 from __future__ import annotations
 
+from pathlib import Path
+
 import math
 
 import pytest
+import yaml
 
 from src.services.jev_decisions import (
     ADAPTER_MODE,
     DEFAULT_NOUL_THRESHOLD,
     INTENT_ROUTER_QUESTIONS,
+    NOUL_HIGH_RISK_PRIORITY,
+    PRESCRIPTION_ALLOWED_PHYSICAL_SUB_ROUTES,
+    PRESCRIPTION_FORBIDDEN_PHYSICAL_SUB_ROUTES,
     JevConciergeSubRoute,
     JevPhysicalSubRoute,
     JevPrimaryRoute,
     JevSessionSubRoute,
+    is_prescription_forbidden_sub_route,
     parse_jev_answers,
     to_route_dict,
+)
+
+_SAFETY_FIXTURE = (
+    Path(__file__).resolve().parents[1]
+    / "fixtures"
+    / "jev_intent_router_safety_expanded.yaml"
 )
 
 
@@ -249,12 +262,25 @@ def test_noul_just_below_threshold_keeps_primary(key: str, value: float) -> None
     assert decision.sub_route == "fever_flow"
 
 
-def test_noul_security_beats_emergency_when_both_high() -> None:
+def test_noul_emergency_beats_security_when_both_high() -> None:
+    """Eval-aligned + clinical FN=0: Emergency wins; Security stays in risk_flags."""
     decision = parse_jev_answers(
         _base_answers(primary="Unknown", security=0.9, emergency=0.95)
     )
+    assert decision.primary_route == "Emergency"
+    assert decision.sub_route == "emergency_dispatch"
+    assert decision.source == "jev_noul_emergency_override"
+    assert decision.risk_flags == ["emergency", "security"]
+    assert NOUL_HIGH_RISK_PRIORITY[0] == "emergency_required"
+
+
+def test_noul_security_alone_still_overrides() -> None:
+    decision = parse_jev_answers(
+        _base_answers(primary="Physical", physical_sub="medicine_qa", security=0.9, emergency=0.0)
+    )
     assert decision.primary_route == "Security"
     assert decision.sub_route == "known_attack"
+    assert decision.risk_flags == ["security"]
 
 
 def test_deterministic_security_cannot_be_weakened_by_low_noul() -> None:
@@ -363,3 +389,96 @@ def test_missing_noul_keys_default_to_zero() -> None:
         "store_inquiry": 0.0,
         "counseling_needed": 0.0,
     }
+
+
+def test_invalid_schema_still_surfaces_high_risk_noul_flags() -> None:
+    answers = _base_answers(emergency=0.9, security=0.8)
+    answers["primary_route"] = _choice("NotARoute", 0.9)
+    decision = parse_jev_answers(answers)
+    assert decision.valid is False
+    assert decision.primary_route == "Unknown"
+    assert "emergency" in decision.risk_flags
+    assert "security" in decision.risk_flags
+
+
+def test_deterministic_override_wins_even_on_empty_answers() -> None:
+    decision = parse_jev_answers(
+        {},
+        deterministic_signals={"emergency_detected": True},
+    )
+    assert decision.valid is True
+    assert decision.primary_route == "Emergency"
+    assert decision.source == "deterministic_emergency_override"
+
+
+def test_non_dict_answers_treated_as_empty_then_invalid_without_signals() -> None:
+    decision = parse_jev_answers(None)  # type: ignore[arg-type]
+    assert decision.valid is False
+    assert decision.invalid_reason is not None
+
+
+def test_custom_noul_threshold_respected() -> None:
+    decision = parse_jev_answers(
+        _base_answers(primary="Unknown", emergency=0.5),
+        noul_threshold=0.5,
+    )
+    assert decision.primary_route == "Emergency"
+    decision_below = parse_jev_answers(
+        _base_answers(primary="Unknown", emergency=0.49),
+        noul_threshold=0.5,
+    )
+    assert decision_below.primary_route == "Unknown"
+
+
+def test_partial_noul_preserved_when_later_noul_malformed() -> None:
+    answers = _base_answers(emergency=0.9)
+    answers["security_risk"] = {"noul": "bad"}
+    decision = parse_jev_answers(answers)
+    assert decision.valid is False
+    assert decision.noul["emergency_required"] == 0.9
+    assert "emergency" in decision.risk_flags
+
+
+def test_prescription_forbidden_sub_helper_documents_pharmacist_policy() -> None:
+    """Label policy helper only — does not implement execution primary."""
+    assert "rule_based_recommend" in PRESCRIPTION_FORBIDDEN_PHYSICAL_SUB_ROUTES
+    assert is_prescription_forbidden_sub_route("rule_based_recommend") is True
+    assert is_prescription_forbidden_sub_route("fever_flow") is True
+    assert is_prescription_forbidden_sub_route(None) is False
+    for allowed in PRESCRIPTION_ALLOWED_PHYSICAL_SUB_ROUTES:
+        assert is_prescription_forbidden_sub_route(allowed) is False
+
+
+def test_safety_fixture_pharmacist_schema_smoke_not_accuracy_gate() -> None:
+    """Soft schema check for pharmacist_reviewed_draft. Never accuracy hard-fail."""
+    raw = yaml.safe_load(_SAFETY_FIXTURE.read_text(encoding="utf-8")) or {}
+    assert raw.get("label_status_default") == "pharmacist_reviewed_draft"
+    scenarios = raw.get("scenarios") or []
+    assert len(scenarios) >= 15
+
+    by_id = {s["id"]: s for s in scenarios}
+    # Pharmacist judgment: Concierge primary + Emergency alternate (do not revert).
+    hypo = by_id["safety-emergency-hypothetical"]["expect"]
+    assert hypo["primary_route"] == "Concierge"
+    assert "Emergency" in (hypo.get("accept_alternate_primaries") or [])
+    assert hypo.get("pharmacist_verdict") in {"Approve", "Revise", "Reject"}
+    assert (hypo.get("scoring") or {}).get("emergency_fp_tolerated") is True
+
+    quoted = by_id["safety-emergency-quoted"]["expect"]
+    assert quoted["primary_route"] == "Concierge"
+    assert "Emergency" in (quoted.get("accept_alternate_primaries") or [])
+
+    rx = by_id["safety-prescription-request"]["expect"]
+    accept_subs = set(rx.get("accept_sub_routes") or [])
+    assert "rule_based_recommend" not in accept_subs
+    assert accept_subs <= {"none", "medicine_qa"}
+    assert "prescription" in (rx.get("high_risk") or [])
+
+    for scenario in scenarios:
+        expect = scenario.get("expect") or {}
+        assert expect.get("label_status") == "pharmacist_reviewed_draft"
+        assert expect.get("pharmacist_verdict") in {"Approve", "Revise", "Reject"}
+        # Old field names from prior draft must not reappear as sole contract.
+        assert "accept_primary_routes" not in expect
+        assert "forbidden_primary_as_sole_gold" not in expect
+

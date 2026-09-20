@@ -16,6 +16,14 @@ def _get_float(key: str, default: float) -> float:
         return default
 
 
+def _get_unit_interval(key: str, default: float) -> float:
+    """[0.0, 1.0] の確率・閾値。NaN / 負値 / 1 超 / 不正 parse は ``default``。"""
+    raw = _get_float(key, default)
+    if raw != raw or raw < 0.0 or raw > 1.0:
+        return default
+    return raw
+
+
 def _get_int(key: str, default: int) -> int:
     val = os.getenv(key)
     if val is None:
@@ -52,15 +60,15 @@ def jev_timeout_sec() -> float:
 
 
 def jev_confidence_floor() -> float:
-    """観測用 usable 下限（既定 0.70）。不正値は既定。"""
-    return _get_float("JEV_CONFIDENCE_FLOOR", 0.70)
+    """観測用 usable 下限（既定 0.70）。範囲外・負値・不正値は既定。"""
+    return _get_unit_interval("JEV_CONFIDENCE_FLOOR", 0.70)
 
 
 def jev_high_confidence() -> float:
-    """Phase 2 primary 候補閾値（既定 0.85）。不正値は既定。"""
-    return _get_float("JEV_HIGH_CONFIDENCE", 0.85)
+    """Phase 2 primary 候補閾値（既定 0.85）。範囲外・負値・不正値は既定。"""
+    return _get_unit_interval("JEV_HIGH_CONFIDENCE", 0.85)
 
 
 def jev_noul_threshold() -> float:
-    """Noul 観測閾値（既定 0.75）。Phase 1 は観測のみ。不正値は既定。"""
-    return _get_float("JEV_NOUL_THRESHOLD", 0.75)
+    """Noul 観測閾値（既定 0.75）。Phase 1 は観測のみ。範囲外・負値・不正値は既定。"""
+    return _get_unit_interval("JEV_NOUL_THRESHOLD", 0.75)

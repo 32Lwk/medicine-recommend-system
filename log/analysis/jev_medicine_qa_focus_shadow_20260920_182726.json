@@ -1,0 +1,165 @@
+{
+  "timestamp": "20260920_182726",
+  "fixture": "D:/Programing/medicine-recommend/tests/fixtures/jev_medicine_qa_focus_pilot.yaml",
+  "mode": "dry_run_schema_only",
+  "label_status_default": "draft",
+  "schema_issues": [],
+  "eligibility_in_scope": false,
+  "notes": [
+    "Scaffold only. Draft labels must never hard-fail CI or Gate B.",
+    "Eligibility / resolve_medicine_qa_route is out of scope.",
+    "No JEV_FOCUS flags and no chat_post_pipeline changes.",
+    "Dry-run schema + optional rule baseline. Set JEV_API_KEY and pass --live for optional Focus-question stub."
+  ],
+  "results": [
+    {
+      "scenario_id": "focus-comparison-loxonin-ibu",
+      "tag": "comparison",
+      "channel": "web",
+      "input": "ロキソニンとイブの違いは何ですか？",
+      "label_status": "draft",
+      "physical_symptom_pivot_expected": false,
+      "eligibility_in_scope": false,
+      "current_focuses": [
+        "comparison"
+      ],
+      "current_source": "infer_medicine_qa_focuses",
+      "soft_pass": true,
+      "primary_hit": true,
+      "accept_overlap": true,
+      "expected_primary": "comparison",
+      "accept_focuses": [
+        "comparison"
+      ]
+    },
+    {
+      "scenario_id": "focus-side-effect-drowsiness",
+      "tag": "side_effect",
+      "channel": "web",
+      "input": "ロキソニンって眠くなりますか？",
+      "label_status": "draft",
+      "physical_symptom_pivot_expected": false,
+      "eligibility_in_scope": false,
+      "current_focuses": [
+        "side_effect"
+      ],
+      "current_source": "infer_medicine_qa_focuses",
+      "soft_pass": true,
+      "primary_hit": true,
+      "accept_overlap": true,
+      "expected_primary": "side_effect",
+      "accept_focuses": [
+        "side_effect"
+      ]
+    },
+    {
+      "scenario_id": "focus-dosage-usage",
+      "tag": "dosage",
+      "channel": "web",
+      "input": "1日何回まで飲んでいいですか？",
+      "label_status": "draft",
+      "physical_symptom_pivot_expected": false,
+      "eligibility_in_scope": false,
+      "current_focuses": [
+        "side_effect",
+        "usage"
+      ],
+      "current_source": "infer_medicine_qa_focuses",
+      "soft_pass": true,
+      "primary_hit": false,
+      "accept_overlap": true,
+      "expected_primary": "usage",
+      "accept_focuses": [
+        "usage"
+      ]
+    },
+    {
+      "scenario_id": "focus-photo-product-image",
+      "tag": "photo",
+      "channel": "web",
+      "input": "箱の写真を見せてください",
+      "label_status": "draft",
+      "physical_symptom_pivot_expected": false,
+      "eligibility_in_scope": false,
+      "current_focuses": [
+        "product_image"
+      ],
+      "current_source": "infer_medicine_qa_focuses",
+      "soft_pass": true,
+      "primary_hit": true,
+      "accept_overlap": true,
+      "expected_primary": "product_image",
+      "accept_focuses": [
+        "product_image"
+      ]
+    },
+    {
+      "scenario_id": "focus-age-limit",
+      "tag": "age_limit",
+      "channel": "web",
+      "input": "15歳でも飲める薬ですか？",
+      "label_status": "draft",
+      "physical_symptom_pivot_expected": false,
+      "eligibility_in_scope": false,
+      "current_focuses": [
+        "age"
+      ],
+      "current_source": "infer_medicine_qa_focuses",
+      "soft_pass": true,
+      "primary_hit": true,
+      "accept_overlap": true,
+      "expected_primary": "age",
+      "accept_focuses": [
+        "age"
+      ]
+    },
+    {
+      "scenario_id": "focus-ambiguous-anaphora",
+      "tag": "ambiguous",
+      "channel": "web",
+      "input": "それって大丈夫？",
+      "label_status": "draft",
+      "physical_symptom_pivot_expected": false,
+      "eligibility_in_scope": false,
+      "current_focuses": [
+        "general"
+      ],
+      "current_source": "infer_medicine_qa_focuses",
+      "soft_pass": true,
+      "primary_hit": true,
+      "accept_overlap": true,
+      "expected_primary": "general",
+      "accept_focuses": [
+        "general",
+        "side_effect",
+        "usage"
+      ]
+    },
+    {
+      "scenario_id": "focus-physical-pivot-symptom",
+      "tag": "physical_pivot_symptom",
+      "channel": "web",
+      "input": "薬の話は後でいいので、いま胸が痛くて息が苦しいです",
+      "label_status": "draft",
+      "physical_symptom_pivot_expected": true,
+      "eligibility_in_scope": false,
+      "current_focuses": [
+        "general"
+      ],
+      "current_source": "infer_medicine_qa_focuses",
+      "soft_pass": true,
+      "primary_hit": true,
+      "accept_overlap": true,
+      "expected_primary": "general",
+      "accept_focuses": [
+        "general"
+      ]
+    }
+  ],
+  "focus_shadow_questions_draft_keys": [
+    "needs_context",
+    "physical_symptom_pivot",
+    "primary_focus",
+    "secondary_focus"
+  ]
+}

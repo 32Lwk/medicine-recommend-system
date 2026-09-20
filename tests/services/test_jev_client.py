@@ -1,18 +1,30 @@
 """Unit tests for TypeSafe System One (Jev) HTTP client."""
 from __future__ import annotations
 
+import logging
 from unittest.mock import MagicMock, patch
 
 import httpx
 import pytest
 
+from config.routing_config import (
+    jev_confidence_floor,
+    jev_high_confidence,
+    jev_model,
+    jev_noul_threshold,
+    jev_timeout_sec,
+)
+from src.services import jev_client as jev_client_mod
 from src.services.jev_client import (
     ERROR_HTTP_4XX,
     ERROR_HTTP_429_EXHAUSTED,
     ERROR_HTTP_5XX_EXHAUSTED,
+    ERROR_INVALID_JSON,
     ERROR_MISSING_API_KEY,
+    ERROR_NETWORK,
     ERROR_TIMEOUT,
     JEV_ENDPOINT,
+    build_httpx_timeout,
     evaluate_system_one,
 )
 
@@ -25,12 +37,16 @@ def _clear_jev_env(monkeypatch):
     monkeypatch.delenv("TYPESAFE_API_KEY", raising=False)
     monkeypatch.delenv("JEV_MODEL", raising=False)
     monkeypatch.delenv("JEV_TIMEOUT_SEC", raising=False)
+    monkeypatch.delenv("JEV_CONFIDENCE_FLOOR", raising=False)
+    monkeypatch.delenv("JEV_HIGH_CONFIDENCE", raising=False)
+    monkeypatch.delenv("JEV_NOUL_THRESHOLD", raising=False)
+    jev_client_mod._close_shared_client()
+    yield
+    jev_client_mod._close_shared_client()
 
 
 def _mock_client(post_side_effect):
     client = MagicMock()
-    client.__enter__.return_value = client
-    client.__exit__.return_value = False
     client.post.side_effect = post_side_effect
     return client
 
@@ -67,12 +83,33 @@ def test_success(monkeypatch):
     assert result.resolved_version == "2026-09-21"
     assert result.latency_ms >= 0
     client_cls.assert_called_once()
+    # Shared client has no constructor timeout; budget is per-request.
+    assert "timeout" not in (client_cls.call_args.kwargs or {})
     kwargs = client.post.call_args.kwargs
+    timeout_arg = kwargs["timeout"]
+    assert isinstance(timeout_arg, httpx.Timeout)
+    assert timeout_arg.read == 3.5
+    assert timeout_arg.connect == 1.0
     assert kwargs["json"]["state"]["user_input"] == "頭痛"
     assert kwargs["json"]["model"] == "jev-latest"
     assert "questions" in kwargs["json"]
     assert client.post.call_args.args[0] == JEV_ENDPOINT
     assert kwargs["headers"]["Authorization"] == f"Bearer {SECRET}"
+
+
+def test_two_successful_calls_reuse_same_client(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    client = _mock_client([_ok_response(), _ok_response()])
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client) as client_cls:
+        first = evaluate_system_one(state={"n": 1}, questions={})
+        second = evaluate_system_one(state={"n": 2}, questions={})
+
+    assert first.ok is True
+    assert second.ok is True
+    client_cls.assert_called_once()
+    assert client.post.call_count == 2
+    assert client.close.call_count == 0
 
 
 def test_retry_429_then_success(monkeypatch):
@@ -155,6 +192,35 @@ def test_timeout_no_retry(monkeypatch):
     assert client.post.call_count == 1
 
 
+def test_network_error_no_retry(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    client = _mock_client([httpx.ConnectError("boom")])
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client):
+        result = evaluate_system_one(state={}, questions={})
+
+    assert result.ok is False
+    assert result.error_class == ERROR_NETWORK
+    assert result.retry_count == 0
+    assert client.post.call_count == 1
+
+
+def test_invalid_json(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    bad = MagicMock()
+    bad.status_code = 200
+    bad.json.side_effect = ValueError("not json")
+    client = _mock_client([bad])
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client):
+        result = evaluate_system_one(state={}, questions={})
+
+    assert result.ok is False
+    assert result.error_class == ERROR_INVALID_JSON
+    assert result.retry_count == 0
+    assert client.post.call_count == 1
+
+
 def test_missing_api_key_no_typesafe_fallback(monkeypatch):
     monkeypatch.setenv("TYPESAFE_API_KEY", "should-not-be-used")
     with patch("src.services.jev_client.httpx.Client") as client_cls:
@@ -166,9 +232,17 @@ def test_missing_api_key_no_typesafe_fallback(monkeypatch):
     client_cls.assert_not_called()
 
 
-def test_secret_not_in_result_or_exception_messages(monkeypatch):
+def test_whitespace_api_key_treated_as_missing(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", "   ")
+    with patch("src.services.jev_client.httpx.Client") as client_cls:
+        result = evaluate_system_one(state={}, questions={})
+
+    assert result.error_class == ERROR_MISSING_API_KEY
+    client_cls.assert_not_called()
+
+
+def test_secret_not_in_result_or_logs(monkeypatch, caplog):
     monkeypatch.setenv("JEV_API_KEY", SECRET)
-    # Force a RequestError whose request carries Authorization.
     request = httpx.Request(
         "POST",
         JEV_ENDPOINT,
@@ -177,14 +251,18 @@ def test_secret_not_in_result_or_exception_messages(monkeypatch):
     err = httpx.ConnectError("connection failed", request=request)
     client = _mock_client([err])
 
-    with patch("src.services.jev_client.httpx.Client", return_value=client):
-        result = evaluate_system_one(state={"user_input": "x"}, questions={})
+    with caplog.at_level(logging.WARNING, logger="src.services.jev_client"):
+        with patch("src.services.jev_client.httpx.Client", return_value=client):
+            result = evaluate_system_one(state={"user_input": "x"}, questions={})
 
     blob = f"{result!s} {result!r} {result.answers} {result.usage} {result.error_class}"
     assert SECRET not in blob
     assert "Authorization" not in blob
+    assert SECRET not in caplog.text
+    assert "Authorization" not in caplog.text
+    assert "Bearer" not in caplog.text
     assert result.ok is False
-    assert result.error_class == "network_error"
+    assert result.error_class == ERROR_NETWORK
 
 
 def test_secret_not_leaked_on_success_repr(monkeypatch):
@@ -196,3 +274,109 @@ def test_secret_not_leaked_on_success_repr(monkeypatch):
 
     assert SECRET not in str(result)
     assert SECRET not in repr(result)
+
+
+def test_build_httpx_timeout_splits_connect_and_read():
+    t = build_httpx_timeout(3.5)
+    assert t.connect == 1.0
+    assert t.read == 3.5
+    t_short = build_httpx_timeout(0.5)
+    assert t_short.connect == 0.5
+    assert t_short.read == 0.5
+
+
+def test_custom_timeout_passed_to_post(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    client = _mock_client([_ok_response()])
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client) as client_cls:
+        evaluate_system_one(state={}, questions={}, timeout_sec=2.0)
+
+    assert "timeout" not in (client_cls.call_args.kwargs or {})
+    timeout_arg = client.post.call_args.kwargs["timeout"]
+    assert timeout_arg.read == 2.0
+    assert timeout_arg.connect == 1.0
+
+
+def test_resolved_version_absent_is_none(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    client = _mock_client(
+        [
+            _ok_response(
+                payload={
+                    "answers": {},
+                    "usage": {},
+                    "model": "jev-latest",
+                }
+            )
+        ]
+    )
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client):
+        result = evaluate_system_one(state={}, questions={})
+
+    assert result.ok is True
+    assert result.resolved_version is None
+
+
+# --- routing_config Jev getters ---
+
+
+def test_routing_config_jev_defaults():
+    assert jev_model() == "jev-latest"
+    assert jev_timeout_sec() == 3.5
+    assert jev_confidence_floor() == 0.70
+    assert jev_high_confidence() == 0.85
+    assert jev_noul_threshold() == 0.75
+
+
+def test_routing_config_timeout_clamp_and_invalid(monkeypatch):
+    monkeypatch.setenv("JEV_TIMEOUT_SEC", "99")
+    assert jev_timeout_sec() == 30.0
+    monkeypatch.setenv("JEV_TIMEOUT_SEC", "0.1")
+    assert jev_timeout_sec() == 0.5
+    monkeypatch.setenv("JEV_TIMEOUT_SEC", "not-a-float")
+    assert jev_timeout_sec() == 3.5
+
+
+def test_routing_config_model_empty_falls_back(monkeypatch):
+    monkeypatch.setenv("JEV_MODEL", "  ")
+    assert jev_model() == "jev-latest"
+    monkeypatch.setenv("JEV_MODEL", "jev-canary")
+    assert jev_model() == "jev-canary"
+
+
+@pytest.mark.parametrize(
+    "env_name,getter,default",
+    [
+        ("JEV_CONFIDENCE_FLOOR", jev_confidence_floor, 0.70),
+        ("JEV_HIGH_CONFIDENCE", jev_high_confidence, 0.85),
+        ("JEV_NOUL_THRESHOLD", jev_noul_threshold, 0.75),
+    ],
+)
+def test_routing_config_unit_interval_out_of_range_uses_default(monkeypatch, env_name, getter, default):
+    monkeypatch.setenv(env_name, "-0.1")
+    assert getter() == default
+    monkeypatch.setenv(env_name, "1.01")
+    assert getter() == default
+    monkeypatch.setenv(env_name, "nan")
+    assert getter() == default
+    monkeypatch.setenv(env_name, "nope")
+    assert getter() == default
+
+
+@pytest.mark.parametrize(
+    "env_name,getter",
+    [
+        ("JEV_CONFIDENCE_FLOOR", jev_confidence_floor),
+        ("JEV_HIGH_CONFIDENCE", jev_high_confidence),
+        ("JEV_NOUL_THRESHOLD", jev_noul_threshold),
+    ],
+)
+def test_routing_config_unit_interval_accepts_bounds(monkeypatch, env_name, getter):
+    monkeypatch.setenv(env_name, "0.0")
+    assert getter() == 0.0
+    monkeypatch.setenv(env_name, "1.0")
+    assert getter() == 1.0
+    monkeypatch.setenv(env_name, "0.42")
+    assert getter() == 0.42
