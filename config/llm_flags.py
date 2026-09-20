@@ -471,3 +471,28 @@ def is_meta_safety_shortpath_enabled() -> bool:
         return False
     return _v2_subflag_enabled("PERF_META_SAFETY_SHORTPATH")
 
+
+# --- Jev (TypeSafe System One) — 既定 OFF（v2 の「未設定=ON」とは逆） ---
+# すべて `_flag(..., False)`。明示 true でのみ有効。kill switch は JEV_ENABLED。
+
+
+def is_jev_enabled() -> bool:
+    """Jev 全体キルスイッチ。未設定 / false は OFF（v2 unset=ON とは逆）。"""
+    return _flag("JEV_ENABLED", False)
+
+
+def is_jev_intent_router_shadow_enabled() -> bool:
+    """IntentRouter の Jev shadow（比較ログのみ。実行 route は変えない）。
+
+    JEV_ENABLED かつ JEV_INTENT_ROUTER_SHADOW が明示 true のときのみ。
+    """
+    return is_jev_enabled() and _flag("JEV_INTENT_ROUTER_SHADOW", False)
+
+
+def is_jev_intent_router_primary_enabled() -> bool:
+    """IntentRouter の Jev primary（予約）。
+
+    Phase 1 では実行 route 変更に使ってはならない。既定 OFF。
+    """
+    return is_jev_enabled() and _flag("JEV_INTENT_ROUTER_PRIMARY", False)
+

@@ -380,18 +380,28 @@ def run_chat_post_pipeline(
 
     sync_routing_context(ctx)
 
+    # Jev IntentRouter shadow が有効なときは既存 shadow（resolve_route 再入）を起動しない。
+    # 二重起動・session 競合を避ける。Jev OFF 時は従来どおり IntentRouter v2 shadow を継続。
     try:
-        from src.dialogue.routing.shadow import schedule_shadow_observation
+        from config.llm_flags import is_jev_intent_router_shadow_enabled
 
-        schedule_shadow_observation(
-            session,
-            sid,
-            ctx.sanitized_message or ctx.user_message,
-            ctx.triage_result,
-            ctx.recommendation_client,
-        )
+        jev_shadow_on = bool(is_jev_intent_router_shadow_enabled())
     except Exception:
-        logger.debug("intent_router_shadow skipped", exc_info=True)
+        jev_shadow_on = False
+
+    if not jev_shadow_on:
+        try:
+            from src.dialogue.routing.shadow import schedule_shadow_observation
+
+            schedule_shadow_observation(
+                session,
+                sid,
+                ctx.sanitized_message or ctx.user_message,
+                ctx.triage_result,
+                ctx.recommendation_client,
+            )
+        except Exception:
+            logger.debug("intent_router_shadow skipped", exc_info=True)
 
     session_triage_resp = _try_session_ops_handler(
         session,

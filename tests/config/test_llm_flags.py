@@ -4,6 +4,9 @@ from __future__ import annotations
 import pytest
 
 from config.llm_flags import (
+    is_jev_enabled,
+    is_jev_intent_router_primary_enabled,
+    is_jev_intent_router_shadow_enabled,
     is_reco_age_policy_v2_enabled,
     is_reco_cold_nlu_v2_enabled,
     is_reco_sports_doping_filter_enabled,
@@ -63,3 +66,32 @@ def test_reco_flags_explicit_false_in_production(monkeypatch, env_name, checker)
     monkeypatch.setenv(env_name, "false")
     monkeypatch.setattr("config.llm_flags._is_pytest_running", lambda: False)
     assert checker() is False
+
+
+# --- Jev flags: unset=OFF（v2 の unset=ON とは逆） ---
+
+
+@pytest.fixture
+def _clear_jev_flags(monkeypatch):
+    for name in ("JEV_ENABLED", "JEV_INTENT_ROUTER_SHADOW", "JEV_INTENT_ROUTER_PRIMARY"):
+        monkeypatch.delenv(name, raising=False)
+
+
+def test_jev_flags_default_off(_clear_jev_flags):
+    assert is_jev_enabled() is False
+    assert is_jev_intent_router_shadow_enabled() is False
+    assert is_jev_intent_router_primary_enabled() is False
+
+
+def test_jev_shadow_requires_master(monkeypatch, _clear_jev_flags):
+    monkeypatch.setenv("JEV_INTENT_ROUTER_SHADOW", "true")
+    assert is_jev_intent_router_shadow_enabled() is False
+    monkeypatch.setenv("JEV_ENABLED", "true")
+    assert is_jev_intent_router_shadow_enabled() is True
+
+
+def test_jev_primary_requires_master(monkeypatch, _clear_jev_flags):
+    monkeypatch.setenv("JEV_INTENT_ROUTER_PRIMARY", "true")
+    assert is_jev_intent_router_primary_enabled() is False
+    monkeypatch.setenv("JEV_ENABLED", "true")
+    assert is_jev_intent_router_primary_enabled() is True

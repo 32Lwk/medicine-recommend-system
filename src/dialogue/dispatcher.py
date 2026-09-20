@@ -524,6 +524,19 @@ def try_agent_dispatch(ctx: Any, monitor: Any) -> Optional[ResponseTuple]:
     if decision is None or _should_skip_dispatch(decision):
         return None
 
+    # Jev shadow 観測用: 実行 decision を correlation id で metrics に通知（Jev は読まない）
+    try:
+        from src.services.jev_metrics import notify_executed_decision
+
+        corr = None
+        if ctx.session is not None and hasattr(ctx.session, "get"):
+            corr = ctx.session.get("_jev_shadow_correlation_id")
+        notify_executed_decision(corr, decision)
+        if corr and hasattr(ctx.session, "pop"):
+            ctx.session.pop("_jev_shadow_correlation_id", None)
+    except Exception:
+        logger.debug("jev notify_executed_decision skipped", exc_info=True)
+
     _apply_decision_to_context(ctx, decision)
     ctx.session["_intent_router_dispatch"] = {
         **decision.to_dialogue_routing_dict(),
