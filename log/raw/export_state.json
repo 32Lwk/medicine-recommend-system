@@ -1,20 +1,20 @@
 {
   "by_service": {
     "medicine-recommend-dev": {
-      "last_start": "2026-07-29T04:31:01Z",
-      "last_end": "2026-08-06T14:16:35Z",
-      "source_path": "D:\\Programing\\medicine-recommend\\log\\raw\\downloaded-logs-20260729-20260806-20260806-141635.json",
+      "last_start": "2026-08-08T06:27:24Z",
+      "last_end": "2026-08-08T16:43:48Z",
+      "source_path": "D:\\Programing\\medicine-recommend\\log\\raw\\downloaded-logs-20260808-20260808-20260808-164348.json",
       "source_kind": "export",
-      "entry_count": 17170,
-      "exported_at": "2026-08-06T14:18:55Z"
+      "entry_count": 56582,
+      "exported_at": "2026-08-08T16:45:48Z"
     },
     "medicine-recommend": {
-      "last_start": "2026-07-26T04:31:38Z",
-      "last_end": "2026-07-29T04:31:38Z",
-      "source_path": "/Users/yuto/medicine recomended/log/raw/downloaded-logs-20260726-20260729-20260729-043138.json",
+      "last_start": "2026-07-29T04:31:08Z",
+      "last_end": "2026-08-08T06:17:01Z",
+      "source_path": "D:\\Programing\\medicine-recommend\\log\\raw\\downloaded-logs-20260729-20260808-20260808-061701.json",
       "source_kind": "export",
-      "entry_count": 26100,
-      "exported_at": "2026-07-29T04:32:46Z"
+      "entry_count": 31512,
+      "exported_at": "2026-08-08T06:20:07Z"
     }
   }
 }

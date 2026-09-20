@@ -1,0 +1,30 @@
+{
+  "source_path": "D:\\Programing\\medicine-recommend\\log\\raw\\downloaded-logs-20260808-20260808-20260808-164348.json",
+  "source_name": "downloaded-logs-20260808-20260808-20260808-164348.json",
+  "entry_count": 56582,
+  "time_range": {
+    "start": "2026-08-08T06:27:27.327792Z",
+    "end": "2026-08-08T16:41:37.047656Z"
+  },
+  "services": {
+    "medicine-recommend-dev": 56582
+  },
+  "primary_service": "medicine-recommend-dev",
+  "revisions": {
+    "medicine-recommend-dev-00264-2xs": 54522,
+    "medicine-recommend-dev-00262-sd5": 1684,
+    "medicine-recommend-dev-00263-9qt": 189,
+    "medicine-recommend-dev-00261-5xd": 180
+  },
+  "commit_shas": {
+    "4c116b3060bb602c6a497d849f052c28e32f8bbf": 56389,
+    "7027dc365a52eb97c38bb7a8408ee297412a98cf": 180
+  },
+  "severity_counts": {
+    "INFO": 840,
+    "DEFAULT": 55720,
+    "WARNING": 11,
+    "NOTICE": 3,
+    "ERROR": 8
+  }
+}

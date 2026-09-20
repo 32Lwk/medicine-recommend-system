@@ -1,0 +1,118 @@
+{
+  "webhook_request_stats": {
+    "count": 0,
+    "min": null,
+    "max": null,
+    "avg": null,
+    "median": null,
+    "p95": null
+  },
+  "webhook_status_counts": {},
+  "job_lock_events": [
+    {
+      "timestamp": "2026-08-06T16:45:52.833Z",
+      "message": "[2026-08-06 16:45:52 +0000] [9] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-06T17:15:54.370Z",
+      "message": "[2026-08-06 17:15:54 +0000] [16] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-08-06T17:50:20.522Z",
+      "message": "[2026-08-06 17:50:20 +0000] [16] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-06T18:04:32.266Z",
+      "message": "[2026-08-06 18:04:32 +0000] [16] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-08-06T19:23:57.708Z",
+      "message": "[2026-08-06 19:23:57 +0000] [16] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-06T19:25:44.815Z",
+      "message": "[2026-08-06 19:25:44 +0000] [15] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-08-06T19:26:30.592Z",
+      "message": "[2026-08-06 19:26:30 +0000] [15] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-06T19:27:31.616Z",
+      "message": "[2026-08-06 19:27:31 +0000] [16] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-08-06T19:29:24.449Z",
+      "message": "[2026-08-06 19:29:24 +0000] [16] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-06T19:31:38.392Z",
+      "message": "[2026-08-06 19:31:38 +0000] [17] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-08-06T22:15:34.748Z",
+      "message": "[2026-08-06 22:15:34 +0000] [17] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-06T22:15:39.821Z",
+      "message": "[2026-08-06 22:15:39 +0000] [2340] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-08-07T02:52:34.763Z",
+      "message": "[2026-08-07 02:52:34 +0000] [2340] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-07T02:52:38.848Z",
+      "message": "[2026-08-07 02:52:38 +0000] [6253] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-08-07T07:31:58.113Z",
+      "message": "[2026-08-07 07:31:58 +0000] [6253] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-07T07:32:03.318Z",
+      "message": "[2026-08-07 07:32:03 +0000] [10213] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-08-07T11:54:56.917Z",
+      "message": "[2026-08-07 11:54:56 +0000] [10213] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-07T11:55:01.151Z",
+      "message": "[2026-08-07 11:55:01 +0000] [13930] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-08-07T15:35:26.789Z",
+      "message": "[2026-08-07 15:35:26 +0000] [13930] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-07T15:35:31.078Z",
+      "message": "[2026-08-07 15:35:31 +0000] [17050] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-08-07T23:31:34.760Z",
+      "message": "[2026-08-07 23:31:34 +0000] [17050] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-07T23:31:38.847Z",
+      "message": "[2026-08-07 23:31:38 +0000] [23792] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-08-08T04:06:58.802Z",
+      "message": "[2026-08-08 04:06:58 +0000] [23792] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-08T04:07:55.513Z",
+      "message": "[2026-08-08 04:07:55 +0000] [15] [INFO] Waiting for application startup."
+    },
+    {
+      "timestamp": "2026-08-08T04:11:12.658Z",
+      "message": "[2026-08-08 04:11:12 +0000] [15] [INFO] Waiting for application shutdown."
+    },
+    {
+      "timestamp": "2026-08-08T04:12:08.741Z",
+      "message": "[2026-08-08 04:12:08 +0000] [15] [INFO] Waiting for application startup."
+    }
+  ],
+  "line_text_messages": []
+}

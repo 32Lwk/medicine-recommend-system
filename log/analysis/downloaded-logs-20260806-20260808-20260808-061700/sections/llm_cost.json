@@ -1,0 +1,75 @@
+{
+  "llm_call_count": 4,
+  "total_cost_jpy": 0.2395,
+  "total_latency_ms": 6358.39,
+  "by_path": {
+    "llm_triage.stage1": 1,
+    "llm_triage.stage2": 1,
+    "medicine_qa/focus_llm": 1,
+    "concierge_agent.greeting": 1
+  },
+  "by_model": {
+    "gpt-5.4-mini": 2,
+    "gpt-4o-mini": 2
+  },
+  "top_sessions_by_cost": [
+    {
+      "session_id": "1786162983082137830339",
+      "cost_jpy": 0.2395
+    }
+  ],
+  "recent_calls": [
+    {
+      "timestamp": "2026-08-08T04:23:21.851150",
+      "model": "gpt-5.4-mini",
+      "path": "llm_triage.stage1",
+      "latency_ms": 2301.18,
+      "prompt_tokens": 3103,
+      "completion_tokens": 70,
+      "cost_jpy": 0.0952,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1786162983082137830339",
+      "log_ts": "2026-08-08T04:23:48.825233Z"
+    },
+    {
+      "timestamp": "2026-08-08T04:23:24.008147",
+      "model": "gpt-5.4-mini",
+      "path": "llm_triage.stage2",
+      "latency_ms": 1449.75,
+      "prompt_tokens": 3404,
+      "completion_tokens": 62,
+      "cost_jpy": 0.104,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1786162983082137830339",
+      "log_ts": "2026-08-08T04:23:48.825233Z"
+    },
+    {
+      "timestamp": "2026-08-08T04:23:33.778068",
+      "model": "gpt-4o-mini",
+      "path": "medicine_qa/focus_llm",
+      "latency_ms": 1156.84,
+      "prompt_tokens": 367,
+      "completion_tokens": 40,
+      "cost_jpy": 0.0122,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1786162983082137830339",
+      "log_ts": "2026-08-08T04:23:48.825233Z"
+    },
+    {
+      "timestamp": "2026-08-08T04:23:47.374907",
+      "model": "gpt-4o-mini",
+      "path": "concierge_agent.greeting",
+      "latency_ms": 1450.62,
+      "prompt_tokens": 871,
+      "completion_tokens": 67,
+      "cost_jpy": 0.0281,
+      "prompt_version": "completions",
+      "channel": "web",
+      "sid": "1786162983082137830339",
+      "log_ts": "2026-08-08T04:23:48.825233Z"
+    }
+  ]
+}

@@ -1,0 +1,1435 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 1236,
+    "by_status": {
+      "404": 1225,
+      "405": 8,
+      "422": 3
+    },
+    "by_path": {
+      "GET /robots.txt (404)": 65,
+      "GET /admin.php (404)": 13,
+      "GET /wp-content/plugins/hellopress/wp_filemanager.php (404)": 10,
+      "GET /.env (404)": 10,
+      "GET /wp-content/admin.php (404)": 9,
+      "HEAD / (405)": 8,
+      "GET /this_is_a_new_hello_world.php (404)": 8,
+      "GET /1.php (404)": 8,
+      "GET /classwithtostring.php (404)": 8,
+      "GET /k.php (404)": 8,
+      "GET /222.php (404)": 8,
+      "GET /wp-content/uploads/ (404)": 8,
+      "GET /wp-admin/js/index.php (404)": 7,
+      "GET /h.php (404)": 7,
+      "GET /wp-content/index.php (404)": 7,
+      "GET /wp-admin/js/ (404)": 7,
+      "GET /about.php (404)": 7,
+      "GET /edit.php (404)": 7,
+      "GET /inputs.php (404)": 7,
+      "GET /adminfuns.php (404)": 7,
+      "GET /ms-edit.php (404)": 7,
+      "GET /wp.php (404)": 7,
+      "GET /chosen.php (404)": 7,
+      "GET /404.php (404)": 7,
+      "GET /xmlrpc.php (404)": 6,
+      "GET /wp-content/ (404)": 6,
+      "GET /wp-includes/block-bindings/ (404)": 6,
+      "GET /wp-admin/css/ (404)": 6,
+      "GET /cgi-bin/index.php (404)": 6,
+      "GET /wp-content/themes/index.php (404)": 6
+    },
+    "slow_endpoints_ge_5s": {
+      "GET /": {
+        "count": 166,
+        "min": 0.0,
+        "max": 74.565,
+        "avg": 6.333,
+        "median": 0.262,
+        "p95": 18.828
+      },
+      "GET /health/aws": {
+        "count": 2,
+        "min": 0.016,
+        "max": 15.427,
+        "avg": 7.722,
+        "median": 7.722,
+        "p95": 15.427
+      },
+      "GET /health": {
+        "count": 9,
+        "min": 0.029,
+        "max": 10.699,
+        "avg": 4.196,
+        "median": 0.292,
+        "p95": 10.699
+      },
+      "GET /robots.txt": {
+        "count": 74,
+        "min": 0.0,
+        "max": 62.696,
+        "avg": 7.977,
+        "median": 0.658,
+        "p95": 20.484
+      },
+      "GET /static/css/sage_terrace.css": {
+        "count": 48,
+        "min": 0.002,
+        "max": 9.863,
+        "avg": 0.264,
+        "median": 0.015,
+        "p95": 0.291
+      },
+      "GET /static/css/easter-eggs.css": {
+        "count": 39,
+        "min": 0.002,
+        "max": 17.097,
+        "avg": 0.873,
+        "median": 0.021,
+        "p95": 0.636
+      },
+      "GET /static/js/processing_status.js": {
+        "count": 43,
+        "min": 0.002,
+        "max": 17.076,
+        "avg": 0.596,
+        "median": 0.016,
+        "p95": 0.215
+      },
+      "GET /static/js/easter-eggs.js": {
+        "count": 41,
+        "min": 0.003,
+        "max": 9.216,
+        "avg": 0.275,
+        "median": 0.02,
+        "p95": 0.21
+      },
+      "GET /static/js/ui/ui_strings.js": {
+        "count": 43,
+        "min": 0.002,
+        "max": 15.523,
+        "avg": 1.025,
+        "median": 0.012,
+        "p95": 12.817
+      },
+      "GET /static/js/ui/medicine_mapper.js": {
+        "count": 42,
+        "min": 0.002,
+        "max": 19.367,
+        "avg": 1.39,
+        "median": 0.041,
+        "p95": 12.706
+      },
+      "GET /static/js/chat_sse.js": {
+        "count": 42,
+        "min": 0.002,
+        "max": 17.076,
+        "avg": 0.647,
+        "median": 0.015,
+        "p95": 0.203
+      },
+      "GET /static/js/ui/color_presets.js": {
+        "count": 41,
+        "min": 0.002,
+        "max": 14.315,
+        "avg": 0.6,
+        "median": 0.013,
+        "p95": 0.21
+      },
+      "GET /static/js/ui/medicine_card.js": {
+        "count": 43,
+        "min": 0.002,
+        "max": 15.935,
+        "avg": 0.61,
+        "median": 0.017,
+        "p95": 0.247
+      },
+      "GET /static/js/ui/carousel.js": {
+        "count": 43,
+        "min": 0.003,
+        "max": 11.159,
+        "avg": 0.495,
+        "median": 0.01,
+        "p95": 0.211
+      },
+      "GET /static/js/ui/status_renderer.js": {
+        "count": 43,
+        "min": 0.003,
+        "max": 17.109,
+        "avg": 1.252,
+        "median": 0.013,
+        "p95": 12.768
+      },
+      "GET /static/js/ui/recommendation_renderer.js": {
+        "count": 43,
+        "min": 0.003,
+        "max": 14.352,
+        "avg": 0.578,
+        "median": 0.014,
+        "p95": 0.209
+      },
+      "GET /static/js/ui/tts_builder.js": {
+        "count": 42,
+        "min": 0.002,
+        "max": 14.257,
+        "avg": 1.49,
+        "median": 0.018,
+        "p95": 12.825
+      },
+      "GET /static/js/ui/safety_rail.js": {
+        "count": 41,
+        "min": 0.002,
+        "max": 15.386,
+        "avg": 1.37,
+        "median": 0.014,
+        "p95": 13.786
+      },
+      "GET /static/js/sage_shell.js": {
+        "count": 40,
+        "min": 0.002,
+        "max": 11.162,
+        "avg": 0.528,
+        "median": 0.011,
+        "p95": 0.197
+      },
+      "GET /static/js/main.js": {
+        "count": 44,
+        "min": 0.004,
+        "max": 20.237,
+        "avg": 1.418,
+        "median": 0.031,
+        "p95": 15.182
+      },
+      "PATCH /api/sessions/activity": {
+        "count": 696,
+        "min": 0.287,
+        "max": 60.668,
+        "avg": 0.971,
+        "median": 0.592,
+        "p95": 1.073
+      },
+      "GET /api/sessions": {
+        "count": 1501,
+        "min": 0.288,
+        "max": 54.967,
+        "avg": 0.879,
+        "median": 0.594,
+        "p95": 1.023
+      },
+      "GET /about": {
+        "count": 31,
+        "min": 0.005,
+        "max": 17.891,
+        "avg": 2.63,
+        "median": 0.397,
+        "p95": 13.735
+      },
+      "HEAD /": {
+        "count": 10,
+        "min": 0.0,
+        "max": 18.659,
+        "avg": 6.948,
+        "median": 0.819,
+        "p95": 18.659
+      },
+      "GET /wp-includes/wlwmanifest.xml": {
+        "count": 4,
+        "min": 0.008,
+        "max": 6.376,
+        "avg": 1.613,
+        "median": 0.034,
+        "p95": 6.376
+      },
+      "GET /wp-content/plugins/hellopress/wp_filemanager.php": {
+        "count": 20,
+        "min": 0.0,
+        "max": 26.193,
+        "avg": 3.039,
+        "median": 0.002,
+        "p95": 15.768
+      },
+      "GET /1.php": {
+        "count": 16,
+        "min": 0.0,
+        "max": 24.014,
+        "avg": 1.509,
+        "median": 0.002,
+        "p95": 0.087
+      },
+      "GET /wp-admin/js/index.php": {
+        "count": 14,
+        "min": 0.0,
+        "max": 8.316,
+        "avg": 0.599,
+        "median": 0.002,
+        "p95": 0.048
+      },
+      "GET /.env": {
+        "count": 13,
+        "min": 0.0,
+        "max": 24.281,
+        "avg": 7.213,
+        "median": 0.054,
+        "p95": 18.083
+      },
+      "GET /about/consultation": {
+        "count": 17,
+        "min": 0.004,
+        "max": 15.903,
+        "avg": 0.981,
+        "median": 0.005,
+        "p95": 0.422
+      },
+      "GET /about/usage": {
+        "count": 18,
+        "min": 0.004,
+        "max": 17.695,
+        "avg": 1.816,
+        "median": 0.005,
+        "p95": 14.813
+      },
+      "GET /static/img/summer/%E3%82%A2%E3%82%B5%E3%82%AC%E3%82%AA.png": {
+        "count": 16,
+        "min": 0.004,
+        "max": 17.012,
+        "avg": 1.917,
+        "median": 0.031,
+        "p95": 12.743
+      },
+      "POST /api/chat/stream": {
+        "count": 4,
+        "min": 7.566,
+        "max": 61.823,
+        "avg": 39.36,
+        "median": 44.025,
+        "p95": 61.823
+      },
+      "GET /static/line/medicine-noimage-hero.png": {
+        "count": 7,
+        "min": 0.035,
+        "max": 14.502,
+        "avg": 2.305,
+        "median": 0.323,
+        "p95": 14.502
+      },
+      "GET /static/img/summer/%E3%81%99%E3%81%99%E3%81%8D.png": {
+        "count": 9,
+        "min": 0.009,
+        "max": 16.124,
+        "avg": 1.83,
+        "median": 0.014,
+        "p95": 16.124
+      },
+      "GET /admin": {
+        "count": 4,
+        "min": 0.014,
+        "max": 16.311,
+        "avg": 5.917,
+        "median": 3.671,
+        "p95": 16.311
+      },
+      "GET /admin/login": {
+        "count": 5,
+        "min": 0.004,
+        "max": 16.607,
+        "avg": 3.451,
+        "median": 0.094,
+        "p95": 16.607
+      },
+      "GET /static/img/about/generated/about/demo/demo-phone-03-recommendation.png": {
+        "count": 4,
+        "min": 0.013,
+        "max": 9.018,
+        "avg": 2.273,
+        "median": 0.03,
+        "p95": 9.018
+      },
+      "GET /static/img/about/generated/about/demo/demo-phone-02-analyzing.png": {
+        "count": 5,
+        "min": 0.011,
+        "max": 20.462,
+        "avg": 5.396,
+        "median": 0.124,
+        "p95": 20.462
+      },
+      "GET /static/img/about/generated/about/demo/demo-phone-04-comparison.png": {
+        "count": 4,
+        "min": 0.014,
+        "max": 10.29,
+        "avg": 2.661,
+        "median": 0.17,
+        "p95": 10.29
+      },
+      "GET /static/img/about/generated/tech/icon-openai.png": {
+        "count": 4,
+        "min": 0.011,
+        "max": 17.033,
+        "avg": 4.972,
+        "median": 1.422,
+        "p95": 17.033
+      },
+      "POST /": {
+        "count": 5,
+        "min": 0.0,
+        "max": 38.859,
+        "avg": 10.473,
+        "median": 0.475,
+        "p95": 38.859
+      },
+      "GET /.env.example": {
+        "count": 4,
+        "min": 0.0,
+        "max": 16.83,
+        "avg": 7.474,
+        "median": 6.533,
+        "p95": 16.83
+      },
+      "GET /.env.save": {
+        "count": 4,
+        "min": 0.0,
+        "max": 17.446,
+        "avg": 7.575,
+        "median": 6.428,
+        "p95": 17.446
+      },
+      "GET /.env.prod": {
+        "count": 4,
+        "min": 0.0,
+        "max": 15.682,
+        "avg": 7.173,
+        "median": 6.505,
+        "p95": 15.682
+      },
+      "GET /.env.dev": {
+        "count": 4,
+        "min": 0.0,
+        "max": 15.165,
+        "avg": 7.058,
+        "median": 6.533,
+        "p95": 15.165
+      },
+      "GET /.env.production": {
+        "count": 5,
+        "min": 0.0,
+        "max": 15.158,
+        "avg": 5.602,
+        "median": 0.007,
+        "p95": 15.158
+      },
+      "GET /.env.old": {
+        "count": 4,
+        "min": 0.0,
+        "max": 15.682,
+        "avg": 7.173,
+        "median": 6.505,
+        "p95": 15.682
+      },
+      "GET /.env.bak": {
+        "count": 4,
+        "min": 0.0,
+        "max": 15.739,
+        "avg": 7.559,
+        "median": 7.249,
+        "p95": 15.739
+      },
+      "GET /.env.local": {
+        "count": 6,
+        "min": 0.0,
+        "max": 15.739,
+        "avg": 4.801,
+        "median": 0.01,
+        "p95": 15.739
+      },
+      "GET /.env.backup": {
+        "count": 4,
+        "min": 0.0,
+        "max": 15.682,
+        "avg": 7.134,
+        "median": 6.428,
+        "p95": 15.682
+      },
+      "GET /about/privacy": {
+        "count": 1,
+        "min": 19.66,
+        "max": 19.66,
+        "avg": 19.66,
+        "median": 19.66,
+        "p95": 19.66
+      },
+      "GET /static/img/about/generated/icon-pharmacist.png": {
+        "count": 1,
+        "min": 17.482,
+        "max": 17.482,
+        "avg": 17.482,
+        "median": 17.482,
+        "p95": 17.482
+      },
+      "GET /api/main_session": {
+        "count": 4,
+        "min": 0.355,
+        "max": 13.967,
+        "avg": 3.781,
+        "median": 0.401,
+        "p95": 13.967
+      },
+      "GET /actuator/configprops": {
+        "count": 2,
+        "min": 0.0,
+        "max": 13.066,
+        "avg": 6.533,
+        "median": 6.533,
+        "p95": 13.066
+      },
+      "GET /wp-config.php~": {
+        "count": 2,
+        "min": 0.0,
+        "max": 12.856,
+        "avg": 6.428,
+        "median": 6.428,
+        "p95": 12.856
+      },
+      "GET /actuator/env": {
+        "count": 2,
+        "min": 0.0,
+        "max": 14.525,
+        "avg": 7.262,
+        "median": 7.262,
+        "p95": 14.525
+      },
+      "GET /wp-config.php.swp": {
+        "count": 2,
+        "min": 0.0,
+        "max": 13.01,
+        "avg": 6.505,
+        "median": 6.505,
+        "p95": 13.01
+      },
+      "GET /_ignition/health-check": {
+        "count": 2,
+        "min": 0.0,
+        "max": 13.01,
+        "avg": 6.505,
+        "median": 6.505,
+        "p95": 13.01
+      },
+      "GET /crusader-404-probe": {
+        "count": 2,
+        "min": 0.0,
+        "max": 12.844,
+        "avg": 6.422,
+        "median": 6.422,
+        "p95": 12.844
+      },
+      "GET /env": {
+        "count": 2,
+        "min": 0.0,
+        "max": 13.01,
+        "avg": 6.505,
+        "median": 6.505,
+        "p95": 13.01
+      },
+      "GET /wp-config.php.bak": {
+        "count": 2,
+        "min": 0.0,
+        "max": 13.01,
+        "avg": 6.505,
+        "median": 6.505,
+        "p95": 13.01
+      },
+      "GET /storage/logs/laravel.log": {
+        "count": 3,
+        "min": 0.0,
+        "max": 13.01,
+        "avg": 4.338,
+        "median": 0.005,
+        "p95": 13.01
+      },
+      "GET /%EF%BC%89%E3%80%82": {
+        "count": 1,
+        "min": 18.508,
+        "max": 18.508,
+        "avg": 18.508,
+        "median": 18.508,
+        "p95": 18.508
+      },
+      "POST /wp-json/batch/v1": {
+        "count": 4,
+        "min": 0.0,
+        "max": 8.648,
+        "avg": 2.226,
+        "median": 0.128,
+        "p95": 8.648
+      },
+      "GET /api/.git/config": {
+        "count": 2,
+        "min": 0.0,
+        "max": 6.165,
+        "avg": 3.082,
+        "median": 3.082,
+        "p95": 6.165
+      },
+      "GET /.git/config": {
+        "count": 9,
+        "min": 0.0,
+        "max": 20.694,
+        "avg": 4.599,
+        "median": 0.016,
+        "p95": 20.694
+      },
+      "GET /wp-json/gravitysmtp/v1/tests/mock-data": {
+        "count": 4,
+        "min": 0.005,
+        "max": 21.317,
+        "avg": 10.188,
+        "median": 9.716,
+        "p95": 21.317
+      },
+      "GET /backup.sql": {
+        "count": 1,
+        "min": 8.353,
+        "max": 8.353,
+        "avg": 8.353,
+        "median": 8.353,
+        "p95": 8.353
+      },
+      "GET /about/terms": {
+        "count": 2,
+        "min": 10.35,
+        "max": 18.648,
+        "avg": 14.499,
+        "median": 14.499,
+        "p95": 18.648
+      },
+      "GET /wp-json/batch/v1": {
+        "count": 2,
+        "min": 0.044,
+        "max": 10.672,
+        "avg": 5.358,
+        "median": 5.358,
+        "p95": 10.672
+      },
+      "GET /.aws/credentials": {
+        "count": 2,
+        "min": 0.0,
+        "max": 16.443,
+        "avg": 8.222,
+        "median": 8.222,
+        "p95": 16.443
+      },
+      "GET /aws.env": {
+        "count": 2,
+        "min": 0.0,
+        "max": 10.272,
+        "avg": 5.136,
+        "median": 5.136,
+        "p95": 10.272
+      }
+    },
+    "samples": [
+      {
+        "timestamp": "2026-07-29T07:31:26.298137Z",
+        "status": 404,
+        "method": "POST",
+        "path": "/api/tts",
+        "latency_s": 0.00250532,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00089-gc6",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-29T08:52:28.450099Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 18.679398951,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-29T08:52:47.849657Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.140582683,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-29T08:52:48.534781Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.00543711,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-29T11:16:04.563947Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 24.672601452,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-29T23:27:19.341442Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 18.335878149,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T07:10:35.304064Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 62.696185157,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T08:19:38.772676Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 22.036858943,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T08:46:43.623886Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 11.255843507,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T08:53:47.165272Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.24227731,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T11:08:45.376262Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 19.281438782,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T11:28:41.045966Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 0.248676058,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T12:19:35.051952Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 1.620518367,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T12:20:18.995109Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 0.00292431,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T15:09:35.011784Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 17.574332989,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T18:59:20.434862Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 18.659089483,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T18:59:20.573472Z",
+        "status": 405,
+        "method": "HEAD",
+        "path": "/",
+        "latency_s": 17.033807539,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-30T23:36:26.093170Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 18.655570025,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:11:56.311031Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.057305031,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:11:56.685578Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/xmlrpc.php",
+        "latency_s": 0.00480778,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:11:57.278689Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/blog/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.134114801,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:11:58.407935Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/web/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.00462707,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:11:58.724013Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wordpress/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.00391095,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:11:59.032580Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/website/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.00361954,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:11:59.341963Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wp/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.00331467,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:11:59.639924Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/news/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.004502431,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:11:59.921943Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/2018/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.003529531,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:12:00.249181Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/2019/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.00411473,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:12:00.565771Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/shop/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.00416113,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:12:00.876092Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wp1/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.00321775,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:12:01.181119Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/test/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.0033679,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:12:01.462574Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/media/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.00447318,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:12:01.790318Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wp2/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.00353816,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:12:02.105893Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/site/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.00353773,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:12:02.432730Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/cms/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.003545331,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:12:02.732489Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/sito/wp-includes/wlwmanifest.xml",
+        "latency_s": 0.00522828,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T02:29:50.642745Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 10.263075939,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:34:22.103598Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wp-content/plugins/hellopress/wp_filemanager.php",
+        "latency_s": 26.192973506,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:30.171378Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wp-content/plugins/hellopress/wp_filemanager.php",
+        "latency_s": 2.753466146,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:33.397813Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/this_is_a_new_hello_world.php",
+        "latency_s": 0.032166639,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:33.888195Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wicked.php",
+        "latency_s": 0.039119919,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:34.395381Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wpx.php",
+        "latency_s": 0.098876717,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:34.995601Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/images.php",
+        "latency_s": 0.016917101,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:35.467348Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/1xmomo.php",
+        "latency_s": 0.056851113,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:35.985600Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/1revo.php",
+        "latency_s": 0.017062101,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:36.578314Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/cong.php",
+        "latency_s": 0.037728742,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:37.077082Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/a.php",
+        "latency_s": 0.041824782,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:37.573480Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/srontol.php",
+        "latency_s": 0.119602016,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:38.159120Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/reop3.php",
+        "latency_s": 0.169939099,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:38.863376Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/file5.php",
+        "latency_s": 0.048165037,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:39.361156Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/domvf.php",
+        "latency_s": 0.052254771,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:39.895428Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/zero.php",
+        "latency_s": 0.021666896,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:40.369377Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/002.php",
+        "latency_s": 0.078001487,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:40.909453Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/thoms.php",
+        "latency_s": 0.088802716,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:41.470389Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/fi22.php",
+        "latency_s": 0.035713147,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:41.962407Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wp-content/",
+        "latency_s": 0.130840837,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:42.557114Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/82.php",
+        "latency_s": 0.142652386,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:43.183544Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/sx.php",
+        "latency_s": 0.018404511,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:43.779123Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/dex.php",
+        "latency_s": 0.046883683,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:44.287080Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/fpwch.php",
+        "latency_s": 0.027458321,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:44.771199Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/black.php",
+        "latency_s": 0.042430942,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:45.293510Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/loader.php",
+        "latency_s": 0.033184513,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:45.788053Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/file61.php",
+        "latency_s": 0.022216512,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:46.288657Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wp-css.php",
+        "latency_s": 0.009604741,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:46.762356Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wp-blink.php",
+        "latency_s": 0.082318227,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:47.307256Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/txets.php",
+        "latency_s": 0.03017915,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:47.801976Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/pucci.php",
+        "latency_s": 0.01502214,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:48.265403Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/xwpg.php",
+        "latency_s": 0.04084444,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:48.771450Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/ops.php",
+        "latency_s": 0.0303886,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:43:49.270719Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/1.php",
+        "latency_s": 24.014402697,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:44:04.387174Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/mac.php",
+        "latency_s": 0.107499659,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:44:04.969055Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wp-admin/js/index.php",
+        "latency_s": 8.315994199,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:44:13.762697Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/aa.php",
+        "latency_s": 0.102933253,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:44:14.355156Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/xyn.php",
+        "latency_s": 0.075579159,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:44:14.912278Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wp-wp.php",
+        "latency_s": 0.005368757,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:44:15.373331Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/aw.php",
+        "latency_s": 0.035866313,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:44:15.855293Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/classwithtostring.php",
+        "latency_s": 0.005843462,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:44:16.390839Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/yawa.php",
+        "latency_s": 0.033240273,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:44:16.866051Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/sym403.php",
+        "latency_s": 0.005843431,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      },
+      {
+        "timestamp": "2026-07-31T05:44:17.351546Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/wp-admin/css/colors/blue/",
+        "latency_s": 0.005557776,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-00090-hvh",
+        "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 0,
+    "top_patterns": [],
+    "samples": []
+  }
+}

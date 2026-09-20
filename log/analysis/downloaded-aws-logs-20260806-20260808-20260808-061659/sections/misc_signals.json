@@ -1,0 +1,338 @@
+{
+  "gunicorn": [
+    {
+      "timestamp": "2026-08-06T16:45:53.053Z",
+      "message": "[2026-08-06 16:45:53 +0000] [1] [ERROR] Worker (pid:9) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:50.042Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:50.042Z",
+      "message": "   - Workers: 1"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:50.042Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:50.701Z",
+      "message": "[2026-08-06 17:15:50 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:50.702Z",
+      "message": "[2026-08-06 17:15:50 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:50.705Z",
+      "message": "[2026-08-06 17:15:50 +0000] [16] [INFO] Booting worker with pid: 16"
+    },
+    {
+      "timestamp": "2026-08-06T17:50:21.062Z",
+      "message": "[2026-08-06 17:50:21 +0000] [1] [ERROR] Worker (pid:16) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:27.441Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:27.442Z",
+      "message": "   - Workers: 1"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:27.442Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:28.252Z",
+      "message": "[2026-08-06 18:04:28 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:28.253Z",
+      "message": "[2026-08-06 18:04:28 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:28.257Z",
+      "message": "[2026-08-06 18:04:28 +0000] [16] [INFO] Booting worker with pid: 16"
+    },
+    {
+      "timestamp": "2026-08-06T19:23:57.944Z",
+      "message": "[2026-08-06 19:23:57 +0000] [1] [ERROR] Worker (pid:16) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:40.802Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:40.802Z",
+      "message": "   - Workers: 1"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:40.802Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:41.462Z",
+      "message": "[2026-08-06 19:25:41 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:41.462Z",
+      "message": "[2026-08-06 19:25:41 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:41.466Z",
+      "message": "[2026-08-06 19:25:41 +0000] [15] [INFO] Booting worker with pid: 15"
+    },
+    {
+      "timestamp": "2026-08-06T19:26:33.316Z",
+      "message": "[2026-08-06 19:26:33 +0000] [1] [ERROR] Worker (pid:15) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-08-06T19:27:27.373Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-08-06T19:27:27.374Z",
+      "message": "   - Workers: 1"
+    },
+    {
+      "timestamp": "2026-08-06T19:27:27.374Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-06T19:27:28.198Z",
+      "message": "[2026-08-06 19:27:28 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-08-06T19:27:28.199Z",
+      "message": "[2026-08-06 19:27:28 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-06T19:27:28.202Z",
+      "message": "[2026-08-06 19:27:28 +0000] [16] [INFO] Booting worker with pid: 16"
+    },
+    {
+      "timestamp": "2026-08-06T19:29:28.154Z",
+      "message": "[2026-08-06 19:29:28 +0000] [1] [ERROR] Worker (pid:16) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-08-06T19:31:33.869Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-08-06T19:31:33.869Z",
+      "message": "   - Workers: 1"
+    },
+    {
+      "timestamp": "2026-08-06T19:31:33.869Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-06T19:31:34.625Z",
+      "message": "[2026-08-06 19:31:34 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-08-06T19:31:34.625Z",
+      "message": "[2026-08-06 19:31:34 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-06T19:31:34.629Z",
+      "message": "[2026-08-06 19:31:34 +0000] [17] [INFO] Booting worker with pid: 17"
+    },
+    {
+      "timestamp": "2026-08-06T22:15:34.978Z",
+      "message": "[2026-08-06 22:15:34 +0000] [17] [INFO] Worker exiting (pid: 17)"
+    },
+    {
+      "timestamp": "2026-08-06T22:15:36.223Z",
+      "message": "[2026-08-06 22:15:36 +0000] [2340] [INFO] Booting worker with pid: 2340"
+    },
+    {
+      "timestamp": "2026-08-07T02:52:34.798Z",
+      "message": "[2026-08-07 02:52:34 +0000] [2340] [INFO] Worker exiting (pid: 2340)"
+    },
+    {
+      "timestamp": "2026-08-07T02:52:35.892Z",
+      "message": "[2026-08-07 02:52:35 +0000] [6253] [INFO] Booting worker with pid: 6253"
+    },
+    {
+      "timestamp": "2026-08-07T07:31:58.150Z",
+      "message": "[2026-08-07 07:31:58 +0000] [6253] [INFO] Worker exiting (pid: 6253)"
+    },
+    {
+      "timestamp": "2026-08-07T07:31:59.265Z",
+      "message": "[2026-08-07 07:31:59 +0000] [10213] [INFO] Booting worker with pid: 10213"
+    },
+    {
+      "timestamp": "2026-08-07T11:54:56.952Z",
+      "message": "[2026-08-07 11:54:56 +0000] [10213] [INFO] Worker exiting (pid: 10213)"
+    },
+    {
+      "timestamp": "2026-08-07T11:54:58.054Z",
+      "message": "[2026-08-07 11:54:58 +0000] [13930] [INFO] Booting worker with pid: 13930"
+    },
+    {
+      "timestamp": "2026-08-07T15:35:26.824Z",
+      "message": "[2026-08-07 15:35:26 +0000] [13930] [INFO] Worker exiting (pid: 13930)"
+    },
+    {
+      "timestamp": "2026-08-07T15:35:27.992Z",
+      "message": "[2026-08-07 15:35:27 +0000] [17050] [INFO] Booting worker with pid: 17050"
+    },
+    {
+      "timestamp": "2026-08-07T23:31:34.795Z",
+      "message": "[2026-08-07 23:31:34 +0000] [17050] [INFO] Worker exiting (pid: 17050)"
+    },
+    {
+      "timestamp": "2026-08-07T23:31:35.945Z",
+      "message": "[2026-08-07 23:31:35 +0000] [23792] [INFO] Booting worker with pid: 23792"
+    },
+    {
+      "timestamp": "2026-08-08T04:06:58.865Z",
+      "message": "[2026-08-08 04:06:58 +0000] [1] [ERROR] Worker (pid:23792) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-08-08T04:07:50.873Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-08-08T04:07:50.874Z",
+      "message": "   - Workers: 1"
+    },
+    {
+      "timestamp": "2026-08-08T04:07:50.874Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-08T04:07:51.652Z",
+      "message": "[2026-08-08 04:07:51 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-08-08T04:07:51.653Z",
+      "message": "[2026-08-08 04:07:51 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-08T04:07:51.656Z",
+      "message": "[2026-08-08 04:07:51 +0000] [15] [INFO] Booting worker with pid: 15"
+    },
+    {
+      "timestamp": "2026-08-08T04:11:15.670Z",
+      "message": "[2026-08-08 04:11:15 +0000] [1] [ERROR] Worker (pid:15) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-08-08T04:12:03.940Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-08-08T04:12:03.940Z",
+      "message": "   - Workers: 1"
+    },
+    {
+      "timestamp": "2026-08-08T04:12:03.940Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-08T04:12:04.732Z",
+      "message": "[2026-08-08 04:12:04 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-08-08T04:12:04.732Z",
+      "message": "[2026-08-08 04:12:04 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-08T04:12:04.736Z",
+      "message": "[2026-08-08 04:12:04 +0000] [15] [INFO] Booting worker with pid: 15"
+    }
+  ],
+  "openai_errors": [
+    {
+      "timestamp": "2026-08-06T17:15:50.042Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:50.042Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:27.441Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:27.442Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T18:21:03.905Z",
+      "message": "2026-08-06T18:21:03Z WRN Failed to serve tunnel connection error=\"timeout: no recent network activity\" connIndex=1 event=0 ip=198.41.200.13"
+    },
+    {
+      "timestamp": "2026-08-06T18:21:03.906Z",
+      "message": "2026-08-06T18:21:03Z WRN Serve tunnel error error=\"timeout: no recent network activity\" connIndex=1 event=0 ip=198.41.200.13"
+    },
+    {
+      "timestamp": "2026-08-06T18:21:05.537Z",
+      "message": "2026-08-06T18:21:05Z WRN Connection terminated error=\"timeout: no recent network activity\" connIndex=1"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:40.802Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:40.802Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T19:27:27.374Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T19:27:27.374Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T19:31:33.869Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T19:31:33.869Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-07T20:47:20.400Z",
+      "message": "2026-08-07T20:47:20Z WRN Failed to serve tunnel connection error=\"failed to accept QUIC stream: timeout: no recent network activity\" connIndex=2 event=0 ip=198.41.192.47"
+    },
+    {
+      "timestamp": "2026-08-07T20:47:20.400Z",
+      "message": "2026-08-07T20:47:20Z WRN Serve tunnel error error=\"failed to accept QUIC stream: timeout: no recent network activity\" connIndex=2 event=0 ip=198.41.192.47"
+    },
+    {
+      "timestamp": "2026-08-07T20:47:21.252Z",
+      "message": "2026-08-07T20:47:21Z WRN Connection terminated error=\"failed to accept QUIC stream: timeout: no recent network activity\" connIndex=2"
+    },
+    {
+      "timestamp": "2026-08-08T04:07:50.873Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-08T04:07:50.873Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-08T04:07:57.671Z",
+      "message": "2026-08-08 04:07:57,671 - DEBUG - Setting translate timeout as (60, 60)"
+    },
+    {
+      "timestamp": "2026-08-08T04:11:07.559Z",
+      "message": "2026-08-08 04:11:07,559 - DEBUG - Setting translate timeout as (60, 60)"
+    },
+    {
+      "timestamp": "2026-08-08T04:12:03.940Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-08T04:12:03.940Z",
+      "message": "   - Graceful Timeout: 60s"
+    }
+  ]
+}

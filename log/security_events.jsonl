@@ -17766,3 +17766,14 @@
 {"timestamp": "2026-08-08T11:52:05.482526", "event_type": "input_validation", "user_id": "ユーザー1646", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "平気？"}}
 {"timestamp": "2026-08-08T11:52:20.498463", "original_length": 3, "sanitized_length": 3, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-08-08T11:52:20.499463", "event_type": "input_validation", "user_id": "ユーザー1650", "input_length": 3, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "1番？"}}
+{"timestamp": "2026-08-08T15:23:16.354510", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-08T15:23:16.355510", "event_type": "input_validation", "user_id": "ユーザー1651", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛がします"}}
+{"timestamp": "2026-08-08T15:23:18.084439", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-08T15:23:36.772814", "original_length": 6, "sanitized_length": 6, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-08T15:23:36.774316", "event_type": "input_validation", "user_id": "ユーザー1652", "input_length": 6, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "頭痛がします"}}
+{"timestamp": "2026-08-08T15:23:48.831978", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-08T15:23:48.832977", "event_type": "input_validation", "user_id": "ユーザー1652", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "蕁麻疹出た"}}
+{"timestamp": "2026-08-08T15:23:55.154867", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-08T15:23:55.154867", "event_type": "input_validation", "user_id": "ユーザー1646", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "咳がひどい"}}
+{"timestamp": "2026-08-08T15:24:11.692238", "original_length": 5, "sanitized_length": 5, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-08-08T15:24:11.693742", "event_type": "input_validation", "user_id": "ユーザー1653", "input_length": 5, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "子供熱出た"}}

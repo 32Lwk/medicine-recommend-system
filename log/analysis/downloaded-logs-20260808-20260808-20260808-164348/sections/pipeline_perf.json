@@ -1,0 +1,1214 @@
+{
+  "pipeline_perf_count": 10,
+  "by_channel": {
+    "web": {
+      "count": 10,
+      "total_ms": {
+        "count": 10,
+        "min": 1519.46,
+        "max": 292696.89,
+        "avg": 60992.65,
+        "median": 26949.865,
+        "p95": 292696.89
+      },
+      "security_phase_ms": {
+        "count": 8,
+        "min": 10.84,
+        "max": 5796.61,
+        "avg": 1774.76,
+        "median": 245.45,
+        "p95": 5796.61
+      },
+      "triage_wait_after_security_ms": {
+        "count": 8,
+        "min": 0.6,
+        "max": 2002.95,
+        "avg": 513.469,
+        "median": 2.605,
+        "p95": 2002.95
+      },
+      "slowest": [
+        {
+          "channel": "web",
+          "sid": "1786205341586237742728",
+          "total_ms": 292696.89,
+          "breakdown": {
+            "post_start": 91.4,
+            "parsed_message": 91.63,
+            "session_db_read": 97.4,
+            "after_get_session_db": 471.37,
+            "before_llm_setup": 3084.66,
+            "before_security": 3985.34,
+            "after_security": 9781.95,
+            "before_emoji_route": 11197.96,
+            "before_triage": 11784.9,
+            "short_symptom_triage_skip_llm": 12682.81,
+            "after_triage": 12682.82,
+            "safety_gate_done": 16674.4,
+            "after_triage_follow_ups": 16807.06,
+            "after_counseling_flow": 17797.2,
+            "moderation_done": 17797.25,
+            "before_medicine_qa_route": 19172.61,
+            "after_medicine_qa_route": 19197.67,
+            "medicine_qa_physical_priority": 19198.29,
+            "before_orchestrator": 23797.69,
+            "nlu_batch_start": 52973.99,
+            "nlu_batch_done": 58667.24,
+            "rule_based_start": 60086.8,
+            "rb_missing_info_done": 63973.05,
+            "rb_scoring_only_done": 280105.22,
+            "emit_cards_early": 280105.28,
+            "rb_explain_batch_done": 285767.06,
+            "rule_based_scoring_only_done": 285779.24,
+            "line_carousel_push": 285785.78,
+            "explanation_phase_start": 285802.85,
+            "explanation_phase_done": 285802.86,
+            "personalized_advice": 288973.42
+          },
+          "llm": {
+            "llm_calls": [
+              {
+                "timestamp": "2026-08-08T16:10:25.962877",
+                "model": "gpt-4o-mini",
+                "path": "medicine_qa/focus_llm",
+                "latency_ms": 1919.06,
+                "prompt_tokens": 417,
+                "completion_tokens": 38,
+                "cost_jpy": 0.0137,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T16:10:49.939063",
+                "model": "gpt-5.4-mini",
+                "path": "missing_info_service",
+                "latency_ms": 2786.25,
+                "prompt_tokens": 298,
+                "completion_tokens": 250,
+                "cost_jpy": 0.0164,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T16:14:31.544575",
+                "model": "gpt-5.4-mini",
+                "path": "explanation_generator.batch_usage_notes",
+                "latency_ms": 4172.3,
+                "prompt_tokens": 961,
+                "completion_tokens": 600,
+                "cost_jpy": 0.0468,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T16:14:34.963428",
+                "model": "gpt-5.4-mini",
+                "path": "chat_response_service.personalized_advice",
+                "latency_ms": 1925.61,
+                "prompt_tokens": 614,
+                "completion_tokens": 126,
+                "cost_jpy": 0.0222,
+                "prompt_version": "completions"
+              }
+            ],
+            "llm_call_count": 4,
+            "llm_total_latency_ms": 10803.220000000001,
+            "llm_session_cost_jpy": 0.0991,
+            "model_profile": "gpt5"
+          },
+          "session_db_source": "db",
+          "log_ts": "2026-08-08T16:14:39.466751Z"
+        },
+        {
+          "channel": "web",
+          "sid": "1786205568452851339747",
+          "total_ms": 162511.55,
+          "breakdown": {
+            "post_start": 0.81,
+            "parsed_message": 0.99,
+            "session_db_read": 69.43,
+            "after_get_session_db": 469.03,
+            "before_llm_setup": 1176.09,
+            "before_security": 1988.49,
+            "after_security": 6375.52,
+            "before_emoji_route": 7195.57,
+            "before_triage": 7487.67,
+            "short_symptom_triage_skip_llm": 8381.22,
+            "after_triage": 8381.23,
+            "safety_gate_done": 12201.59,
+            "after_triage_follow_ups": 12404.42,
+            "after_counseling_flow": 13387.32,
+            "moderation_done": 13387.39,
+            "before_medicine_qa_route": 14407.17,
+            "after_medicine_qa_route": 14498.47,
+            "medicine_qa_physical_priority": 14499.94,
+            "before_orchestrator": 19381.83,
+            "nlu_batch_start": 48899.5,
+            "nlu_batch_done": 54591.01,
+            "rule_based_start": 56375.77,
+            "rb_missing_info_done": 59974.64,
+            "rb_scoring_only_done": 157038.1,
+            "emit_cards_early": 157038.15,
+            "rb_explain_batch_done": 157050.31,
+            "rule_based_scoring_only_done": 157057.92,
+            "line_carousel_push": 157062.5,
+            "explanation_phase_start": 157066.53,
+            "explanation_phase_done": 157066.54,
+            "personalized_advice": 160472.19
+          },
+          "llm": {
+            "llm_calls": [
+              {
+                "timestamp": "2026-08-08T16:13:40.730685",
+                "model": "gpt-4o-mini",
+                "path": "medicine_qa/focus_llm",
+                "latency_ms": 2065.81,
+                "prompt_tokens": 365,
+                "completion_tokens": 40,
+                "cost_jpy": 0.0122,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T16:14:05.654556",
+                "model": "gpt-5.4-mini",
+                "path": "missing_info_service",
+                "latency_ms": 2607.49,
+                "prompt_tokens": 298,
+                "completion_tokens": 222,
+                "cost_jpy": 0.0156,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T16:15:46.336304",
+                "model": "gpt-5.4-mini",
+                "path": "chat_response_service.personalized_advice",
+                "latency_ms": 2509.98,
+                "prompt_tokens": 562,
+                "completion_tokens": 112,
+                "cost_jpy": 0.0202,
+                "prompt_version": "completions"
+              }
+            ],
+            "llm_call_count": 3,
+            "llm_total_latency_ms": 7183.279999999999,
+            "llm_session_cost_jpy": 0.048,
+            "model_profile": "gpt5"
+          },
+          "session_db_source": "db",
+          "log_ts": "2026-08-08T16:15:48.969920Z"
+        },
+        {
+          "channel": "web",
+          "sid": "1786170831175165618006",
+          "total_ms": 39134.1,
+          "breakdown": {
+            "post_start": 0.24,
+            "parsed_message": 0.39,
+            "session_db_read": 0.48,
+            "after_get_session_db": 313.89,
+            "before_llm_setup": 820.84,
+            "before_security": 1643.26,
+            "after_security": 4892.48,
+            "before_emoji_route": 5636.28,
+            "before_triage": 5876.17,
+            "after_triage": 13619.02,
+            "safety_gate_done": 16637.88,
+            "after_triage_follow_ups": 16742.05,
+            "after_counseling_flow": 17387.26,
+            "moderation_done": 17387.33,
+            "before_medicine_qa_route": 18033.24,
+            "after_medicine_qa_route": 25940.75,
+            "concierge_resolve_intent_start": 36149.3,
+            "concierge_resolve_intent_end": 36149.67,
+            "concierge_build_payload_start": 36149.93,
+            "concierge_build_payload_end": 38332.62,
+            "medicine_qa_concierge_early_end": 39092.91
+          },
+          "llm": {
+            "llm_calls": [
+              {
+                "timestamp": "2026-08-08T06:38:59.800019",
+                "model": "gpt-5.4-mini",
+                "path": "llm_triage.stage1",
+                "latency_ms": 1548.52,
+                "prompt_tokens": 3101,
+                "completion_tokens": 83,
+                "cost_jpy": 0.0955,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T06:39:02.351784",
+                "model": "gpt-5.4-mini",
+                "path": "llm_triage.stage2",
+                "latency_ms": 1927.66,
+                "prompt_tokens": 3402,
+                "completion_tokens": 87,
+                "cost_jpy": 0.1047,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T06:39:13.925034",
+                "model": "gpt-4o-mini",
+                "path": "medicine_qa/focus_llm",
+                "latency_ms": 1223.23,
+                "prompt_tokens": 363,
+                "completion_tokens": 31,
+                "cost_jpy": 0.0118,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T06:39:27.324405",
+                "model": "gpt-4o-mini",
+                "path": "concierge_agent.greeting",
+                "latency_ms": 1438.45,
+                "prompt_tokens": 867,
+                "completion_tokens": 63,
+                "cost_jpy": 0.0279,
+                "prompt_version": "completions"
+              }
+            ],
+            "llm_call_count": 4,
+            "llm_total_latency_ms": 6137.86,
+            "llm_session_cost_jpy": 0.2399,
+            "model_profile": "gpt5"
+          },
+          "session_db_source": "db",
+          "store_gate_cache_hit": true,
+          "log_ts": "2026-08-08T06:39:28.849672Z"
+        },
+        {
+          "channel": "web",
+          "sid": "1786170831175165618006",
+          "total_ms": 30392.27,
+          "breakdown": {
+            "post_start": 0.19,
+            "parsed_message": 0.31,
+            "session_db_read": 0.39,
+            "after_get_session_db": 294.49,
+            "before_llm_setup": 587.93,
+            "before_security": 1177.86,
+            "after_security": 1422.22,
+            "before_emoji_route": 1425.12,
+            "before_triage": 1425.14,
+            "after_triage": 7020.97,
+            "safety_gate_done": 7659.79,
+            "after_triage_follow_ups": 7666.46,
+            "after_counseling_flow": 8710.73,
+            "moderation_done": 8710.8,
+            "before_medicine_qa_route": 9004.23,
+            "after_medicine_qa_route": 14415.71,
+            "medicine_qa_early_route_start": 14690.43,
+            "medicine_information_qa_start": 14707.72,
+            "product_image_fast_path_start": 14707.73,
+            "medicine_information_qa_end": 30383.99,
+            "product_image_fast_path_end": 30384.0,
+            "medicine_qa_early_route_end": 30384.98
+          },
+          "llm": {
+            "llm_calls": [
+              {
+                "timestamp": "2026-08-08T06:44:53.165053",
+                "model": "gpt-5.4-mini",
+                "path": "llm_triage.stage1",
+                "latency_ms": 1311.72,
+                "prompt_tokens": 3470,
+                "completion_tokens": 91,
+                "cost_jpy": 0.1068,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T06:44:55.905191",
+                "model": "gpt-5.4-mini",
+                "path": "llm_triage.stage2",
+                "latency_ms": 1652.94,
+                "prompt_tokens": 3771,
+                "completion_tokens": 74,
+                "cost_jpy": 0.1154,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T06:45:03.263879",
+                "model": "gpt-4o-mini",
+                "path": "medicine_qa/focus_llm",
+                "latency_ms": 773.17,
+                "prompt_tokens": 716,
+                "completion_tokens": 34,
+                "cost_jpy": 0.0225,
+                "prompt_version": "completions"
+              }
+            ],
+            "llm_call_count": 3,
+            "llm_total_latency_ms": 3737.83,
+            "llm_session_cost_jpy": 0.2447,
+            "model_profile": "gpt5"
+          },
+          "session_db_source": "db",
+          "log_ts": "2026-08-08T06:45:19.856118Z"
+        },
+        {
+          "channel": "web",
+          "sid": "1786170831175165618006",
+          "total_ms": 30057.83,
+          "breakdown": {
+            "post_start": 0.26,
+            "parsed_message": 0.61,
+            "session_db_read": 0.69,
+            "after_get_session_db": 297.69,
+            "before_llm_setup": 589.61,
+            "before_security": 1243.18,
+            "after_security": 1486.21,
+            "before_emoji_route": 1488.49,
+            "before_triage": 1488.5,
+            "after_triage": 7025.94,
+            "safety_gate_done": 7714.23,
+            "after_triage_follow_ups": 7721.15,
+            "after_counseling_flow": 8579.71,
+            "moderation_done": 8579.75,
+            "before_medicine_qa_route": 8941.22,
+            "after_medicine_qa_route": 14474.81,
+            "medicine_qa_early_route_start": 14731.0,
+            "medicine_information_qa_start": 14731.05,
+            "product_image_fast_path_start": 14731.05,
+            "medicine_information_qa_end": 30049.22,
+            "product_image_fast_path_end": 30049.23,
+            "medicine_qa_early_route_end": 30050.29
+          },
+          "llm": {
+            "llm_calls": [
+              {
+                "timestamp": "2026-08-08T06:47:07.028897",
+                "model": "gpt-5.4-mini",
+                "path": "llm_triage.stage1",
+                "latency_ms": 1483.75,
+                "prompt_tokens": 3485,
+                "completion_tokens": 110,
+                "cost_jpy": 0.1079,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T06:47:09.368570",
+                "model": "gpt-5.4-mini",
+                "path": "llm_triage.stage2",
+                "latency_ms": 1433.32,
+                "prompt_tokens": 3786,
+                "completion_tokens": 106,
+                "cost_jpy": 0.1168,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T06:47:16.783971",
+                "model": "gpt-4o-mini",
+                "path": "medicine_qa/focus_llm",
+                "latency_ms": 817.17,
+                "prompt_tokens": 624,
+                "completion_tokens": 31,
+                "cost_jpy": 0.0197,
+                "prompt_version": "completions"
+              }
+            ],
+            "llm_call_count": 3,
+            "llm_total_latency_ms": 3734.24,
+            "llm_session_cost_jpy": 0.2443,
+            "model_profile": "gpt5"
+          },
+          "session_db_source": "db",
+          "log_ts": "2026-08-08T06:47:32.992743Z"
+        },
+        {
+          "channel": "web",
+          "sid": "1786170831175165618006",
+          "total_ms": 23841.9,
+          "breakdown": {
+            "post_start": 0.2,
+            "parsed_message": 0.44,
+            "session_db_read": 0.51,
+            "after_get_session_db": 293.4,
+            "before_llm_setup": 580.41,
+            "before_security": 1154.28,
+            "after_security": 1400.82,
+            "before_emoji_route": 1402.94,
+            "before_triage": 1402.96,
+            "after_triage": 7147.82,
+            "safety_gate_done": 7783.59,
+            "after_triage_follow_ups": 7794.72,
+            "after_counseling_flow": 8613.44,
+            "moderation_done": 8613.5,
+            "before_medicine_qa_route": 8904.02,
+            "after_medicine_qa_route": 14422.68,
+            "medicine_qa_early_route_start": 14677.5,
+            "medicine_information_qa_start": 14677.54,
+            "product_image_fast_path_start": 14677.54,
+            "medicine_information_qa_end": 23833.3,
+            "product_image_fast_path_end": 23833.31,
+            "medicine_qa_early_route_end": 23834.41
+          },
+          "llm": {
+            "llm_calls": [
+              {
+                "timestamp": "2026-08-08T06:45:58.284760",
+                "model": "gpt-5.4-mini",
+                "path": "llm_triage.stage1",
+                "latency_ms": 1536.0,
+                "prompt_tokens": 3512,
+                "completion_tokens": 87,
+                "cost_jpy": 0.108,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T06:46:00.927999",
+                "model": "gpt-5.4-mini",
+                "path": "llm_triage.stage2",
+                "latency_ms": 1689.4,
+                "prompt_tokens": 3813,
+                "completion_tokens": 75,
+                "cost_jpy": 0.1166,
+                "prompt_version": "completions"
+              },
+              {
+                "timestamp": "2026-08-08T06:46:08.177141",
+                "model": "gpt-4o-mini",
+                "path": "medicine_qa/focus_llm",
+                "latency_ms": 745.71,
+                "prompt_tokens": 676,
+                "completion_tokens": 30,
+                "cost_jpy": 0.0212,
+                "prompt_version": "completions"
+              }
+            ],
+            "llm_call_count": 3,
+            "llm_total_latency_ms": 3971.11,
+            "llm_session_cost_jpy": 0.2458,
+            "model_profile": "gpt5"
+          },
+          "session_db_source": "db",
+          "log_ts": "2026-08-08T06:46:18.220304Z"
+        },
+        {
+          "channel": "web",
+          "sid": "1786170831175165618006",
+          "total_ms": 11363.85,
+          "breakdown": {
+            "post_start": 0.21,
+            "parsed_message": 0.51,
+            "session_db_read": 0.59,
+            "after_get_session_db": 288.89,
+            "before_llm_setup": 579.24,
+            "before_security": 1157.37,
+            "after_security": 1168.21,
+            "before_emoji_route": 1168.79,
+            "before_triage": 1168.81,
+            "after_triage": 2269.0,
+            "safety_gate_done": 3239.19,
+            "after_triage_follow_ups": 3245.23,
+            "after_counseling_flow": 4372.27,
+            "moderation_done": 4372.33,
+            "before_medicine_qa_route": 4892.41,
+            "after_medicine_qa_route": 4898.81,
+            "concierge_resolve_intent_start": 4977.56,
+            "concierge_resolve_intent_end": 4977.93,
+            "concierge_build_payload_start": 4978.2,
+            "concierge_build_payload_end": 10761.26,
+            "medicine_qa_concierge_early_end": 11355.75
+          },
+          "llm": {
+            "llm_calls": [
+              {
+                "timestamp": "2026-08-08T06:44:33.632108",
+                "model": "gpt-5.4-mini",
+                "path": "concierge_agent.meta_app_about",
+                "latency_ms": 1930.77,
+                "prompt_tokens": 2117,
+                "completion_tokens": 170,
+                "cost_jpy": 0.0686,
+                "prompt_version": "completions"
+              }
+            ],
+            "llm_call_count": 1,
+            "llm_total_latency_ms": 1930.77,
+            "llm_session_cost_jpy": 0.0686,
+            "model_profile": "gpt5"
+          },
+          "session_db_source": "db",
+          "store_gate_cache_hit": true,
+          "log_ts": "2026-08-08T06:44:34.864364Z"
+        },
+        {
+          "channel": "web",
+          "sid": "1786205341586237742728",
+          "total_ms": 10699.64,
+          "breakdown": {
+            "post_start": 92.79,
+            "parsed_message": 93.05,
+            "session_db_read": 93.3,
+            "after_get_session_db": 493.74,
+            "before_llm_setup": 3220.97,
+            "before_security": 4311.38
+          },
+          "llm": {
+            "llm_calls": [],
+            "llm_call_count": 0,
+            "llm_total_latency_ms": 0,
+            "llm_session_cost_jpy": 0.0,
+            "model_profile": "gpt5"
+          },
+          "session_db_source": "db",
+          "log_ts": "2026-08-08T16:09:32.537991Z"
+        },
+        {
+          "channel": "web",
+          "sid": "1786170831175165618006",
+          "total_ms": 7709.01,
+          "breakdown": {
+            "post_start": 0.24,
+            "parsed_message": 0.4,
+            "session_db_read": 0.5,
+            "after_get_session_db": 289.52,
+            "before_llm_setup": 578.37,
+            "before_security": 1157.68,
+            "after_security": 1178.13,
+            "before_emoji_route": 1179.13,
+            "before_triage": 1179.14,
+            "after_triage": 2191.19,
+            "safety_gate_done": 3186.88,
+            "after_triage_follow_ups": 3187.44,
+            "after_counseling_flow": 4033.26,
+            "moderation_done": 4033.33,
+            "before_medicine_qa_route": 4635.76,
+            "after_medicine_qa_route": 4636.44,
+            "concierge_resolve_intent_start": 4723.49,
+            "concierge_resolve_intent_end": 4723.79,
+            "concierge_build_payload_start": 4724.35,
+            "concierge_build_payload_end": 7048.55,
+            "medicine_qa_concierge_early_end": 7700.82
+          },
+          "llm": {
+            "llm_calls": [
+              {
+                "timestamp": "2026-08-08T06:42:13.662308",
+                "model": "gpt-5.4-mini",
+                "path": "concierge_agent.doc_changelog_intro",
+                "latency_ms": 1607.2,
+                "prompt_tokens": 1571,
+                "completion_tokens": 92,
+                "cost_jpy": 0.0499,
+                "prompt_version": "completions"
+              }
+            ],
+            "llm_call_count": 1,
+            "llm_total_latency_ms": 1607.2,
+            "llm_session_cost_jpy": 0.0499,
+            "model_profile": "gpt5"
+          },
+          "session_db_source": "db",
+          "store_gate_cache_hit": true,
+          "log_ts": "2026-08-08T06:42:15.013224Z"
+        },
+        {
+          "channel": "web",
+          "sid": "1786171000839400592075",
+          "total_ms": 1519.46,
+          "breakdown": {
+            "post_start": 6.14,
+            "parsed_message": 6.29
+          },
+          "llm": {
+            "llm_calls": [],
+            "llm_call_count": 0,
+            "llm_total_latency_ms": 0,
+            "llm_session_cost_jpy": 0.0,
+            "model_profile": "gpt5"
+          },
+          "log_ts": "2026-08-08T06:36:44.589136Z"
+        }
+      ]
+    }
+  },
+  "recent_rows": [
+    {
+      "channel": "web",
+      "sid": "1786171000839400592075",
+      "total_ms": 1519.46,
+      "breakdown": {
+        "post_start": 6.14,
+        "parsed_message": 6.29
+      },
+      "llm": {
+        "llm_calls": [],
+        "llm_call_count": 0,
+        "llm_total_latency_ms": 0,
+        "llm_session_cost_jpy": 0.0,
+        "model_profile": "gpt5"
+      },
+      "log_ts": "2026-08-08T06:36:44.589136Z"
+    },
+    {
+      "channel": "web",
+      "sid": "1786170831175165618006",
+      "total_ms": 39134.1,
+      "breakdown": {
+        "post_start": 0.24,
+        "parsed_message": 0.39,
+        "session_db_read": 0.48,
+        "after_get_session_db": 313.89,
+        "before_llm_setup": 820.84,
+        "before_security": 1643.26,
+        "after_security": 4892.48,
+        "before_emoji_route": 5636.28,
+        "before_triage": 5876.17,
+        "after_triage": 13619.02,
+        "safety_gate_done": 16637.88,
+        "after_triage_follow_ups": 16742.05,
+        "after_counseling_flow": 17387.26,
+        "moderation_done": 17387.33,
+        "before_medicine_qa_route": 18033.24,
+        "after_medicine_qa_route": 25940.75,
+        "concierge_resolve_intent_start": 36149.3,
+        "concierge_resolve_intent_end": 36149.67,
+        "concierge_build_payload_start": 36149.93,
+        "concierge_build_payload_end": 38332.62,
+        "medicine_qa_concierge_early_end": 39092.91
+      },
+      "llm": {
+        "llm_calls": [
+          {
+            "timestamp": "2026-08-08T06:38:59.800019",
+            "model": "gpt-5.4-mini",
+            "path": "llm_triage.stage1",
+            "latency_ms": 1548.52,
+            "prompt_tokens": 3101,
+            "completion_tokens": 83,
+            "cost_jpy": 0.0955,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T06:39:02.351784",
+            "model": "gpt-5.4-mini",
+            "path": "llm_triage.stage2",
+            "latency_ms": 1927.66,
+            "prompt_tokens": 3402,
+            "completion_tokens": 87,
+            "cost_jpy": 0.1047,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T06:39:13.925034",
+            "model": "gpt-4o-mini",
+            "path": "medicine_qa/focus_llm",
+            "latency_ms": 1223.23,
+            "prompt_tokens": 363,
+            "completion_tokens": 31,
+            "cost_jpy": 0.0118,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T06:39:27.324405",
+            "model": "gpt-4o-mini",
+            "path": "concierge_agent.greeting",
+            "latency_ms": 1438.45,
+            "prompt_tokens": 867,
+            "completion_tokens": 63,
+            "cost_jpy": 0.0279,
+            "prompt_version": "completions"
+          }
+        ],
+        "llm_call_count": 4,
+        "llm_total_latency_ms": 6137.86,
+        "llm_session_cost_jpy": 0.2399,
+        "model_profile": "gpt5"
+      },
+      "session_db_source": "db",
+      "store_gate_cache_hit": true,
+      "log_ts": "2026-08-08T06:39:28.849672Z"
+    },
+    {
+      "channel": "web",
+      "sid": "1786170831175165618006",
+      "total_ms": 7709.01,
+      "breakdown": {
+        "post_start": 0.24,
+        "parsed_message": 0.4,
+        "session_db_read": 0.5,
+        "after_get_session_db": 289.52,
+        "before_llm_setup": 578.37,
+        "before_security": 1157.68,
+        "after_security": 1178.13,
+        "before_emoji_route": 1179.13,
+        "before_triage": 1179.14,
+        "after_triage": 2191.19,
+        "safety_gate_done": 3186.88,
+        "after_triage_follow_ups": 3187.44,
+        "after_counseling_flow": 4033.26,
+        "moderation_done": 4033.33,
+        "before_medicine_qa_route": 4635.76,
+        "after_medicine_qa_route": 4636.44,
+        "concierge_resolve_intent_start": 4723.49,
+        "concierge_resolve_intent_end": 4723.79,
+        "concierge_build_payload_start": 4724.35,
+        "concierge_build_payload_end": 7048.55,
+        "medicine_qa_concierge_early_end": 7700.82
+      },
+      "llm": {
+        "llm_calls": [
+          {
+            "timestamp": "2026-08-08T06:42:13.662308",
+            "model": "gpt-5.4-mini",
+            "path": "concierge_agent.doc_changelog_intro",
+            "latency_ms": 1607.2,
+            "prompt_tokens": 1571,
+            "completion_tokens": 92,
+            "cost_jpy": 0.0499,
+            "prompt_version": "completions"
+          }
+        ],
+        "llm_call_count": 1,
+        "llm_total_latency_ms": 1607.2,
+        "llm_session_cost_jpy": 0.0499,
+        "model_profile": "gpt5"
+      },
+      "session_db_source": "db",
+      "store_gate_cache_hit": true,
+      "log_ts": "2026-08-08T06:42:15.013224Z"
+    },
+    {
+      "channel": "web",
+      "sid": "1786170831175165618006",
+      "total_ms": 11363.85,
+      "breakdown": {
+        "post_start": 0.21,
+        "parsed_message": 0.51,
+        "session_db_read": 0.59,
+        "after_get_session_db": 288.89,
+        "before_llm_setup": 579.24,
+        "before_security": 1157.37,
+        "after_security": 1168.21,
+        "before_emoji_route": 1168.79,
+        "before_triage": 1168.81,
+        "after_triage": 2269.0,
+        "safety_gate_done": 3239.19,
+        "after_triage_follow_ups": 3245.23,
+        "after_counseling_flow": 4372.27,
+        "moderation_done": 4372.33,
+        "before_medicine_qa_route": 4892.41,
+        "after_medicine_qa_route": 4898.81,
+        "concierge_resolve_intent_start": 4977.56,
+        "concierge_resolve_intent_end": 4977.93,
+        "concierge_build_payload_start": 4978.2,
+        "concierge_build_payload_end": 10761.26,
+        "medicine_qa_concierge_early_end": 11355.75
+      },
+      "llm": {
+        "llm_calls": [
+          {
+            "timestamp": "2026-08-08T06:44:33.632108",
+            "model": "gpt-5.4-mini",
+            "path": "concierge_agent.meta_app_about",
+            "latency_ms": 1930.77,
+            "prompt_tokens": 2117,
+            "completion_tokens": 170,
+            "cost_jpy": 0.0686,
+            "prompt_version": "completions"
+          }
+        ],
+        "llm_call_count": 1,
+        "llm_total_latency_ms": 1930.77,
+        "llm_session_cost_jpy": 0.0686,
+        "model_profile": "gpt5"
+      },
+      "session_db_source": "db",
+      "store_gate_cache_hit": true,
+      "log_ts": "2026-08-08T06:44:34.864364Z"
+    },
+    {
+      "channel": "web",
+      "sid": "1786170831175165618006",
+      "total_ms": 30392.27,
+      "breakdown": {
+        "post_start": 0.19,
+        "parsed_message": 0.31,
+        "session_db_read": 0.39,
+        "after_get_session_db": 294.49,
+        "before_llm_setup": 587.93,
+        "before_security": 1177.86,
+        "after_security": 1422.22,
+        "before_emoji_route": 1425.12,
+        "before_triage": 1425.14,
+        "after_triage": 7020.97,
+        "safety_gate_done": 7659.79,
+        "after_triage_follow_ups": 7666.46,
+        "after_counseling_flow": 8710.73,
+        "moderation_done": 8710.8,
+        "before_medicine_qa_route": 9004.23,
+        "after_medicine_qa_route": 14415.71,
+        "medicine_qa_early_route_start": 14690.43,
+        "medicine_information_qa_start": 14707.72,
+        "product_image_fast_path_start": 14707.73,
+        "medicine_information_qa_end": 30383.99,
+        "product_image_fast_path_end": 30384.0,
+        "medicine_qa_early_route_end": 30384.98
+      },
+      "llm": {
+        "llm_calls": [
+          {
+            "timestamp": "2026-08-08T06:44:53.165053",
+            "model": "gpt-5.4-mini",
+            "path": "llm_triage.stage1",
+            "latency_ms": 1311.72,
+            "prompt_tokens": 3470,
+            "completion_tokens": 91,
+            "cost_jpy": 0.1068,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T06:44:55.905191",
+            "model": "gpt-5.4-mini",
+            "path": "llm_triage.stage2",
+            "latency_ms": 1652.94,
+            "prompt_tokens": 3771,
+            "completion_tokens": 74,
+            "cost_jpy": 0.1154,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T06:45:03.263879",
+            "model": "gpt-4o-mini",
+            "path": "medicine_qa/focus_llm",
+            "latency_ms": 773.17,
+            "prompt_tokens": 716,
+            "completion_tokens": 34,
+            "cost_jpy": 0.0225,
+            "prompt_version": "completions"
+          }
+        ],
+        "llm_call_count": 3,
+        "llm_total_latency_ms": 3737.83,
+        "llm_session_cost_jpy": 0.2447,
+        "model_profile": "gpt5"
+      },
+      "session_db_source": "db",
+      "log_ts": "2026-08-08T06:45:19.856118Z"
+    },
+    {
+      "channel": "web",
+      "sid": "1786170831175165618006",
+      "total_ms": 23841.9,
+      "breakdown": {
+        "post_start": 0.2,
+        "parsed_message": 0.44,
+        "session_db_read": 0.51,
+        "after_get_session_db": 293.4,
+        "before_llm_setup": 580.41,
+        "before_security": 1154.28,
+        "after_security": 1400.82,
+        "before_emoji_route": 1402.94,
+        "before_triage": 1402.96,
+        "after_triage": 7147.82,
+        "safety_gate_done": 7783.59,
+        "after_triage_follow_ups": 7794.72,
+        "after_counseling_flow": 8613.44,
+        "moderation_done": 8613.5,
+        "before_medicine_qa_route": 8904.02,
+        "after_medicine_qa_route": 14422.68,
+        "medicine_qa_early_route_start": 14677.5,
+        "medicine_information_qa_start": 14677.54,
+        "product_image_fast_path_start": 14677.54,
+        "medicine_information_qa_end": 23833.3,
+        "product_image_fast_path_end": 23833.31,
+        "medicine_qa_early_route_end": 23834.41
+      },
+      "llm": {
+        "llm_calls": [
+          {
+            "timestamp": "2026-08-08T06:45:58.284760",
+            "model": "gpt-5.4-mini",
+            "path": "llm_triage.stage1",
+            "latency_ms": 1536.0,
+            "prompt_tokens": 3512,
+            "completion_tokens": 87,
+            "cost_jpy": 0.108,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T06:46:00.927999",
+            "model": "gpt-5.4-mini",
+            "path": "llm_triage.stage2",
+            "latency_ms": 1689.4,
+            "prompt_tokens": 3813,
+            "completion_tokens": 75,
+            "cost_jpy": 0.1166,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T06:46:08.177141",
+            "model": "gpt-4o-mini",
+            "path": "medicine_qa/focus_llm",
+            "latency_ms": 745.71,
+            "prompt_tokens": 676,
+            "completion_tokens": 30,
+            "cost_jpy": 0.0212,
+            "prompt_version": "completions"
+          }
+        ],
+        "llm_call_count": 3,
+        "llm_total_latency_ms": 3971.11,
+        "llm_session_cost_jpy": 0.2458,
+        "model_profile": "gpt5"
+      },
+      "session_db_source": "db",
+      "log_ts": "2026-08-08T06:46:18.220304Z"
+    },
+    {
+      "channel": "web",
+      "sid": "1786170831175165618006",
+      "total_ms": 30057.83,
+      "breakdown": {
+        "post_start": 0.26,
+        "parsed_message": 0.61,
+        "session_db_read": 0.69,
+        "after_get_session_db": 297.69,
+        "before_llm_setup": 589.61,
+        "before_security": 1243.18,
+        "after_security": 1486.21,
+        "before_emoji_route": 1488.49,
+        "before_triage": 1488.5,
+        "after_triage": 7025.94,
+        "safety_gate_done": 7714.23,
+        "after_triage_follow_ups": 7721.15,
+        "after_counseling_flow": 8579.71,
+        "moderation_done": 8579.75,
+        "before_medicine_qa_route": 8941.22,
+        "after_medicine_qa_route": 14474.81,
+        "medicine_qa_early_route_start": 14731.0,
+        "medicine_information_qa_start": 14731.05,
+        "product_image_fast_path_start": 14731.05,
+        "medicine_information_qa_end": 30049.22,
+        "product_image_fast_path_end": 30049.23,
+        "medicine_qa_early_route_end": 30050.29
+      },
+      "llm": {
+        "llm_calls": [
+          {
+            "timestamp": "2026-08-08T06:47:07.028897",
+            "model": "gpt-5.4-mini",
+            "path": "llm_triage.stage1",
+            "latency_ms": 1483.75,
+            "prompt_tokens": 3485,
+            "completion_tokens": 110,
+            "cost_jpy": 0.1079,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T06:47:09.368570",
+            "model": "gpt-5.4-mini",
+            "path": "llm_triage.stage2",
+            "latency_ms": 1433.32,
+            "prompt_tokens": 3786,
+            "completion_tokens": 106,
+            "cost_jpy": 0.1168,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T06:47:16.783971",
+            "model": "gpt-4o-mini",
+            "path": "medicine_qa/focus_llm",
+            "latency_ms": 817.17,
+            "prompt_tokens": 624,
+            "completion_tokens": 31,
+            "cost_jpy": 0.0197,
+            "prompt_version": "completions"
+          }
+        ],
+        "llm_call_count": 3,
+        "llm_total_latency_ms": 3734.24,
+        "llm_session_cost_jpy": 0.2443,
+        "model_profile": "gpt5"
+      },
+      "session_db_source": "db",
+      "log_ts": "2026-08-08T06:47:32.992743Z"
+    },
+    {
+      "channel": "web",
+      "sid": "1786205341586237742728",
+      "total_ms": 10699.64,
+      "breakdown": {
+        "post_start": 92.79,
+        "parsed_message": 93.05,
+        "session_db_read": 93.3,
+        "after_get_session_db": 493.74,
+        "before_llm_setup": 3220.97,
+        "before_security": 4311.38
+      },
+      "llm": {
+        "llm_calls": [],
+        "llm_call_count": 0,
+        "llm_total_latency_ms": 0,
+        "llm_session_cost_jpy": 0.0,
+        "model_profile": "gpt5"
+      },
+      "session_db_source": "db",
+      "log_ts": "2026-08-08T16:09:32.537991Z"
+    },
+    {
+      "channel": "web",
+      "sid": "1786205341586237742728",
+      "total_ms": 292696.89,
+      "breakdown": {
+        "post_start": 91.4,
+        "parsed_message": 91.63,
+        "session_db_read": 97.4,
+        "after_get_session_db": 471.37,
+        "before_llm_setup": 3084.66,
+        "before_security": 3985.34,
+        "after_security": 9781.95,
+        "before_emoji_route": 11197.96,
+        "before_triage": 11784.9,
+        "short_symptom_triage_skip_llm": 12682.81,
+        "after_triage": 12682.82,
+        "safety_gate_done": 16674.4,
+        "after_triage_follow_ups": 16807.06,
+        "after_counseling_flow": 17797.2,
+        "moderation_done": 17797.25,
+        "before_medicine_qa_route": 19172.61,
+        "after_medicine_qa_route": 19197.67,
+        "medicine_qa_physical_priority": 19198.29,
+        "before_orchestrator": 23797.69,
+        "nlu_batch_start": 52973.99,
+        "nlu_batch_done": 58667.24,
+        "rule_based_start": 60086.8,
+        "rb_missing_info_done": 63973.05,
+        "rb_scoring_only_done": 280105.22,
+        "emit_cards_early": 280105.28,
+        "rb_explain_batch_done": 285767.06,
+        "rule_based_scoring_only_done": 285779.24,
+        "line_carousel_push": 285785.78,
+        "explanation_phase_start": 285802.85,
+        "explanation_phase_done": 285802.86,
+        "personalized_advice": 288973.42
+      },
+      "llm": {
+        "llm_calls": [
+          {
+            "timestamp": "2026-08-08T16:10:25.962877",
+            "model": "gpt-4o-mini",
+            "path": "medicine_qa/focus_llm",
+            "latency_ms": 1919.06,
+            "prompt_tokens": 417,
+            "completion_tokens": 38,
+            "cost_jpy": 0.0137,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T16:10:49.939063",
+            "model": "gpt-5.4-mini",
+            "path": "missing_info_service",
+            "latency_ms": 2786.25,
+            "prompt_tokens": 298,
+            "completion_tokens": 250,
+            "cost_jpy": 0.0164,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T16:14:31.544575",
+            "model": "gpt-5.4-mini",
+            "path": "explanation_generator.batch_usage_notes",
+            "latency_ms": 4172.3,
+            "prompt_tokens": 961,
+            "completion_tokens": 600,
+            "cost_jpy": 0.0468,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T16:14:34.963428",
+            "model": "gpt-5.4-mini",
+            "path": "chat_response_service.personalized_advice",
+            "latency_ms": 1925.61,
+            "prompt_tokens": 614,
+            "completion_tokens": 126,
+            "cost_jpy": 0.0222,
+            "prompt_version": "completions"
+          }
+        ],
+        "llm_call_count": 4,
+        "llm_total_latency_ms": 10803.220000000001,
+        "llm_session_cost_jpy": 0.0991,
+        "model_profile": "gpt5"
+      },
+      "session_db_source": "db",
+      "log_ts": "2026-08-08T16:14:39.466751Z"
+    },
+    {
+      "channel": "web",
+      "sid": "1786205568452851339747",
+      "total_ms": 162511.55,
+      "breakdown": {
+        "post_start": 0.81,
+        "parsed_message": 0.99,
+        "session_db_read": 69.43,
+        "after_get_session_db": 469.03,
+        "before_llm_setup": 1176.09,
+        "before_security": 1988.49,
+        "after_security": 6375.52,
+        "before_emoji_route": 7195.57,
+        "before_triage": 7487.67,
+        "short_symptom_triage_skip_llm": 8381.22,
+        "after_triage": 8381.23,
+        "safety_gate_done": 12201.59,
+        "after_triage_follow_ups": 12404.42,
+        "after_counseling_flow": 13387.32,
+        "moderation_done": 13387.39,
+        "before_medicine_qa_route": 14407.17,
+        "after_medicine_qa_route": 14498.47,
+        "medicine_qa_physical_priority": 14499.94,
+        "before_orchestrator": 19381.83,
+        "nlu_batch_start": 48899.5,
+        "nlu_batch_done": 54591.01,
+        "rule_based_start": 56375.77,
+        "rb_missing_info_done": 59974.64,
+        "rb_scoring_only_done": 157038.1,
+        "emit_cards_early": 157038.15,
+        "rb_explain_batch_done": 157050.31,
+        "rule_based_scoring_only_done": 157057.92,
+        "line_carousel_push": 157062.5,
+        "explanation_phase_start": 157066.53,
+        "explanation_phase_done": 157066.54,
+        "personalized_advice": 160472.19
+      },
+      "llm": {
+        "llm_calls": [
+          {
+            "timestamp": "2026-08-08T16:13:40.730685",
+            "model": "gpt-4o-mini",
+            "path": "medicine_qa/focus_llm",
+            "latency_ms": 2065.81,
+            "prompt_tokens": 365,
+            "completion_tokens": 40,
+            "cost_jpy": 0.0122,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T16:14:05.654556",
+            "model": "gpt-5.4-mini",
+            "path": "missing_info_service",
+            "latency_ms": 2607.49,
+            "prompt_tokens": 298,
+            "completion_tokens": 222,
+            "cost_jpy": 0.0156,
+            "prompt_version": "completions"
+          },
+          {
+            "timestamp": "2026-08-08T16:15:46.336304",
+            "model": "gpt-5.4-mini",
+            "path": "chat_response_service.personalized_advice",
+            "latency_ms": 2509.98,
+            "prompt_tokens": 562,
+            "completion_tokens": 112,
+            "cost_jpy": 0.0202,
+            "prompt_version": "completions"
+          }
+        ],
+        "llm_call_count": 3,
+        "llm_total_latency_ms": 7183.279999999999,
+        "llm_session_cost_jpy": 0.048,
+        "model_profile": "gpt5"
+      },
+      "session_db_source": "db",
+      "log_ts": "2026-08-08T16:15:48.969920Z"
+    }
+  ]
+}

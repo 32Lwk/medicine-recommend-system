@@ -1,0 +1,23 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 0,
+    "by_status": {},
+    "by_path": {},
+    "slow_endpoints_ge_5s": {
+      "GET /health": {
+        "count": 1,
+        "min": 15.62,
+        "max": 15.62,
+        "avg": 15.62,
+        "median": 15.62,
+        "p95": 15.62
+      }
+    },
+    "samples": []
+  },
+  "text_errors": {
+    "count": 0,
+    "top_patterns": [],
+    "samples": []
+  }
+}

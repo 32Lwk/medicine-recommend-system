@@ -1,0 +1,70 @@
+{
+  "gunicorn": [
+    {
+      "timestamp": "2026-08-08T06:16:37.886186Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-08-08T06:16:37.886228Z",
+      "message": "   - Workers: 1"
+    },
+    {
+      "timestamp": "2026-08-08T06:16:37.886232Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-08T06:16:38.921815Z",
+      "message": "[2026-08-08 06:16:38 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-08-08T06:16:38.922916Z",
+      "message": "[2026-08-08 06:16:38 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-08T06:16:38.938514Z",
+      "message": "[2026-08-08 06:16:38 +0000] [4] [INFO] Booting worker with pid: 4"
+    },
+    {
+      "timestamp": "2026-08-08T06:21:07.291612Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-08-08T06:21:07.291639Z",
+      "message": "   - Workers: 1"
+    },
+    {
+      "timestamp": "2026-08-08T06:21:07.291649Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-08T06:21:08.131783Z",
+      "message": "[2026-08-08 06:21:08 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-08-08T06:21:08.133063Z",
+      "message": "[2026-08-08 06:21:08 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-08-08T06:21:08.147589Z",
+      "message": "[2026-08-08 06:21:08 +0000] [4] [INFO] Booting worker with pid: 4"
+    }
+  ],
+  "openai_errors": [
+    {
+      "timestamp": "2026-08-08T06:16:37.886206Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-08T06:16:37.886212Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-08T06:21:07.291632Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-08T06:21:07.291636Z",
+      "message": "   - Graceful Timeout: 60s"
+    }
+  ]
+}

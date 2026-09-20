@@ -1,0 +1,271 @@
+{
+  "http": {
+    "http_4xx_5xx_total": 12,
+    "by_status": {
+      "404": 9,
+      "429": 2,
+      "502": 1
+    },
+    "by_path": {
+      "GET /apple-touch-icon-precomposed.png (404)": 4,
+      "GET /apple-touch-icon.png (404)": 4,
+      "GET /robots.txt (404)": 1,
+      "GET /api/processing-status (429)": 1,
+      "GET /api/chat/stream-result (429)": 1,
+      "POST /api/tts (502)": 1
+    },
+    "slow_endpoints_ge_5s": {
+      "GET /api/sessions": {
+        "count": 325,
+        "min": 0.291,
+        "max": 15.421,
+        "avg": 0.647,
+        "median": 0.304,
+        "p95": 0.962
+      },
+      "PATCH /api/sessions/activity": {
+        "count": 153,
+        "min": 0.292,
+        "max": 15.299,
+        "avg": 0.963,
+        "median": 0.304,
+        "p95": 1.982
+      },
+      "GET /": {
+        "count": 13,
+        "min": 0.005,
+        "max": 13.446,
+        "avg": 1.881,
+        "median": 0.21,
+        "p95": 4.918
+      },
+      "GET /static/js/ui/tts_builder.js": {
+        "count": 9,
+        "min": 0.002,
+        "max": 13.028,
+        "avg": 1.487,
+        "median": 0.021,
+        "p95": 13.028
+      },
+      "GET /static/js/sage_shell.js": {
+        "count": 9,
+        "min": 0.002,
+        "max": 14.801,
+        "avg": 1.683,
+        "median": 0.044,
+        "p95": 14.801
+      },
+      "POST /api/chat/stream": {
+        "count": 10,
+        "min": 4.638,
+        "max": 127.039,
+        "avg": 43.425,
+        "median": 29.864,
+        "p95": 127.039
+      },
+      "GET /robots.txt": {
+        "count": 1,
+        "min": 21.389,
+        "max": 21.389,
+        "avg": 21.389,
+        "median": 21.389,
+        "p95": 21.389
+      },
+      "POST /api/tts": {
+        "count": 2,
+        "min": 9.742,
+        "max": 24.55,
+        "avg": 17.146,
+        "median": 17.146,
+        "p95": 24.55
+      }
+    },
+    "samples": [
+      {
+        "timestamp": "2026-08-08T06:33:47.368644Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.402173421,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00261-5xd",
+        "commit_sha": "7027dc365a52eb97c38bb7a8408ee297412a98cf"
+      },
+      {
+        "timestamp": "2026-08-08T06:33:47.371332Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.403051051,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00261-5xd",
+        "commit_sha": "7027dc365a52eb97c38bb7a8408ee297412a98cf"
+      },
+      {
+        "timestamp": "2026-08-08T06:33:47.404435Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.191537468,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00261-5xd",
+        "commit_sha": "7027dc365a52eb97c38bb7a8408ee297412a98cf"
+      },
+      {
+        "timestamp": "2026-08-08T06:33:47.882652Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.010406679,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00261-5xd",
+        "commit_sha": "7027dc365a52eb97c38bb7a8408ee297412a98cf"
+      },
+      {
+        "timestamp": "2026-08-08T06:37:59.356182Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 0.010861493,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00262-sd5",
+        "commit_sha": "4c116b3060bb602c6a497d849f052c28e32f8bbf"
+      },
+      {
+        "timestamp": "2026-08-08T06:37:59.358569Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 0.009947943,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00262-sd5",
+        "commit_sha": "4c116b3060bb602c6a497d849f052c28e32f8bbf"
+      },
+      {
+        "timestamp": "2026-08-08T11:42:49.549059Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/robots.txt",
+        "latency_s": 21.38911848,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00264-2xs",
+        "commit_sha": "4c116b3060bb602c6a497d849f052c28e32f8bbf"
+      },
+      {
+        "timestamp": "2026-08-08T16:12:41.753890Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon-precomposed.png",
+        "latency_s": 2.294575445,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00264-2xs",
+        "commit_sha": "4c116b3060bb602c6a497d849f052c28e32f8bbf"
+      },
+      {
+        "timestamp": "2026-08-08T16:12:41.755419Z",
+        "status": 404,
+        "method": "GET",
+        "path": "/apple-touch-icon.png",
+        "latency_s": 4.599632056,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00264-2xs",
+        "commit_sha": "4c116b3060bb602c6a497d849f052c28e32f8bbf"
+      },
+      {
+        "timestamp": "2026-08-08T16:13:15.125355Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/api/processing-status",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00264-2xs",
+        "commit_sha": "4c116b3060bb602c6a497d849f052c28e32f8bbf"
+      },
+      {
+        "timestamp": "2026-08-08T16:13:32.037072Z",
+        "status": 429,
+        "method": "GET",
+        "path": "/api/chat/stream-result",
+        "latency_s": 0.0,
+        "severity": "WARNING",
+        "revision": "medicine-recommend-dev-00264-2xs",
+        "commit_sha": "4c116b3060bb602c6a497d849f052c28e32f8bbf"
+      },
+      {
+        "timestamp": "2026-08-08T16:15:25.707780Z",
+        "status": 502,
+        "method": "POST",
+        "path": "/api/tts",
+        "latency_s": 9.741904338,
+        "severity": "ERROR",
+        "revision": "medicine-recommend-dev-00264-2xs",
+        "commit_sha": "4c116b3060bb602c6a497d849f052c28e32f8bbf"
+      }
+    ]
+  },
+  "text_errors": {
+    "count": 7,
+    "top_patterns": [
+      {
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/medicine_thread_context.py\", line 397, in should_continue_m",
+        "count": 3
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/google/api_core/grpc_helpers.py\", lin",
+        "count": 2
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/google_tts.py\", line 63, in synthesize_speech_mp3\n    respo",
+        "count": 1
+      },
+      {
+        "message": "Traceback (most recent call last):\n  File \"/app/main.py\", line 871, in api_tts\n    audio = synthesize_speech_mp3(text, l",
+        "count": 1
+      }
+    ],
+    "samples": [
+      {
+        "timestamp": "2026-08-08T06:45:04.581674Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/medicine_thread_context.py\", line 397, in should_continue_medicine_thread\n    ctx_route = resolve_medicine_context_route(session, sid, t, client=client)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/services/medicine_context_routing.py\", line 248, in resolve_medicine_context_route\n    rule_route = resolve_medicine_context_route_rule(session, sid, user_message)\n                 ^^^^^^^^^",
+        "revision": "medicine-recommend-dev-00262-sd5"
+      },
+      {
+        "timestamp": "2026-08-08T06:46:09.401939Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/medicine_thread_context.py\", line 397, in should_continue_medicine_thread\n    ctx_route = resolve_medicine_context_route(session, sid, t, client=client)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/services/medicine_context_routing.py\", line 248, in resolve_medicine_context_route\n    rule_route = resolve_medicine_context_route_rule(session, sid, user_message)\n                 ^^^^^^^^^",
+        "revision": "medicine-recommend-dev-00262-sd5"
+      },
+      {
+        "timestamp": "2026-08-08T06:47:18.081605Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/medicine_thread_context.py\", line 397, in should_continue_medicine_thread\n    ctx_route = resolve_medicine_context_route(session, sid, t, client=client)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/services/medicine_context_routing.py\", line 248, in resolve_medicine_context_route\n    rule_route = resolve_medicine_context_route_rule(session, sid, user_message)\n                 ^^^^^^^^^",
+        "revision": "medicine-recommend-dev-00262-sd5"
+      },
+      {
+        "timestamp": "2026-08-08T16:15:35.450191Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/google/api_core/grpc_helpers.py\", line 55, in error_remapped_callable\n    return callable_(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/grpc/_interceptor.py\", line 276, in __call__\n    response, ignored_call = self._with_call(\n                             ^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/grpc/_interceptor.py\", line 328, in _w",
+        "revision": "medicine-recommend-dev-00264-2xs"
+      },
+      {
+        "timestamp": "2026-08-08T16:15:35.450219Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/src/services/google_tts.py\", line 63, in synthesize_speech_mp3\n    response = client.synthesize_speech(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/google/cloud/texttospeech_v1/services/text_to_speech/client.py\", line 965, in synthesize_speech\n    response = rpc(\n               ^^^^\n  File \"/usr/local/lib/python3.11/site-packages/google/api_core/gapic_v1/method.py\", line 189, in __call__\n    return wrapp",
+        "revision": "medicine-recommend-dev-00264-2xs"
+      },
+      {
+        "timestamp": "2026-08-08T16:15:35.450236Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/usr/local/lib/python3.11/site-packages/google/api_core/grpc_helpers.py\", line 55, in error_remapped_callable\n    return callable_(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/grpc/_interceptor.py\", line 276, in __call__\n    response, ignored_call = self._with_call(\n                             ^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.11/site-packages/grpc/_interceptor.py\", line 328, in _w",
+        "revision": "medicine-recommend-dev-00264-2xs"
+      },
+      {
+        "timestamp": "2026-08-08T16:15:35.450261Z",
+        "severity": "ERROR",
+        "message": "Traceback (most recent call last):\n  File \"/app/main.py\", line 871, in api_tts\n    audio = synthesize_speech_mp3(text, lang)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/services/tts_service.py\", line 15, in synthesize_speech_mp3\n    return google_synthesize(text, lang)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/app/src/services/google_tts.py\", line 72, in synthesize_speech_mp3\n    response = client.synthesize_speech(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr",
+        "revision": "medicine-recommend-dev-00264-2xs"
+      }
+    ]
+  }
+}

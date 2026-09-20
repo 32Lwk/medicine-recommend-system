@@ -1,0 +1,742 @@
+{
+  "gunicorn": [
+    {
+      "timestamp": "2026-07-29T05:36:26.770263Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:26.770286Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:26.770300Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:27.643345Z",
+      "message": "[2026-07-29 05:36:27 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:27.644356Z",
+      "message": "[2026-07-29 05:36:27 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:27.664316Z",
+      "message": "[2026-07-29 05:36:27 +0000] [4] [INFO] Booting worker with pid: 4"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:27.758670Z",
+      "message": "[2026-07-29 05:36:27 +0000] [5] [INFO] Booting worker with pid: 5"
+    },
+    {
+      "timestamp": "2026-07-29T05:40:55.394907Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-29T05:40:55.394955Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-29T05:40:55.394960Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T05:40:56.579548Z",
+      "message": "[2026-07-29 05:40:56 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-29T05:40:56.581123Z",
+      "message": "[2026-07-29 05:40:56 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T05:40:56.601527Z",
+      "message": "[2026-07-29 05:40:56 +0000] [4] [INFO] Booting worker with pid: 4"
+    },
+    {
+      "timestamp": "2026-07-29T05:40:56.663981Z",
+      "message": "[2026-07-29 05:40:56 +0000] [5] [INFO] Booting worker with pid: 5"
+    },
+    {
+      "timestamp": "2026-07-29T05:50:42.899497Z",
+      "message": "[2026-07-29 05:50:42 +0000] [1] [ERROR] Worker (pid:4) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T05:50:42.905899Z",
+      "message": "[2026-07-29 05:50:42 +0000] [1] [ERROR] Worker (pid:5) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T05:51:49.690979Z",
+      "message": "[2026-07-29 05:51:49 +0000] [1] [ERROR] Worker (pid:4) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T05:51:49.732758Z",
+      "message": "[2026-07-29 05:51:49 +0000] [1] [ERROR] Worker (pid:5) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:06.592476Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:06.592507Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:06.592511Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:07.383847Z",
+      "message": "[2026-07-29 07:31:07 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:07.384859Z",
+      "message": "[2026-07-29 07:31:07 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:07.396758Z",
+      "message": "[2026-07-29 07:31:07 +0000] [4] [INFO] Booting worker with pid: 4"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:07.502213Z",
+      "message": "[2026-07-29 07:31:07 +0000] [5] [INFO] Booting worker with pid: 5"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:26.966442Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:26.968048Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:26.968052Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:28.278154Z",
+      "message": "[2026-07-29 07:35:28 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:28.280157Z",
+      "message": "[2026-07-29 07:35:28 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:28.294512Z",
+      "message": "[2026-07-29 07:35:28 +0000] [4] [INFO] Booting worker with pid: 4"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:28.323125Z",
+      "message": "[2026-07-29 07:35:28 +0000] [5] [INFO] Booting worker with pid: 5"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:30.721209Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:30.721247Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:30.721252Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:31.640049Z",
+      "message": "[2026-07-29 07:35:31 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:31.641299Z",
+      "message": "[2026-07-29 07:35:31 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:31.672444Z",
+      "message": "[2026-07-29 07:35:31 +0000] [4] [INFO] Booting worker with pid: 4"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:31.742202Z",
+      "message": "[2026-07-29 07:35:31 +0000] [5] [INFO] Booting worker with pid: 5"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:40.480770Z",
+      "message": "[2026-07-29 07:35:40 +0000] [1] [ERROR] Worker (pid:4) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:40.512584Z",
+      "message": "[2026-07-29 07:35:40 +0000] [1] [ERROR] Worker (pid:5) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T07:46:35.927423Z",
+      "message": "[2026-07-29 07:46:35 +0000] [1] [ERROR] Worker (pid:4) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T07:46:35.929964Z",
+      "message": "[2026-07-29 07:46:35 +0000] [1] [ERROR] Worker (pid:5) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T07:50:39.811501Z",
+      "message": "[2026-07-29 07:50:39 +0000] [1] [ERROR] Worker (pid:5) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T07:50:39.815138Z",
+      "message": "[2026-07-29 07:50:39 +0000] [1] [ERROR] Worker (pid:4) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T08:01:26.478657Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-29T08:01:26.478689Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-29T08:01:26.478694Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T08:01:27.484575Z",
+      "message": "[2026-07-29 08:01:27 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-29T08:01:27.486138Z",
+      "message": "[2026-07-29 08:01:27 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T08:01:27.506430Z",
+      "message": "[2026-07-29 08:01:27 +0000] [4] [INFO] Booting worker with pid: 4"
+    },
+    {
+      "timestamp": "2026-07-29T08:01:27.564500Z",
+      "message": "[2026-07-29 08:01:27 +0000] [5] [INFO] Booting worker with pid: 5"
+    },
+    {
+      "timestamp": "2026-07-29T08:02:51.601018Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-29T08:02:51.601176Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-29T08:02:51.601216Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T08:02:52.517048Z",
+      "message": "[2026-07-29 08:02:52 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-29T08:02:52.518256Z",
+      "message": "[2026-07-29 08:02:52 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T08:02:52.530516Z",
+      "message": "[2026-07-29 08:02:52 +0000] [4] [INFO] Booting worker with pid: 4"
+    },
+    {
+      "timestamp": "2026-07-29T08:02:52.622649Z",
+      "message": "[2026-07-29 08:02:52 +0000] [5] [INFO] Booting worker with pid: 5"
+    },
+    {
+      "timestamp": "2026-07-29T08:14:18.327379Z",
+      "message": "[2026-07-29 08:14:18 +0000] [1] [ERROR] Worker (pid:5) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T08:14:18.327586Z",
+      "message": "[2026-07-29 08:14:18 +0000] [1] [ERROR] Worker (pid:4) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T08:16:49.737610Z",
+      "message": "[2026-07-29 08:16:49 +0000] [1] [ERROR] Worker (pid:5) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T08:16:49.801539Z",
+      "message": "[2026-07-29 08:16:49 +0000] [1] [ERROR] Worker (pid:4) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T08:52:28.933430Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-29T08:52:28.933466Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-29T08:52:28.933470Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T08:52:29.808633Z",
+      "message": "[2026-07-29 08:52:29 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-29T08:52:29.809685Z",
+      "message": "[2026-07-29 08:52:29 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T08:52:29.822294Z",
+      "message": "[2026-07-29 08:52:29 +0000] [4] [INFO] Booting worker with pid: 4"
+    },
+    {
+      "timestamp": "2026-07-29T08:52:29.890780Z",
+      "message": "[2026-07-29 08:52:29 +0000] [5] [INFO] Booting worker with pid: 5"
+    },
+    {
+      "timestamp": "2026-07-29T08:57:13.863990Z",
+      "message": "🚀 Starting Gunicorn with the following settings:"
+    },
+    {
+      "timestamp": "2026-07-29T08:57:13.864039Z",
+      "message": "   - Workers: 2"
+    },
+    {
+      "timestamp": "2026-07-29T08:57:13.864049Z",
+      "message": "   - Worker Class: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T08:57:14.672505Z",
+      "message": "[2026-07-29 08:57:14 +0000] [1] [INFO] Starting gunicorn 21.2.0"
+    },
+    {
+      "timestamp": "2026-07-29T08:57:14.673419Z",
+      "message": "[2026-07-29 08:57:14 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker"
+    },
+    {
+      "timestamp": "2026-07-29T08:57:14.688724Z",
+      "message": "[2026-07-29 08:57:14 +0000] [4] [INFO] Booting worker with pid: 4"
+    },
+    {
+      "timestamp": "2026-07-29T08:57:14.777502Z",
+      "message": "[2026-07-29 08:57:14 +0000] [5] [INFO] Booting worker with pid: 5"
+    },
+    {
+      "timestamp": "2026-07-29T09:05:29.764953Z",
+      "message": "[2026-07-29 09:05:29 +0000] [1] [ERROR] Worker (pid:4) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T09:05:29.766982Z",
+      "message": "[2026-07-29 09:05:29 +0000] [1] [ERROR] Worker (pid:5) was sent SIGTERM!"
+    },
+    {
+      "timestamp": "2026-07-29T09:07:49.880184Z",
+      "message": "[2026-07-29 09:07:49 +0000] [1] [ERROR] Worker (pid:4) was sent SIGTERM!"
+    }
+  ],
+  "openai_errors": [
+    {
+      "timestamp": "2026-07-29T05:36:26.770279Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:26.770283Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T05:40:55.394942Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T05:40:55.394948Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:06.592498Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:06.592503Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:26.968032Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:26.968042Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:30.721237Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:30.721242Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T08:01:26.478680Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T08:01:26.478684Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T08:02:51.601041Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T08:02:51.601143Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T08:52:28.933457Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T08:52:28.933461Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T08:57:13.864010Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T08:57:13.864015Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T09:39:16.653916Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T09:39:16.654186Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T09:43:31.695609Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T09:43:31.695614Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T11:16:05.115431Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T11:16:05.115436Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T11:22:16.370369Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T11:22:16.370376Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T23:27:20.065449Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T23:27:20.065453Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T23:33:05.172676Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T23:33:05.172680Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T01:17:35.762547Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T01:17:35.762551Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T01:23:55.603413Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T01:23:55.603419Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T06:27:03.619619Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T06:27:03.619624Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T06:34:17.095923Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T06:34:17.095944Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T07:10:35.816873Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T07:10:35.816877Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T07:17:48.731915Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T07:17:48.731920Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T08:19:39.691389Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T08:19:39.691393Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T08:27:01.127022Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T08:27:01.127028Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T08:46:44.112948Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T08:46:44.112953Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T08:48:07.056138Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T08:48:07.056141Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T10:06:59.475294Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T10:06:59.475298Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T10:13:53.426286Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T10:13:53.426291Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T11:08:45.947480Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T11:08:45.947485Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T11:14:59.732293Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T11:14:59.732296Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T12:19:18.815497Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T12:19:18.815502Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T12:25:03.995550Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T12:25:03.995556Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T15:09:35.522768Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T15:09:35.522778Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T15:15:36.425819Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T15:15:36.425824Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T18:59:21.074799Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T18:59:21.074803Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T19:07:23.352901Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T19:07:23.352907Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T23:36:26.560588Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T23:36:26.560591Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-30T23:42:34.236505Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-30T23:42:34.236510Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-31T02:11:26.373552Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-31T02:11:26.373557Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-31T02:20:47.941369Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-31T02:20:47.941374Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-31T02:29:51.141961Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-31T02:29:51.141966Z",
+      "message": "   - Graceful Timeout: 30s"
+    }
+  ],
+  "duplicate_triage": [
+    {
+      "timestamp": "2026-08-01T06:55:57.046092Z",
+      "message": "{\"confidence\":0.95,\"dialogue_flags\":{\"fever_context\":true},\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"gate\",\"session_id\":\"1785150676388766393702\",\"source\":\"fever_or_symptom_signal\",\"sub_route\":\"fever_flow\",\"timestamp\":\"2026-08-01T06:55:57.046551\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"s"
+    },
+    {
+      "timestamp": "2026-08-01T06:56:02.229570Z",
+      "message": "2026-08-01 06:56:02,230 - INFO - legacy_fallback_allowed sid=1785150676388766393702 path=route_triage_category reason=no_router_decision"
+    },
+    {
+      "timestamp": "2026-08-01T06:56:45.882095Z",
+      "message": "2026-08-01 06:56:45,882 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785150676388766393702', 'total_ms': 57388.86, 'breakdown': {'post_start': 7.86, 'parsed_message': 8.06, 'session_db_read': 8.08, 'after_get_session_db': 350.03, 'before_llm_setup': 875.15, 'before_security': 1910.52, 'after_security': 2960.1, 'before_emoji_route': 3138.92"
+    },
+    {
+      "timestamp": "2026-08-01T10:51:44.558996Z",
+      "message": "2026-08-01 10:51:44,559 - INFO - legacy_fallback_allowed sid=1785140812139967872547 path=route_triage_category reason=no_router_decision"
+    },
+    {
+      "timestamp": "2026-08-01T10:51:46.508281Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785140812139967872547\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-08-01T10:51:46.508791\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"headache\",\"user_inpu"
+    },
+    {
+      "timestamp": "2026-08-01T10:52:08.052377Z",
+      "message": "2026-08-01 10:52:08,052 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785140812139967872547', 'total_ms': 35944.67, 'breakdown': {'post_start': 13.39, 'parsed_message': 13.56, 'session_db_read': 13.59, 'after_get_session_db': 310.77, 'before_llm_setup': 758.3, 'before_security': 1372.97, 'after_security': 2201.74, 'before_emoji_route': 2390"
+    },
+    {
+      "timestamp": "2026-08-05T04:25:32.707888Z",
+      "message": "2026-08-05 04:25:32,708 - INFO - legacy_fallback_allowed sid=1785903890988374266366 path=route_triage_category reason=no_router_decision"
+    },
+    {
+      "timestamp": "2026-08-05T04:25:34.553325Z",
+      "message": "{\"confidence\":0.94,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":false,\"primary_route\":\"Physical\",\"resolved_by\":\"guard\",\"session_id\":\"1785903890988374266366\",\"source\":\"medicine_context_cold_start_guard\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-08-05T04:25:34.554169\",\"triage_category\":\"Physical\",\"triage_subcategory\":\"headache\",\"user_inpu"
+    },
+    {
+      "timestamp": "2026-08-05T04:26:01.949280Z",
+      "message": "2026-08-05 04:26:01,950 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785903890988374266366', 'total_ms': 41906.65, 'breakdown': {'post_start': 10.67, 'parsed_message': 10.85, 'session_db_read': 10.88, 'after_get_session_db': 303.12, 'before_llm_setup': 734.66, 'before_security': 1338.6, 'after_security': 2378.58, 'before_emoji_route': 2601"
+    },
+    {
+      "timestamp": "2026-08-05T04:26:53.364107Z",
+      "message": "2026-08-05 04:26:53,364 - INFO - intent_router_shadow mismatch sid=1785903890988374266366 kind=gate_improvement decision=Physical/rule_based_recommend triage=Other/general_other"
+    },
+    {
+      "timestamp": "2026-08-05T04:26:53.372996Z",
+      "message": "{\"confidence\":0.9,\"log_type\":\"dialogue_route_shadow\",\"mismatch\":true,\"mismatch_kind\":\"gate_improvement\",\"primary_route\":\"Physical\",\"resolved_by\":\"gate\",\"session_id\":\"1785903890988374266366\",\"source\":\"symptom_signal\",\"sub_route\":\"rule_based_recommend\",\"timestamp\":\"2026-08-05T04:26:53.373176\",\"triage_category\":\"Other\",\"triage_subcategory\":\"general_ot"
+    },
+    {
+      "timestamp": "2026-08-05T04:26:57.300338Z",
+      "message": "2026-08-05 04:26:57,300 - INFO - legacy_fallback_allowed sid=1785903890988374266366 path=route_triage_category reason=no_router_decision"
+    },
+    {
+      "timestamp": "2026-08-05T04:27:19.005268Z",
+      "message": "2026-08-05 04:27:19,005 - WARNING - PIPELINE_PERF {'channel': 'web', 'sid': '1785903890988374266366', 'total_ms': 37596.47, 'breakdown': {'post_start': 9.99, 'parsed_message': 10.24, 'session_db_read': 10.27, 'after_get_session_db': 302.14, 'before_llm_setup': 753.49, 'before_security': 1362.04, 'after_security': 2662.87, 'before_emoji_route': 2827"
+    }
+  ],
+  "emergency": [
+    {
+      "timestamp": "2026-08-01T06:55:57.076150Z",
+      "message": "2026-08-01 06:55:57,076 - INFO - 🔍 緊急事案検出開始: 喉が痛く、熱があります。"
+    },
+    {
+      "timestamp": "2026-08-01T06:55:57.076321Z",
+      "message": "2026-08-01 06:55:57,077 - INFO - 🔍 緊急事案検出なし: 喉が痛く、熱があります。"
+    },
+    {
+      "timestamp": "2026-08-01T10:51:39.366050Z",
+      "message": "2026-08-01 10:51:39,366 - INFO - 🔍 緊急事案検出開始: 頭が痛いです。"
+    },
+    {
+      "timestamp": "2026-08-01T10:51:39.366172Z",
+      "message": "2026-08-01 10:51:39,366 - INFO - 🔍 緊急事案検出なし: 頭が痛いです。"
+    },
+    {
+      "timestamp": "2026-08-04T07:16:27.869422Z",
+      "message": "{\"conversation_history\":[{\"content\":\"自殺したい\",\"timestamp\":\"2026-08-04T16:16:26+09:00\",\"type\":\"user\",\"uuid\":\"a2480674-0e73-4c0a-a2f7-e34b6a8d3956\"},{\"content\":\"sage_status\",\"crisis_support\":true,\"crisis_title\":\"あなたの気持ちを大切に思っています\",\"diagnosis\":{\"actions\":[],\"crisis_resources\":[{\"description\":\"24時間いつでも相談できる電話窓口です\",\"description_en\":\"24-hour crisis hotline"
+    },
+    {
+      "timestamp": "2026-08-05T04:25:27.556948Z",
+      "message": "2026-08-05 04:25:27,557 - INFO - 🔍 緊急事案検出開始: 頭痛がします。"
+    },
+    {
+      "timestamp": "2026-08-05T04:25:27.557111Z",
+      "message": "2026-08-05 04:25:27,557 - INFO - 🔍 緊急事案検出なし: 頭痛がします。"
+    },
+    {
+      "timestamp": "2026-08-05T04:26:50.752824Z",
+      "message": "2026-08-05 04:26:50,753 - INFO - 🔍 緊急事案検出開始: 56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。"
+    },
+    {
+      "timestamp": "2026-08-05T04:26:50.752981Z",
+      "message": "2026-08-05 04:26:50,753 - INFO - 🔍 緊急事案検出なし: 56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。"
+    },
+    {
+      "timestamp": "2026-08-05T04:27:18.974799Z",
+      "message": "{\"conversation_history\":[{\"content\":\"頭痛がします。\",\"timestamp\":\"2026-08-05T13:25:27+09:00\",\"type\":\"user\",\"uuid\":\"5920d966-01c5-43ad-98ac-21af3f2be649\"},{\"content\":\"sage_reco\",\"diagnosis\":{\"additional_questions\":[\"年齢を教えてください。（医薬品の適切な選択に必要です）\",\"性別を教えてください。（男性/女性）\",\"症状はいつ頃から続いていますか？（例：昨日から、3日前から）\",\"アレルギーはありますか？（薬物アレルギー、食物アレルギーなど）\",\"現在服用中の薬はありますか？\",\"持病や既往歴は"
+    }
+  ]
+}

@@ -1,0 +1,334 @@
+{
+  "counseling_detail_count": 1,
+  "counseling_dedup_removed": 0,
+  "counseling_details_exported": 1,
+  "counseling_details": [
+    {
+      "concierge_intent": "greeting",
+      "concierge_intent_source": "execution_sync",
+      "conversation_history": [
+        {
+          "content": "やあこんばんは",
+          "role": "user"
+        }
+      ],
+      "llm_used": true,
+      "log_type": "counseling_detail",
+      "response": "やあ、こんばんは！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなどお困りの症状について、適切な市販薬をお探しできますよ。何かお悩みがあれば、お気軽に教えてくださいね。",
+      "session_id": "1786162983082137830339",
+      "timestamp": "2026-08-08T04:23:48.091208",
+      "user_input": "やあこんばんは"
+    }
+  ],
+  "security_flags": [
+    {
+      "timestamp": "2026-08-08T04:23:17.158464Z",
+      "message": "2026-08-08 04:23:17,159 - INFO - Security validation: score=0, safe=True, warnings=0"
+    }
+  ],
+  "session_conversations": {
+    "session_count": 1,
+    "exported_session_count": 1,
+    "counseling_session_count": 1,
+    "trace_only_session_count": 0,
+    "chat_flow_trace_count": 1,
+    "sessions": [
+      {
+        "session_id": "1786162983082137830339",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-08T04:23:48.091208",
+          "end": "2026-08-08T04:23:48.091208"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "やあこんばんは"
+          },
+          {
+            "role": "assistant",
+            "content": "やあ、こんばんは！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなどお困りの症状について、適切な市販薬をお探しできますよ。何かお悩みがあれば、お気軽に教えてくださいね。"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-08T04:23:48.091208",
+            "user_input": "やあこんばんは",
+            "response_preview": "やあ、こんばんは！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなどお困りの症状について、適切な市販薬をお探しできますよ。何かお悩みがあれば、お気軽に教えてくださいね。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {
+              "trace_id": "ae57a055-385c-4403-83aa-42e83cd7e368",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.99
+              },
+              "concierge_intent": "greeting",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 33902.12,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 1102.3,
+                "triage_ms": 7137.8,
+                "post_to_security_ms": 2738.0,
+                "safety_gate_ms": 8687.2,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 2157.6,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 4
+            },
+            "timing": {
+              "user_message_at": "2026-08-08T04:23:14.924896Z",
+              "response_at": "2026-08-08T04:23:48.091208",
+              "e2e_ms": 33166.3,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 33902.12,
+              "phase_summary_ms": {
+                "security_ms": 1102.3,
+                "triage_ms": 7137.8,
+                "post_to_security_ms": 2738.0,
+                "safety_gate_ms": 8687.2,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 2157.6,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 7.91,
+                "parsed_message": 8.17,
+                "session_db_read": 9.17,
+                "after_get_session_db": 365.62,
+                "before_llm_setup": 900.94,
+                "before_security": 1643.58,
+                "after_security": 2745.93,
+                "before_emoji_route": 2943.15,
+                "before_triage": 2967.15,
+                "after_triage": 10104.98,
+                "safety_gate_done": 11433.15,
+                "after_triage_follow_ups": 11455.09,
+                "after_counseling_flow": 12560.94,
+                "moderation_done": 12561.1,
+                "before_medicine_qa_route": 12923.92,
+                "after_medicine_qa_route": 20220.93,
+                "concierge_resolve_intent_start": 30994.57,
+                "concierge_resolve_intent_end": 30995.05,
+                "concierge_build_payload_start": 30995.37,
+                "concierge_build_payload_end": 33152.96,
+                "medicine_qa_concierge_early_end": 33866.73
+              },
+              "llm_call_count": 4,
+              "llm_total_latency_ms": 6358.389999999999,
+              "llm_session_cost_jpy": 0.2395,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-08T04:23:21.851150",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 2301.18,
+                  "prompt_tokens": 3103,
+                  "completion_tokens": 70,
+                  "cost_jpy": 0.0952,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-08T04:23:24.008147",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage2",
+                  "latency_ms": 1449.75,
+                  "prompt_tokens": 3404,
+                  "completion_tokens": 62,
+                  "cost_jpy": 0.104,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-08T04:23:33.778068",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1156.84,
+                  "prompt_tokens": 367,
+                  "completion_tokens": 40,
+                  "cost_jpy": 0.0122,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-08T04:23:47.374907",
+                  "model": "gpt-4o-mini",
+                  "path": "concierge_agent.greeting",
+                  "latency_ms": 1450.62,
+                  "prompt_tokens": 871,
+                  "completion_tokens": 67,
+                  "cost_jpy": 0.0281,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 1,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1786162983082137830339 turns=1 grade=good first='やあこんばんは' last='やあこんばんは'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      }
+    ],
+    "intent_mismatches": [],
+    "mismatch_count": 0,
+    "sessions_by_grade": {
+      "good": 1
+    },
+    "physical_recommendation_events": [
+      {
+        "timestamp": "2026-08-08T04:23:27.396249Z",
+        "trace_id": "ae57a055-385c-4403-83aa-42e83cd7e368",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-08-08T04:23:32.624982Z",
+        "trace_id": "ae57a055-385c-4403-83aa-42e83cd7e368",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: やあこんばんは\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: やあこんばんは\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよ"
+      }
+    ]
+  },
+  "intent_mismatches": [],
+  "intent_review_queue": [],
+  "sessions_by_grade": {
+    "good": 1
+  },
+  "intent_router": {
+    "rows": [
+      {
+        "confidence": 0.99,
+        "log_type": "dialogue_route_shadow",
+        "mismatch": false,
+        "primary_route": "Concierge",
+        "resolved_by": "llm",
+        "session_id": "1786162983082137830339",
+        "source": "intent_router_llm",
+        "sub_route": "greeting",
+        "timestamp": "2026-08-08T04:23:33.287459",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other",
+        "user_input": "やあこんばんは"
+      },
+      {
+        "dispatch_sub_route": "greeting",
+        "handler": "concierge_agent",
+        "layer_used": null,
+        "llm_path": null,
+        "log_type": "dialogue_route_execution",
+        "mismatch": false,
+        "resolved_concierge_intent": "greeting",
+        "resolved_execution_intent": "greeting",
+        "session_id": "1786162983082137830339",
+        "sync": "concierge_execution_metadata",
+        "timestamp": "2026-08-08T04:23:48.087441",
+        "user_input": "やあこんばんは"
+      }
+    ],
+    "shadow_total": 1,
+    "shadow_mismatch": 0,
+    "shadow_mismatch_rate_pct": 0.0,
+    "shadow_improvement_mismatch": 0,
+    "shadow_improvement_mismatch_rate_pct": 0.0,
+    "shadow_regression_mismatch": 0,
+    "shadow_regression_mismatch_rate_pct": 0.0,
+    "shadow_exempt": 0,
+    "shadow_exempt_rate_pct": 0.0,
+    "shadow_by_mismatch_kind": {
+      "agree": 1
+    },
+    "shadow_by_primary_route": {
+      "Concierge": 1
+    },
+    "shadow_by_resolved_by": {
+      "llm": 1
+    },
+    "shadow_with_fever_context_flag": 0,
+    "shadow_with_pending_cancelled_flag": 0,
+    "dispatch_with_fever_context_flag": 0,
+    "dispatch_with_pending_cancelled_flag": 0,
+    "dispatch_total": 0,
+    "dispatch_handled": 0,
+    "dispatch_unhandled": 0,
+    "dispatch_success_rate_pct": 0.0,
+    "dispatch_by_handler": {},
+    "execution_total": 1,
+    "execution_mismatch": 0,
+    "execution_mismatch_rate_pct": 0.0,
+    "execution_by_layer_used": {
+      "unknown": 1
+    },
+    "execution_side_effect_qa": 0,
+    "mismatch_samples": []
+  }
+}

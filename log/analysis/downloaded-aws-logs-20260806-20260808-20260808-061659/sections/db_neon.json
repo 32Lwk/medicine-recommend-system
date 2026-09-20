@@ -1,0 +1,407 @@
+{
+  "count": 231,
+  "top_patterns": [
+    {
+      "message": "\tIs the server running on that host and accepting TCP/IP connections?",
+      "count": 26
+    },
+    {
+      "message": "   - Timeout: 300s",
+      "count": 7
+    },
+    {
+      "message": "   - Graceful Timeout: 60s",
+      "count": 7
+    },
+    {
+      "message": "2026-08-06T19:23:58Z ERR  error=\"Unable to reach the origin service. The service may be down or it m",
+      "count": 4
+    },
+    {
+      "message": "2026-08-06T19:23:58Z ERR Request failed error=\"Unable to reach the origin service. The service may b",
+      "count": 4
+    },
+    {
+      "message": "2026-08-08T04:07:05Z ERR  error=\"Unable to reach the origin service. The service may be down or it m",
+      "count": 2
+    },
+    {
+      "message": "2026-08-08T04:07:05Z ERR Request failed error=\"Unable to reach the origin service. The service may b",
+      "count": 2
+    },
+    {
+      "message": "2026-08-08T04:11:26Z ERR  error=\"Unable to reach the origin service. The service may be down or it m",
+      "count": 2
+    },
+    {
+      "message": "2026-08-08T04:11:26Z ERR Request failed error=\"Unable to reach the origin service. The service may b",
+      "count": 2
+    },
+    {
+      "message": "2026-08-06T17:15:50Z INF Registered tunnel connection connIndex=0 connection=bcb25a4a-60fb-46ef-92c1",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06T17:15:50Z INF Registered tunnel connection connIndex=1 connection=26948aff-7d44-4be3-8088",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06T17:15:51Z INF Registered tunnel connection connIndex=2 connection=c9d06aa0-552f-468f-bf3f",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06T17:15:52Z INF Registered tunnel connection connIndex=3 connection=de4f3bc6-fbff-4784-9fa3",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 17:15:54,370 - WARNING - DATABASE_URL 設定: sslmode=disable は本番環境では非推奨です。",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 17:15:54,376 - WARNING - ⚠️ Connection pool creation failed, using single connection: con",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 17:15:54,376 - ERROR - ❌ Database connection failed: connection to server at \"localhost\" ",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 17:15:54,377 - WARNING - データベース接続に失敗しました: フィードバック等は無効です。 DATABASE_URL・ネットワーク・SSL 設定を確認してく",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 17:15:54,377 - INFO - DB startup summary: available=False persist=False reason=connect_fa",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06T17:50:32Z ERR Failed to serve tunnel connection error=\"context canceled\" connIndex=1 even",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06T17:50:32Z INF Retrying connection in up to 1s connIndex=1 event=0 ip=198.41.192.27",
+      "count": 1
+    }
+  ],
+  "samples": [
+    {
+      "timestamp": "2026-08-06T17:15:50.042Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:50.042Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:50.236Z",
+      "message": "2026-08-06T17:15:50Z INF Registered tunnel connection connIndex=0 connection=bcb25a4a-60fb-46ef-92c1-b07507e00b8c event=0 ip=198.41.200.13 location=nrt07 protocol=quic"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:50.436Z",
+      "message": "2026-08-06T17:15:50Z INF Registered tunnel connection connIndex=1 connection=26948aff-7d44-4be3-8088-2a387deffeac event=0 ip=198.41.192.27 location=nrt05 protocol=quic"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:51.390Z",
+      "message": "2026-08-06T17:15:51Z INF Registered tunnel connection connIndex=2 connection=c9d06aa0-552f-468f-bf3f-d94b46845ae7 event=0 ip=198.41.200.73 location=nrt15 protocol=quic"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:52.436Z",
+      "message": "2026-08-06T17:15:52Z INF Registered tunnel connection connIndex=3 connection=de4f3bc6-fbff-4784-9fa3-e653d09f1123 event=0 ip=198.41.192.167 location=nrt12 protocol=quic"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:54.370Z",
+      "message": "2026-08-06 17:15:54,370 - WARNING - DATABASE_URL 設定: sslmode=disable は本番環境では非推奨です。"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:54.376Z",
+      "message": "2026-08-06 17:15:54,376 - WARNING - ⚠️ Connection pool creation failed, using single connection: connection to server at \"localhost\" (127.0.0.1), port 5432 failed: Connection refused"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:54.376Z",
+      "message": "\tIs the server running on that host and accepting TCP/IP connections?"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:54.377Z",
+      "message": "2026-08-06 17:15:54,376 - ERROR - ❌ Database connection failed: connection to server at \"localhost\" (127.0.0.1), port 5432 failed: Connection refused"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:54.377Z",
+      "message": "\tIs the server running on that host and accepting TCP/IP connections?"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:54.377Z",
+      "message": "2026-08-06 17:15:54,377 - WARNING - データベース接続に失敗しました: フィードバック等は無効です。 DATABASE_URL・ネットワーク・SSL 設定を確認してください。"
+    },
+    {
+      "timestamp": "2026-08-06T17:15:54.377Z",
+      "message": "2026-08-06 17:15:54,377 - INFO - DB startup summary: available=False persist=False reason=connect_failed pooler=False sslmode=disable last_error=connection to server at \"localhost\" (127.0.0.1), port 5432 failed: Connection refused"
+    },
+    {
+      "timestamp": "2026-08-06T17:50:32.343Z",
+      "message": "2026-08-06T17:50:32Z ERR Failed to serve tunnel connection error=\"context canceled\" connIndex=1 event=0 ip=198.41.192.27"
+    },
+    {
+      "timestamp": "2026-08-06T17:50:32.343Z",
+      "message": "2026-08-06T17:50:32Z INF Retrying connection in up to 1s connIndex=1 event=0 ip=198.41.192.27"
+    },
+    {
+      "timestamp": "2026-08-06T17:50:32.343Z",
+      "message": "2026-08-06T17:50:32Z ERR Failed to serve tunnel connection error=\"context canceled\" connIndex=2 event=0 ip=198.41.200.73"
+    },
+    {
+      "timestamp": "2026-08-06T17:50:32.343Z",
+      "message": "2026-08-06T17:50:32Z INF Retrying connection in up to 1s connIndex=2 event=0 ip=198.41.200.73"
+    },
+    {
+      "timestamp": "2026-08-06T17:50:32.343Z",
+      "message": "2026-08-06T17:50:32Z ERR Failed to serve tunnel connection error=\"context canceled\" connIndex=0 event=0 ip=198.41.200.13"
+    },
+    {
+      "timestamp": "2026-08-06T17:50:32.343Z",
+      "message": "2026-08-06T17:50:32Z INF Retrying connection in up to 1s connIndex=0 event=0 ip=198.41.200.13"
+    },
+    {
+      "timestamp": "2026-08-06T17:50:32.344Z",
+      "message": "2026-08-06T17:50:32Z ERR Failed to serve tunnel connection error=\"context canceled\" connIndex=3 event=0 ip=198.41.192.167"
+    },
+    {
+      "timestamp": "2026-08-06T17:50:32.344Z",
+      "message": "2026-08-06T17:50:32Z INF Retrying connection in up to 1s connIndex=3 event=0 ip=198.41.192.167"
+    },
+    {
+      "timestamp": "2026-08-06T17:50:32.344Z",
+      "message": "2026-08-06T17:50:32Z ERR no more connections active and exiting"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:27.441Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:27.442Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:27.741Z",
+      "message": "2026-08-06T18:04:27Z INF Registered tunnel connection connIndex=0 connection=b350d660-7018-44d7-96a9-9debad5a0194 event=0 ip=198.41.192.7 location=nrt12 protocol=quic"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:28.076Z",
+      "message": "2026-08-06T18:04:28Z INF Registered tunnel connection connIndex=1 connection=88d6eace-7c14-4043-873f-c53d28c9e9a5 event=0 ip=198.41.200.13 location=nrt15 protocol=quic"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:28.936Z",
+      "message": "2026-08-06T18:04:28Z INF Registered tunnel connection connIndex=2 connection=c355f4cb-b7fd-4924-9457-96e3a7ebc4a7 event=0 ip=198.41.192.57 location=nrt05 protocol=quic"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:29.936Z",
+      "message": "2026-08-06T18:04:29Z INF Registered tunnel connection connIndex=3 connection=c8ee0025-84e5-4ca5-bfca-b5545e0513fd event=0 ip=198.41.200.193 location=nrt14 protocol=quic"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:32.267Z",
+      "message": "2026-08-06 18:04:32,267 - WARNING - DATABASE_URL 設定: sslmode=disable は本番環境では非推奨です。"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:32.273Z",
+      "message": "2026-08-06 18:04:32,273 - WARNING - ⚠️ Connection pool creation failed, using single connection: connection to server at \"localhost\" (127.0.0.1), port 5432 failed: Connection refused"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:32.273Z",
+      "message": "\tIs the server running on that host and accepting TCP/IP connections?"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:32.274Z",
+      "message": "2026-08-06 18:04:32,274 - ERROR - ❌ Database connection failed: connection to server at \"localhost\" (127.0.0.1), port 5432 failed: Connection refused"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:32.274Z",
+      "message": "\tIs the server running on that host and accepting TCP/IP connections?"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:32.274Z",
+      "message": "2026-08-06 18:04:32,274 - WARNING - データベース接続に失敗しました: フィードバック等は無効です。 DATABASE_URL・ネットワーク・SSL 設定を確認してください。"
+    },
+    {
+      "timestamp": "2026-08-06T18:04:32.274Z",
+      "message": "2026-08-06 18:04:32,274 - INFO - DB startup summary: available=False persist=False reason=connect_failed pooler=False sslmode=disable last_error=connection to server at \"localhost\" (127.0.0.1), port 5432 failed: Connection refused"
+    },
+    {
+      "timestamp": "2026-08-06T18:21:03.905Z",
+      "message": "2026-08-06T18:21:03Z WRN Failed to serve tunnel connection error=\"timeout: no recent network activity\" connIndex=1 event=0 ip=198.41.200.13"
+    },
+    {
+      "timestamp": "2026-08-06T18:21:03.906Z",
+      "message": "2026-08-06T18:21:03Z WRN Serve tunnel error error=\"timeout: no recent network activity\" connIndex=1 event=0 ip=198.41.200.13"
+    },
+    {
+      "timestamp": "2026-08-06T18:21:03.906Z",
+      "message": "2026-08-06T18:21:03Z INF Retrying connection in up to 1s connIndex=1 event=0 ip=198.41.200.13"
+    },
+    {
+      "timestamp": "2026-08-06T18:21:05.537Z",
+      "message": "2026-08-06T18:21:05Z WRN Connection terminated error=\"timeout: no recent network activity\" connIndex=1"
+    },
+    {
+      "timestamp": "2026-08-06T18:21:15.835Z",
+      "message": "2026-08-06T18:21:15Z INF Registered tunnel connection connIndex=1 connection=77278ab8-6b3d-44bb-a161-3ee0380f6300 event=0 ip=198.41.200.53 location=nrt15 protocol=quic"
+    },
+    {
+      "timestamp": "2026-08-06T19:23:58.381Z",
+      "message": "2026-08-06T19:23:58Z ERR  error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=0 event=1 ingressRule=0 originService=http://localhost:8080"
+    },
+    {
+      "timestamp": "2026-08-06T19:23:58.381Z",
+      "message": "2026-08-06T19:23:58Z ERR Request failed error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=0 dest=https://origin-aws-medicine.yutok.dev/api/sessions?v=1785862596 event=0 ip=198.41.192.7 type=http"
+    },
+    {
+      "timestamp": "2026-08-06T19:23:58.381Z",
+      "message": "2026-08-06T19:23:58Z ERR  error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=2 event=1 ingressRule=0 originService=http://localhost:8080"
+    },
+    {
+      "timestamp": "2026-08-06T19:23:58.381Z",
+      "message": "2026-08-06T19:23:58Z ERR Request failed error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=2 dest=https://origin-aws-medicine.yutok.dev/api/sessions/activity?v=1785862596 event=0 ip=198.41.192.57 type=http"
+    },
+    {
+      "timestamp": "2026-08-06T19:23:58.415Z",
+      "message": "2026-08-06T19:23:58Z ERR  error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=2 event=1 ingressRule=0 originService=http://localhost:8080"
+    },
+    {
+      "timestamp": "2026-08-06T19:23:58.415Z",
+      "message": "2026-08-06T19:23:58Z ERR Request failed error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=2 dest=https://origin-aws-medicine.yutok.dev/api/sessions?v=1785990495 event=0 ip=198.41.192.57 type=http"
+    },
+    {
+      "timestamp": "2026-08-06T19:23:58.418Z",
+      "message": "2026-08-06T19:23:58Z ERR  error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=1 event=1 ingressRule=0 originService=http://localhost:8080"
+    },
+    {
+      "timestamp": "2026-08-06T19:23:58.418Z",
+      "message": "2026-08-06T19:23:58Z ERR Request failed error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=1 dest=https://origin-aws-medicine.yutok.dev/api/sessions/activity?v=1785990495 event=0 ip=198.41.200.53 type=http"
+    },
+    {
+      "timestamp": "2026-08-06T19:24:07.999Z",
+      "message": "2026-08-06T19:24:07Z ERR  error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=2 event=1 ingressRule=0 originService=http://localhost:8080"
+    },
+    {
+      "timestamp": "2026-08-06T19:24:07.999Z",
+      "message": "2026-08-06T19:24:07Z ERR Request failed error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=2 dest=https://origin-aws-medicine.yutok.dev/api/sessions?v=1785990495 event=0 ip=198.41.192.57 type=http"
+    },
+    {
+      "timestamp": "2026-08-06T19:24:08.122Z",
+      "message": "2026-08-06T19:24:08Z ERR  error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=2 event=1 ingressRule=0 originService=http://localhost:8080"
+    },
+    {
+      "timestamp": "2026-08-06T19:24:08.123Z",
+      "message": "2026-08-06T19:24:08Z ERR Request failed error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=2 dest=https://origin-aws-medicine.yutok.dev/api/sessions/activity?v=1785990495 event=0 ip=198.41.192.57 type=http"
+    },
+    {
+      "timestamp": "2026-08-06T19:24:09.306Z",
+      "message": "2026-08-06T19:24:09Z ERR Failed to serve tunnel connection error=\"context canceled\" connIndex=2 event=0 ip=198.41.192.57"
+    },
+    {
+      "timestamp": "2026-08-06T19:24:09.306Z",
+      "message": "2026-08-06T19:24:09Z INF Retrying connection in up to 1s connIndex=2 event=0 ip=198.41.192.57"
+    },
+    {
+      "timestamp": "2026-08-06T19:24:09.306Z",
+      "message": "2026-08-06T19:24:09Z ERR Failed to serve tunnel connection error=\"context canceled\" connIndex=3 event=0 ip=198.41.200.193"
+    },
+    {
+      "timestamp": "2026-08-06T19:24:09.306Z",
+      "message": "2026-08-06T19:24:09Z INF Retrying connection in up to 1s connIndex=3 event=0 ip=198.41.200.193"
+    },
+    {
+      "timestamp": "2026-08-06T19:24:09.306Z",
+      "message": "2026-08-06T19:24:09Z ERR Failed to serve tunnel connection error=\"context canceled\" connIndex=1 event=0 ip=198.41.200.53"
+    },
+    {
+      "timestamp": "2026-08-06T19:24:09.306Z",
+      "message": "2026-08-06T19:24:09Z INF Retrying connection in up to 1s connIndex=1 event=0 ip=198.41.200.53"
+    },
+    {
+      "timestamp": "2026-08-06T19:24:09.307Z",
+      "message": "2026-08-06T19:24:09Z ERR Failed to serve tunnel connection error=\"context canceled\" connIndex=0 event=0 ip=198.41.192.7"
+    },
+    {
+      "timestamp": "2026-08-06T19:24:09.307Z",
+      "message": "2026-08-06T19:24:09Z INF Retrying connection in up to 1s connIndex=0 event=0 ip=198.41.192.7"
+    },
+    {
+      "timestamp": "2026-08-06T19:24:09.307Z",
+      "message": "2026-08-06T19:24:09Z ERR no more connections active and exiting"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:40.802Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:40.802Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:41.092Z",
+      "message": "2026-08-06T19:25:41Z INF Registered tunnel connection connIndex=0 connection=a93e75ac-e948-4e95-a78f-df6949a570e4 event=0 ip=198.41.192.27 location=nrt05 protocol=quic"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:41.258Z",
+      "message": "2026-08-06T19:25:41Z INF Registered tunnel connection connIndex=1 connection=212d7960-8eb2-4d73-a373-531624ef542a event=0 ip=198.41.200.53 location=nrt15 protocol=quic"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:42.304Z",
+      "message": "2026-08-06T19:25:42Z INF Registered tunnel connection connIndex=2 connection=ae0f1baa-7fbe-4bb6-a0bb-7b933aa629b3 event=0 ip=198.41.192.47 location=nrt09 protocol=quic"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:43.273Z",
+      "message": "2026-08-06T19:25:43Z INF Registered tunnel connection connIndex=3 connection=d7b5acb4-ccb5-4a85-86d4-0e4aa43d8366 event=0 ip=198.41.200.233 location=nrt14 protocol=quic"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:44.816Z",
+      "message": "2026-08-06 19:25:44,816 - WARNING - DATABASE_URL 設定: sslmode=disable は本番環境では非推奨です。"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:44.822Z",
+      "message": "2026-08-06 19:25:44,822 - WARNING - ⚠️ Connection pool creation failed, using single connection: connection to server at \"localhost\" (127.0.0.1), port 5432 failed: Connection refused"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:44.822Z",
+      "message": "\tIs the server running on that host and accepting TCP/IP connections?"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:44.823Z",
+      "message": "2026-08-06 19:25:44,823 - ERROR - ❌ Database connection failed: connection to server at \"localhost\" (127.0.0.1), port 5432 failed: Connection refused"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:44.823Z",
+      "message": "\tIs the server running on that host and accepting TCP/IP connections?"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:44.823Z",
+      "message": "2026-08-06 19:25:44,823 - WARNING - データベース接続に失敗しました: フィードバック等は無効です。 DATABASE_URL・ネットワーク・SSL 設定を確認してください。"
+    },
+    {
+      "timestamp": "2026-08-06T19:25:44.823Z",
+      "message": "2026-08-06 19:25:44,823 - INFO - DB startup summary: available=False persist=False reason=connect_failed pooler=False sslmode=disable last_error=connection to server at \"localhost\" (127.0.0.1), port 5432 failed: Connection refused"
+    },
+    {
+      "timestamp": "2026-08-06T19:26:37.993Z",
+      "message": "2026-08-06T19:26:37Z ERR  error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=3 event=1 ingressRule=0 originService=http://localhost:8080"
+    },
+    {
+      "timestamp": "2026-08-06T19:26:37.993Z",
+      "message": "2026-08-06T19:26:37Z ERR Request failed error=\"Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: dial tcp 127.0.0.1:8080: connect: connection refused\" connIndex=3 dest=https://origin-aws-medicine.yutok.dev/api/sessions?v=1785990495 event=0 ip=198.41.200.233 type=http"
+    },
+    {
+      "timestamp": "2026-08-06T19:26:44.546Z",
+      "message": "2026-08-06T19:26:44Z ERR Failed to serve tunnel connection error=\"context canceled\" connIndex=0 event=0 ip=198.41.192.27"
+    },
+    {
+      "timestamp": "2026-08-06T19:26:44.546Z",
+      "message": "2026-08-06T19:26:44Z INF Retrying connection in up to 1s connIndex=0 event=0 ip=198.41.192.27"
+    },
+    {
+      "timestamp": "2026-08-06T19:26:44.546Z",
+      "message": "2026-08-06T19:26:44Z ERR Failed to serve tunnel connection error=\"context canceled\" connIndex=3 event=0 ip=198.41.200.233"
+    },
+    {
+      "timestamp": "2026-08-06T19:26:44.546Z",
+      "message": "2026-08-06T19:26:44Z INF Retrying connection in up to 1s connIndex=3 event=0 ip=198.41.200.233"
+    }
+  ]
+}

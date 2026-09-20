@@ -1,0 +1,3054 @@
+{
+  "counseling_detail_count": 5,
+  "counseling_dedup_removed": 0,
+  "counseling_details_exported": 5,
+  "counseling_details": [
+    {
+      "conversation_history": [
+        {
+          "content": "喉が痛く、熱があります。",
+          "timestamp": "2026-08-01T15:55:57+09:00",
+          "type": "user",
+          "uuid": "7a5150e9-8cb6-48e4-9dd2-9818507950bf"
+        },
+        {
+          "content": "sage_reco",
+          "diagnosis": {
+            "additional_questions": [
+              "年齢を教えてください。（医薬品の適切な選択に必要です）",
+              "性別を教えてください。（男性/女性）",
+              "症状はいつ頃から続いていますか？（例：昨日から、3日前から）",
+              "アレルギーはありますか？（薬物アレルギー、食物アレルギーなど）",
+              "現在服用中の薬はありますか？",
+              "持病や既往歴はありますか？"
+            ],
+            "age_policy_notice": "年齢が未入力のため、表示は成人向けの参考情報です。各製品のパッケージ表示の年齢制限を必ずご確認のうえご使用ください。お子さまの場合は、年齢をお知らせいただくか、薬剤師・医師にご相談ください。\n年齢制限の記載がある製品: 新スカイブブロンゴールド微粒",
+            "algorithm": "rule_based",
+            "critical_questions": [
+              "痛みはどの程度強いですか？水分を飲むのもつらいですか？",
+              "のどに白い点や腫れ、飲み込みにくさ、息苦しさはありますか？"
+            ],
+            "doctor_consultation": "【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+            "feedback_context": {
+              "ai_response": "症状: のどの痛み、発熱 推奨: 新スカイブブロンゴールド微粒、バファリンかぜEX錠《瓶》、新小児ジキニンシロップ 「喉が痛く、熱があります。」の症状に合わせて医薬品を選んでいます。用法用量を守ってご使用ください。症状が続く場合は医師・薬剤師にご相談ください。 【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+              "user_message": "喉が痛く、熱があります。"
+            },
+            "influenza_reason": "",
+            "influenza_risk": false,
+            "ingredient_overlap": {
+              "severity": "red",
+              "summaries": [
+                "カフェイン：バファリンかぜEX錠《瓶》、新スカイブブロンゴールド微粒（同じ成分が含まれていますので、併用時は副作用にご注意ください）",
+                "ジヒドロコデイン（麻薬性鎮咳成分）：バファリンかぜEX錠《瓶》、新スカイブブロンゴールド微粒（過剰摂取のリスクがあります。同時に服用しないでください）",
+                "他6件の重複あり"
+              ],
+              "title": "成分の重複について（重複禁止）"
+            },
+            "medicine_type": "風邪薬",
+            "missing_priority": "critical",
+            "personalized_advice": "「喉が痛く、熱があります。」の症状に合わせて医薬品を選んでいます。用法用量を守ってご使用ください。症状が続く場合は医師・薬剤師にご相談ください。",
+            "recommended_medicines": [
+              {
+                "age_restriction": "15歳以上",
+                "allergy_warning": "",
+                "classification": "指定第2類",
+                "competition_category": "S6. 興奮剤",
+                "completeness_penalty": 0.15,
+                "conditions": "エフェドリン及びメチルエフェドリンは、それぞれの尿中の濃度が1ミリリットルにつき10マイクログラムを超える場合には、禁止する",
+                "display_score": 85,
+                "doping_prohibited": "禁止物質あり",
+                "efficacy": "かぜの諸症状(鼻水、鼻づまり、くしゃみ、のどの痛み、せき、たん、悪寒、発熱、頭痛、関節の痛み、筋肉の痛み)の緩和",
+                "explanation": "✅ 症状に非常によく適合: 発熱, のどの痛みに特化した効果 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ⚠️ 年齢制限: 15歳以上 | 主成分: アセトアミノフェン, クロルフェニラミンマレイン酸塩, グアイフェネシン | 風邪薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E6%96%B0%E3%82%B9%E3%82%AB%E3%82%A4%E3%83%96%E3%83%96%E3%83%AD%E3%83%B3%E3%82%B4%E3%83%BC%E3%83%AB%E3%83%89%E5%BE%AE%E7%B2%92.webp?v=4616cbf7",
+                "image_version": "4616cbf7",
+                "ingredients": "アセトアミノフェン\nクロルフェニラミンマレイン酸塩\nグアイフェネシン\nジヒドロコデインリン酸塩\nリボフラビン\n無水カフェイン\ndl−メチルエフェドリン塩酸塩",
+                "interaction_warnings": [],
+                "manufacturer": "米田薬品工業",
+                "max_possible_score": 0.85,
+                "medicine_type": "風邪薬",
+                "number": 1,
+                "original_rank": 1,
+                "product_image_url": "https://images.yutok.dev/otc/%E6%96%B0%E3%82%B9%E3%82%AB%E3%82%A4%E3%83%96%E3%83%96%E3%83%AD%E3%83%B3%E3%82%B4%E3%83%BC%E3%83%AB%E3%83%89%E5%BE%AE%E7%B2%92.webp?v=4616cbf7",
+                "product_name": "新スカイブブロンゴールド微粒",
+                "rank": 1,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 2.75,
+                  "age_fit": 0.45,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.372,
+                  "body_part_match": 0.3,
+                  "completeness_penalty": -0.15,
+                  "comprehensive_cold_bonus": 0.9,
+                  "efficacy_specificity": 0.5,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "missing_fields_detail": {
+                    "age": 0.15,
+                    "allergies": 0.15,
+                    "gender": 0.05,
+                    "pregnancy_status": 0.15,
+                    "symptom_duration": 0.02
+                  },
+                  "multi_symptom_bonus": 0.25,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0.25,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": -0.7,
+                  "symptom_match": 0.9,
+                  "symptom_specific_boost": 0.25,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0.45,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.6,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "中",
+                "symptoms": [
+                  "のどの痛み",
+                  "発熱"
+                ],
+                "usage": "成人(15歳以上)  1回1包 12歳以上15歳未満 1回2/3包 12歳未満      服用しないでください。 1日3回食後なるべく30分以内に服用してください。",
+                "usage_notes": "成人(15歳以上)  1回1包 12歳以上15歳未満 1回2/3包 12歳未満      服用しないでください。 1日3回食後なるべく30分以内に服用してください。"
+              },
+              {
+                "age_restriction": "15",
+                "allergy_warning": "",
+                "classification": "指定第2類",
+                "competition_category": "S6. 興奮剤",
+                "completeness_penalty": 0.15,
+                "conditions": "エフェドリン及びメチルエフェドリンは、それぞれの尿中の濃度が1ミリリットルにつき10マイクログラムを超える場合には、禁止する",
+                "display_score": 83.7,
+                "doping_prohibited": "禁止物質あり",
+                "efficacy": "発熱、悪寒、のどの痛み、頭痛、鼻水、鼻づまり、くしゃみ、せき、たん、関節の痛み、筋肉の痛み",
+                "explanation": "✅ 症状に非常によく適合: 発熱, のどの痛みに特化した効果 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ⚠️ 年齢制限: 15 | 主成分: アスコルビン酸カルシウム, NSAID, クレマスチンフマル酸塩 | 風邪薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3%E3%81%8B%E3%81%9CEX%E9%8C%A0%E7%93%B6.webp?v=c9897680",
+                "image_version": "c9897680",
+                "ingredients": "アスコルビン酸カルシウム\nNSAID\nクレマスチンフマル酸塩\nジヒドロコデインリン酸塩\nブロムヘキシン塩酸塩\n無水カフェイン\ndl−メチルエフェドリン塩酸塩",
+                "interaction_warnings": [],
+                "manufacturer": "ライオン",
+                "max_possible_score": 0.85,
+                "medicine_type": "風邪薬",
+                "number": 2,
+                "original_rank": 2,
+                "product_image_url": "https://images.yutok.dev/otc/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3%E3%81%8B%E3%81%9CEX%E9%8C%A0%E7%93%B6.webp?v=c9897680",
+                "product_name": "バファリンかぜEX錠《瓶》",
+                "rank": 2,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 2.35,
+                  "age_fit": 0.45,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.28517708333333336,
+                  "body_part_match": 0.3,
+                  "completeness_penalty": -0.15,
+                  "comprehensive_cold_bonus": 0.9,
+                  "efficacy_specificity": 0.11588541666666667,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "missing_fields_detail": {
+                    "age": 0.15,
+                    "allergies": 0.15,
+                    "gender": 0.05,
+                    "pregnancy_status": 0.15,
+                    "symptom_duration": 0.02
+                  },
+                  "multi_symptom_bonus": 0.25,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0.25,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": -0.8,
+                  "symptom_match": 0.9,
+                  "symptom_specific_boost": 0.25,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0.45,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.6,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "中",
+                "symptoms": [
+                  "のどの痛み",
+                  "発熱"
+                ],
+                "usage": "次の量を食後なるべく30分以内に、水又はぬるま湯にて服用してください\n成人(15歳以上):1回3錠\n1日3回服用\n15歳未満:服用しないこと\n<用法・用量に関連する注意>\n用法・用量を厳守してください",
+                "usage_notes": "<用法・用量に関連する注意>"
+              },
+              {
+                "age_restriction": "1",
+                "allergy_warning": "",
+                "classification": "指定第2類",
+                "competition_category": "S6. 興奮剤",
+                "completeness_penalty": 0.15,
+                "conditions": "エフェドリン及びメチルエフェドリンは、それぞれの尿中の濃度が1ミリリットルにつき10マイクログラムを超える場合には、禁止する",
+                "display_score": 74,
+                "doping_prohibited": "禁止物質あり",
+                "efficacy": "せき、発熱、頭痛、くしゃみ、鼻水、鼻づまり、のどの痛み、たん、悪寒、関節の痛み、筋肉の痛み",
+                "explanation": "✅ 症状に非常によく適合: 発熱, のどの痛みに特化した効果 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | 主成分: アセトアミノフェン, 甘草, クロルフェニラミンマレイン酸塩 | 風邪薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E6%96%B0%E5%B0%8F%E5%85%90%E3%82%B8%E3%82%AD%E3%83%8B%E3%83%B3%E3%82%B7%E3%83%AD%E3%83%83%E3%83%97.webp",
+                "ingredients": "アセトアミノフェン\n甘草\nクロルフェニラミンマレイン酸塩\nジヒドロコデインリン酸塩\n無水カフェイン\ndl−メチルエフェドリン塩酸塩",
+                "interaction_warnings": [],
+                "manufacturer": "全薬工業",
+                "max_possible_score": 0.85,
+                "medicine_type": "風邪薬",
+                "number": 3,
+                "original_rank": 58,
+                "product_image_url": "https://images.yutok.dev/otc/%E6%96%B0%E5%B0%8F%E5%85%90%E3%82%B8%E3%82%AD%E3%83%8B%E3%83%B3%E3%82%B7%E3%83%AD%E3%83%83%E3%83%97.webp",
+                "product_name": "新小児ジキニンシロップ",
+                "rank": 3,
+                "raw_score": 0.9,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 0.6603753216310113,
+                "score": 0.9,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.5,
+                  "adjustment_score": 2.73,
+                  "age_fit": 0.65,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.386,
+                  "body_part_match": 0.3,
+                  "completeness_penalty": -0.15,
+                  "comprehensive_cold_bonus": 0.9,
+                  "efficacy_specificity": 0.5,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "missing_fields_detail": {
+                    "age": 0.15,
+                    "allergies": 0.15,
+                    "gender": 0.05,
+                    "pregnancy_status": 0.15,
+                    "symptom_duration": 0.02
+                  },
+                  "multi_symptom_bonus": 0.25,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0.25,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": -0.7999999999999999,
+                  "symptom_match": 0.9,
+                  "symptom_specific_boost": 0.25,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0.45,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.6,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "中",
+                "symptoms": [
+                  "のどの痛み",
+                  "発熱"
+                ],
+                "usage": "次の1回量を(添付の計量カップではかり)食後なるべく30分以内に服用してください\n3歳以上7歳未満:1回4mL\n1歳以上3歳未満:1回3mL\n1日3回服用\n1歳未満:服用しないこと\n必要な場合には就寝前の服用も加えて1日6回まで服用できますが、このような場合には約4時間の間隔をおいてください\n<用法・用量に関連する注意>\n1.小児に服用させる場合には、保護者の指導監督のもとに服用させてください\n2.7歳未満の小児には、医師の診療を受けさせることを優先してください",
+                "usage_notes": "<用法・用量に関連する注意>"
+              }
+            ],
+            "render": "sage_reco",
+            "schema_version": 1,
+            "severity_escalation": "",
+            "show_feedback": true,
+            "symptoms": [
+              "のどの痛み",
+              "発熱"
+            ],
+            "usage_sections": [
+              {
+                "default_expanded": false,
+                "id": "usage-1",
+                "items": [
+                  "【年齢未確認のご注意】",
+                  "年齢が未入力のため、表示は成人向けの参考情報です。各製品のパッケージ表示の年齢制限を必ずご確認のうえご使用ください。お子さまの場合は、年齢をお知らせいただくか、薬剤師・医師にご相談ください。",
+                  "年齢制限の記載がある製品: 新スカイブブロンゴールド微粒"
+                ],
+                "kind": "other",
+                "title": "使用上の注意"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-2",
+                "items": [
+                  "効能: かぜの諸症状(鼻水、鼻づまり、くしゃみ、のどの痛み、せき、たん、悪寒、発熱、頭痛、関節の痛み、筋肉の痛み)の緩和",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・成人(15歳以上)  1回1包 12歳以上15歳未満 1回2/3包 12歳未満      服用しないでください。 1日3回食後なるべく30分以内に服用してください。",
+                  "年齢制限:  15歳以上"
+                ],
+                "kind": "per_medicine",
+                "title": "1つ目"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-3",
+                "items": [
+                  "効能: 発熱、悪寒、のどの痛み、頭痛、鼻水、鼻づまり、くしゃみ、せき、たん、関節の痛み、筋肉の痛み",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・次の量を食後なるべく30分以内に、水又はぬるま湯にて服用してください",
+                  "成人(15歳以上):1回3錠",
+                  "1日3回服用",
+                  "15歳未満:服用しないこと",
+                  "<用法・用量に関連する注意>",
+                  "用法・用量を厳守してください",
+                  "年齢制限:  15"
+                ],
+                "kind": "per_medicine",
+                "title": "2つ目"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-4",
+                "items": [
+                  "効能: せき、発熱、頭痛、くしゃみ、鼻水、鼻づまり、のどの痛み、たん、悪寒、関節の痛み、筋肉の痛み",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・次の1回量を(添付の計量カップではかり)食後なるべく30分以内に服用してください",
+                  "3歳以上7歳未満:1回4mL",
+                  "1歳以上3歳未満:1回3mL",
+                  "1日3回服用",
+                  "1歳未満:服用しないこと",
+                  "必要な場合には就寝前の服用も加えて1日6回まで服用できます",
+                  "年齢制限:  1"
+                ],
+                "kind": "per_medicine",
+                "title": "3つ目"
+              }
+            ]
+          },
+          "timestamp": "2026-08-01T06:56:43.521067",
+          "type": "bot"
+        }
+      ],
+      "log_type": "counseling_detail",
+      "response": "sage_reco",
+      "session_id": "1785150676388766393702",
+      "timestamp": "2026-08-01T06:56:45.839568",
+      "user_input": "喉が痛く、熱があります。"
+    },
+    {
+      "conversation_history": [
+        {
+          "content": "頭が痛いです。",
+          "timestamp": "2026-08-01T19:51:39+09:00",
+          "type": "user",
+          "uuid": "0617777b-c9e2-4f3c-9eed-0ff1bdb59c92"
+        },
+        {
+          "content": "sage_reco",
+          "diagnosis": {
+            "additional_questions": [
+              "年齢を教えてください。（医薬品の適切な選択に必要です）",
+              "性別を教えてください。（男性/女性）",
+              "症状はいつ頃から続いていますか？（例：昨日から、3日前から）",
+              "アレルギーはありますか？（薬物アレルギー、食物アレルギーなど）",
+              "現在服用中の薬はありますか？",
+              "持病や既往歴はありますか？"
+            ],
+            "age_policy_notice": "年齢が未入力のため、表示は成人向けの参考情報です。各製品のパッケージ表示の年齢制限を必ずご確認のうえご使用ください。お子さまの場合は、年齢をお知らせいただくか、薬剤師・医師にご相談ください。\n年齢制限の記載がある製品: カロナールA",
+            "algorithm": "rule_based",
+            "critical_questions": [
+              "頭痛は急に始まりましたか、それとも徐々に強くなりましたか？また、同じ痛みが続いていますか、良くなったり悪くなったりしますか？",
+              "吐き気、発熱、首の痛み、目の見えにくさ、しびれ、ろれつが回りにくいなど、他の症状はありますか？"
+            ],
+            "doctor_consultation": "【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+            "feedback_context": {
+              "ai_response": "症状: 頭痛 推奨: イブ、バファリンEX、カロナールA 「頭が痛いです。」の症状に合わせて医薬品を選んでいます。用法用量を守ってご使用ください。症状が続く場合は医師・薬剤師にご相談ください。 【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+              "user_message": "頭が痛いです。"
+            },
+            "influenza_reason": "",
+            "influenza_risk": false,
+            "medicine_type": "解熱鎮痛薬",
+            "missing_priority": "critical",
+            "personalized_advice": "「頭が痛いです。」の症状に合わせて医薬品を選んでいます。用法用量を守ってご使用ください。症状が続く場合は医師・薬剤師にご相談ください。",
+            "recommended_medicines": [
+              {
+                "age_restriction": "[年齢:1回量] 成人(15才以上):2錠 15才未満:服用しないこと",
+                "allergy_warning": "",
+                "classification": "指定第2類",
+                "competition_category": "",
+                "completeness_penalty": 0.15,
+                "conditions": "",
+                "display_score": 85,
+                "doping_prohibited": "禁止物質なし",
+                "efficacy": "●月経痛(月経痛)・頭痛・歯痛・咽喉痛・関節痛・筋肉痛・神経痛・腰痛・肩こり痛・抜歯後の疼痛・打撲痛・耳痛・骨折痛・ねんざ痛・外傷痛の鎮痛 ●悪寒・発熱時の解熱",
+                "explanation": "⚠️ 症状への適合度は中程度 | ✅ 副作用リスクは低め | ✅ 相互作用リスクは低め | 主成分: NSAID | 解熱鎮痛薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E3%82%A4%E3%83%96A%E9%8C%A0.webp?v=56b704d9",
+                "image_version": "56b704d9",
+                "ingredients": "NSAID",
+                "interaction_warnings": [],
+                "manufacturer": "エスエス製薬",
+                "max_possible_score": 0.85,
+                "medicine_type": "解熱鎮痛薬",
+                "number": 1,
+                "original_rank": 1,
+                "product_image_url": "https://images.yutok.dev/otc/%E3%82%A4%E3%83%96A%E9%8C%A0.webp?v=56b704d9",
+                "product_name": "イブ",
+                "rank": 1,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 1.15,
+                  "age_fit": 0.65,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.276,
+                  "body_part_match": 0,
+                  "completeness_penalty": -0.15,
+                  "comprehensive_cold_bonus": 0,
+                  "efficacy_specificity": 0.225,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "missing_fields_detail": {
+                    "age": 0.15,
+                    "allergies": 0.15,
+                    "gender": 0.05,
+                    "pregnancy_status": 0.15,
+                    "symptom_duration": 0.02
+                  },
+                  "multi_symptom_bonus": 0,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": 0,
+                  "symptom_match": 0.45,
+                  "symptom_specific_boost": 0.15,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.6,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "中",
+                "symptoms": [
+                  "頭痛"
+                ],
+                "usage": "次の1回量を1日3回を限度とし、なるべく空腹時をさけて水又はぬるま湯で服用してください。服用間隔は4時間以上おいてください。  [年齢:1回量] 成人(15才以上):2錠 15才未満:服用しないこと",
+                "usage_notes": "用法用量を守ってご使用ください。"
+              },
+              {
+                "age_restriction": "15才未満:服用しないこと",
+                "allergy_warning": "",
+                "classification": "第1類",
+                "competition_category": "",
+                "completeness_penalty": 0.15,
+                "conditions": "",
+                "display_score": 83.7,
+                "doping_prohibited": "禁止物質なし",
+                "efficacy": "(1)頭痛・腰痛・関節痛・月経痛(月経痛)・肩こり痛・神経痛・筋肉痛・骨折痛・捻挫痛・打撲痛・歯痛・抜歯後の疼痛・咽こう痛・耳痛・外傷痛の鎮痛 (2)悪寒・発熱時の解熱",
+                "explanation": "⚠️ 症状への適合度は中程度 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ⚠️ 年齢制限: 15才未満:服用しないこと | 主成分: ロキソプロフェンナトリウム水和物, 乾燥水酸化アルミニウムゲル | 解熱鎮痛薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3EX.webp?v=12ac3534",
+                "image_version": "12ac3534",
+                "ingredients": "ロキソプロフェンナトリウム水和物\n乾燥水酸化アルミニウムゲル",
+                "interaction_warnings": [],
+                "manufacturer": "ライオン",
+                "max_possible_score": 0.85,
+                "medicine_type": "解熱鎮痛薬",
+                "number": 2,
+                "original_rank": 16,
+                "product_image_url": "https://images.yutok.dev/otc/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3EX.webp?v=12ac3534",
+                "product_name": "バファリンEX",
+                "rank": 2,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 1.25,
+                  "age_fit": 0.45,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.184,
+                  "body_part_match": 0,
+                  "completeness_penalty": -0.15,
+                  "comprehensive_cold_bonus": 0,
+                  "efficacy_specificity": 0.225,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "missing_fields_detail": {
+                    "age": 0.15,
+                    "allergies": 0.15,
+                    "gender": 0.05,
+                    "pregnancy_status": 0.15,
+                    "symptom_duration": 0.02
+                  },
+                  "multi_symptom_bonus": 0,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": -0.65,
+                  "symptom_match": 0.45,
+                  "symptom_specific_boost": 0.25,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.5,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "中",
+                "symptoms": [
+                  "頭痛"
+                ],
+                "usage": "症状があらわれた時,次の量をなるべく空腹時をさけて服用し,服用間隔は4時間以上おいてください。水又はぬるま湯にて服用してください。  [年齢:1回量:1日服用回数] 成人(15才以上):1錠:2回まで。ただし,再度症状があらわれた場合には3回目を服用できます。 15才未満:服用しないこと",
+                "usage_notes": "用法用量を守ってご使用ください。"
+              },
+              {
+                "age_restriction": "15歳以上",
+                "allergy_warning": "",
+                "classification": "第2類",
+                "competition_category": "",
+                "completeness_penalty": 0.15,
+                "conditions": "",
+                "display_score": 82.5,
+                "doping_prohibited": "禁止物質なし",
+                "efficacy": "頭痛・月経痛(月経痛)・歯痛・抜歯後の疼痛・咽喉痛・腰痛・関節痛・神経痛・筋肉痛・肩こり痛・耳痛・打撲痛・骨折痛・捻挫痛・外傷痛の鎮痛,悪寒・発熱時の解熱",
+                "explanation": "⚠️ 症状への適合度は中程度 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ⚠️ 年齢制限: 15歳以上 | 主成分: アセトアミノフェン | 解熱鎮痛薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E3%82%AB%E3%83%AD%E3%83%8A%E3%83%BC%E3%83%ABA.webp",
+                "ingredients": "アセトアミノフェン",
+                "interaction_warnings": [],
+                "manufacturer": "第一三共ヘルスケア",
+                "max_possible_score": 0.85,
+                "medicine_type": "解熱鎮痛薬",
+                "number": 3,
+                "original_rank": 20,
+                "product_image_url": "https://images.yutok.dev/otc/%E3%82%AB%E3%83%AD%E3%83%8A%E3%83%BC%E3%83%ABA.webp",
+                "product_name": "カロナールA",
+                "rank": 3,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 2,
+                  "age_fit": 0.45,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.16899999999999998,
+                  "body_part_match": 0,
+                  "completeness_penalty": -0.15,
+                  "comprehensive_cold_bonus": 0,
+                  "efficacy_specificity": 0.225,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0.15,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "missing_fields_detail": {
+                    "age": 0.15,
+                    "allergies": 0.15,
+                    "gender": 0.05,
+                    "pregnancy_status": 0.15,
+                    "symptom_duration": 0.02
+                  },
+                  "multi_symptom_bonus": 0,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": -0.8,
+                  "symptom_match": 0.45,
+                  "symptom_specific_boost": 0.25,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.5,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "中",
+                "symptoms": [
+                  "頭痛"
+                ],
+                "usage": "次の量を水又はぬるま湯で服用して下さい。  [年齢:1回量:1日服用回数] 成人(15歳以上):1錠:3回まで。なるべく空腹時をさけて服用して下さい。服用間隔は4時間以上おいて下さい。 15歳未満:服用しないで下さい。",
+                "usage_notes": "次の量を水又はぬるま湯で服用して下さい。  [年齢:1回量:1日服用回数] 成人(15歳以上):1錠:3回まで。なるべく空腹時をさけて服用して下さい。服用間隔は4時間以上おいて下さい。 15歳未満:服用しないで下さい。"
+              }
+            ],
+            "render": "sage_reco",
+            "schema_version": 1,
+            "severity_escalation": "",
+            "show_feedback": true,
+            "symptoms": [
+              "頭痛"
+            ],
+            "usage_sections": [
+              {
+                "default_expanded": false,
+                "id": "usage-1",
+                "items": [
+                  "【年齢未確認のご注意】",
+                  "年齢が未入力のため、表示は成人向けの参考情報です。各製品のパッケージ表示の年齢制限を必ずご確認のうえご使用ください。お子さまの場合は、年齢をお知らせいただくか、薬剤師・医師にご相談ください。",
+                  "年齢制限の記載がある製品: カロナールA"
+                ],
+                "kind": "other",
+                "title": "使用上の注意"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-2",
+                "items": [
+                  "効能: ●月経痛(月経痛)・頭痛・歯痛・咽喉痛・関節痛・筋肉痛・神経痛・腰痛・肩こり痛・抜歯後の疼痛・打撲痛・耳痛・骨折痛・ねんざ痛・外傷痛の鎮痛 ●悪寒・発熱時の解熱",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・次の1回量を1日3回を限度とし、なるべく空腹時をさけて水又はぬるま湯で服用してください。服用間隔は4時間以上おいてください。  [年齢:1回量] 成人(15才以上):2錠 15才未満:服用しないこと",
+                  "年齢制限:  [年齢:1回量] 成人(15才以上):2錠 15才未満:服用しないこと"
+                ],
+                "kind": "per_medicine",
+                "title": "1つ目"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-3",
+                "items": [
+                  "効能: (1)頭痛・腰痛・関節痛・月経痛(月経痛)・肩こり痛・神経痛・筋肉痛・骨折痛・捻挫痛・打撲痛・歯痛・抜歯後の疼痛・咽こう痛・耳痛・外傷痛の鎮痛 (2)悪寒・発熱時の解熱",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・症状があらわれた時,次の量をなるべく空腹時をさけて服用し,服用間隔は4時間以上おいてください。水又はぬるま湯にて服用してください。  [年齢:1回量:1日服用回数] 成人(15才以上):1錠:2回まで。ただし,再度症状があらわれた場合には3",
+                  "年齢制限:  15才未満:服用しないこと"
+                ],
+                "kind": "per_medicine",
+                "title": "2つ目"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-4",
+                "items": [
+                  "効能: 頭痛・月経痛(月経痛)・歯痛・抜歯後の疼痛・咽喉痛・腰痛・関節痛・神経痛・筋肉痛・肩こり痛・耳痛・打撲痛・骨折痛・捻挫痛・外傷痛の鎮痛,悪寒・発熱時の解熱",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・次の量を水又はぬるま湯で服用して下さい。  [年齢:1回量:1日服用回数] 成人(15歳以上):1錠:3回まで。なるべく空腹時をさけて服用して下さい。服用間隔は4時間以上おいて下さい。 15歳未満:服用しないで下さい。",
+                  "年齢制限:  15歳以上"
+                ],
+                "kind": "per_medicine",
+                "title": "3つ目"
+              }
+            ]
+          },
+          "timestamp": "2026-08-01T10:52:06.094490",
+          "type": "bot"
+        }
+      ],
+      "log_type": "counseling_detail",
+      "response": "sage_reco",
+      "session_id": "1785140812139967872547",
+      "timestamp": "2026-08-01T10:52:08.022702",
+      "user_input": "頭が痛いです。"
+    },
+    {
+      "conversation_history": [
+        {
+          "content": "自殺したい",
+          "timestamp": "2026-08-04T16:16:26+09:00",
+          "type": "user",
+          "uuid": "a2480674-0e73-4c0a-a2f7-e34b6a8d3956"
+        },
+        {
+          "content": "sage_status",
+          "crisis_support": true,
+          "crisis_title": "あなたの気持ちを大切に思っています",
+          "diagnosis": {
+            "actions": [],
+            "crisis_resources": [
+              {
+                "description": "24時間いつでも相談できる電話窓口です",
+                "description_en": "24-hour crisis hotline",
+                "description_ko": "24시간 위기 상담 전화",
+                "description_zh": "24小时危机热线",
+                "hours": "24時間対応",
+                "name": "いのちの電話",
+                "organization": "一般社団法人 日本いのちの電話連盟",
+                "phone": "0120-783-556",
+                "website": "https://www.inochinodenwa.org/?page_id=267"
+              },
+              {
+                "description": "LINEで相談できます",
+                "description_en": "Available via LINE chat",
+                "description_ko": "LINE 채팅 상담 가능",
+                "description_zh": "可通过LINE聊天咨询",
+                "line": "https://line.me/R/ti/p/@eds9972b",
+                "line_qr": "https://qr-official.line.me/gs/M_eds9972b_GW.png?openQrModal=true&searchId=eds9972b",
+                "name": "ライフリンク",
+                "organization": "NPO法人 自殺対策支援センター ライフリンク"
+              },
+              {
+                "description": "自殺対策に関する情報と相談窓口",
+                "description_en": "Suicide prevention information and support",
+                "description_ko": "자살 예방 정보 및 상담",
+                "description_zh": "自杀预防信息和支持",
+                "name": "いのち支える自殺対策推進センター",
+                "organization": "JSCP",
+                "website": "https://jscp.or.jp/"
+              },
+              {
+                "description": "厚生労働省の心の健康に関する情報サイト",
+                "description_en": "Mental health information from Ministry of Health",
+                "description_ko": "보건복지부 정신건강 정보 사이트",
+                "description_zh": "厚生劳动省心理健康信息网站",
+                "name": "まもろうよ こころ",
+                "organization": "厚生労働省",
+                "website": "https://www.mhlw.go.jp/mamorouyokokoro/"
+              }
+            ],
+            "emergency_message": "緊急の場合は、すぐに119番（救急）または110番（警察）に連絡してください。",
+            "hints": [],
+            "kind": "crisis_support",
+            "layout": "card",
+            "message": "今、とてもつらい状況かもしれません。一人で抱え込まず、信頼できる相談先があります。",
+            "render": "sage_status",
+            "schema_version": 1,
+            "sections": [
+              {
+                "commit": "",
+                "items": [
+                  "いのちの電話: 0120-783-556",
+                  "ライフリンク",
+                  "いのち支える自殺対策推進センター",
+                  "まもろうよ こころ"
+                ],
+                "title": "相談先"
+              }
+            ],
+            "show_bug_report": false,
+            "show_feedback": false,
+            "subtitle": "",
+            "suggested_symptoms": [],
+            "title": "あなたの気持ちを大切に思っています",
+            "variant": "security"
+          },
+          "emergency_message": "緊急の場合は、すぐに119番（救急）または110番（警察）に連絡してください。",
+          "resources": [
+            {
+              "description": "24時間いつでも相談できる電話窓口です",
+              "description_en": "24-hour crisis hotline",
+              "description_ko": "24시간 위기 상담 전화",
+              "description_zh": "24小时危机热线",
+              "hours": "24時間対応",
+              "name": "いのちの電話",
+              "organization": "一般社団法人 日本いのちの電話連盟",
+              "phone": "0120-783-556",
+              "website": "https://www.inochinodenwa.org/?page_id=267"
+            },
+            {
+              "description": "LINEで相談できます",
+              "description_en": "Available via LINE chat",
+              "description_ko": "LINE 채팅 상담 가능",
+              "description_zh": "可通过LINE聊天咨询",
+              "line": "https://line.me/R/ti/p/@eds9972b",
+              "line_qr": "https://qr-official.line.me/gs/M_eds9972b_GW.png?openQrModal=true&searchId=eds9972b",
+              "name": "ライフリンク",
+              "organization": "NPO法人 自殺対策支援センター ライフリンク"
+            },
+            {
+              "description": "自殺対策に関する情報と相談窓口",
+              "description_en": "Suicide prevention information and support",
+              "description_ko": "자살 예방 정보 및 상담",
+              "description_zh": "自杀预防信息和支持",
+              "name": "いのち支える自殺対策推進センター",
+              "organization": "JSCP",
+              "website": "https://jscp.or.jp/"
+            },
+            {
+              "description": "厚生労働省の心の健康に関する情報サイト",
+              "description_en": "Mental health information from Ministry of Health",
+              "description_ko": "보건복지부 정신건강 정보 사이트",
+              "description_zh": "厚生劳动省心理健康信息网站",
+              "name": "まもろうよ こころ",
+              "organization": "厚生労働省",
+              "website": "https://www.mhlw.go.jp/mamorouyokokoro/"
+            }
+          ],
+          "timestamp": "2026-08-04T16:16:26+09:00",
+          "type": "bot"
+        }
+      ],
+      "log_type": "counseling_detail",
+      "response": "今、とてもつらい状況かもしれません。一人で抱え込まず、信頼できる相談先があります。",
+      "session_id": "1785826435173456626768",
+      "timestamp": "2026-08-04T07:16:27.868961",
+      "user_input": "自殺したい"
+    },
+    {
+      "conversation_history": [
+        {
+          "content": "頭痛がします。",
+          "timestamp": "2026-08-05T13:25:27+09:00",
+          "type": "user",
+          "uuid": "5920d966-01c5-43ad-98ac-21af3f2be649"
+        },
+        {
+          "content": "sage_reco",
+          "diagnosis": {
+            "additional_questions": [
+              "年齢を教えてください。（医薬品の適切な選択に必要です）",
+              "性別を教えてください。（男性/女性）",
+              "症状はいつ頃から続いていますか？（例：昨日から、3日前から）",
+              "アレルギーはありますか？（薬物アレルギー、食物アレルギーなど）",
+              "現在服用中の薬はありますか？",
+              "持病や既往歴はありますか？"
+            ],
+            "age_policy_notice": "年齢が未入力のため、表示は成人向けの参考情報です。各製品のパッケージ表示の年齢制限を必ずご確認のうえご使用ください。お子さまの場合は、年齢をお知らせいただくか、薬剤師・医師にご相談ください。\n年齢制限の記載がある製品: カロナールA",
+            "algorithm": "rule_based",
+            "critical_questions": [
+              "頭痛と一緒に、吐き気・嘔吐、発熱、首の痛み、手足のしびれ、見えにくさなどはありますか？"
+            ],
+            "doctor_consultation": "【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+            "feedback_context": {
+              "ai_response": "症状: 頭痛 推奨: イブ、バファリンEX、カロナールA 「頭痛がします。」の症状に合わせて医薬品を選んでいます。用法用量を守ってご使用ください。症状が続く場合は医師・薬剤師にご相談ください。 【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+              "user_message": "頭痛がします。"
+            },
+            "influenza_reason": "",
+            "influenza_risk": false,
+            "medicine_type": "解熱鎮痛薬",
+            "missing_priority": "critical",
+            "personalized_advice": "「頭痛がします。」の症状に合わせて医薬品を選んでいます。用法用量を守ってご使用ください。症状が続く場合は医師・薬剤師にご相談ください。",
+            "recommended_medicines": [
+              {
+                "age_restriction": "[年齢:1回量] 成人(15才以上):2錠 15才未満:服用しないこと",
+                "allergy_warning": "",
+                "classification": "指定第2類",
+                "competition_category": "",
+                "completeness_penalty": 0.15,
+                "conditions": "",
+                "display_score": 85,
+                "doping_prohibited": "禁止物質なし",
+                "efficacy": "●月経痛(月経痛)・頭痛・歯痛・咽喉痛・関節痛・筋肉痛・神経痛・腰痛・肩こり痛・抜歯後の疼痛・打撲痛・耳痛・骨折痛・ねんざ痛・外傷痛の鎮痛 ●悪寒・発熱時の解熱",
+                "explanation": "⚠️ 症状への適合度は中程度 | ✅ 副作用リスクは低め | ✅ 相互作用リスクは低め | 主成分: NSAID | 解熱鎮痛薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E3%82%A4%E3%83%96A%E9%8C%A0.webp?v=56b704d9",
+                "image_version": "56b704d9",
+                "ingredients": "NSAID",
+                "interaction_warnings": [],
+                "manufacturer": "エスエス製薬",
+                "max_possible_score": 0.85,
+                "medicine_type": "解熱鎮痛薬",
+                "number": 1,
+                "original_rank": 1,
+                "product_image_url": "https://images.yutok.dev/otc/%E3%82%A4%E3%83%96A%E9%8C%A0.webp?v=56b704d9",
+                "product_name": "イブ",
+                "rank": 1,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 1.15,
+                  "age_fit": 0.65,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.276,
+                  "body_part_match": 0,
+                  "completeness_penalty": -0.15,
+                  "comprehensive_cold_bonus": 0,
+                  "efficacy_specificity": 0.225,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "missing_fields_detail": {
+                    "age": 0.15,
+                    "allergies": 0.15,
+                    "gender": 0.05,
+                    "pregnancy_status": 0.15,
+                    "symptom_duration": 0.02
+                  },
+                  "multi_symptom_bonus": 0,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": 0,
+                  "symptom_match": 0.45,
+                  "symptom_specific_boost": 0.15,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.6,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "中",
+                "symptoms": [
+                  "頭痛"
+                ],
+                "usage": "次の1回量を1日3回を限度とし、なるべく空腹時をさけて水又はぬるま湯で服用してください。服用間隔は4時間以上おいてください。  [年齢:1回量] 成人(15才以上):2錠 15才未満:服用しないこと",
+                "usage_notes": "用法用量を守ってご使用ください。"
+              },
+              {
+                "age_restriction": "15才未満:服用しないこと",
+                "allergy_warning": "",
+                "classification": "第1類",
+                "competition_category": "",
+                "completeness_penalty": 0.15,
+                "conditions": "",
+                "display_score": 83.7,
+                "doping_prohibited": "禁止物質なし",
+                "efficacy": "(1)頭痛・腰痛・関節痛・月経痛(月経痛)・肩こり痛・神経痛・筋肉痛・骨折痛・捻挫痛・打撲痛・歯痛・抜歯後の疼痛・咽こう痛・耳痛・外傷痛の鎮痛 (2)悪寒・発熱時の解熱",
+                "explanation": "⚠️ 症状への適合度は中程度 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ⚠️ 年齢制限: 15才未満:服用しないこと | 主成分: ロキソプロフェンナトリウム水和物, 乾燥水酸化アルミニウムゲル | 解熱鎮痛薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3EX.webp?v=12ac3534",
+                "image_version": "12ac3534",
+                "ingredients": "ロキソプロフェンナトリウム水和物\n乾燥水酸化アルミニウムゲル",
+                "interaction_warnings": [],
+                "manufacturer": "ライオン",
+                "max_possible_score": 0.85,
+                "medicine_type": "解熱鎮痛薬",
+                "number": 2,
+                "original_rank": 16,
+                "product_image_url": "https://images.yutok.dev/otc/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3EX.webp?v=12ac3534",
+                "product_name": "バファリンEX",
+                "rank": 2,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 1.25,
+                  "age_fit": 0.45,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.184,
+                  "body_part_match": 0,
+                  "completeness_penalty": -0.15,
+                  "comprehensive_cold_bonus": 0,
+                  "efficacy_specificity": 0.225,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "missing_fields_detail": {
+                    "age": 0.15,
+                    "allergies": 0.15,
+                    "gender": 0.05,
+                    "pregnancy_status": 0.15,
+                    "symptom_duration": 0.02
+                  },
+                  "multi_symptom_bonus": 0,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": -0.65,
+                  "symptom_match": 0.45,
+                  "symptom_specific_boost": 0.25,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.5,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "中",
+                "symptoms": [
+                  "頭痛"
+                ],
+                "usage": "症状があらわれた時,次の量をなるべく空腹時をさけて服用し,服用間隔は4時間以上おいてください。水又はぬるま湯にて服用してください。  [年齢:1回量:1日服用回数] 成人(15才以上):1錠:2回まで。ただし,再度症状があらわれた場合には3回目を服用できます。 15才未満:服用しないこと",
+                "usage_notes": "用法用量を守ってご使用ください。"
+              },
+              {
+                "age_restriction": "15歳以上",
+                "allergy_warning": "",
+                "classification": "第2類",
+                "competition_category": "",
+                "completeness_penalty": 0.15,
+                "conditions": "",
+                "display_score": 82.5,
+                "doping_prohibited": "禁止物質なし",
+                "efficacy": "頭痛・月経痛(月経痛)・歯痛・抜歯後の疼痛・咽喉痛・腰痛・関節痛・神経痛・筋肉痛・肩こり痛・耳痛・打撲痛・骨折痛・捻挫痛・外傷痛の鎮痛,悪寒・発熱時の解熱",
+                "explanation": "⚠️ 症状への適合度は中程度 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ⚠️ 年齢制限: 15歳以上 | 主成分: アセトアミノフェン | 解熱鎮痛薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E3%82%AB%E3%83%AD%E3%83%8A%E3%83%BC%E3%83%ABA.webp",
+                "ingredients": "アセトアミノフェン",
+                "interaction_warnings": [],
+                "manufacturer": "第一三共ヘルスケア",
+                "max_possible_score": 0.85,
+                "medicine_type": "解熱鎮痛薬",
+                "number": 3,
+                "original_rank": 20,
+                "product_image_url": "https://images.yutok.dev/otc/%E3%82%AB%E3%83%AD%E3%83%8A%E3%83%BC%E3%83%ABA.webp",
+                "product_name": "カロナールA",
+                "rank": 3,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 2,
+                  "age_fit": 0.45,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.16899999999999998,
+                  "body_part_match": 0,
+                  "completeness_penalty": -0.15,
+                  "comprehensive_cold_bonus": 0,
+                  "efficacy_specificity": 0.225,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0.15,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "missing_fields_detail": {
+                    "age": 0.15,
+                    "allergies": 0.15,
+                    "gender": 0.05,
+                    "pregnancy_status": 0.15,
+                    "symptom_duration": 0.02
+                  },
+                  "multi_symptom_bonus": 0,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": -0.8,
+                  "symptom_match": 0.45,
+                  "symptom_specific_boost": 0.25,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.5,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "中",
+                "symptoms": [
+                  "頭痛"
+                ],
+                "usage": "次の量を水又はぬるま湯で服用して下さい。  [年齢:1回量:1日服用回数] 成人(15歳以上):1錠:3回まで。なるべく空腹時をさけて服用して下さい。服用間隔は4時間以上おいて下さい。 15歳未満:服用しないで下さい。",
+                "usage_notes": "次の量を水又はぬるま湯で服用して下さい。  [年齢:1回量:1日服用回数] 成人(15歳以上):1錠:3回まで。なるべく空腹時をさけて服用して下さい。服用間隔は4時間以上おいて下さい。 15歳未満:服用しないで下さい。"
+              }
+            ],
+            "render": "sage_reco",
+            "schema_version": 1,
+            "severity_escalation": "",
+            "show_feedback": true,
+            "symptoms": [
+              "頭痛"
+            ],
+            "usage_sections": [
+              {
+                "default_expanded": false,
+                "id": "usage-1",
+                "items": [
+                  "【年齢未確認のご注意】",
+                  "年齢が未入力のため、表示は成人向けの参考情報です。各製品のパッケージ表示の年齢制限を必ずご確認のうえご使用ください。お子さまの場合は、年齢をお知らせいただくか、薬剤師・医師にご相談ください。",
+                  "年齢制限の記載がある製品: カロナールA"
+                ],
+                "kind": "other",
+                "title": "使用上の注意"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-2",
+                "items": [
+                  "効能: ●月経痛(月経痛)・頭痛・歯痛・咽喉痛・関節痛・筋肉痛・神経痛・腰痛・肩こり痛・抜歯後の疼痛・打撲痛・耳痛・骨折痛・ねんざ痛・外傷痛の鎮痛 ●悪寒・発熱時の解熱",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・次の1回量を1日3回を限度とし、なるべく空腹時をさけて水又はぬるま湯で服用してください。服用間隔は4時間以上おいてください。  [年齢:1回量] 成人(15才以上):2錠 15才未満:服用しないこと",
+                  "年齢制限:  [年齢:1回量] 成人(15才以上):2錠 15才未満:服用しないこと"
+                ],
+                "kind": "per_medicine",
+                "title": "1つ目"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-3",
+                "items": [
+                  "効能: (1)頭痛・腰痛・関節痛・月経痛(月経痛)・肩こり痛・神経痛・筋肉痛・骨折痛・捻挫痛・打撲痛・歯痛・抜歯後の疼痛・咽こう痛・耳痛・外傷痛の鎮痛 (2)悪寒・発熱時の解熱",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・症状があらわれた時,次の量をなるべく空腹時をさけて服用し,服用間隔は4時間以上おいてください。水又はぬるま湯にて服用してください。  [年齢:1回量:1日服用回数] 成人(15才以上):1錠:2回まで。ただし,再度症状があらわれた場合には3",
+                  "年齢制限:  15才未満:服用しないこと"
+                ],
+                "kind": "per_medicine",
+                "title": "2つ目"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-4",
+                "items": [
+                  "効能: 頭痛・月経痛(月経痛)・歯痛・抜歯後の疼痛・咽喉痛・腰痛・関節痛・神経痛・筋肉痛・肩こり痛・耳痛・打撲痛・骨折痛・捻挫痛・外傷痛の鎮痛,悪寒・発熱時の解熱",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・次の量を水又はぬるま湯で服用して下さい。  [年齢:1回量:1日服用回数] 成人(15歳以上):1錠:3回まで。なるべく空腹時をさけて服用して下さい。服用間隔は4時間以上おいて下さい。 15歳未満:服用しないで下さい。",
+                  "年齢制限:  15歳以上"
+                ],
+                "kind": "per_medicine",
+                "title": "3つ目"
+              }
+            ]
+          },
+          "timestamp": "2026-08-05T04:25:59.899450",
+          "type": "bot"
+        }
+      ],
+      "log_type": "counseling_detail",
+      "response": "sage_reco",
+      "session_id": "1785903890988374266366",
+      "timestamp": "2026-08-05T04:26:01.922100",
+      "user_input": "頭痛がします。"
+    },
+    {
+      "conversation_history": [
+        {
+          "content": "頭痛がします。",
+          "timestamp": "2026-08-05T13:25:27+09:00",
+          "type": "user",
+          "uuid": "5920d966-01c5-43ad-98ac-21af3f2be649"
+        },
+        {
+          "content": "sage_reco",
+          "diagnosis": {
+            "additional_questions": [
+              "年齢を教えてください。（医薬品の適切な選択に必要です）",
+              "性別を教えてください。（男性/女性）",
+              "症状はいつ頃から続いていますか？（例：昨日から、3日前から）",
+              "アレルギーはありますか？（薬物アレルギー、食物アレルギーなど）",
+              "現在服用中の薬はありますか？",
+              "持病や既往歴はありますか？"
+            ],
+            "age_policy_notice": "年齢が未入力のため、表示は成人向けの参考情報です。各製品のパッケージ表示の年齢制限を必ずご確認のうえご使用ください。お子さまの場合は、年齢をお知らせいただくか、薬剤師・医師にご相談ください。\n年齢制限の記載がある製品: カロナールA",
+            "algorithm": "rule_based",
+            "critical_questions": [
+              "頭痛と一緒に、吐き気・嘔吐、発熱、首の痛み、手足のしびれ、見えにくさなどはありますか？"
+            ],
+            "doctor_consultation": "【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+            "feedback_context": {
+              "ai_response": "症状: 頭痛 推奨: イブ、バファリンEX、カロナールA 「頭痛がします。」の症状に合わせて医薬品を選んでいます。用法用量を守ってご使用ください。症状が続く場合は医師・薬剤師にご相談ください。 【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+              "user_message": "頭痛がします。"
+            },
+            "influenza_reason": "",
+            "influenza_risk": false,
+            "medicine_type": "解熱鎮痛薬",
+            "missing_priority": "critical",
+            "personalized_advice": "「頭痛がします。」の症状に合わせて医薬品を選んでいます。用法用量を守ってご使用ください。症状が続く場合は医師・薬剤師にご相談ください。",
+            "recommended_medicines": [
+              {
+                "age_restriction": "[年齢:1回量] 成人(15才以上):2錠 15才未満:服用しないこと",
+                "allergy_warning": "",
+                "classification": "指定第2類",
+                "competition_category": "",
+                "completeness_penalty": 0.15,
+                "conditions": "",
+                "display_score": 85,
+                "doping_prohibited": "禁止物質なし",
+                "efficacy": "●月経痛(月経痛)・頭痛・歯痛・咽喉痛・関節痛・筋肉痛・神経痛・腰痛・肩こり痛・抜歯後の疼痛・打撲痛・耳痛・骨折痛・ねんざ痛・外傷痛の鎮痛 ●悪寒・発熱時の解熱",
+                "explanation": "⚠️ 症状への適合度は中程度 | ✅ 副作用リスクは低め | ✅ 相互作用リスクは低め | 主成分: NSAID | 解熱鎮痛薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E3%82%A4%E3%83%96A%E9%8C%A0.webp?v=56b704d9",
+                "image_version": "56b704d9",
+                "ingredients": "NSAID",
+                "interaction_warnings": [],
+                "manufacturer": "エスエス製薬",
+                "max_possible_score": 0.85,
+                "medicine_type": "解熱鎮痛薬",
+                "number": 1,
+                "original_rank": 1,
+                "product_image_url": "https://images.yutok.dev/otc/%E3%82%A4%E3%83%96A%E9%8C%A0.webp?v=56b704d9",
+                "product_name": "イブ",
+                "rank": 1,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 1.15,
+                  "age_fit": 0.65,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.276,
+                  "body_part_match": 0,
+                  "completeness_penalty": -0.15,
+                  "comprehensive_cold_bonus": 0,
+                  "efficacy_specificity": 0.225,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "missing_fields_detail": {
+                    "age": 0.15,
+                    "allergies": 0.15,
+                    "gender": 0.05,
+                    "pregnancy_status": 0.15,
+                    "symptom_duration": 0.02
+                  },
+                  "multi_symptom_bonus": 0,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": 0,
+                  "symptom_match": 0.45,
+                  "symptom_specific_boost": 0.15,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.6,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "中",
+                "symptoms": [
+                  "頭痛"
+                ],
+                "usage": "次の1回量を1日3回を限度とし、なるべく空腹時をさけて水又はぬるま湯で服用してください。服用間隔は4時間以上おいてください。  [年齢:1回量] 成人(15才以上):2錠 15才未満:服用しないこと",
+                "usage_notes": "用法用量を守ってご使用ください。"
+              },
+              {
+                "age_restriction": "15才未満:服用しないこと",
+                "allergy_warning": "",
+                "classification": "第1類",
+                "competition_category": "",
+                "completeness_penalty": 0.15,
+                "conditions": "",
+                "display_score": 83.7,
+                "doping_prohibited": "禁止物質なし",
+                "efficacy": "(1)頭痛・腰痛・関節痛・月経痛(月経痛)・肩こり痛・神経痛・筋肉痛・骨折痛・捻挫痛・打撲痛・歯痛・抜歯後の疼痛・咽こう痛・耳痛・外傷痛の鎮痛 (2)悪寒・発熱時の解熱",
+                "explanation": "⚠️ 症状への適合度は中程度 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ⚠️ 年齢制限: 15才未満:服用しないこと | 主成分: ロキソプロフェンナトリウム水和物, 乾燥水酸化アルミニウムゲル | 解熱鎮痛薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3EX.webp?v=12ac3534",
+                "image_version": "12ac3534",
+                "ingredients": "ロキソプロフェンナトリウム水和物\n乾燥水酸化アルミニウムゲル",
+                "interaction_warnings": [],
+                "manufacturer": "ライオン",
+                "max_possible_score": 0.85,
+                "medicine_type": "解熱鎮痛薬",
+                "number": 2,
+                "original_rank": 16,
+                "product_image_url": "https://images.yutok.dev/otc/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3EX.webp?v=12ac3534",
+                "product_name": "バファリンEX",
+                "rank": 2,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 1.25,
+                  "age_fit": 0.45,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.184,
+                  "body_part_match": 0,
+                  "completeness_penalty": -0.15,
+                  "comprehensive_cold_bonus": 0,
+                  "efficacy_specificity": 0.225,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "missing_fields_detail": {
+                    "age": 0.15,
+                    "allergies": 0.15,
+                    "gender": 0.05,
+                    "pregnancy_status": 0.15,
+                    "symptom_duration": 0.02
+                  },
+                  "multi_symptom_bonus": 0,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": -0.65,
+                  "symptom_match": 0.45,
+                  "symptom_specific_boost": 0.25,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.5,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "中",
+                "symptoms": [
+                  "頭痛"
+                ],
+                "usage": "症状があらわれた時,次の量をなるべく空腹時をさけて服用し,服用間隔は4時間以上おいてください。水又はぬるま湯にて服用してください。  [年齢:1回量:1日服用回数] 成人(15才以上):1錠:2回まで。ただし,再度症状があらわれた場合には3回目を服用できます。 15才未満:服用しないこと",
+                "usage_notes": "用法用量を守ってご使用ください。"
+              },
+              {
+                "age_restriction": "15歳以上",
+                "allergy_warning": "",
+                "classification": "第2類",
+                "competition_category": "",
+                "completeness_penalty": 0.15,
+                "conditions": "",
+                "display_score": 82.5,
+                "doping_prohibited": "禁止物質なし",
+                "efficacy": "頭痛・月経痛(月経痛)・歯痛・抜歯後の疼痛・咽喉痛・腰痛・関節痛・神経痛・筋肉痛・肩こり痛・耳痛・打撲痛・骨折痛・捻挫痛・外傷痛の鎮痛,悪寒・発熱時の解熱",
+                "explanation": "⚠️ 症状への適合度は中程度 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ⚠️ 年齢制限: 15歳以上 | 主成分: アセトアミノフェン | 解熱鎮痛薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E3%82%AB%E3%83%AD%E3%83%8A%E3%83%BC%E3%83%ABA.webp",
+                "ingredients": "アセトアミノフェン",
+                "interaction_warnings": [],
+                "manufacturer": "第一三共ヘルスケア",
+                "max_possible_score": 0.85,
+                "medicine_type": "解熱鎮痛薬",
+                "number": 3,
+                "original_rank": 20,
+                "product_image_url": "https://images.yutok.dev/otc/%E3%82%AB%E3%83%AD%E3%83%8A%E3%83%BC%E3%83%ABA.webp",
+                "product_name": "カロナールA",
+                "rank": 3,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 2,
+                  "age_fit": 0.45,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.16899999999999998,
+                  "body_part_match": 0,
+                  "completeness_penalty": -0.15,
+                  "comprehensive_cold_bonus": 0,
+                  "efficacy_specificity": 0.225,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0.15,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "missing_fields_detail": {
+                    "age": 0.15,
+                    "allergies": 0.15,
+                    "gender": 0.05,
+                    "pregnancy_status": 0.15,
+                    "symptom_duration": 0.02
+                  },
+                  "multi_symptom_bonus": 0,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": -0.8,
+                  "symptom_match": 0.45,
+                  "symptom_specific_boost": 0.25,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.5,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "中",
+                "symptoms": [
+                  "頭痛"
+                ],
+                "usage": "次の量を水又はぬるま湯で服用して下さい。  [年齢:1回量:1日服用回数] 成人(15歳以上):1錠:3回まで。なるべく空腹時をさけて服用して下さい。服用間隔は4時間以上おいて下さい。 15歳未満:服用しないで下さい。",
+                "usage_notes": "次の量を水又はぬるま湯で服用して下さい。  [年齢:1回量:1日服用回数] 成人(15歳以上):1錠:3回まで。なるべく空腹時をさけて服用して下さい。服用間隔は4時間以上おいて下さい。 15歳未満:服用しないで下さい。"
+              }
+            ],
+            "render": "sage_reco",
+            "schema_version": 1,
+            "severity_escalation": "",
+            "show_feedback": true,
+            "symptoms": [
+              "頭痛"
+            ],
+            "usage_sections": [
+              {
+                "default_expanded": false,
+                "id": "usage-1",
+                "items": [
+                  "【年齢未確認のご注意】",
+                  "年齢が未入力のため、表示は成人向けの参考情報です。各製品のパッケージ表示の年齢制限を必ずご確認のうえご使用ください。お子さまの場合は、年齢をお知らせいただくか、薬剤師・医師にご相談ください。",
+                  "年齢制限の記載がある製品: カロナールA"
+                ],
+                "kind": "other",
+                "title": "使用上の注意"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-2",
+                "items": [
+                  "効能: ●月経痛(月経痛)・頭痛・歯痛・咽喉痛・関節痛・筋肉痛・神経痛・腰痛・肩こり痛・抜歯後の疼痛・打撲痛・耳痛・骨折痛・ねんざ痛・外傷痛の鎮痛 ●悪寒・発熱時の解熱",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・次の1回量を1日3回を限度とし、なるべく空腹時をさけて水又はぬるま湯で服用してください。服用間隔は4時間以上おいてください。  [年齢:1回量] 成人(15才以上):2錠 15才未満:服用しないこと",
+                  "年齢制限:  [年齢:1回量] 成人(15才以上):2錠 15才未満:服用しないこと"
+                ],
+                "kind": "per_medicine",
+                "title": "1つ目"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-3",
+                "items": [
+                  "効能: (1)頭痛・腰痛・関節痛・月経痛(月経痛)・肩こり痛・神経痛・筋肉痛・骨折痛・捻挫痛・打撲痛・歯痛・抜歯後の疼痛・咽こう痛・耳痛・外傷痛の鎮痛 (2)悪寒・発熱時の解熱",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・症状があらわれた時,次の量をなるべく空腹時をさけて服用し,服用間隔は4時間以上おいてください。水又はぬるま湯にて服用してください。  [年齢:1回量:1日服用回数] 成人(15才以上):1錠:2回まで。ただし,再度症状があらわれた場合には3",
+                  "年齢制限:  15才未満:服用しないこと"
+                ],
+                "kind": "per_medicine",
+                "title": "2つ目"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-4",
+                "items": [
+                  "効能: 頭痛・月経痛(月経痛)・歯痛・抜歯後の疼痛・咽喉痛・腰痛・関節痛・神経痛・筋肉痛・肩こり痛・耳痛・打撲痛・骨折痛・捻挫痛・外傷痛の鎮痛,悪寒・発熱時の解熱",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・次の量を水又はぬるま湯で服用して下さい。  [年齢:1回量:1日服用回数] 成人(15歳以上):1錠:3回まで。なるべく空腹時をさけて服用して下さい。服用間隔は4時間以上おいて下さい。 15歳未満:服用しないで下さい。",
+                  "年齢制限:  15歳以上"
+                ],
+                "kind": "per_medicine",
+                "title": "3つ目"
+              }
+            ]
+          },
+          "timestamp": "2026-08-05T04:25:59.899450",
+          "type": "bot"
+        },
+        {
+          "content": "56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。",
+          "timestamp": "2026-08-05T13:26:43+09:00",
+          "type": "user",
+          "uuid": "f2f85914-3664-466f-a86e-707622b6e0fd"
+        },
+        {
+          "content": "sage_status",
+          "diagnosis": {
+            "actions": [],
+            "crisis_resources": [],
+            "emergency_message": "",
+            "hints": [],
+            "kind": "user_info_registration",
+            "layout": "card",
+            "message": "以下の内容を反映しました。",
+            "render": "sage_status",
+            "schema_version": 1,
+            "sections": [
+              {
+                "commit": "",
+                "items": [
+                  "年齢: 56歳（既に登録済み）"
+                ],
+                "title": "登録内容"
+              }
+            ],
+            "show_bug_report": false,
+            "show_feedback": false,
+            "subtitle": "",
+            "suggested_symptoms": [],
+            "title": "ユーザー情報",
+            "variant": "notice"
+          },
+          "timestamp": "2026-08-05T13:26:43+09:00",
+          "type": "bot",
+          "user_info_notification": true
+        },
+        {
+          "content": "sage_reco",
+          "diagnosis": {
+            "additional_questions": [
+              "現在服用中の薬はありますか？",
+              "持病や既往歴はありますか？"
+            ],
+            "age_policy_notice": "年齢が未入力のため、表示は成人向けの参考情報です。各製品のパッケージ表示の年齢制限を必ずご確認のうえご使用ください。お子さまの場合は、年齢をお知らせいただくか、薬剤師・医師にご相談ください。\n年齢制限の記載がある製品: スカイブブロンファースト、カロナールA",
+            "algorithm": "rule_based",
+            "critical_questions": [],
+            "doctor_consultation": "【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+            "feedback_context": {
+              "ai_response": "症状: 頭痛 推奨: スカイブブロンファースト、バファリンEX、カロナールA 症状が3日間続いているとのこと、「頭痛がします。」の症状に合わせて医薬品を選んでいます。用法用量を守ってご使用ください。症状が続く場合は医師・薬剤師にご相談ください。 【以下の場合は医師にご相談ください】\n・症状が3日以上続く場合\n・症状が悪化する場合\n・高熱（38.5度以上）が続く場合\n・発疹、発赤、かゆみなどの副作用が現れた場合\n・他の症状が現れた場合\n・長期連用する場合",
+              "user_message": "頭痛がします。"
+            },
+            "influenza_reason": "",
+            "influenza_risk": false,
+            "medicine_type": "解熱鎮痛薬",
+            "missing_priority": "optional",
+            "personalized_advice": "症状が3日間続いているとのこと、「頭痛がします。」の症状に合わせて医薬品を選んでいます。用法用量を守ってご使用ください。症状が続く場合は医師・薬剤師にご相談ください。",
+            "recommended_medicines": [
+              {
+                "age_restriction": "15歳以上",
+                "allergy_warning": "",
+                "classification": "指定第2類",
+                "competition_category": "",
+                "completeness_penalty": 0,
+                "conditions": "",
+                "display_score": 100,
+                "doping_prohibited": "禁止物質なし",
+                "efficacy": "1.頭痛・歯痛・抜歯後の疼痛・咽喉痛・耳痛・関節痛・神経痛・腰痛・筋肉痛・肩こり痛・打撲痛・骨折痛・ねんざ痛・月経痛(月経痛)・外傷痛の鎮痛  2.悪寒・発熱時の解熱",
+                "explanation": "⚠️ 症状への適合度は中程度 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ✅ 年齢制限に適合 | 主成分: アリルイソプロピルアセチル尿素, NSAID, メタケイ酸アルミン酸マグネシウム | 解熱鎮痛薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E3%82%B9%E3%82%AB%E3%82%A4%E3%83%96%E3%83%96%E3%83%AD%E3%83%B3%E3%83%95%E3%82%A1%E3%83%BC%E3%82%B9%E3%83%88.webp",
+                "ingredients": "アリルイソプロピルアセチル尿素\nNSAID\nメタケイ酸アルミン酸マグネシウム\n無水カフェイン",
+                "interaction_warnings": [],
+                "manufacturer": "日本製薬工業",
+                "max_possible_score": 1,
+                "medicine_type": "解熱鎮痛薬",
+                "number": 1,
+                "original_rank": 1,
+                "product_image_url": "https://images.yutok.dev/otc/%E3%82%B9%E3%82%AB%E3%82%A4%E3%83%96%E3%83%96%E3%83%AD%E3%83%B3%E3%83%95%E3%82%A1%E3%83%BC%E3%82%B9%E3%83%88.webp",
+                "product_name": "スカイブブロンファースト",
+                "rank": 1,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 1.1,
+                  "age_fit": 1,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.23800000000000004,
+                  "body_part_match": 0,
+                  "comprehensive_cold_bonus": 0,
+                  "efficacy_specificity": 0.225,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "multi_symptom_bonus": 0,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": -0.8000000000000002,
+                  "symptom_match": 0.45,
+                  "symptom_specific_boost": 0.15,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.6,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "高",
+                "symptoms": [
+                  "頭痛"
+                ],
+                "usage": "次の量をなるべく空腹時をさけて水又はぬるま湯で服用してください。服用間隔は、4時間以上おいてください。  [年齢:1回量:服用回数] 成人(15歳以上):2錠:1日3回を限度 15歳未満:服用しないこと",
+                "usage_notes": "用法用量を守ってご使用ください。"
+              },
+              {
+                "age_restriction": "15才未満:服用しないこと",
+                "allergy_warning": "",
+                "classification": "第1類",
+                "competition_category": "",
+                "completeness_penalty": 0,
+                "conditions": "",
+                "display_score": 98.5,
+                "doping_prohibited": "禁止物質なし",
+                "efficacy": "(1)頭痛・腰痛・関節痛・月経痛(月経痛)・肩こり痛・神経痛・筋肉痛・骨折痛・捻挫痛・打撲痛・歯痛・抜歯後の疼痛・咽こう痛・耳痛・外傷痛の鎮痛 (2)悪寒・発熱時の解熱",
+                "explanation": "⚠️ 症状への適合度は中程度 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ✅ 年齢制限に適合 | 主成分: ロキソプロフェンナトリウム水和物, 乾燥水酸化アルミニウムゲル | 解熱鎮痛薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3EX.webp?v=12ac3534",
+                "image_version": "12ac3534",
+                "ingredients": "ロキソプロフェンナトリウム水和物\n乾燥水酸化アルミニウムゲル",
+                "interaction_warnings": [],
+                "manufacturer": "ライオン",
+                "max_possible_score": 1,
+                "medicine_type": "解熱鎮痛薬",
+                "number": 2,
+                "original_rank": 4,
+                "product_image_url": "https://images.yutok.dev/otc/%E3%83%90%E3%83%95%E3%82%A1%E3%83%AA%E3%83%B3EX.webp?v=12ac3534",
+                "product_name": "バファリンEX",
+                "rank": 2,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 1.25,
+                  "age_fit": 1,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.25000000000000006,
+                  "body_part_match": 0,
+                  "comprehensive_cold_bonus": 0,
+                  "efficacy_specificity": 0.225,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "multi_symptom_bonus": 0,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": -0.65,
+                  "symptom_match": 0.45,
+                  "symptom_specific_boost": 0.25,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.5,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "高",
+                "symptoms": [
+                  "頭痛"
+                ],
+                "usage": "症状があらわれた時,次の量をなるべく空腹時をさけて服用し,服用間隔は4時間以上おいてください。水又はぬるま湯にて服用してください。  [年齢:1回量:1日服用回数] 成人(15才以上):1錠:2回まで。ただし,再度症状があらわれた場合には3回目を服用できます。 15才未満:服用しないこと",
+                "usage_notes": "用法用量を守ってご使用ください。"
+              },
+              {
+                "age_restriction": "15歳以上",
+                "allergy_warning": "",
+                "classification": "第2類",
+                "competition_category": "",
+                "completeness_penalty": 0,
+                "conditions": "",
+                "display_score": 97,
+                "doping_prohibited": "禁止物質なし",
+                "efficacy": "頭痛・月経痛(月経痛)・歯痛・抜歯後の疼痛・咽喉痛・腰痛・関節痛・神経痛・筋肉痛・肩こり痛・耳痛・打撲痛・骨折痛・捻挫痛・外傷痛の鎮痛,悪寒・発熱時の解熱",
+                "explanation": "⚠️ 症状への適合度は中程度 | ⚠️ 副作用リスクがやや高め | ✅ 相互作用リスクは低め | ✅ 年齢制限に適合 | 主成分: アセトアミノフェン | 解熱鎮痛薬として効果が期待できます",
+                "image_url": "https://images.yutok.dev/otc/%E3%82%AB%E3%83%AD%E3%83%8A%E3%83%BC%E3%83%ABA.webp",
+                "ingredients": "アセトアミノフェン",
+                "interaction_warnings": [],
+                "manufacturer": "第一三共ヘルスケア",
+                "max_possible_score": 1,
+                "medicine_type": "解熱鎮痛薬",
+                "number": 3,
+                "original_rank": 8,
+                "product_image_url": "https://images.yutok.dev/otc/%E3%82%AB%E3%83%AD%E3%83%8A%E3%83%BC%E3%83%ABA.webp",
+                "product_name": "カロナールA",
+                "rank": 3,
+                "raw_score": 1.3628613464494066,
+                "reason": "症状に適した医薬品です",
+                "relative_score": 1,
+                "score": 1.3628613464494066,
+                "score_breakdown": {
+                  "adjusted_base_score": 0.55,
+                  "adjustment_score": 2,
+                  "age_fit": 1,
+                  "allergy_boost": 0,
+                  "allergy_penalty": 0,
+                  "base_score": 0.23500000000000004,
+                  "body_part_match": 0,
+                  "comprehensive_cold_bonus": 0,
+                  "efficacy_specificity": 0.225,
+                  "hangover_boost": 0,
+                  "ingredient_boost": 0.15,
+                  "interaction_risk": 0,
+                  "kakkonto_penalty": 0,
+                  "kampo_adjustment": 0,
+                  "life_stage_boost": 0,
+                  "multi_symptom_bonus": 0,
+                  "multi_symptom_cold_bonus": 0,
+                  "pattern_bonus": 0,
+                  "preference_sources": {},
+                  "risk_ingredient_penalty": 0,
+                  "sho_bonus": 0,
+                  "side_effect_risk": -0.8,
+                  "symptom_match": 0.45,
+                  "symptom_specific_boost": 0.25,
+                  "symptom_specificity_penalty": 0,
+                  "throat_bonus": 0,
+                  "tiebreaker_boost": 0,
+                  "usage_convenience": 0.5,
+                  "user_preference_bonus": 0
+                },
+                "score_level": "高",
+                "symptoms": [
+                  "頭痛"
+                ],
+                "usage": "次の量を水又はぬるま湯で服用して下さい。  [年齢:1回量:1日服用回数] 成人(15歳以上):1錠:3回まで。なるべく空腹時をさけて服用して下さい。服用間隔は4時間以上おいて下さい。 15歳未満:服用しないで下さい。",
+                "usage_notes": "次の量を水又はぬるま湯で服用して下さい。  [年齢:1回量:1日服用回数] 成人(15歳以上):1錠:3回まで。なるべく空腹時をさけて服用して下さい。服用間隔は4時間以上おいて下さい。 15歳未満:服用しないで下さい。"
+              }
+            ],
+            "render": "sage_reco",
+            "schema_version": 1,
+            "severity_escalation": "",
+            "show_feedback": true,
+            "symptoms": [
+              "頭痛"
+            ],
+            "usage_sections": [
+              {
+                "default_expanded": false,
+                "id": "usage-1",
+                "items": [
+                  "効能: 1.頭痛・歯痛・抜歯後の疼痛・咽喉痛・耳痛・関節痛・神経痛・腰痛・筋肉痛・肩こり痛・打撲痛・骨折痛・ねんざ痛・月経痛(月経痛)・外傷痛の鎮痛  2.悪寒・発熱時の解熱",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・次の量をなるべく空腹時をさけて水又はぬるま湯で服用してください。服用間隔は、4時間以上おいてください。  [年齢:1回量:服用回数] 成人(15歳以上):2錠:1日3回を限度 15歳未満:服用しないこと",
+                  "年齢制限:  15歳以上"
+                ],
+                "kind": "per_medicine",
+                "title": "1つ目"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-2",
+                "items": [
+                  "効能: (1)頭痛・腰痛・関節痛・月経痛(月経痛)・肩こり痛・神経痛・筋肉痛・骨折痛・捻挫痛・打撲痛・歯痛・抜歯後の疼痛・咽こう痛・耳痛・外傷痛の鎮痛 (2)悪寒・発熱時の解熱",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・症状があらわれた時,次の量をなるべく空腹時をさけて服用し,服用間隔は4時間以上おいてください。水又はぬるま湯にて服用してください。  [年齢:1回量:1日服用回数] 成人(15才以上):1錠:2回まで。ただし,再度症状があらわれた場合には3",
+                  "年齢制限:  15才未満:服用しないこと"
+                ],
+                "kind": "per_medicine",
+                "title": "2つ目"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-3",
+                "items": [
+                  "効能: 頭痛・月経痛(月経痛)・歯痛・抜歯後の疼痛・咽喉痛・腰痛・関節痛・神経痛・筋肉痛・肩こり痛・耳痛・打撲痛・骨折痛・捻挫痛・外傷痛の鎮痛,悪寒・発熱時の解熱",
+                  "用法用量の注意:",
+                  "・用法用量を守ってご使用ください。",
+                  "・次の量を水又はぬるま湯で服用して下さい。  [年齢:1回量:1日服用回数] 成人(15歳以上):1錠:3回まで。なるべく空腹時をさけて服用して下さい。服用間隔は4時間以上おいて下さい。 15歳未満:服用しないで下さい。",
+                  "年齢制限:  15歳以上"
+                ],
+                "kind": "per_medicine",
+                "title": "3つ目"
+              },
+              {
+                "default_expanded": false,
+                "id": "usage-4",
+                "items": [
+                  "・OTC医薬品（市販薬）はあくまで対症療法であり、安静や栄養補給が重要です",
+                  "・症状が長引く場合や重症化する可能性がある場合は、専門の医師に相談することをお勧めします"
+                ],
+                "kind": "otc_info",
+                "title": "OTC医薬品について"
+              }
+            ]
+          },
+          "timestamp": "2026-08-05T04:27:16.823183",
+          "type": "bot"
+        }
+      ],
+      "log_type": "counseling_detail",
+      "response": "sage_reco",
+      "session_id": "1785903890988374266366",
+      "timestamp": "2026-08-05T04:27:18.974239",
+      "user_input": "56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。"
+    }
+  ],
+  "security_flags": [
+    {
+      "timestamp": "2026-08-01T06:55:50.970005Z",
+      "message": "2026-08-01 06:55:50,970 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-01T06:56:11.034192Z",
+      "message": "2026-08-01 06:56:11,034 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-01T10:51:33.947021Z",
+      "message": "2026-08-01 10:51:33,947 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-01T10:51:52.188607Z",
+      "message": "2026-08-01 10:51:52,188 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-04T07:16:26.310818Z",
+      "message": "2026-08-04 07:16:26,311 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-05T04:25:21.916867Z",
+      "message": "2026-08-05 04:25:21,917 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-05T04:25:41.500001Z",
+      "message": "2026-08-05 04:25:41,500 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-05T04:26:43.130554Z",
+      "message": "2026-08-05 04:26:43,130 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-05T04:27:06.311749Z",
+      "message": "2026-08-05 04:27:06,312 - INFO - Security validation: score=0, safe=True, warnings=0"
+    }
+  ],
+  "session_conversations": {
+    "session_count": 4,
+    "exported_session_count": 4,
+    "counseling_session_count": 4,
+    "trace_only_session_count": 0,
+    "chat_flow_trace_count": 5,
+    "sessions": [
+      {
+        "session_id": "1785140812139967872547",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-01T10:52:08.022702",
+          "end": "2026-08-01T10:52:08.022702"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "頭が痛いです。"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_reco"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-01T10:52:08.022702",
+            "user_input": "頭が痛いです。",
+            "response_preview": "sage_reco",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "physical_symptom"
+            ],
+            "routing": {
+              "trace_id": "7f9bd1ef-1678-4cb1-8af9-a1593bc40c17",
+              "triage": {
+                "category": "Physical",
+                "subcategory": "headache",
+                "confidence": 0.99
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 35944.67,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 828.8,
+                "triage_ms": 3751.9,
+                "post_to_security_ms": 2188.3,
+                "safety_gate_ms": 5058.6,
+                "confidence_gate_ms": 5184.7,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 4
+            },
+            "timing": {
+              "user_message_at": "2026-08-01T10:51:32.112353Z",
+              "response_at": "2026-08-01T10:52:08.022702",
+              "e2e_ms": 35910.3,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 35944.67,
+              "phase_summary_ms": {
+                "security_ms": 828.8,
+                "triage_ms": 3751.9,
+                "post_to_security_ms": 2188.3,
+                "safety_gate_ms": 5058.6,
+                "confidence_gate_ms": 5184.7,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 13.39,
+                "parsed_message": 13.56,
+                "session_db_read": 13.59,
+                "after_get_session_db": 310.77,
+                "before_llm_setup": 758.3,
+                "before_security": 1372.97,
+                "after_security": 2201.74,
+                "before_emoji_route": 2390.67,
+                "before_triage": 2409.85,
+                "after_triage": 6161.72,
+                "safety_gate_done": 7260.31,
+                "after_triage_follow_ups": 7273.7,
+                "after_counseling_flow": 8115.36,
+                "moderation_done": 8115.42,
+                "before_medicine_qa_route": 8416.46,
+                "after_medicine_qa_route": 9822.06,
+                "confidence_gate_done": 12445.01,
+                "nlu_batch_start": 20062.82,
+                "nlu_batch_done": 23256.82,
+                "rule_based_start": 24065.19,
+                "rb_missing_info_done": 26806.46,
+                "rb_scoring_only_done": 33917.99,
+                "rb_explain_batch_done": 33940.09,
+                "rule_based_scoring_only_done": 33953.19,
+                "line_carousel_push": 33960.67,
+                "explanation_phase_start": 33965.34,
+                "explanation_phase_done": 33965.35,
+                "personalized_advice": 33967.9
+              },
+              "llm_call_count": 4,
+              "llm_total_latency_ms": 5608.37,
+              "llm_session_cost_jpy": 0.1431,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-01T10:51:37.381826",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 2105.46,
+                  "prompt_tokens": 3106,
+                  "completion_tokens": 110,
+                  "cost_jpy": 0.0965,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-01T10:51:41.288129",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 750.08,
+                  "prompt_tokens": 371,
+                  "completion_tokens": 29,
+                  "cost_jpy": 0.012,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-01T10:51:48.811925",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_medicine_service.select_symptoms",
+                  "latency_ms": 601.14,
+                  "prompt_tokens": 552,
+                  "completion_tokens": 5,
+                  "cost_jpy": 0.0167,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-01T10:51:58.325523",
+                  "model": "gpt-5.4-mini",
+                  "path": "missing_info_service",
+                  "latency_ms": 2151.69,
+                  "prompt_tokens": 301,
+                  "completion_tokens": 297,
+                  "cost_jpy": 0.0179,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok",
+            "medicine_recommendation_review": {
+              "eligible_for_advisor": true,
+              "advisor_skill": "medicine-recommendation-advisor",
+              "triage": {
+                "category": "Physical",
+                "subcategory": "headache",
+                "confidence": 0.99
+              },
+              "recommendation_events": [],
+              "has_medicine_list": false
+            }
+          }
+        ],
+        "evaluation": {
+          "turn_count": 1,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1785140812139967872547 turns=1 grade=good first='頭が痛いです。' last='頭が痛いです。'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 1,
+          "recommendation_event_count": 0,
+          "turns": [
+            {
+              "timestamp": "2026-08-01T10:52:08.022702",
+              "user_input": "頭が痛いです。",
+              "review": {
+                "eligible_for_advisor": true,
+                "advisor_skill": "medicine-recommendation-advisor",
+                "triage": {
+                  "category": "Physical",
+                  "subcategory": "headache",
+                  "confidence": 0.99
+                },
+                "recommendation_events": [],
+                "has_medicine_list": false
+              }
+            }
+          ],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1785150676388766393702",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-01T06:56:45.839568",
+          "end": "2026-08-01T06:56:45.839568"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "喉が痛く、熱があります。"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_reco"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-01T06:56:45.839568",
+            "user_input": "喉が痛く、熱があります。",
+            "response_preview": "sage_reco",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "physical_symptom"
+            ],
+            "routing": {},
+            "timing": {
+              "user_message_at": null,
+              "response_at": "2026-08-01T06:56:45.839568",
+              "e2e_ms": null,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": null,
+              "phase_summary_ms": {},
+              "breakdown_ms": {},
+              "llm_call_count": 0,
+              "llm_total_latency_ms": null,
+              "llm_session_cost_jpy": null,
+              "llm_calls": []
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok",
+            "medicine_recommendation_review": {
+              "eligible_for_advisor": true,
+              "advisor_skill": "medicine-recommendation-advisor",
+              "triage": {},
+              "recommendation_events": [],
+              "has_medicine_list": false
+            }
+          }
+        ],
+        "evaluation": {
+          "turn_count": 1,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1785150676388766393702 turns=1 grade=good first='喉が痛く、熱があります。' last='喉が痛く、熱があります。'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 1,
+          "recommendation_event_count": 0,
+          "turns": [
+            {
+              "timestamp": "2026-08-01T06:56:45.839568",
+              "user_input": "喉が痛く、熱があります。",
+              "review": {
+                "eligible_for_advisor": true,
+                "advisor_skill": "medicine-recommendation-advisor",
+                "triage": {},
+                "recommendation_events": [],
+                "has_medicine_list": false
+              }
+            }
+          ],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1785826435173456626768",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-04T07:16:27.903556Z",
+          "end": "2026-08-04T07:16:27.868961"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "自殺したい"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_status"
+          },
+          {
+            "role": "user",
+            "content": "自殺したい"
+          },
+          {
+            "role": "assistant",
+            "content": "今、とてもつらい状況かもしれません。一人で抱え込まず、信頼できる相談先があります。"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-04T07:16:27.903556Z",
+            "user_input": "自殺したい",
+            "response_preview": "sage_status",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "conversation_history",
+            "input_labels": [
+              "offensive"
+            ],
+            "routing": {
+              "trace_id": "37289a0d-bdca-439f-a84e-d7ff357ae537",
+              "triage": null,
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 3805.98,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": null,
+                "triage_ms": null,
+                "post_to_security_ms": null,
+                "safety_gate_ms": null,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 0
+            },
+            "timing": {
+              "user_message_at": "2026-08-04T07:16:24.097576Z",
+              "response_at": "2026-08-04T07:16:27.903556Z",
+              "e2e_ms": 3806.0,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 3805.98,
+              "phase_summary_ms": {
+                "security_ms": null,
+                "triage_ms": null,
+                "post_to_security_ms": null,
+                "safety_gate_ms": null,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 9.27,
+                "parsed_message": 9.89,
+                "session_db_read": 9.93,
+                "after_get_session_db": 304.97,
+                "before_llm_setup": 779.35,
+                "before_security": 1404.73
+              },
+              "llm_call_count": 0,
+              "llm_total_latency_ms": 0,
+              "llm_session_cost_jpy": 0.0,
+              "llm_calls": []
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-08-04T07:16:27.868961",
+            "user_input": "自殺したい",
+            "response_preview": "今、とてもつらい状況かもしれません。一人で抱え込まず、信頼できる相談先があります。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "offensive"
+            ],
+            "routing": {
+              "trace_id": "37289a0d-bdca-439f-a84e-d7ff357ae537",
+              "triage": null,
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 3805.98,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": null,
+                "triage_ms": null,
+                "post_to_security_ms": null,
+                "safety_gate_ms": null,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 0
+            },
+            "timing": {
+              "user_message_at": "2026-08-04T07:16:24.097576Z",
+              "response_at": "2026-08-04T07:16:27.868961",
+              "e2e_ms": 3771.4,
+              "since_previous_turn_ms": -34.6,
+              "pipeline_total_ms": 3805.98,
+              "phase_summary_ms": {
+                "security_ms": null,
+                "triage_ms": null,
+                "post_to_security_ms": null,
+                "safety_gate_ms": null,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 9.27,
+                "parsed_message": 9.89,
+                "session_db_read": 9.93,
+                "after_get_session_db": 304.97,
+                "before_llm_setup": 779.35,
+                "before_security": 1404.73
+              },
+              "llm_call_count": 0,
+              "llm_total_latency_ms": 0,
+              "llm_session_cost_jpy": 0.0,
+              "llm_calls": []
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "自殺したい"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_status"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 2,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1785826435173456626768 turns=2 grade=good first='自殺したい' last='自殺したい'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "conversation_history": 1,
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1785903890988374266366",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-05T04:27:19.004847Z",
+          "end": "2026-08-05T04:27:18.974239"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_status"
+          },
+          {
+            "role": "user",
+            "content": "頭痛がします。"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_reco"
+          },
+          {
+            "role": "user",
+            "content": "56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_reco"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-05T04:27:19.004847Z",
+            "user_input": "56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。",
+            "response_preview": "sage_status",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "conversation_history",
+            "input_labels": [
+              "physical_symptom"
+            ],
+            "routing": {
+              "trace_id": "92f2fe4d-824b-4d4d-83b3-2595d6cb3300",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.97
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 37596.47,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 1300.8,
+                "triage_ms": 5911.7,
+                "post_to_security_ms": 2652.9,
+                "safety_gate_ms": 6683.4,
+                "confidence_gate_ms": 6539.1,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 6
+            },
+            "timing": {
+              "user_message_at": "2026-08-05T04:26:41.408377Z",
+              "response_at": "2026-08-05T04:27:19.004847Z",
+              "e2e_ms": 37596.5,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 37596.47,
+              "phase_summary_ms": {
+                "security_ms": 1300.8,
+                "triage_ms": 5911.7,
+                "post_to_security_ms": 2652.9,
+                "safety_gate_ms": 6683.4,
+                "confidence_gate_ms": 6539.1,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 9.99,
+                "parsed_message": 10.24,
+                "session_db_read": 10.27,
+                "after_get_session_db": 302.14,
+                "before_llm_setup": 753.49,
+                "before_security": 1362.04,
+                "after_security": 2662.87,
+                "before_emoji_route": 2827.55,
+                "before_triage": 2847.78,
+                "after_triage": 8759.51,
+                "safety_gate_done": 9346.24,
+                "after_triage_follow_ups": 9359.85,
+                "after_counseling_flow": 9365.66,
+                "moderation_done": 9365.72,
+                "before_medicine_qa_route": 10438.1,
+                "after_medicine_qa_route": 12330.73,
+                "confidence_gate_done": 15885.29,
+                "nlu_batch_start": 24884.94,
+                "nlu_batch_done": 28266.04,
+                "rule_based_start": 29140.17,
+                "rb_missing_info_done": 29140.66,
+                "rb_scoring_only_done": 35369.35,
+                "rb_explain_batch_done": 35388.36,
+                "rule_based_scoring_only_done": 35394.76,
+                "line_carousel_push": 35395.22,
+                "explanation_phase_start": 35400.52,
+                "explanation_phase_done": 35400.53,
+                "personalized_advice": 35402.34
+              },
+              "llm_call_count": 6,
+              "llm_total_latency_ms": 8460.91,
+              "llm_session_cost_jpy": 0.2742,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-05T04:26:46.102435",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1772.75,
+                  "prompt_tokens": 3259,
+                  "completion_tokens": 131,
+                  "cost_jpy": 0.1017,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T04:26:49.562155",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage2",
+                  "latency_ms": 2406.45,
+                  "prompt_tokens": 3560,
+                  "completion_tokens": 133,
+                  "cost_jpy": 0.1108,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T04:26:53.064857",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1208.56,
+                  "prompt_tokens": 425,
+                  "completion_tokens": 46,
+                  "cost_jpy": 0.0141,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T04:26:55.088156",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1345.64,
+                  "prompt_tokens": 425,
+                  "completion_tokens": 54,
+                  "cost_jpy": 0.0144,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T04:26:59.492619",
+                  "model": "gpt-5.4-mini",
+                  "path": "attribute_extractor",
+                  "latency_ms": 956.07,
+                  "prompt_tokens": 466,
+                  "completion_tokens": 86,
+                  "cost_jpy": 0.0166,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T04:27:03.377888",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_medicine_service.select_symptoms",
+                  "latency_ms": 771.44,
+                  "prompt_tokens": 551,
+                  "completion_tokens": 5,
+                  "cost_jpy": 0.0167,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok",
+            "medicine_recommendation_review": {
+              "eligible_for_advisor": true,
+              "advisor_skill": "medicine-recommendation-advisor",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.97
+              },
+              "recommendation_events": [],
+              "has_medicine_list": false
+            }
+          },
+          {
+            "timestamp": "2026-08-05T04:26:01.922100",
+            "user_input": "頭痛がします。",
+            "response_preview": "sage_reco",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "physical_symptom"
+            ],
+            "routing": {
+              "trace_id": "8e2ec4fc-4694-479f-92da-4f2e4c40dfed",
+              "triage": {
+                "category": "Physical",
+                "subcategory": "headache",
+                "confidence": 0.99
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 41906.65,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 1040.0,
+                "triage_ms": 3788.7,
+                "post_to_security_ms": 2367.9,
+                "safety_gate_ms": 5137.8,
+                "confidence_gate_ms": 5142.0,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 4
+            },
+            "timing": {
+              "user_message_at": "2026-08-05T04:25:20.043638Z",
+              "response_at": "2026-08-05T04:26:01.922100",
+              "e2e_ms": 41878.5,
+              "since_previous_turn_ms": -77082.7,
+              "pipeline_total_ms": 41906.65,
+              "phase_summary_ms": {
+                "security_ms": 1040.0,
+                "triage_ms": 3788.7,
+                "post_to_security_ms": 2367.9,
+                "safety_gate_ms": 5137.8,
+                "confidence_gate_ms": 5142.0,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 10.67,
+                "parsed_message": 10.85,
+                "session_db_read": 10.88,
+                "after_get_session_db": 303.12,
+                "before_llm_setup": 734.66,
+                "before_security": 1338.6,
+                "after_security": 2378.58,
+                "before_emoji_route": 2601.43,
+                "before_triage": 2625.72,
+                "after_triage": 6414.38,
+                "safety_gate_done": 7516.38,
+                "after_triage_follow_ups": 7532.59,
+                "after_counseling_flow": 8393.65,
+                "moderation_done": 8393.71,
+                "before_medicine_qa_route": 8697.83,
+                "after_medicine_qa_route": 10476.09,
+                "confidence_gate_done": 12658.39,
+                "nlu_batch_start": 21439.55,
+                "nlu_batch_done": 27093.2,
+                "rule_based_start": 27936.85,
+                "rb_missing_info_done": 30683.7,
+                "rb_scoring_only_done": 39789.86,
+                "rb_explain_batch_done": 39812.36,
+                "rule_based_scoring_only_done": 39821.89,
+                "line_carousel_push": 39829.35,
+                "explanation_phase_start": 39836.47,
+                "explanation_phase_done": 39836.48,
+                "personalized_advice": 39838.78
+              },
+              "llm_call_count": 4,
+              "llm_total_latency_ms": 6775.860000000001,
+              "llm_session_cost_jpy": 0.1406,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-05T04:25:25.578147",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 2142.77,
+                  "prompt_tokens": 3105,
+                  "completion_tokens": 101,
+                  "cost_jpy": 0.0962,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T04:25:29.861150",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1092.85,
+                  "prompt_tokens": 369,
+                  "completion_tokens": 29,
+                  "cost_jpy": 0.0119,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T04:25:38.085199",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_medicine_service.select_symptoms",
+                  "latency_ms": 1376.3,
+                  "prompt_tokens": 551,
+                  "completion_tokens": 5,
+                  "cost_jpy": 0.0167,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T04:25:50.145062",
+                  "model": "gpt-5.4-mini",
+                  "path": "missing_info_service",
+                  "latency_ms": 2163.94,
+                  "prompt_tokens": 300,
+                  "completion_tokens": 227,
+                  "cost_jpy": 0.0158,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_status"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok",
+            "medicine_recommendation_review": {
+              "eligible_for_advisor": true,
+              "advisor_skill": "medicine-recommendation-advisor",
+              "triage": {
+                "category": "Physical",
+                "subcategory": "headache",
+                "confidence": 0.99
+              },
+              "recommendation_events": [],
+              "has_medicine_list": false
+            }
+          },
+          {
+            "timestamp": "2026-08-05T04:27:18.974239",
+            "user_input": "56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。",
+            "response_preview": "sage_reco",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "physical_symptom"
+            ],
+            "routing": {
+              "trace_id": "92f2fe4d-824b-4d4d-83b3-2595d6cb3300",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.97
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 37596.47,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 1300.8,
+                "triage_ms": 5911.7,
+                "post_to_security_ms": 2652.9,
+                "safety_gate_ms": 6683.4,
+                "confidence_gate_ms": 6539.1,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 6
+            },
+            "timing": {
+              "user_message_at": "2026-08-05T04:26:41.408377Z",
+              "response_at": "2026-08-05T04:27:18.974239",
+              "e2e_ms": 37565.9,
+              "since_previous_turn_ms": 77052.1,
+              "pipeline_total_ms": 37596.47,
+              "phase_summary_ms": {
+                "security_ms": 1300.8,
+                "triage_ms": 5911.7,
+                "post_to_security_ms": 2652.9,
+                "safety_gate_ms": 6683.4,
+                "confidence_gate_ms": 6539.1,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 9.99,
+                "parsed_message": 10.24,
+                "session_db_read": 10.27,
+                "after_get_session_db": 302.14,
+                "before_llm_setup": 753.49,
+                "before_security": 1362.04,
+                "after_security": 2662.87,
+                "before_emoji_route": 2827.55,
+                "before_triage": 2847.78,
+                "after_triage": 8759.51,
+                "safety_gate_done": 9346.24,
+                "after_triage_follow_ups": 9359.85,
+                "after_counseling_flow": 9365.66,
+                "moderation_done": 9365.72,
+                "before_medicine_qa_route": 10438.1,
+                "after_medicine_qa_route": 12330.73,
+                "confidence_gate_done": 15885.29,
+                "nlu_batch_start": 24884.94,
+                "nlu_batch_done": 28266.04,
+                "rule_based_start": 29140.17,
+                "rb_missing_info_done": 29140.66,
+                "rb_scoring_only_done": 35369.35,
+                "rb_explain_batch_done": 35388.36,
+                "rule_based_scoring_only_done": 35394.76,
+                "line_carousel_push": 35395.22,
+                "explanation_phase_start": 35400.52,
+                "explanation_phase_done": 35400.53,
+                "personalized_advice": 35402.34
+              },
+              "llm_call_count": 6,
+              "llm_total_latency_ms": 8460.91,
+              "llm_session_cost_jpy": 0.2742,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-05T04:26:46.102435",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1772.75,
+                  "prompt_tokens": 3259,
+                  "completion_tokens": 131,
+                  "cost_jpy": 0.1017,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T04:26:49.562155",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage2",
+                  "latency_ms": 2406.45,
+                  "prompt_tokens": 3560,
+                  "completion_tokens": 133,
+                  "cost_jpy": 0.1108,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T04:26:53.064857",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1208.56,
+                  "prompt_tokens": 425,
+                  "completion_tokens": 46,
+                  "cost_jpy": 0.0141,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T04:26:55.088156",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1345.64,
+                  "prompt_tokens": 425,
+                  "completion_tokens": 54,
+                  "cost_jpy": 0.0144,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T04:26:59.492619",
+                  "model": "gpt-5.4-mini",
+                  "path": "attribute_extractor",
+                  "latency_ms": 956.07,
+                  "prompt_tokens": 466,
+                  "completion_tokens": 86,
+                  "cost_jpy": 0.0166,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-05T04:27:03.377888",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_medicine_service.select_symptoms",
+                  "latency_ms": 771.44,
+                  "prompt_tokens": 551,
+                  "completion_tokens": 5,
+                  "cost_jpy": 0.0167,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_status"
+              },
+              {
+                "role": "user",
+                "content": "頭痛がします。"
+              },
+              {
+                "role": "assistant",
+                "content": "sage_reco"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok",
+            "medicine_recommendation_review": {
+              "eligible_for_advisor": true,
+              "advisor_skill": "medicine-recommendation-advisor",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.97
+              },
+              "recommendation_events": [],
+              "has_medicine_list": false
+            }
+          }
+        ],
+        "evaluation": {
+          "turn_count": 3,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1785903890988374266366 turns=3 grade=good first='56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症' last='56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "conversation_history": 1,
+          "counseling_detail": 2
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 3,
+          "recommendation_event_count": 0,
+          "turns": [
+            {
+              "timestamp": "2026-08-05T04:27:19.004847Z",
+              "user_input": "56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。",
+              "review": {
+                "eligible_for_advisor": true,
+                "advisor_skill": "medicine-recommendation-advisor",
+                "triage": {
+                  "category": "Other",
+                  "subcategory": "general_other",
+                  "confidence": 0.97
+                },
+                "recommendation_events": [],
+                "has_medicine_list": false
+              }
+            },
+            {
+              "timestamp": "2026-08-05T04:26:01.922100",
+              "user_input": "頭痛がします。",
+              "review": {
+                "eligible_for_advisor": true,
+                "advisor_skill": "medicine-recommendation-advisor",
+                "triage": {
+                  "category": "Physical",
+                  "subcategory": "headache",
+                  "confidence": 0.99
+                },
+                "recommendation_events": [],
+                "has_medicine_list": false
+              }
+            },
+            {
+              "timestamp": "2026-08-05T04:27:18.974239",
+              "user_input": "56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。",
+              "review": {
+                "eligible_for_advisor": true,
+                "advisor_skill": "medicine-recommendation-advisor",
+                "triage": {
+                  "category": "Other",
+                  "subcategory": "general_other",
+                  "confidence": 0.97
+                },
+                "recommendation_events": [],
+                "has_medicine_list": false
+              }
+            }
+          ],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      }
+    ],
+    "intent_mismatches": [],
+    "mismatch_count": 0,
+    "sessions_by_grade": {
+      "good": 4
+    },
+    "physical_recommendation_events": []
+  },
+  "intent_mismatches": [],
+  "intent_review_queue": [],
+  "sessions_by_grade": {
+    "good": 4
+  },
+  "intent_router": {
+    "rows": [
+      {
+        "confidence": 0.95,
+        "dialogue_flags": {
+          "fever_context": true
+        },
+        "log_type": "dialogue_route_shadow",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "resolved_by": "gate",
+        "session_id": "1785150676388766393702",
+        "source": "fever_or_symptom_signal",
+        "sub_route": "fever_flow",
+        "timestamp": "2026-08-01T06:55:57.046551",
+        "triage_category": "Physical",
+        "triage_subcategory": "sore_throat_fever",
+        "user_input": "喉が痛く、熱があります。"
+      },
+      {
+        "confidence": 0.94,
+        "log_type": "dialogue_route_shadow",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "resolved_by": "guard",
+        "session_id": "1785140812139967872547",
+        "source": "medicine_context_cold_start_guard",
+        "sub_route": "rule_based_recommend",
+        "timestamp": "2026-08-01T10:51:46.508791",
+        "triage_category": "Physical",
+        "triage_subcategory": "headache",
+        "user_input": "頭が痛いです。"
+      },
+      {
+        "confidence": 0.94,
+        "log_type": "dialogue_route_shadow",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "resolved_by": "guard",
+        "session_id": "1785903890988374266366",
+        "source": "medicine_context_cold_start_guard",
+        "sub_route": "rule_based_recommend",
+        "timestamp": "2026-08-05T04:25:34.554169",
+        "triage_category": "Physical",
+        "triage_subcategory": "headache",
+        "user_input": "頭痛がします。"
+      },
+      {
+        "confidence": 0.9,
+        "log_type": "dialogue_route_shadow",
+        "mismatch": true,
+        "mismatch_kind": "gate_improvement",
+        "primary_route": "Physical",
+        "resolved_by": "gate",
+        "session_id": "1785903890988374266366",
+        "source": "symptom_signal",
+        "sub_route": "rule_based_recommend",
+        "timestamp": "2026-08-05T04:26:53.373176",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other",
+        "user_input": "56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。"
+      }
+    ],
+    "shadow_total": 4,
+    "shadow_mismatch": 1,
+    "shadow_mismatch_rate_pct": 25.0,
+    "shadow_improvement_mismatch": 1,
+    "shadow_improvement_mismatch_rate_pct": 25.0,
+    "shadow_regression_mismatch": 0,
+    "shadow_regression_mismatch_rate_pct": 0.0,
+    "shadow_exempt": 0,
+    "shadow_exempt_rate_pct": 0.0,
+    "shadow_by_mismatch_kind": {
+      "agree": 3,
+      "gate_improvement": 1
+    },
+    "shadow_by_primary_route": {
+      "Physical": 4
+    },
+    "shadow_by_resolved_by": {
+      "gate": 2,
+      "guard": 2
+    },
+    "shadow_with_fever_context_flag": 1,
+    "shadow_with_pending_cancelled_flag": 0,
+    "dispatch_with_fever_context_flag": 0,
+    "dispatch_with_pending_cancelled_flag": 0,
+    "dispatch_total": 0,
+    "dispatch_handled": 0,
+    "dispatch_unhandled": 0,
+    "dispatch_success_rate_pct": 0.0,
+    "dispatch_by_handler": {},
+    "execution_total": 0,
+    "execution_mismatch": 0,
+    "execution_mismatch_rate_pct": 0.0,
+    "execution_by_layer_used": {},
+    "execution_side_effect_qa": 0,
+    "mismatch_samples": [
+      {
+        "session_id": "1785903890988374266366",
+        "user_input": "56歳です。男性です。アレルギーはありません。他に服用している薬はありません。症状は3日前から続いています。たまにひどくなる。",
+        "primary_route": "Physical",
+        "triage_category": "Other",
+        "mismatch_kind": "gate_improvement",
+        "dialogue_flags": null
+      }
+    ]
+  }
+}

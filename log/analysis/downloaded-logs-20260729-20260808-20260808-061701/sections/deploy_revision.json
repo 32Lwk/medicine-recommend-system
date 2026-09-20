@@ -1,0 +1,35 @@
+{
+  "revision_timeline": [
+    {
+      "timestamp": "2026-07-29T05:36:26.339758Z",
+      "service": "medicine-recommend",
+      "revision": "medicine-recommend-00089-gc6",
+      "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:26.431763Z",
+      "service": "medicine-recommend",
+      "revision": "medicine-recommend-00090-hvh",
+      "commit_sha": "e909a8cea744d22cd96b3b995046ca352bf9266a"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:29.544423Z",
+      "service": "medicine-recommend",
+      "revision": "medicine-recommend-00090-hvh",
+      "commit_sha": null
+    },
+    {
+      "timestamp": "2026-08-05T16:06:34.137111Z",
+      "service": "medicine-recommend",
+      "revision": "medicine-recommend-00091-pdz",
+      "commit_sha": "e3c16a6048b3dc4e93c5591defa72eaa1f51c553"
+    },
+    {
+      "timestamp": "2026-08-05T16:06:37.192217Z",
+      "service": "medicine-recommend",
+      "revision": "medicine-recommend-00091-pdz",
+      "commit_sha": null
+    }
+  ],
+  "revision_count": 5
+}

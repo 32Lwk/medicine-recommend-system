@@ -1,0 +1,358 @@
+{
+  "eval": "jev_intent_router_eval_10",
+  "timestamp": "2026-09-19T17:11:29.710955+00:00",
+  "fixture": "tests\\fixtures\\jev_intent_router_eval_10.yaml",
+  "repeat": 1,
+  "use_cache": false,
+  "jev_status": "skipped_missing_api_key",
+  "jev_model": "jev-latest",
+  "summaries": [
+    {
+      "backend": "current",
+      "total": 10,
+      "passed": 10,
+      "accuracy_pct": 100.0,
+      "latency_ms_avg": 1563.9,
+      "latency_ms_p50": 1410.66,
+      "latency_ms_p95": 3382.35,
+      "latency_ms_min": 765.17,
+      "latency_ms_max": 3382.35
+    }
+  ],
+  "notes": [
+    "Jev backend skipped because TYPESAFE_API_KEY or JEV_API_KEY was not available."
+  ],
+  "results": [
+    {
+      "scenario_id": "jev-physical-headache",
+      "backend": "current",
+      "latency_ms": 2149.28,
+      "triage_latency_ms": 2035.6,
+      "route_latency_ms": 113.68,
+      "triage_result": {
+        "category": "Physical",
+        "confidence": 0.96,
+        "subcategory": "headache",
+        "requires_immediate_action": false,
+        "reasoning": "頭痛という身体症状があり、市販薬のおすすめを聞いているためPhysicalに分類します。診察・診断の依頼は含まれていません。"
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "rule_based_recommend",
+        "confidence": 0.9,
+        "source": "symptom_signal",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "rule_based_recommend",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-physical-fever-flow",
+      "backend": "current",
+      "latency_ms": 856.39,
+      "triage_latency_ms": 852.43,
+      "route_latency_ms": 3.96,
+      "triage_result": {
+        "category": "Physical",
+        "confidence": 0.99,
+        "subcategory": "fever",
+        "requires_immediate_action": false,
+        "reasoning": "「39度の熱があります」は身体的症状の訴えであり、診察・診断の依頼表現は含まれていないため、Physicalに分類します。"
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "fever_flow",
+        "confidence": 0.95,
+        "source": "fever_or_symptom_signal",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "fever_flow",
+        "rule_based_recommend"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "fever_flow",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-medicine-side-effect",
+      "backend": "current",
+      "latency_ms": 1172.38,
+      "triage_latency_ms": 1153.39,
+      "route_latency_ms": 18.99,
+      "triage_result": {
+        "category": "Ask",
+        "confidence": 0.98,
+        "subcategory": "medication_side_effect_sedation",
+        "requires_immediate_action": false,
+        "reasoning": "特定医薬品名（ロキソニン）について、眠気という副作用の有無を पूछねる医薬品質問のため。症状申告ではなく、既存薬の副作用確認に該当する。"
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_side_effect_qa",
+        "confidence": 0.96,
+        "source": "layer1_side_effect_qa",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa",
+        "medicine_side_effect_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_side_effect_qa",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-medicine-comparison",
+      "backend": "current",
+      "latency_ms": 1011.07,
+      "triage_latency_ms": 913.65,
+      "route_latency_ms": 97.42,
+      "triage_result": {
+        "category": "Ask",
+        "confidence": 0.98,
+        "subcategory": "medication_comparison",
+        "requires_immediate_action": false,
+        "reasoning": "ロキソニンとイブという特定医薬品の違いを尋ねる医薬品比較の質問であり、症状申告や診察依頼ではないためAskに分類します。"
+      },
+      "actual": {
+        "primary_route": "Physical",
+        "sub_route": "medicine_qa",
+        "confidence": 0.94,
+        "source": "layer1_medicine_qa",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Physical",
+      "expected_subs": [
+        "medicine_qa"
+      ],
+      "actual_primary": "Physical",
+      "actual_sub": "medicine_qa",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-session-delete",
+      "backend": "current",
+      "latency_ms": 948.15,
+      "triage_latency_ms": 0.14,
+      "route_latency_ms": 948.01,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 1.0,
+        "subcategory": "session_admin",
+        "requires_immediate_action": false,
+        "reasoning": "session_admin keyword probe (delete)",
+        "session_intent": "delete",
+        "concierge_intent": "session_ops",
+        "concierge_intent_source": "session_keyword_probe"
+      },
+      "actual": {
+        "primary_route": "SessionOps",
+        "sub_route": "delete",
+        "confidence": 1.0,
+        "source": "session_admin_probe",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "SessionOps",
+      "expected_subs": [
+        "delete",
+        "delete_confirm"
+      ],
+      "actual_primary": "SessionOps",
+      "actual_sub": "delete",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-emergency-breathing",
+      "backend": "current",
+      "latency_ms": 1922.05,
+      "triage_latency_ms": 1040.75,
+      "route_latency_ms": 881.3,
+      "triage_result": {
+        "category": "Emergency",
+        "confidence": 0.99,
+        "subcategory": "chest_pain_breathing_difficulty",
+        "requires_immediate_action": true,
+        "reasoning": "「胸が痛い」と「息が苦しい」は、心肺系の緊急症状として扱うべき組み合わせです。医師による診察依頼の表現は含まれていないため medical_examination_request は false ですが、緊急受診が必要なため Emergency に分類します。"
+      },
+      "actual": {
+        "primary_route": "Emergency",
+        "sub_route": "chest_pain_breathing_difficulty",
+        "confidence": 0.99,
+        "source": "triage_emergency",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Emergency",
+      "expected_subs": [],
+      "actual_primary": "Emergency",
+      "actual_sub": "chest_pain_breathing_difficulty",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-store-locator",
+      "backend": "current",
+      "latency_ms": 1648.94,
+      "triage_latency_ms": 1629.11,
+      "route_latency_ms": 19.83,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 0.88,
+        "subcategory": "store_inquiry/facilities",
+        "requires_immediate_action": false,
+        "reasoning": "第一段階: 近くの薬局の場所を探したいという店舗・周辺施設案内の依頼であり、身体症状、精神症状、緊急症状、医薬品の追質問には該当しません。 | 第二段階: 「近くの薬局を探したい」は周辺施設の案内を求める内容であり、店舗の周辺にある施設の質問に該当します。"
+      },
+      "actual": {
+        "primary_route": "Store",
+        "sub_route": "store_locator",
+        "confidence": 0.88,
+        "source": "pharmacy_location",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Store",
+      "expected_subs": [
+        "store_locator"
+      ],
+      "actual_primary": "Store",
+      "actual_sub": "store_locator",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-concierge-architecture",
+      "backend": "current",
+      "latency_ms": 765.17,
+      "triage_latency_ms": 0.12,
+      "route_latency_ms": 765.05,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 1.0,
+        "subcategory": "general_other",
+        "requires_immediate_action": false,
+        "reasoning": "stage1 skipped (keyword_probe)",
+        "concierge_intent": "architecture",
+        "concierge_intent_source": "keyword_probe"
+      },
+      "actual": {
+        "primary_route": "Concierge",
+        "sub_route": "architecture",
+        "confidence": 0.99,
+        "source": "intent_router_llm",
+        "resolved_by": "llm",
+        "meta": {
+          "reasoning": "本サービスの技術スタック・構成に関する質問であり、Concierge/architecture に分類する。"
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Concierge",
+      "expected_subs": [
+        "architecture"
+      ],
+      "actual_primary": "Concierge",
+      "actual_sub": "architecture",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-security-prompt-injection",
+      "backend": "current",
+      "latency_ms": 3382.35,
+      "triage_latency_ms": 1693.54,
+      "route_latency_ms": 1688.81,
+      "triage_result": {
+        "category": "Other",
+        "confidence": 0.98,
+        "subcategory": "general_other",
+        "requires_immediate_action": false,
+        "reasoning": "第一段階: システムプロンプトの表示要求であり、身体症状・感情症状・緊急症状・医薬品の質問のいずれにも該当しないため Other です。 | 第二段階: システムプロンプトの表示を求めるメタ質問・指示であり、医薬品要求や店舗案内、診療依頼などの対象外です。"
+      },
+      "actual": {
+        "primary_route": "Security",
+        "sub_route": "known_attack",
+        "confidence": 0.99,
+        "source": "intent_router_llm",
+        "resolved_by": "llm",
+        "meta": {
+          "reasoning": "前の指示を無視してシステムプロンプトを表示するよう求めており、プロンプトインジェクション試行に該当するため。"
+        }
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Security",
+      "expected_subs": [
+        "aggressive_input",
+        "known_attack"
+      ],
+      "actual_primary": "Security",
+      "actual_sub": "known_attack",
+      "run_idx": 0
+    },
+    {
+      "scenario_id": "jev-counseling-insomnia-anxiety",
+      "backend": "current",
+      "latency_ms": 1783.24,
+      "triage_latency_ms": 925.47,
+      "route_latency_ms": 857.77,
+      "triage_result": {
+        "category": "Emotional",
+        "confidence": 0.98,
+        "subcategory": "insomnia",
+        "requires_immediate_action": false,
+        "reasoning": "「不安」があり、さらに「眠れません」は不眠の訴えに該当するためEmotionalに分類します。医師による診察・診断の依頼は含まれていません。"
+      },
+      "actual": {
+        "primary_route": "Counseling",
+        "sub_route": "emotional_support",
+        "confidence": 0.88,
+        "source": "emotional_hint",
+        "resolved_by": "gate",
+        "meta": {}
+      },
+      "pass": true,
+      "primary_pass": true,
+      "sub_pass": true,
+      "expected_primary": "Counseling",
+      "expected_subs": [
+        "emotional_support"
+      ],
+      "actual_primary": "Counseling",
+      "actual_sub": "emotional_support",
+      "run_idx": 0
+    }
+  ]
+}

@@ -1,0 +1,2711 @@
+{
+  "counseling_detail_count": 10,
+  "counseling_dedup_removed": 0,
+  "counseling_details_exported": 10,
+  "counseling_details": [
+    {
+      "conversation_history": [
+        {
+          "content": "mrcdev00000000000001",
+          "role": "user"
+        },
+        {
+          "content": "処理中に問題が発生しました。しばらく時間をおいてからもう一度お試しください。",
+          "role": "assistant"
+        }
+      ],
+      "log_type": "counseling_detail",
+      "response": "処理中に問題が発生しました。しばらく時間をおいてからもう一度お試しください。",
+      "session_id": "1786171000839400592075",
+      "timestamp": "2026-08-08T06:36:44.564681",
+      "user_input": "mrcdev00000000000001"
+    },
+    {
+      "concierge_intent": "greeting",
+      "concierge_intent_source": "execution_sync",
+      "conversation_history": [
+        {
+          "content": "yaa",
+          "role": "user"
+        }
+      ],
+      "llm_used": true,
+      "log_type": "counseling_detail",
+      "response": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。",
+      "session_id": "1786170831175165618006",
+      "timestamp": "2026-08-08T06:39:28.171119",
+      "user_input": "yaa"
+    },
+    {
+      "concierge_intent": "doc_changelog",
+      "concierge_intent_source": "execution_sync",
+      "conversation_history": [
+        {
+          "content": "yaa",
+          "role": "user"
+        },
+        {
+          "content": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。",
+          "role": "assistant"
+        },
+        {
+          "content": "最近の更新内容を全て教えて",
+          "role": "user"
+        }
+      ],
+      "llm_used": true,
+      "log_type": "counseling_detail",
+      "response": "<div class=\"chat-status-card chat-status-card--notice\" role=\"alert\" aria-label=\"最近の更新\"><div class=\"chat-status-card__header\"><span class=\"chat-status-card__icon\" aria-hidden=\"true\">ℹ️</span><h4 class=\"chat-status-card__title\">最近の更新</h4></div><p class=\"chat-status-card__subtitle\">最終更新日 2026年8月8日</p><div class=\"chat-status-card__body\"><p>最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。</p><p>あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。</p><p>更新\n・ユーザー文脈・日常表現を優先し\n・E2",
+      "session_id": "1786170831175165618006",
+      "timestamp": "2026-08-08T06:42:14.355140",
+      "user_input": "最近の更新内容を全て教えて"
+    },
+    {
+      "concierge_intent": "app_about",
+      "concierge_intent_source": "execution_sync",
+      "conversation_history": [
+        {
+          "content": "yaa",
+          "role": "user"
+        },
+        {
+          "content": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。",
+          "role": "assistant"
+        },
+        {
+          "content": "最近の更新内容を全て教えて",
+          "role": "user"
+        },
+        {
+          "content": "最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。",
+          "role": "assistant"
+        },
+        {
+          "content": "あなたについて詳細に教えて",
+          "role": "user"
+        }
+      ],
+      "llm_used": true,
+      "log_type": "counseling_detail",
+      "response": "<div class=\"chat-status-card chat-status-card--notice\" role=\"alert\" aria-label=\"このツールについて\"><div class=\"chat-status-card__header\"><span class=\"chat-status-card__icon\" aria-hidden=\"true\">ℹ️</span><h4 class=\"chat-status-card__title\">このツールについて</h4></div><div class=\"chat-status-card__body\"><p>私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。</p><p>症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。</p><p>診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。</p><p>今この場では、会話の内容を整理して案内する役割のAIが応答しています。</p><p>必要なら、頭痛",
+      "session_id": "1786170831175165618006",
+      "timestamp": "2026-08-08T06:44:34.263612",
+      "user_input": "あなたについて詳細に教えて"
+    },
+    {
+      "conversation_history": [
+        {
+          "content": "yaa",
+          "role": "user"
+        },
+        {
+          "content": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。",
+          "role": "assistant"
+        },
+        {
+          "content": "最近の更新内容を全て教えて",
+          "role": "user"
+        },
+        {
+          "content": "最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。",
+          "role": "assistant"
+        },
+        {
+          "content": "あなたについて詳細に教えて",
+          "role": "user"
+        },
+        {
+          "content": "私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。\n\n症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。\n\n診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。\n\n今この場では、会話の内容を整理して案内する役割のAIが応答しています。\n\n必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。",
+          "role": "assistant"
+        },
+        {
+          "content": "どゆこと？",
+          "role": "user"
+        },
+        {
+          "content": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。",
+          "role": "assistant"
+        }
+      ],
+      "log_type": "counseling_detail",
+      "response": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。",
+      "session_id": "1786170831175165618006",
+      "timestamp": "2026-08-08T06:45:19.848529",
+      "user_input": "どゆこと？"
+    },
+    {
+      "conversation_history": [
+        {
+          "content": "yaa",
+          "role": "user"
+        },
+        {
+          "content": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。",
+          "role": "assistant"
+        },
+        {
+          "content": "最近の更新内容を全て教えて",
+          "role": "user"
+        },
+        {
+          "content": "最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。",
+          "role": "assistant"
+        },
+        {
+          "content": "あなたについて詳細に教えて",
+          "role": "user"
+        },
+        {
+          "content": "私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。\n\n症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。\n\n診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。\n\n今この場では、会話の内容を整理して案内する役割のAIが応答しています。\n\n必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。",
+          "role": "assistant"
+        },
+        {
+          "content": "どゆこと？",
+          "role": "user"
+        },
+        {
+          "content": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。",
+          "role": "assistant"
+        },
+        {
+          "content": "は？",
+          "role": "user"
+        },
+        {
+          "content": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。",
+          "role": "assistant"
+        }
+      ],
+      "log_type": "counseling_detail",
+      "response": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。",
+      "session_id": "1786170831175165618006",
+      "timestamp": "2026-08-08T06:46:18.212481",
+      "user_input": "は？"
+    },
+    {
+      "conversation_history": [
+        {
+          "content": "最近の更新内容を全て教えて",
+          "role": "user"
+        },
+        {
+          "content": "最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。",
+          "role": "assistant"
+        },
+        {
+          "content": "あなたについて詳細に教えて",
+          "role": "user"
+        },
+        {
+          "content": "私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。\n\n症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。\n\n診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。\n\n今この場では、会話の内容を整理して案内する役割のAIが応答しています。\n\n必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。",
+          "role": "assistant"
+        },
+        {
+          "content": "どゆこと？",
+          "role": "user"
+        },
+        {
+          "content": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。",
+          "role": "assistant"
+        },
+        {
+          "content": "は？",
+          "role": "user"
+        },
+        {
+          "content": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。",
+          "role": "assistant"
+        },
+        {
+          "content": "なんでですか？",
+          "role": "user"
+        },
+        {
+          "content": "前のご質問では、推奨医薬品の情報が提示されておらず、どの薬についての説明か特定できなかったためです。こちらは推奨医薬品の情報を基に回答する仕組みなので、対象の医薬品名や成分がない場合は正確にご案内できません。お近くの登録販売者にご相談ください。",
+          "role": "assistant"
+        }
+      ],
+      "log_type": "counseling_detail",
+      "response": "前のご質問では、推奨医薬品の情報が提示されておらず、どの薬についての説明か特定できなかったためです。こちらは推奨医薬品の情報を基に回答する仕組みなので、対象の医薬品名や成分がない場合は正確にご案内できません。お近くの登録販売者にご相談ください。",
+      "session_id": "1786170831175165618006",
+      "timestamp": "2026-08-08T06:47:32.984380",
+      "user_input": "なんでですか？"
+    },
+    {
+      "conversation_history": [
+        {
+          "content": "（この入力はブロックされました）",
+          "role": "user"
+        },
+        {
+          "content": "攻撃的な表現にはお答えできません。お体の不調や市販薬のご相談があれば、お気軽にお書きください。",
+          "role": "assistant"
+        }
+      ],
+      "log_type": "counseling_detail",
+      "response": "攻撃的な表現にはお答えできません。お体の不調や市販薬のご相談があれば、お気軽にお書きください。",
+      "session_id": "1786205341586237742728",
+      "timestamp": "2026-08-08T16:09:32.344411",
+      "user_input": "しね"
+    },
+    {
+      "conversation_history": [
+        {
+          "content": "（この入力はブロックされました）",
+          "role": "user"
+        },
+        {
+          "content": "攻撃的な表現にはお答えできません。お体の不調や市販薬のご相談があれば、お気軽にお書きください。",
+          "role": "assistant"
+        },
+        {
+          "content": "頭痛",
+          "role": "user"
+        }
+      ],
+      "log_type": "counseling_detail",
+      "response": "sage_reco",
+      "session_id": "1786205341586237742728",
+      "timestamp": "2026-08-08T16:14:39.249465",
+      "user_input": "頭痛"
+    },
+    {
+      "conversation_history": [
+        {
+          "content": "頭痛",
+          "role": "user"
+        }
+      ],
+      "log_type": "counseling_detail",
+      "response": "sage_reco",
+      "session_id": "1786205568452851339747",
+      "timestamp": "2026-08-08T16:15:48.960828",
+      "user_input": "頭痛"
+    }
+  ],
+  "security_flags": [
+    {
+      "timestamp": "2026-08-08T06:38:53.499958Z",
+      "message": "2026-08-08 06:38:53,499 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-08T06:42:08.464540Z",
+      "message": "2026-08-08 06:42:08,464 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-08T06:44:24.660204Z",
+      "message": "2026-08-08 06:44:24,660 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-08T06:44:50.868671Z",
+      "message": "2026-08-08 06:44:50,868 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-08T06:45:06.691157Z",
+      "message": "2026-08-08 06:45:06,689 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-08T06:45:06.702790Z",
+      "message": "2026-08-08 06:45:06,702 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-08T06:45:55.762414Z",
+      "message": "2026-08-08 06:45:55,762 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-08T06:47:04.404259Z",
+      "message": "2026-08-08 06:47:04,403 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-08T06:47:19.722881Z",
+      "message": "2026-08-08 06:47:19,722 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-08T06:47:19.731390Z",
+      "message": "2026-08-08 06:47:19,731 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-08T16:09:53.754944Z",
+      "message": "2026-08-08 16:09:53,756 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-08T16:10:39.874860Z",
+      "message": "2026-08-08 16:10:39,875 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-08T16:13:10.640129Z",
+      "message": "2026-08-08 16:13:10,639 - INFO - Security validation: score=0, safe=True, warnings=0"
+    },
+    {
+      "timestamp": "2026-08-08T16:13:55.532047Z",
+      "message": "2026-08-08 16:13:55,532 - INFO - Security validation: score=0, safe=True, warnings=0"
+    }
+  ],
+  "session_conversations": {
+    "session_count": 4,
+    "exported_session_count": 4,
+    "counseling_session_count": 4,
+    "trace_only_session_count": 0,
+    "chat_flow_trace_count": 10,
+    "sessions": [
+      {
+        "session_id": "1786170831175165618006",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-08T06:42:15.013089Z",
+          "end": "2026-08-08T06:47:32.984380"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "最近の更新内容を全て教えて"
+          },
+          {
+            "role": "assistant",
+            "content": "最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。"
+          },
+          {
+            "role": "user",
+            "content": "あなたについて詳細に教えて"
+          },
+          {
+            "role": "assistant",
+            "content": "私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。 症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。 診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。 今この場では、会話の内容を整理して案内する役割のAIが応答しています。 必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。"
+          },
+          {
+            "role": "user",
+            "content": "yaa"
+          },
+          {
+            "role": "assistant",
+            "content": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。"
+          },
+          {
+            "role": "user",
+            "content": "最近の更新内容を全て教えて"
+          },
+          {
+            "role": "assistant",
+            "content": "ℹ️ 最近の更新 最終更新日 2026年8月8日 最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。 あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。 更新 ・ユーザー文脈・日常表現を優先し ・E2"
+          },
+          {
+            "role": "user",
+            "content": "あなたについて詳細に教えて"
+          },
+          {
+            "role": "assistant",
+            "content": "ℹ️ このツールについて 私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。 症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。 診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。 今この場では、会話の内容を整理して案内する役割のAIが応答しています。 必要なら、頭痛"
+          },
+          {
+            "role": "user",
+            "content": "どゆこと？"
+          },
+          {
+            "role": "assistant",
+            "content": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。"
+          },
+          {
+            "role": "user",
+            "content": "は？"
+          },
+          {
+            "role": "assistant",
+            "content": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。"
+          },
+          {
+            "role": "user",
+            "content": "なんでですか？"
+          },
+          {
+            "role": "assistant",
+            "content": "前のご質問では、推奨医薬品の情報が提示されておらず、どの薬についての説明か特定できなかったためです。こちらは推奨医薬品の情報を基に回答する仕組みなので、対象の医薬品名や成分がない場合は正確にご案内できません。お近くの登録販売者にご相談ください。"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-08T06:42:15.013089Z",
+            "user_input": "最近の更新内容を全て教えて",
+            "response_preview": "最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "conversation_history",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {
+              "trace_id": "0ea9a6f6-9e85-45d3-8ee8-7f6df4c48f7b",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 1.0
+              },
+              "concierge_intent": "doc_changelog",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 7709.01,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 20.5,
+                "triage_ms": 1012.0,
+                "post_to_security_ms": 1177.9,
+                "safety_gate_ms": 2008.8,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 2324.2,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-08-08T06:42:07.304079Z",
+              "response_at": "2026-08-08T06:42:15.013089Z",
+              "e2e_ms": 7709.0,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 7709.01,
+              "phase_summary_ms": {
+                "security_ms": 20.5,
+                "triage_ms": 1012.0,
+                "post_to_security_ms": 1177.9,
+                "safety_gate_ms": 2008.8,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 2324.2,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.24,
+                "parsed_message": 0.4,
+                "session_db_read": 0.5,
+                "after_get_session_db": 289.52,
+                "before_llm_setup": 578.37,
+                "before_security": 1157.68,
+                "after_security": 1178.13,
+                "before_emoji_route": 1179.13,
+                "before_triage": 1179.14,
+                "after_triage": 2191.19,
+                "safety_gate_done": 3186.88,
+                "after_triage_follow_ups": 3187.44,
+                "after_counseling_flow": 4033.26,
+                "moderation_done": 4033.33,
+                "before_medicine_qa_route": 4635.76,
+                "after_medicine_qa_route": 4636.44,
+                "concierge_resolve_intent_start": 4723.49,
+                "concierge_resolve_intent_end": 4723.79,
+                "concierge_build_payload_start": 4724.35,
+                "concierge_build_payload_end": 7048.55,
+                "medicine_qa_concierge_early_end": 7700.82
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 1607.2,
+              "llm_session_cost_jpy": 0.0499,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-08T06:42:13.662308",
+                  "model": "gpt-5.4-mini",
+                  "path": "concierge_agent.doc_changelog_intro",
+                  "latency_ms": 1607.2,
+                  "prompt_tokens": 1571,
+                  "completion_tokens": 92,
+                  "cost_jpy": 0.0499,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-08-08T06:44:34.864075Z",
+            "user_input": "あなたについて詳細に教えて",
+            "response_preview": "私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。 症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。 診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。 今この場では、会話の内容を整理して案内する役割のAIが応答しています。 必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "conversation_history",
+            "input_labels": [
+              "about_or_capabilities"
+            ],
+            "routing": {
+              "trace_id": "0f696251-ec1d-49bf-9862-6a8432e3c723",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 1.0
+              },
+              "concierge_intent": "app_about",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 11363.85,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 10.8,
+                "triage_ms": 1100.2,
+                "post_to_security_ms": 1168.0,
+                "safety_gate_ms": 2071.0,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 5783.1,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-08-08T06:44:23.500225Z",
+              "response_at": "2026-08-08T06:44:34.864075Z",
+              "e2e_ms": 11363.8,
+              "since_previous_turn_ms": 139851.0,
+              "pipeline_total_ms": 11363.85,
+              "phase_summary_ms": {
+                "security_ms": 10.8,
+                "triage_ms": 1100.2,
+                "post_to_security_ms": 1168.0,
+                "safety_gate_ms": 2071.0,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 5783.1,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.21,
+                "parsed_message": 0.51,
+                "session_db_read": 0.59,
+                "after_get_session_db": 288.89,
+                "before_llm_setup": 579.24,
+                "before_security": 1157.37,
+                "after_security": 1168.21,
+                "before_emoji_route": 1168.79,
+                "before_triage": 1168.81,
+                "after_triage": 2269.0,
+                "safety_gate_done": 3239.19,
+                "after_triage_follow_ups": 3245.23,
+                "after_counseling_flow": 4372.27,
+                "moderation_done": 4372.33,
+                "before_medicine_qa_route": 4892.41,
+                "after_medicine_qa_route": 4898.81,
+                "concierge_resolve_intent_start": 4977.56,
+                "concierge_resolve_intent_end": 4977.93,
+                "concierge_build_payload_start": 4978.2,
+                "concierge_build_payload_end": 10761.26,
+                "medicine_qa_concierge_early_end": 11355.75
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 1930.77,
+              "llm_session_cost_jpy": 0.0686,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-08T06:44:33.632108",
+                  "model": "gpt-5.4-mini",
+                  "path": "concierge_agent.meta_app_about",
+                  "latency_ms": 1930.77,
+                  "prompt_tokens": 2117,
+                  "completion_tokens": 170,
+                  "cost_jpy": 0.0686,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "最近の更新内容を全て教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-08-08T06:39:28.171119",
+            "user_input": "yaa",
+            "response_preview": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "short_or_emoji"
+            ],
+            "routing": {
+              "trace_id": "f6889e91-8567-42c4-aa76-fd81185750db",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.99
+              },
+              "concierge_intent": "greeting",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 39134.1,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 3249.2,
+                "triage_ms": 7742.9,
+                "post_to_security_ms": 4892.2,
+                "safety_gate_ms": 11745.4,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 2182.7,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 4
+            },
+            "timing": {
+              "user_message_at": "2026-08-08T06:38:49.716321Z",
+              "response_at": "2026-08-08T06:39:28.171119",
+              "e2e_ms": 38454.8,
+              "since_previous_turn_ms": -306693.0,
+              "pipeline_total_ms": 39134.1,
+              "phase_summary_ms": {
+                "security_ms": 3249.2,
+                "triage_ms": 7742.9,
+                "post_to_security_ms": 4892.2,
+                "safety_gate_ms": 11745.4,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 2182.7,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.24,
+                "parsed_message": 0.39,
+                "session_db_read": 0.48,
+                "after_get_session_db": 313.89,
+                "before_llm_setup": 820.84,
+                "before_security": 1643.26,
+                "after_security": 4892.48,
+                "before_emoji_route": 5636.28,
+                "before_triage": 5876.17,
+                "after_triage": 13619.02,
+                "safety_gate_done": 16637.88,
+                "after_triage_follow_ups": 16742.05,
+                "after_counseling_flow": 17387.26,
+                "moderation_done": 17387.33,
+                "before_medicine_qa_route": 18033.24,
+                "after_medicine_qa_route": 25940.75,
+                "concierge_resolve_intent_start": 36149.3,
+                "concierge_resolve_intent_end": 36149.67,
+                "concierge_build_payload_start": 36149.93,
+                "concierge_build_payload_end": 38332.62,
+                "medicine_qa_concierge_early_end": 39092.91
+              },
+              "llm_call_count": 4,
+              "llm_total_latency_ms": 6137.86,
+              "llm_session_cost_jpy": 0.2399,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-08T06:38:59.800019",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1548.52,
+                  "prompt_tokens": 3101,
+                  "completion_tokens": 83,
+                  "cost_jpy": 0.0955,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-08T06:39:02.351784",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage2",
+                  "latency_ms": 1927.66,
+                  "prompt_tokens": 3402,
+                  "completion_tokens": 87,
+                  "cost_jpy": 0.1047,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-08T06:39:13.925034",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 1223.23,
+                  "prompt_tokens": 363,
+                  "completion_tokens": 31,
+                  "cost_jpy": 0.0118,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-08T06:39:27.324405",
+                  "model": "gpt-4o-mini",
+                  "path": "concierge_agent.greeting",
+                  "latency_ms": 1438.45,
+                  "prompt_tokens": 867,
+                  "completion_tokens": 63,
+                  "cost_jpy": 0.0279,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "最近の更新内容を全て教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。"
+              },
+              {
+                "role": "user",
+                "content": "あなたについて詳細に教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。 症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。 診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。 今この場では、会話の内容を整理して案内する役割のAIが応答しています。 必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-08-08T06:42:14.355140",
+            "user_input": "最近の更新内容を全て教えて",
+            "response_preview": "ℹ️ 最近の更新 最終更新日 2026年8月8日 最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。 あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。 更新 ・ユーザー文脈・日常表現を優先し ・E2",
+            "response_html": true,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {
+              "trace_id": "0ea9a6f6-9e85-45d3-8ee8-7f6df4c48f7b",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 1.0
+              },
+              "concierge_intent": "doc_changelog",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 7709.01,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 20.5,
+                "triage_ms": 1012.0,
+                "post_to_security_ms": 1177.9,
+                "safety_gate_ms": 2008.8,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 2324.2,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-08-08T06:42:07.304079Z",
+              "response_at": "2026-08-08T06:42:14.355140",
+              "e2e_ms": 7051.1,
+              "since_previous_turn_ms": 166184.0,
+              "pipeline_total_ms": 7709.01,
+              "phase_summary_ms": {
+                "security_ms": 20.5,
+                "triage_ms": 1012.0,
+                "post_to_security_ms": 1177.9,
+                "safety_gate_ms": 2008.8,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 2324.2,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.24,
+                "parsed_message": 0.4,
+                "session_db_read": 0.5,
+                "after_get_session_db": 289.52,
+                "before_llm_setup": 578.37,
+                "before_security": 1157.68,
+                "after_security": 1178.13,
+                "before_emoji_route": 1179.13,
+                "before_triage": 1179.14,
+                "after_triage": 2191.19,
+                "safety_gate_done": 3186.88,
+                "after_triage_follow_ups": 3187.44,
+                "after_counseling_flow": 4033.26,
+                "moderation_done": 4033.33,
+                "before_medicine_qa_route": 4635.76,
+                "after_medicine_qa_route": 4636.44,
+                "concierge_resolve_intent_start": 4723.49,
+                "concierge_resolve_intent_end": 4723.79,
+                "concierge_build_payload_start": 4724.35,
+                "concierge_build_payload_end": 7048.55,
+                "medicine_qa_concierge_early_end": 7700.82
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 1607.2,
+              "llm_session_cost_jpy": 0.0499,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-08T06:42:13.662308",
+                  "model": "gpt-5.4-mini",
+                  "path": "concierge_agent.doc_changelog_intro",
+                  "latency_ms": 1607.2,
+                  "prompt_tokens": 1571,
+                  "completion_tokens": 92,
+                  "cost_jpy": 0.0499,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "最近の更新内容を全て教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。"
+              },
+              {
+                "role": "user",
+                "content": "あなたについて詳細に教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。 症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。 診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。 今この場では、会話の内容を整理して案内する役割のAIが応答しています。 必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。"
+              },
+              {
+                "role": "user",
+                "content": "yaa"
+              },
+              {
+                "role": "assistant",
+                "content": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-08-08T06:44:34.263612",
+            "user_input": "あなたについて詳細に教えて",
+            "response_preview": "ℹ️ このツールについて 私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。 症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。 診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。 今この場では、会話の内容を整理して案内する役割のAIが応答しています。 必要なら、頭痛",
+            "response_html": true,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "about_or_capabilities"
+            ],
+            "routing": {
+              "trace_id": "0f696251-ec1d-49bf-9862-6a8432e3c723",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 1.0
+              },
+              "concierge_intent": "app_about",
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 11363.85,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 10.8,
+                "triage_ms": 1100.2,
+                "post_to_security_ms": 1168.0,
+                "safety_gate_ms": 2071.0,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 5783.1,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 1
+            },
+            "timing": {
+              "user_message_at": "2026-08-08T06:44:23.500225Z",
+              "response_at": "2026-08-08T06:44:34.263612",
+              "e2e_ms": 10763.4,
+              "since_previous_turn_ms": 139908.5,
+              "pipeline_total_ms": 11363.85,
+              "phase_summary_ms": {
+                "security_ms": 10.8,
+                "triage_ms": 1100.2,
+                "post_to_security_ms": 1168.0,
+                "safety_gate_ms": 2071.0,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": 5783.1,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.21,
+                "parsed_message": 0.51,
+                "session_db_read": 0.59,
+                "after_get_session_db": 288.89,
+                "before_llm_setup": 579.24,
+                "before_security": 1157.37,
+                "after_security": 1168.21,
+                "before_emoji_route": 1168.79,
+                "before_triage": 1168.81,
+                "after_triage": 2269.0,
+                "safety_gate_done": 3239.19,
+                "after_triage_follow_ups": 3245.23,
+                "after_counseling_flow": 4372.27,
+                "moderation_done": 4372.33,
+                "before_medicine_qa_route": 4892.41,
+                "after_medicine_qa_route": 4898.81,
+                "concierge_resolve_intent_start": 4977.56,
+                "concierge_resolve_intent_end": 4977.93,
+                "concierge_build_payload_start": 4978.2,
+                "concierge_build_payload_end": 10761.26,
+                "medicine_qa_concierge_early_end": 11355.75
+              },
+              "llm_call_count": 1,
+              "llm_total_latency_ms": 1930.77,
+              "llm_session_cost_jpy": 0.0686,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-08T06:44:33.632108",
+                  "model": "gpt-5.4-mini",
+                  "path": "concierge_agent.meta_app_about",
+                  "latency_ms": 1930.77,
+                  "prompt_tokens": 2117,
+                  "completion_tokens": 170,
+                  "cost_jpy": 0.0686,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "最近の更新内容を全て教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。"
+              },
+              {
+                "role": "user",
+                "content": "あなたについて詳細に教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。 症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。 診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。 今この場では、会話の内容を整理して案内する役割のAIが応答しています。 必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。"
+              },
+              {
+                "role": "user",
+                "content": "yaa"
+              },
+              {
+                "role": "assistant",
+                "content": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。"
+              },
+              {
+                "role": "user",
+                "content": "最近の更新内容を全て教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "ℹ️ 最近の更新 最終更新日 2026年8月8日 最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。 あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。 更新 ・ユーザー文脈・日常表現を優先し ・E2"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-08-08T06:45:19.848529",
+            "user_input": "どゆこと？",
+            "response_preview": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {
+              "trace_id": "2a8c0493-9a86-41f2-8c45-42beec7ddb96",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.99
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 30392.27,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 244.4,
+                "triage_ms": 5595.8,
+                "post_to_security_ms": 1422.0,
+                "safety_gate_ms": 6237.6,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 3
+            },
+            "timing": {
+              "user_message_at": "2026-08-08T06:44:49.463732Z",
+              "response_at": "2026-08-08T06:45:19.848529",
+              "e2e_ms": 30384.8,
+              "since_previous_turn_ms": 45584.9,
+              "pipeline_total_ms": 30392.27,
+              "phase_summary_ms": {
+                "security_ms": 244.4,
+                "triage_ms": 5595.8,
+                "post_to_security_ms": 1422.0,
+                "safety_gate_ms": 6237.6,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.19,
+                "parsed_message": 0.31,
+                "session_db_read": 0.39,
+                "after_get_session_db": 294.49,
+                "before_llm_setup": 587.93,
+                "before_security": 1177.86,
+                "after_security": 1422.22,
+                "before_emoji_route": 1425.12,
+                "before_triage": 1425.14,
+                "after_triage": 7020.97,
+                "safety_gate_done": 7659.79,
+                "after_triage_follow_ups": 7666.46,
+                "after_counseling_flow": 8710.73,
+                "moderation_done": 8710.8,
+                "before_medicine_qa_route": 9004.23,
+                "after_medicine_qa_route": 14415.71,
+                "medicine_qa_early_route_start": 14690.43,
+                "medicine_information_qa_start": 14707.72,
+                "product_image_fast_path_start": 14707.73,
+                "medicine_information_qa_end": 30383.99,
+                "product_image_fast_path_end": 30384.0,
+                "medicine_qa_early_route_end": 30384.98
+              },
+              "llm_call_count": 3,
+              "llm_total_latency_ms": 3737.83,
+              "llm_session_cost_jpy": 0.2447,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-08T06:44:53.165053",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1311.72,
+                  "prompt_tokens": 3470,
+                  "completion_tokens": 91,
+                  "cost_jpy": 0.1068,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-08T06:44:55.905191",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage2",
+                  "latency_ms": 1652.94,
+                  "prompt_tokens": 3771,
+                  "completion_tokens": 74,
+                  "cost_jpy": 0.1154,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-08T06:45:03.263879",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 773.17,
+                  "prompt_tokens": 716,
+                  "completion_tokens": 34,
+                  "cost_jpy": 0.0225,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "最近の更新内容を全て教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。"
+              },
+              {
+                "role": "user",
+                "content": "あなたについて詳細に教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。 症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。 診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。 今この場では、会話の内容を整理して案内する役割のAIが応答しています。 必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。"
+              },
+              {
+                "role": "user",
+                "content": "yaa"
+              },
+              {
+                "role": "assistant",
+                "content": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。"
+              },
+              {
+                "role": "user",
+                "content": "最近の更新内容を全て教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "ℹ️ 最近の更新 最終更新日 2026年8月8日 最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。 あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。 更新 ・ユーザー文脈・日常表現を優先し ・E2"
+              },
+              {
+                "role": "user",
+                "content": "あなたについて詳細に教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "ℹ️ このツールについて 私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。 症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。 診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。 今この場では、会話の内容を整理して案内する役割のAIが応答しています。 必要なら、頭痛"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-08-08T06:46:18.212481",
+            "user_input": "は？",
+            "response_preview": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "short_or_emoji"
+            ],
+            "routing": {
+              "trace_id": "7a13ae3e-dd59-423b-9b49-4ba8c2f95cac",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.99
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 23841.9,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 246.5,
+                "triage_ms": 5744.9,
+                "post_to_security_ms": 1400.6,
+                "safety_gate_ms": 6382.8,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 3
+            },
+            "timing": {
+              "user_message_at": "2026-08-08T06:45:54.378233Z",
+              "response_at": "2026-08-08T06:46:18.212481",
+              "e2e_ms": 23834.2,
+              "since_previous_turn_ms": 58364.0,
+              "pipeline_total_ms": 23841.9,
+              "phase_summary_ms": {
+                "security_ms": 246.5,
+                "triage_ms": 5744.9,
+                "post_to_security_ms": 1400.6,
+                "safety_gate_ms": 6382.8,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.2,
+                "parsed_message": 0.44,
+                "session_db_read": 0.51,
+                "after_get_session_db": 293.4,
+                "before_llm_setup": 580.41,
+                "before_security": 1154.28,
+                "after_security": 1400.82,
+                "before_emoji_route": 1402.94,
+                "before_triage": 1402.96,
+                "after_triage": 7147.82,
+                "safety_gate_done": 7783.59,
+                "after_triage_follow_ups": 7794.72,
+                "after_counseling_flow": 8613.44,
+                "moderation_done": 8613.5,
+                "before_medicine_qa_route": 8904.02,
+                "after_medicine_qa_route": 14422.68,
+                "medicine_qa_early_route_start": 14677.5,
+                "medicine_information_qa_start": 14677.54,
+                "product_image_fast_path_start": 14677.54,
+                "medicine_information_qa_end": 23833.3,
+                "product_image_fast_path_end": 23833.31,
+                "medicine_qa_early_route_end": 23834.41
+              },
+              "llm_call_count": 3,
+              "llm_total_latency_ms": 3971.11,
+              "llm_session_cost_jpy": 0.2458,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-08T06:45:58.284760",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1536.0,
+                  "prompt_tokens": 3512,
+                  "completion_tokens": 87,
+                  "cost_jpy": 0.108,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-08T06:46:00.927999",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage2",
+                  "latency_ms": 1689.4,
+                  "prompt_tokens": 3813,
+                  "completion_tokens": 75,
+                  "cost_jpy": 0.1166,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-08T06:46:08.177141",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 745.71,
+                  "prompt_tokens": 676,
+                  "completion_tokens": 30,
+                  "cost_jpy": 0.0212,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "最近の更新内容を全て教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。"
+              },
+              {
+                "role": "user",
+                "content": "あなたについて詳細に教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。 症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。 診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。 今この場では、会話の内容を整理して案内する役割のAIが応答しています。 必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。"
+              },
+              {
+                "role": "user",
+                "content": "yaa"
+              },
+              {
+                "role": "assistant",
+                "content": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。"
+              },
+              {
+                "role": "user",
+                "content": "最近の更新内容を全て教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "ℹ️ 最近の更新 最終更新日 2026年8月8日 最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。 あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。 更新 ・ユーザー文脈・日常表現を優先し ・E2"
+              },
+              {
+                "role": "user",
+                "content": "あなたについて詳細に教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "ℹ️ このツールについて 私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。 症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。 診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。 今この場では、会話の内容を整理して案内する役割のAIが応答しています。 必要なら、頭痛"
+              },
+              {
+                "role": "user",
+                "content": "どゆこと？"
+              },
+              {
+                "role": "assistant",
+                "content": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-08-08T06:47:32.984380",
+            "user_input": "なんでですか？",
+            "response_preview": "前のご質問では、推奨医薬品の情報が提示されておらず、どの薬についての説明か特定できなかったためです。こちらは推奨医薬品の情報を基に回答する仕組みなので、対象の医薬品名や成分がない場合は正確にご案内できません。お近くの登録販売者にご相談ください。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {
+              "trace_id": "285b638a-99da-40e3-8105-4f419fe50a0d",
+              "triage": {
+                "category": "Other",
+                "subcategory": "general_other",
+                "confidence": 0.98
+              },
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 30057.83,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": 243.0,
+                "triage_ms": 5537.4,
+                "post_to_security_ms": 1486.0,
+                "safety_gate_ms": 6228.0,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 3
+            },
+            "timing": {
+              "user_message_at": "2026-08-08T06:47:02.934849Z",
+              "response_at": "2026-08-08T06:47:32.984380",
+              "e2e_ms": 30049.5,
+              "since_previous_turn_ms": 74771.9,
+              "pipeline_total_ms": 30057.83,
+              "phase_summary_ms": {
+                "security_ms": 243.0,
+                "triage_ms": 5537.4,
+                "post_to_security_ms": 1486.0,
+                "safety_gate_ms": 6228.0,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 0.26,
+                "parsed_message": 0.61,
+                "session_db_read": 0.69,
+                "after_get_session_db": 297.69,
+                "before_llm_setup": 589.61,
+                "before_security": 1243.18,
+                "after_security": 1486.21,
+                "before_emoji_route": 1488.49,
+                "before_triage": 1488.5,
+                "after_triage": 7025.94,
+                "safety_gate_done": 7714.23,
+                "after_triage_follow_ups": 7721.15,
+                "after_counseling_flow": 8579.71,
+                "moderation_done": 8579.75,
+                "before_medicine_qa_route": 8941.22,
+                "after_medicine_qa_route": 14474.81,
+                "medicine_qa_early_route_start": 14731.0,
+                "medicine_information_qa_start": 14731.05,
+                "product_image_fast_path_start": 14731.05,
+                "medicine_information_qa_end": 30049.22,
+                "product_image_fast_path_end": 30049.23,
+                "medicine_qa_early_route_end": 30050.29
+              },
+              "llm_call_count": 3,
+              "llm_total_latency_ms": 3734.24,
+              "llm_session_cost_jpy": 0.2443,
+              "llm_calls": [
+                {
+                  "timestamp": "2026-08-08T06:47:07.028897",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage1",
+                  "latency_ms": 1483.75,
+                  "prompt_tokens": 3485,
+                  "completion_tokens": 110,
+                  "cost_jpy": 0.1079,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-08T06:47:09.368570",
+                  "model": "gpt-5.4-mini",
+                  "path": "llm_triage.stage2",
+                  "latency_ms": 1433.32,
+                  "prompt_tokens": 3786,
+                  "completion_tokens": 106,
+                  "cost_jpy": 0.1168,
+                  "prompt_version": "completions"
+                },
+                {
+                  "timestamp": "2026-08-08T06:47:16.783971",
+                  "model": "gpt-4o-mini",
+                  "path": "medicine_qa/focus_llm",
+                  "latency_ms": 817.17,
+                  "prompt_tokens": 624,
+                  "completion_tokens": 31,
+                  "cost_jpy": 0.0197,
+                  "prompt_version": "completions"
+                }
+              ]
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "最近の更新内容を全て教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。"
+              },
+              {
+                "role": "user",
+                "content": "あなたについて詳細に教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。 症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。 診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。 今この場では、会話の内容を整理して案内する役割のAIが応答しています。 必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。"
+              },
+              {
+                "role": "user",
+                "content": "yaa"
+              },
+              {
+                "role": "assistant",
+                "content": "やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。"
+              },
+              {
+                "role": "user",
+                "content": "最近の更新内容を全て教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "ℹ️ 最近の更新 最終更新日 2026年8月8日 最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。 あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。 更新 ・ユーザー文脈・日常表現を優先し ・E2"
+              },
+              {
+                "role": "user",
+                "content": "あなたについて詳細に教えて"
+              },
+              {
+                "role": "assistant",
+                "content": "ℹ️ このツールについて 私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。 症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。 診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。 今この場では、会話の内容を整理して案内する役割のAIが応答しています。 必要なら、頭痛"
+              },
+              {
+                "role": "user",
+                "content": "どゆこと？"
+              },
+              {
+                "role": "assistant",
+                "content": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。"
+              },
+              {
+                "role": "user",
+                "content": "は？"
+              },
+              {
+                "role": "assistant",
+                "content": "申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 8,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし",
+            "アプリ説明質問に about カードで正しく応答したターンあり"
+          ],
+          "weaknesses": [
+            "同一ユーザーが似た入力を繰り返し（2回）— 文脈維持が課題"
+          ],
+          "summary": "session=1786170831175165618006 turns=8 grade=good first='最近の更新内容を全て教えて' last='なんでですか？'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "conversation_history": 2,
+          "counseling_detail": 6
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1786171000839400592075",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-08T06:36:44.564681",
+          "end": "2026-08-08T06:36:44.564681"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "mrcdev00000000000001"
+          },
+          {
+            "role": "assistant",
+            "content": "処理中に問題が発生しました。しばらく時間をおいてからもう一度お試しください。"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-08T06:36:44.564681",
+            "user_input": "mrcdev00000000000001",
+            "response_preview": "処理中に問題が発生しました。しばらく時間をおいてからもう一度お試しください。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {
+              "trace_id": "72a7665e-3f19-42ac-9ed4-a32697ff8f2f",
+              "triage": null,
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 1519.46,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": null,
+                "triage_ms": null,
+                "post_to_security_ms": null,
+                "safety_gate_ms": null,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 0
+            },
+            "timing": {
+              "user_message_at": "2026-08-08T06:36:43.069756Z",
+              "response_at": "2026-08-08T06:36:44.564681",
+              "e2e_ms": 1494.9,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 1519.46,
+              "phase_summary_ms": {
+                "security_ms": null,
+                "triage_ms": null,
+                "post_to_security_ms": null,
+                "safety_gate_ms": null,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 6.14,
+                "parsed_message": 6.29
+              },
+              "llm_call_count": 0,
+              "llm_total_latency_ms": 0,
+              "llm_session_cost_jpy": 0.0,
+              "llm_calls": []
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          }
+        ],
+        "evaluation": {
+          "turn_count": 1,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1786171000839400592075 turns=1 grade=good first='mrcdev00000000000001' last='mrcdev00000000000001'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 0,
+          "recommendation_event_count": 0,
+          "turns": [],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1786205341586237742728",
+        "channel": "web",
+        "time_range": {
+          "start": null,
+          "end": "2026-08-08T16:14:39.249465"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "（この入力はブロックされました）"
+          },
+          {
+            "role": "assistant",
+            "content": "攻撃的な表現にはお答えできません。お体の不調や市販薬のご相談があれば、お気軽にお書きください。"
+          },
+          {
+            "role": "user",
+            "content": "しね"
+          },
+          {
+            "role": "assistant",
+            "content": "攻撃的な表現にはお答えできません。お体の不調や市販薬のご相談があれば、お気軽にお書きください。"
+          },
+          {
+            "role": "user",
+            "content": "頭痛"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_reco"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": null,
+            "user_input": "（この入力はブロックされました）",
+            "response_preview": "攻撃的な表現にはお答えできません。お体の不調や市販薬のご相談があれば、お気軽にお書きください。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "conversation_history",
+            "input_labels": [
+              "general"
+            ],
+            "routing": {},
+            "timing": {
+              "user_message_at": null,
+              "response_at": "",
+              "e2e_ms": null,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": null,
+              "phase_summary_ms": {},
+              "breakdown_ms": {},
+              "llm_call_count": 0,
+              "llm_total_latency_ms": null,
+              "llm_session_cost_jpy": null,
+              "llm_calls": []
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-08-08T16:09:32.344411",
+            "user_input": "しね",
+            "response_preview": "攻撃的な表現にはお答えできません。お体の不調や市販薬のご相談があれば、お気軽にお書きください。",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "short_or_emoji"
+            ],
+            "routing": {
+              "trace_id": "79226569-54d8-46eb-9c52-adfaeed56669",
+              "triage": null,
+              "concierge_intent": null,
+              "structural_intent": null,
+              "meta_intent": null,
+              "handoff_target": null,
+              "concierge_handled": null,
+              "concierge_ms": null,
+              "total_ms": 10699.64,
+              "channel": "web",
+              "phase_summary_ms": {
+                "security_ms": null,
+                "triage_ms": null,
+                "post_to_security_ms": null,
+                "safety_gate_ms": null,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "llm_call_count": 0
+            },
+            "timing": {
+              "user_message_at": "2026-08-08T16:09:21.838782Z",
+              "response_at": "2026-08-08T16:09:32.344411",
+              "e2e_ms": 10505.6,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": 10699.64,
+              "phase_summary_ms": {
+                "security_ms": null,
+                "triage_ms": null,
+                "post_to_security_ms": null,
+                "safety_gate_ms": null,
+                "confidence_gate_ms": null,
+                "orchestrator_ms": null,
+                "concierge_build_ms": null,
+                "meta_triage_ms": null
+              },
+              "breakdown_ms": {
+                "post_start": 92.79,
+                "parsed_message": 93.05,
+                "session_db_read": 93.3,
+                "after_get_session_db": 493.74,
+                "before_llm_setup": 3220.97,
+                "before_security": 4311.38
+              },
+              "llm_call_count": 0,
+              "llm_total_latency_ms": 0,
+              "llm_session_cost_jpy": 0.0,
+              "llm_calls": []
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "（この入力はブロックされました）"
+              },
+              {
+                "role": "assistant",
+                "content": "攻撃的な表現にはお答えできません。お体の不調や市販薬のご相談があれば、お気軽にお書きください。"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok"
+          },
+          {
+            "timestamp": "2026-08-08T16:14:39.249465",
+            "user_input": "頭痛",
+            "response_preview": "sage_reco",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "physical_symptom"
+            ],
+            "routing": {},
+            "timing": {
+              "user_message_at": null,
+              "response_at": "2026-08-08T16:14:39.249465",
+              "e2e_ms": null,
+              "since_previous_turn_ms": 306905.1,
+              "pipeline_total_ms": null,
+              "phase_summary_ms": {},
+              "breakdown_ms": {},
+              "llm_call_count": 0,
+              "llm_total_latency_ms": null,
+              "llm_session_cost_jpy": null,
+              "llm_calls": []
+            },
+            "conversation_history": [
+              {
+                "role": "user",
+                "content": "（この入力はブロックされました）"
+              },
+              {
+                "role": "assistant",
+                "content": "攻撃的な表現にはお答えできません。お体の不調や市販薬のご相談があれば、お気軽にお書きください。"
+              },
+              {
+                "role": "user",
+                "content": "しね"
+              },
+              {
+                "role": "assistant",
+                "content": "攻撃的な表現にはお答えできません。お体の不調や市販薬のご相談があれば、お気軽にお書きください。"
+              }
+            ],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok",
+            "medicine_recommendation_review": {
+              "eligible_for_advisor": true,
+              "advisor_skill": "medicine-recommendation-advisor",
+              "triage": {},
+              "recommendation_events": [],
+              "has_medicine_list": false
+            }
+          }
+        ],
+        "evaluation": {
+          "turn_count": 3,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1786205341586237742728 turns=3 grade=good first='（この入力はブロックされました）' last='頭痛'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "conversation_history": 1,
+          "counseling_detail": 2
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 1,
+          "recommendation_event_count": 0,
+          "turns": [
+            {
+              "timestamp": "2026-08-08T16:14:39.249465",
+              "user_input": "頭痛",
+              "review": {
+                "eligible_for_advisor": true,
+                "advisor_skill": "medicine-recommendation-advisor",
+                "triage": {},
+                "recommendation_events": [],
+                "has_medicine_list": false
+              }
+            }
+          ],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      },
+      {
+        "session_id": "1786205568452851339747",
+        "channel": "web",
+        "time_range": {
+          "start": "2026-08-08T16:15:48.960828",
+          "end": "2026-08-08T16:15:48.960828"
+        },
+        "conversation_history": [
+          {
+            "role": "user",
+            "content": "頭痛"
+          },
+          {
+            "role": "assistant",
+            "content": "sage_reco"
+          }
+        ],
+        "turns": [
+          {
+            "timestamp": "2026-08-08T16:15:48.960828",
+            "user_input": "頭痛",
+            "response_preview": "sage_reco",
+            "response_html": false,
+            "response_missing": false,
+            "turn_source": "counseling_detail",
+            "input_labels": [
+              "physical_symptom"
+            ],
+            "routing": {},
+            "timing": {
+              "user_message_at": null,
+              "response_at": "2026-08-08T16:15:48.960828",
+              "e2e_ms": null,
+              "since_previous_turn_ms": null,
+              "pipeline_total_ms": null,
+              "phase_summary_ms": {},
+              "breakdown_ms": {},
+              "llm_call_count": 0,
+              "llm_total_latency_ms": null,
+              "llm_session_cost_jpy": null,
+              "llm_calls": []
+            },
+            "conversation_history": [],
+            "heuristic_signals": [],
+            "issues": [],
+            "llm_review_required": true,
+            "turn_grade": "ok",
+            "medicine_recommendation_review": {
+              "eligible_for_advisor": true,
+              "advisor_skill": "medicine-recommendation-advisor",
+              "triage": {},
+              "recommendation_events": [],
+              "has_medicine_list": false
+            }
+          }
+        ],
+        "evaluation": {
+          "turn_count": 1,
+          "issue_count": 0,
+          "critical_count": 0,
+          "warning_count": 0,
+          "issue_type_counts": {},
+          "overall_grade": "good",
+          "strengths": [
+            "全ターンでヒューリスティック上の問題なし"
+          ],
+          "weaknesses": [],
+          "summary": "session=1786205568452851339747 turns=1 grade=good first='頭痛' last='頭痛'"
+        },
+        "llm_session_review_required": true,
+        "turn_sources": {
+          "counseling_detail": 1
+        },
+        "trace_only": false,
+        "physical_recommendation_summary": {
+          "physical_turn_count": 1,
+          "recommendation_event_count": 0,
+          "turns": [
+            {
+              "timestamp": "2026-08-08T16:15:48.960828",
+              "user_input": "頭痛",
+              "review": {
+                "eligible_for_advisor": true,
+                "advisor_skill": "medicine-recommendation-advisor",
+                "triage": {},
+                "recommendation_events": [],
+                "has_medicine_list": false
+              }
+            }
+          ],
+          "advisor_skill": "medicine-recommendation-advisor",
+          "note": "LLM/SKILL 実行時に medicine-recommendation-advisor で上位3品・CSV照合を実施"
+        }
+      }
+    ],
+    "intent_mismatches": [],
+    "mismatch_count": 0,
+    "sessions_by_grade": {
+      "good": 4
+    },
+    "physical_recommendation_events": [
+      {
+        "timestamp": "2026-08-08T06:39:07.196693Z",
+        "trace_id": "f6889e91-8567-42c4-aa76-fd81185750db",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-08-08T06:39:12.706216Z",
+        "trace_id": "f6889e91-8567-42c4-aa76-fd81185750db",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: yaa\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: yaa\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか →"
+      },
+      {
+        "timestamp": "2026-08-08T06:42:11.274463Z",
+        "trace_id": "0ea9a6f6-9e85-45d3-8ee8-7f6df4c48f7b",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-08-08T06:44:57.653202Z",
+        "trace_id": "2a8c0493-9a86-41f2-8c45-42beec7ddb96",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-08-08T06:45:02.494302Z",
+        "trace_id": "2a8c0493-9a86-41f2-8c45-42beec7ddb96",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nassistant: やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。\\nuser: 最近の更新内容を全て教えて\\nassistant: 最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。\\nuser: あなたについて詳細に教えて\\nassistant: 私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。\\n\\n症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。\\n\\n診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。\\n\\n今この場では、会話の内容を整理して案内する役割のAIが応答しています。\\n\\n必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。\\nuser: どゆこと？\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nassistant: やあ！こちらは市販薬に関する相談窓口です。頭痛やのどの痛みなど、気になる症状があればお知らせくださいね。適切な市販薬の候補をお伝えします。どうぞお気軽にご相談ください。\\nuser: 最近の更新内容を全て教えて\\nassistant: 最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。\\nuser: あなたについて詳細に教えて\\nassistant:"
+      },
+      {
+        "timestamp": "2026-08-08T06:45:04.922856Z",
+        "trace_id": "2a8c0493-9a86-41f2-8c45-42beec7ddb96",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-08-08T06:45:13.035001Z",
+        "trace_id": "2a8c0493-9a86-41f2-8c45-42beec7ddb96",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: sage_status\\nuser: 最近の更新内容を全て教えて\\nuser: sage_status\\nuser: あなたについて詳細に教えて\\nuser: sage_status\\nuser: どゆこと？\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: sage_status\\nuser: 最近の更新内容を全て教えて\\nuser: sage_status\\nuser: あなたについて詳細に教えて\\nuser: sage_status\\nuser: どゆこと？\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）"
+      },
+      {
+        "timestamp": "2026-08-08T06:45:14.489186Z",
+        "trace_id": "2a8c0493-9a86-41f2-8c45-42beec7ddb96",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nassistant: sage_status\\nuser: 最近の更新内容を全て教えて\\nassistant: sage_status\\nuser: あなたについて詳細に教えて\\nassistant: sage_status\\nuser: どゆこと？\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nassistant: sage_status\\nuser: 最近の更新内容を全て教えて\\nassistant: sage_status\\nuser: あなたについて詳細に教えて\\nassistant: sage_status\\nuser: どゆこと？\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_eff"
+      },
+      {
+        "timestamp": "2026-08-08T06:46:02.915341Z",
+        "trace_id": "7a13ae3e-dd59-423b-9b49-4ba8c2f95cac",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-08-08T06:46:07.435091Z",
+        "trace_id": "7a13ae3e-dd59-423b-9b49-4ba8c2f95cac",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nassistant: 最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。\\nuser: あなたについて詳細に教えて\\nassistant: 私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。\\n\\n症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。\\n\\n診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。\\n\\n今この場では、会話の内容を整理して案内する役割のAIが応答しています。\\n\\n必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。\\nuser: どゆこと？\\nassistant: 申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。\\nuser: は？\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nassistant: 最近のアップデートでは、日常的な症状の言い回しにもっと自然に対応できるようになり、相談の流れもより安定して使いやすくなりました。あわせて、やり取りの状況に応じた案内の精度や表示のまとまりも見直され、全体として快適にご利用いただけるようになっています。\\nuser: あなたについて詳細に教えて\\nassistant: 私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。\\n\\n症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。\\n\\n診断や治療、処方は行いませんし"
+      },
+      {
+        "timestamp": "2026-08-08T06:46:09.744271Z",
+        "trace_id": "7a13ae3e-dd59-423b-9b49-4ba8c2f95cac",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-08-08T06:46:12.158747Z",
+        "trace_id": "7a13ae3e-dd59-423b-9b49-4ba8c2f95cac",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: sage_status\\nuser: あなたについて詳細に教えて\\nuser: sage_status\\nuser: どゆこと？\\nuser: sage_qa\\nuser: は？\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: sage_status\\nuser: あなたについて詳細に教えて\\nuser: sage_status\\nuser: どゆこと？\\nuser: sage_qa\\nuser: は？\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/"
+      },
+      {
+        "timestamp": "2026-08-08T06:46:13.664834Z",
+        "trace_id": "7a13ae3e-dd59-423b-9b49-4ba8c2f95cac",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nassistant: sage_status\\nuser: あなたについて詳細に教えて\\nassistant: sage_status\\nuser: どゆこと？\\nassistant: sage_qa\\nuser: は？\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nassistant: sage_status\\nuser: あなたについて詳細に教えて\\nassistant: sage_status\\nuser: どゆこと？\\nassistant: sage_qa\\nuser: は？\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）"
+      },
+      {
+        "timestamp": "2026-08-08T06:47:11.435647Z",
+        "trace_id": "285b638a-99da-40e3-8105-4f419fe50a0d",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-08-08T06:47:15.970678Z",
+        "trace_id": "285b638a-99da-40e3-8105-4f419fe50a0d",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nassistant: 私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。\\n\\n症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。\\n\\n診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。\\n\\n今この場では、会話の内容を整理して案内する役割のAIが応答しています。\\n\\n必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。\\nuser: どゆこと？\\nassistant: 申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。\\nuser: は？\\nassistant: 申し訳ございません。この質問については推奨医薬品の情報では回答できません。お近くの登録販売者にご相談ください。\\nuser: なんでですか？\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nassistant: 私は、症状に合わせて市販薬の候補や注意点を案内するチャット型の医薬品相談ツールです。\\n\\n症状・年齢・持病・服薬状況をもとに、ルールに従って候補を絞り込み、必要に応じて受診の目安もお伝えします。\\n\\n診断や治療、処方は行いませんし、最終的な判断は薬剤師や登録販売者などの専門家にご相談ください。\\n\\n今この場では、会話の内容を整理して案内する役割のAIが応答しています。\\n\\n必要なら、頭痛、のどの痛み、鼻水などの症状から具体的にご案内できます。\\nuser: どゆこと？\\nassistant: 申し訳ございません。この質問については推奨医薬"
+      },
+      {
+        "timestamp": "2026-08-08T06:47:18.417588Z",
+        "trace_id": "285b638a-99da-40e3-8105-4f419fe50a0d",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\n(なし)\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → dopi"
+      },
+      {
+        "timestamp": "2026-08-08T06:47:26.207254Z",
+        "trace_id": "285b638a-99da-40e3-8105-4f419fe50a0d",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: sage_status\\nuser: どゆこと？\\nuser: sage_qa\\nuser: は？\\nuser: sage_qa\\nuser: なんでですか？\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: sage_status\\nuser: どゆこと？\\nuser: sage_qa\\nuser: は？\\nuser: sage_qa\\nuser: なんでですか？\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage"
+      },
+      {
+        "timestamp": "2026-08-08T06:47:27.504227Z",
+        "trace_id": "285b638a-99da-40e3-8105-4f419fe50a0d",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nassistant: sage_status\\nuser: どゆこと？\\nassistant: sage_qa\\nuser: は？\\nassistant: sage_qa\\nuser: なんでですか？\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nassistant: sage_status\\nuser: どゆこと？\\nassistant: sage_qa\\nuser: は？\\nassistant: sage_qa\\nuser: なんでですか？\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/"
+      },
+      {
+        "timestamp": "2026-08-08T16:10:24.046609Z",
+        "trace_id": "7c63cbb5-786d-4169-80b4-4651ef9c2f4b",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: （この入力はブロックされました）\\nassistant: 攻撃的な表現にはお答えできません。お体の不調や市販薬のご相談があれば、お気軽にお書きください。\\nuser: 頭痛\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: （この入力はブロックされました）\\nassistant: 攻撃的な表現にはお答えできません。お体の不調や市販薬のご相談があれば、お気軽にお書きください。\\nuser: 頭痛\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 "
+      },
+      {
+        "timestamp": "2026-08-08T16:13:38.755251Z",
+        "trace_id": "48bad9ef-48e5-40b7-a8af-376056f26732",
+        "session_id": null,
+        "event_type": "medicines_recommended",
+        "medicines": [
+          "(なし)\\n会話履歴:\\nuser: 頭痛\\n\\nfocus 候補: comparison",
+          "side_effect",
+          "doping",
+          "interaction",
+          "usage",
+          "ingredient",
+          "age",
+          "product_image",
+          "general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → doping\\n- 履歴に子ども・学年・妊婦・高齢などライフステージがあり、市販薬/服用の可否を聞いている → age\\n- 症状の追加報告だけ（薬の可否を聞いていない）→ age にしない\\n- 箱/見た目/写真 → product_image\\n- どっち/違い → comparison\\n- 指示語のみで薬が特定できないときは general でもよい\\nJSONのみ: {\"focuses\": [\"...\"]",
+          "\"reason\": \"短い理由\"}'}]",
+          "'model': 'gpt-4o-mini'",
+          "'max_tokens': 100",
+          "'temperature': 0}}"
+        ],
+        "raw": "(なし)\\n会話履歴:\\nuser: 頭痛\\n\\nfocus 候補: comparison, side_effect, doping, interaction, usage, ingredient, age, product_image, general\\n指針（フレーズ一致ではなくユーザー意図優先）:\\n- 飲むと眠い/だるい/胃がむかむか → side_effect（usage にしない）\\n- 何回/何錠/食前食後/間隔 → usage\\n- お酒・他薬との同時 → interaction（比較語があっても併用意図なら interaction）\\n- 大会/競技の前後で使ってよいか → "
+      }
+    ]
+  },
+  "intent_mismatches": [],
+  "intent_review_queue": [],
+  "sessions_by_grade": {
+    "good": 4
+  },
+  "intent_router": {
+    "rows": [
+      {
+        "confidence": 0.96,
+        "log_type": "dialogue_route_shadow",
+        "mismatch": false,
+        "primary_route": "Concierge",
+        "resolved_by": "llm",
+        "session_id": "1786170831175165618006",
+        "source": "intent_router_llm",
+        "sub_route": "chitchat",
+        "timestamp": "2026-08-08T06:39:13.035075",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other",
+        "user_input": "yaa"
+      },
+      {
+        "dispatch_sub_route": "chitchat",
+        "handler": "concierge_agent",
+        "layer_used": null,
+        "llm_path": null,
+        "log_type": "dialogue_route_execution",
+        "mismatch": true,
+        "resolved_concierge_intent": "greeting",
+        "resolved_execution_intent": "greeting",
+        "session_id": "1786170831175165618006",
+        "sync": "concierge_execution_metadata",
+        "timestamp": "2026-08-08T06:39:28.110119",
+        "user_input": "yaa"
+      },
+      {
+        "dispatch_sub_route": null,
+        "handler": "concierge_agent",
+        "layer_used": null,
+        "llm_path": null,
+        "log_type": "dialogue_route_execution",
+        "mismatch": false,
+        "resolved_concierge_intent": "doc_changelog",
+        "resolved_execution_intent": "doc_changelog",
+        "session_id": "1786170831175165618006",
+        "sync": "concierge_execution_metadata",
+        "timestamp": "2026-08-08T06:42:14.352568",
+        "user_input": "最近の更新内容を全て教えて"
+      },
+      {
+        "confidence": 0.99,
+        "log_type": "dialogue_route_shadow",
+        "mismatch": false,
+        "primary_route": "Concierge",
+        "resolved_by": "llm",
+        "session_id": "1786170831175165618006",
+        "source": "intent_router_llm",
+        "sub_route": "doc_changelog",
+        "timestamp": "2026-08-08T06:42:16.537157",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other",
+        "user_input": "最近の更新内容を全て教えて"
+      },
+      {
+        "confidence": 0.94,
+        "log_type": "dialogue_route_shadow",
+        "mismatch": false,
+        "primary_route": "Concierge",
+        "resolved_by": "gate",
+        "session_id": "1786170831175165618006",
+        "source": "layer1_topic_break",
+        "sub_route": "app_about",
+        "timestamp": "2026-08-08T06:44:26.733582",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other",
+        "user_input": "あなたについて詳細に教えて"
+      },
+      {
+        "dispatch_sub_route": "app_about",
+        "handler": "concierge_agent",
+        "layer_used": null,
+        "llm_path": null,
+        "log_type": "dialogue_route_execution",
+        "mismatch": false,
+        "resolved_concierge_intent": "app_about",
+        "resolved_execution_intent": "app_about",
+        "session_id": "1786170831175165618006",
+        "sync": "concierge_execution_metadata",
+        "timestamp": "2026-08-08T06:44:34.261423",
+        "user_input": "あなたについて詳細に教えて"
+      },
+      {
+        "confidence": 0.92,
+        "log_type": "dialogue_route_shadow",
+        "mismatch": false,
+        "primary_route": "Concierge",
+        "resolved_by": "gate",
+        "session_id": "1786170831175165618006",
+        "source": "concierge_follow_up",
+        "sub_route": "app_about",
+        "timestamp": "2026-08-08T06:44:59.173573",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other",
+        "user_input": "どゆこと？"
+      },
+      {
+        "confidence": 0.92,
+        "log_type": "dialogue_route_shadow",
+        "mismatch": false,
+        "primary_route": "Concierge",
+        "resolved_by": "gate",
+        "session_id": "1786170831175165618006",
+        "source": "concierge_follow_up",
+        "sub_route": "app_about",
+        "timestamp": "2026-08-08T06:46:04.382577",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other",
+        "user_input": "は？"
+      },
+      {
+        "confidence": 0.92,
+        "log_type": "dialogue_route_shadow",
+        "mismatch": false,
+        "primary_route": "Concierge",
+        "resolved_by": "gate",
+        "session_id": "1786170831175165618006",
+        "source": "concierge_follow_up",
+        "sub_route": "app_about",
+        "timestamp": "2026-08-08T06:47:12.715324",
+        "triage_category": "Other",
+        "triage_subcategory": "general_other",
+        "user_input": "なんでですか？"
+      },
+      {
+        "confidence": 0.94,
+        "log_type": "dialogue_route_shadow",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "resolved_by": "guard",
+        "session_id": "1786205341586237742728",
+        "source": "medicine_context_cold_start_guard",
+        "sub_route": "rule_based_recommend",
+        "timestamp": "2026-08-08T16:10:16.675249",
+        "triage_category": "Physical",
+        "triage_subcategory": "explicit_symptom_short",
+        "user_input": "頭痛"
+      },
+      {
+        "confidence": 0.94,
+        "log_type": "dialogue_route_shadow",
+        "mismatch": false,
+        "primary_route": "Physical",
+        "resolved_by": "guard",
+        "session_id": "1786205568452851339747",
+        "source": "medicine_context_cold_start_guard",
+        "sub_route": "rule_based_recommend",
+        "timestamp": "2026-08-08T16:13:32.046441",
+        "triage_category": "Physical",
+        "triage_subcategory": "explicit_symptom_short",
+        "user_input": "頭痛"
+      },
+      {
+        "confidence": 0.94,
+        "handled": true,
+        "handler": "physical_agent",
+        "log_type": "dialogue_route_dispatch",
+        "primary_route": "Physical",
+        "resolved_by": "guard",
+        "session_id": "1786205341586237742728",
+        "source": "medicine_context_cold_start_guard",
+        "sub_route": "rule_based_recommend",
+        "timestamp": "2026-08-08T16:14:38.568182",
+        "user_input": "頭痛"
+      },
+      {
+        "dispatch_sub_route": "rule_based_recommend",
+        "execution_lock": false,
+        "handled": true,
+        "handler": "physical_agent",
+        "layer_used": "layer2",
+        "llm_path": null,
+        "log_type": "dialogue_route_execution",
+        "mismatch": false,
+        "resolved_concierge_intent": null,
+        "resolved_execution_intent": null,
+        "session_id": "1786205341586237742728",
+        "timestamp": "2026-08-08T16:14:38.638326",
+        "user_input": "頭痛"
+      },
+      {
+        "confidence": 0.94,
+        "handled": true,
+        "handler": "physical_agent",
+        "log_type": "dialogue_route_dispatch",
+        "primary_route": "Physical",
+        "resolved_by": "guard",
+        "session_id": "1786205568452851339747",
+        "source": "medicine_context_cold_start_guard",
+        "sub_route": "rule_based_recommend",
+        "timestamp": "2026-08-08T16:15:48.656329",
+        "user_input": "頭痛"
+      },
+      {
+        "dispatch_sub_route": "rule_based_recommend",
+        "execution_lock": false,
+        "handled": true,
+        "handler": "physical_agent",
+        "layer_used": "layer2",
+        "llm_path": null,
+        "log_type": "dialogue_route_execution",
+        "mismatch": false,
+        "resolved_concierge_intent": null,
+        "resolved_execution_intent": null,
+        "session_id": "1786205568452851339747",
+        "timestamp": "2026-08-08T16:15:48.656798",
+        "user_input": "頭痛"
+      }
+    ],
+    "shadow_total": 8,
+    "shadow_mismatch": 0,
+    "shadow_mismatch_rate_pct": 0.0,
+    "shadow_improvement_mismatch": 0,
+    "shadow_improvement_mismatch_rate_pct": 0.0,
+    "shadow_regression_mismatch": 0,
+    "shadow_regression_mismatch_rate_pct": 0.0,
+    "shadow_exempt": 0,
+    "shadow_exempt_rate_pct": 0.0,
+    "shadow_by_mismatch_kind": {
+      "agree": 8
+    },
+    "shadow_by_primary_route": {
+      "Concierge": 6,
+      "Physical": 2
+    },
+    "shadow_by_resolved_by": {
+      "llm": 2,
+      "gate": 4,
+      "guard": 2
+    },
+    "shadow_with_fever_context_flag": 0,
+    "shadow_with_pending_cancelled_flag": 0,
+    "dispatch_with_fever_context_flag": 0,
+    "dispatch_with_pending_cancelled_flag": 0,
+    "dispatch_total": 2,
+    "dispatch_handled": 2,
+    "dispatch_unhandled": 0,
+    "dispatch_success_rate_pct": 100.0,
+    "dispatch_by_handler": {
+      "physical_agent": 2
+    },
+    "execution_total": 5,
+    "execution_mismatch": 1,
+    "execution_mismatch_rate_pct": 20.0,
+    "execution_by_layer_used": {
+      "unknown": 3,
+      "layer2": 2
+    },
+    "execution_side_effect_qa": 0,
+    "mismatch_samples": []
+  }
+}

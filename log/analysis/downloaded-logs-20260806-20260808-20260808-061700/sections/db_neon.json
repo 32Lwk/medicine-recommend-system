@@ -1,0 +1,407 @@
+{
+  "count": 202,
+  "top_patterns": [
+    {
+      "message": "   - Timeout: 300s",
+      "count": 34
+    },
+    {
+      "message": "   - Graceful Timeout: 60s",
+      "count": 34
+    },
+    {
+      "message": "2026-08-06 14:27:18,543 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 14:27:20,011 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 14:27:20,273 - INFO - ✅ Database tables initialized successfully",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 14:27:21,150 - INFO - ✅ Database initialized successfully.",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 14:27:21,729 - INFO - ✅ Database tables initialized successfully",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 14:27:22,620 - INFO - ✅ Database initialized successfully.",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 14:49:24,278 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 14:49:25,995 - INFO - ✅ Database tables initialized successfully",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 14:49:26,886 - INFO - ✅ Database initialized successfully.",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 14:53:28,555 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 14:53:30,221 - INFO - ✅ Database tables initialized successfully",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 14:53:31,103 - INFO - ✅ Database initialized successfully.",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 15:38:29,326 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 15:38:31,044 - INFO - ✅ Database tables initialized successfully",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 15:38:31,945 - INFO - ✅ Database initialized successfully.",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 15:43:13,485 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 15:43:15,248 - INFO - ✅ Database tables initialized successfully",
+      "count": 1
+    },
+    {
+      "message": "2026-08-06 15:43:16,157 - INFO - ✅ Database initialized successfully.",
+      "count": 1
+    }
+  ],
+  "samples": [
+    {
+      "timestamp": "2026-08-06T14:27:11.267275Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T14:27:11.267282Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T14:27:11.279062Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T14:27:11.279065Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T14:27:18.542313Z",
+      "message": "2026-08-06 14:27:18,543 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-06T14:27:20.010584Z",
+      "message": "2026-08-06 14:27:20,011 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-06T14:27:20.272289Z",
+      "message": "2026-08-06 14:27:20,273 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-06T14:27:21.150047Z",
+      "message": "2026-08-06 14:27:21,150 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-06T14:27:21.729174Z",
+      "message": "2026-08-06 14:27:21,729 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-06T14:27:22.619611Z",
+      "message": "2026-08-06 14:27:22,620 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-06T14:49:16.736845Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T14:49:16.736850Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T14:49:24.277791Z",
+      "message": "2026-08-06 14:49:24,278 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-06T14:49:25.995534Z",
+      "message": "2026-08-06 14:49:25,995 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-06T14:49:26.886084Z",
+      "message": "2026-08-06 14:49:26,886 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-06T14:53:20.374544Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T14:53:20.374550Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T14:53:28.553852Z",
+      "message": "2026-08-06 14:53:28,555 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-06T14:53:30.220716Z",
+      "message": "2026-08-06 14:53:30,221 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-06T14:53:31.102864Z",
+      "message": "2026-08-06 14:53:31,103 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-06T15:38:19.958028Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T15:38:19.958033Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T15:38:29.324693Z",
+      "message": "2026-08-06 15:38:29,326 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-06T15:38:31.043939Z",
+      "message": "2026-08-06 15:38:31,044 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-06T15:38:31.944175Z",
+      "message": "2026-08-06 15:38:31,945 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-06T15:43:05.738572Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T15:43:05.738577Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T15:43:13.484152Z",
+      "message": "2026-08-06 15:43:13,485 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-06T15:43:15.246785Z",
+      "message": "2026-08-06 15:43:15,248 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-06T15:43:16.156552Z",
+      "message": "2026-08-06 15:43:16,157 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-06T15:45:09.559167Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T15:45:09.559170Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T15:45:09.575628Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T15:45:09.575632Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T15:45:16.341528Z",
+      "message": "2026-08-06 15:45:16,342 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-06T15:45:17.063522Z",
+      "message": "2026-08-06 15:45:17,064 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-06T15:45:18.100365Z",
+      "message": "2026-08-06 15:45:18,100 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-06T15:45:18.742760Z",
+      "message": "2026-08-06 15:45:18,743 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-06T15:45:18.993605Z",
+      "message": "2026-08-06 15:45:18,994 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-06T15:45:19.598211Z",
+      "message": "2026-08-06 15:45:19,599 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-06T17:07:39.513236Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-06T17:07:39.513242Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-06T17:07:48.833693Z",
+      "message": "2026-08-06 17:07:48,835 - DEBUG - connect_tcp.started host='api.line.me' port=443 local_address=None timeout=30.0 socket_options=None"
+    },
+    {
+      "timestamp": "2026-08-06T17:07:48.848133Z",
+      "message": "2026-08-06 17:07:48,849 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x7ff1667b9d00> server_hostname='api.line.me' timeout=30.0"
+    },
+    {
+      "timestamp": "2026-08-06T17:07:50.802943Z",
+      "message": "2026-08-06 17:07:50,803 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-06T17:07:52.522154Z",
+      "message": "2026-08-06 17:07:52,522 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-06T17:07:53.410208Z",
+      "message": "2026-08-06 17:07:53,410 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-07T11:10:52.527217Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-07T11:10:52.527225Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-07T11:11:05.208435Z",
+      "message": "2026-08-07 11:11:05,205 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-07T11:11:07.011769Z",
+      "message": "2026-08-07 11:11:07,011 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-07T11:11:07.917295Z",
+      "message": "2026-08-07 11:11:07,918 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-07T11:11:11.530455Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-07T11:11:11.530459Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-07T11:11:21.921712Z",
+      "message": "2026-08-07 11:11:21,923 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-07T11:11:23.594783Z",
+      "message": "2026-08-07 11:11:23,596 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-07T11:11:24.462847Z",
+      "message": "2026-08-07 11:11:24,464 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-07T13:22:22.403374Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-07T13:22:22.403386Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-07T13:22:34.136875Z",
+      "message": "2026-08-07 13:22:34,137 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-07T13:22:35.924833Z",
+      "message": "2026-08-07 13:22:35,925 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-07T13:22:36.809546Z",
+      "message": "2026-08-07 13:22:36,810 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-07T13:26:43.452295Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-07T13:26:43.452300Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-07T13:26:53.115058Z",
+      "message": "2026-08-07 13:26:53,115 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-07T13:26:55.546191Z",
+      "message": "2026-08-07 13:26:55,547 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-07T13:26:56.768754Z",
+      "message": "2026-08-07 13:26:56,769 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-07T13:38:47.030134Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-07T13:38:47.030146Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-07T13:38:58.878997Z",
+      "message": "2026-08-07 13:38:58,880 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-07T13:39:00.700401Z",
+      "message": "2026-08-07 13:39:00,701 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-07T13:39:01.592383Z",
+      "message": "2026-08-07 13:39:01,593 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-07T13:43:13.618641Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-07T13:43:13.618645Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-07T13:43:22.937904Z",
+      "message": "2026-08-07 13:43:22,939 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-08-07T13:43:24.649538Z",
+      "message": "2026-08-07 13:43:24,651 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-08-07T13:43:25.525548Z",
+      "message": "2026-08-07 13:43:25,527 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-08-07T15:48:28.164245Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-08-07T15:48:28.164251Z",
+      "message": "   - Graceful Timeout: 60s"
+    },
+    {
+      "timestamp": "2026-08-07T15:48:36.167765Z",
+      "message": "2026-08-07 15:48:36,168 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    }
+  ]
+}

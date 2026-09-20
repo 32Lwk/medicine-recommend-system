@@ -1,0 +1,43 @@
+{
+  "source_path": "D:\\Programing\\medicine-recommend\\log\\raw\\downloaded-aws-logs-20260806-20260808-20260808-061659.json",
+  "source_name": "downloaded-aws-logs-20260806-20260808-20260808-061659.json",
+  "entry_count": 9130,
+  "time_range": {
+    "start": "2026-08-06T16:39:51.453Z",
+    "end": "2026-08-08T06:16:56.171Z"
+  },
+  "services": {
+    "/ecs/medicine-recommend": 9130
+  },
+  "primary_service": "/ecs/medicine-recommend",
+  "revisions": {},
+  "commit_shas": {},
+  "severity_counts": {
+    "INFO": 8753,
+    "ERROR": 20,
+    "WARNING": 233,
+    "DEBUG": 124
+  },
+  "platform": "aws",
+  "log_group": "/ecs/medicine-recommend",
+  "region": "ap-northeast-1",
+  "ecs_service": "medicine-recommend",
+  "log_streams": {
+    "app/app/cdd1778011ac495998a08525c290aa30": 7129,
+    "app/app/be260e0fd30d4be0bf9d319b40593b83": 669,
+    "app/app/acf9161a789c42e1a83198fef309c998": 643,
+    "app/app/85538ea133614541b8c9eba1ec586655": 192,
+    "app/app/0d515f62a4b948bb93ac7b87be4aac10": 109,
+    "cloudflared/cloudflared/acf9161a789c42e1a83198fef309c998": 54,
+    "app/app/e4f8746211fa4c0e9b461ba4ce78c541": 49,
+    "cloudflared/cloudflared/cdd1778011ac495998a08525c290aa30": 49,
+    "app/app/6b879b7a9e42418fb340942632c4d4dc": 42,
+    "cloudflared/cloudflared/85538ea133614541b8c9eba1ec586655": 42,
+    "cloudflared/cloudflared/6b879b7a9e42418fb340942632c4d4dc": 38,
+    "cloudflared/cloudflared/e4f8746211fa4c0e9b461ba4ce78c541": 38,
+    "cloudflared/cloudflared/0d515f62a4b948bb93ac7b87be4aac10": 36,
+    "cloudflared/cloudflared/be260e0fd30d4be0bf9d319b40593b83": 24,
+    "ecs/Main/aaa4d1a43c464a52ab0e2833e1e83f67": 16
+  },
+  "task_definitions": {}
+}

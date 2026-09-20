@@ -1,0 +1,407 @@
+{
+  "count": 4901,
+  "top_patterns": [
+    {
+      "message": "   - Timeout: 300s",
+      "count": 304
+    },
+    {
+      "message": "   - Graceful Timeout: 30s",
+      "count": 304
+    },
+    {
+      "message": "2026-07-29 07:35:43,997 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-07-29 11:22:40,518 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-07-30 01:24:12,049 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-07-30 19:07:43,498 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-07-31 02:29:58,817 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-07-31 03:25:04,835 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-07-31 11:47:30,812 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-08-01 00:52:21,859 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-08-01 05:08:08,696 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-08-01 13:18:32,934 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-08-02 00:13:19,971 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-08-02 15:34:17,714 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-08-02 18:24:44,209 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-08-03 16:55:29,725 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-08-04 13:44:36,438 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-08-04 14:36:46,173 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-08-04 14:39:16,902 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    },
+    {
+      "message": "2026-08-04 14:55:03,576 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。",
+      "count": 4
+    }
+  ],
+  "samples": [
+    {
+      "timestamp": "2026-07-29T05:36:26.770279Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:26.770283Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:36.119434Z",
+      "message": "2026-07-29 05:36:36,120 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:36.119625Z",
+      "message": "2026-07-29 05:36:36,120 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:36.119630Z",
+      "message": "2026-07-29 05:36:36,120 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:36.119926Z",
+      "message": "2026-07-29 05:36:36,121 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:37.078186Z",
+      "message": "2026-07-29 05:36:37,079 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:37.087090Z",
+      "message": "2026-07-29 05:36:37,087 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:38.956848Z",
+      "message": "2026-07-29 05:36:38,957 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:38.994543Z",
+      "message": "2026-07-29 05:36:38,995 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:39.832842Z",
+      "message": "2026-07-29 05:36:39,833 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-29T05:36:39.833005Z",
+      "message": "2026-07-29 05:36:39,834 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:39.833166Z",
+      "message": "2026-07-29 05:36:39,834 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:39.857051Z",
+      "message": "2026-07-29 05:36:39,858 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-29T05:36:39.857203Z",
+      "message": "2026-07-29 05:36:39,858 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T05:36:39.857373Z",
+      "message": "2026-07-29 05:36:39,858 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T05:40:55.394942Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T05:40:55.394948Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T05:41:06.768946Z",
+      "message": "2026-07-29 05:41:06,769 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T05:41:06.768991Z",
+      "message": "2026-07-29 05:41:06,769 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T05:41:06.769144Z",
+      "message": "2026-07-29 05:41:06,769 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-29T05:41:06.769200Z",
+      "message": "2026-07-29 05:41:06,769 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-29T05:41:07.719403Z",
+      "message": "2026-07-29 05:41:07,719 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-29T05:41:07.728251Z",
+      "message": "2026-07-29 05:41:07,728 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-29T05:41:09.415905Z",
+      "message": "2026-07-29 05:41:09,416 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-29T05:41:09.418767Z",
+      "message": "2026-07-29 05:41:09,419 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-29T05:41:10.314814Z",
+      "message": "2026-07-29 05:41:10,315 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-29T05:41:10.314908Z",
+      "message": "2026-07-29 05:41:10,315 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-29T05:41:10.315145Z",
+      "message": "2026-07-29 05:41:10,315 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T05:41:10.315649Z",
+      "message": "2026-07-29 05:41:10,316 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T05:41:10.315824Z",
+      "message": "2026-07-29 05:41:10,316 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T05:41:10.315Z",
+      "message": "2026-07-29 05:41:10,315 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:06.592498Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:06.592503Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:15.817774Z",
+      "message": "2026-07-29 07:31:15,819 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:15.817835Z",
+      "message": "2026-07-29 07:31:15,819 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:15.817936Z",
+      "message": "2026-07-29 07:31:15,819 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:15.818006Z",
+      "message": "2026-07-29 07:31:15,819 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:16.755363Z",
+      "message": "2026-07-29 07:31:16,756 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:16.764589Z",
+      "message": "2026-07-29 07:31:16,765 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:18.446561Z",
+      "message": "2026-07-29 07:31:18,447 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:18.474664Z",
+      "message": "2026-07-29 07:31:18,475 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:19.366414Z",
+      "message": "2026-07-29 07:31:19,367 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-29T07:31:19.366565Z",
+      "message": "2026-07-29 07:31:19,367 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:19.366709Z",
+      "message": "2026-07-29 07:31:19,367 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:19.370232Z",
+      "message": "2026-07-29 07:31:19,371 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-29T07:31:19.370377Z",
+      "message": "2026-07-29 07:31:19,371 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:31:19.370533Z",
+      "message": "2026-07-29 07:31:19,371 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:26.968032Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:26.968042Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:30.721237Z",
+      "message": "   - Timeout: 300s"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:30.721242Z",
+      "message": "   - Graceful Timeout: 30s"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:37.982025Z",
+      "message": "2026-07-29 07:35:37,983 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:37.982394Z",
+      "message": "2026-07-29 07:35:37,983 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:37.982643Z",
+      "message": "2026-07-29 07:35:37,983 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:37.983310Z",
+      "message": "2026-07-29 07:35:37,984 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:38.948426Z",
+      "message": "2026-07-29 07:35:38,949 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:38.970104Z",
+      "message": "2026-07-29 07:35:38,971 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:40.309348Z",
+      "message": "2026-07-29 07:35:40,309 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:40.309429Z",
+      "message": "2026-07-29 07:35:40,310 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:40.309523Z",
+      "message": "2026-07-29 07:35:40,310 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:40.309612Z",
+      "message": "2026-07-29 07:35:40,310 - WARNING - DATABASE_URL 設定: channel_binding=require は psycopg2 で接続失敗することがあります。 起動時に自動除去します。Neon コンソールの URL から削除しても構いません。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:40.658869Z",
+      "message": "2026-07-29 07:35:40,659 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:40.672868Z",
+      "message": "2026-07-29 07:35:40,673 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:41.254487Z",
+      "message": "2026-07-29 07:35:41,255 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:41.310729Z",
+      "message": "2026-07-29 07:35:41,311 - INFO - ✅ PostgreSQL connection pool created (min: 2, max: 20)"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:41.546600Z",
+      "message": "2026-07-29 07:35:41,547 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-29T07:35:41.546759Z",
+      "message": "2026-07-29 07:35:41,547 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:41.546894Z",
+      "message": "2026-07-29 07:35:41,547 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:41.551631Z",
+      "message": "2026-07-29 07:35:41,552 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-29T07:35:41.551775Z",
+      "message": "2026-07-29 07:35:41,552 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:41.551897Z",
+      "message": "2026-07-29 07:35:41,552 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:43.111938Z",
+      "message": "2026-07-29 07:35:43,112 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:43.112001Z",
+      "message": "2026-07-29 07:35:43,112 - INFO - ✅ Database tables initialized successfully"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:43.996864Z",
+      "message": "2026-07-29 07:35:43,997 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-29T07:35:43.996880Z",
+      "message": "2026-07-29 07:35:43,997 - INFO - ✅ Database initialized successfully."
+    },
+    {
+      "timestamp": "2026-07-29T07:35:43.997098Z",
+      "message": "2026-07-29 07:35:43,997 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:43.997107Z",
+      "message": "2026-07-29 07:35:43,997 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:43.997220Z",
+      "message": "2026-07-29 07:35:43,997 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    },
+    {
+      "timestamp": "2026-07-29T07:35:43.997226Z",
+      "message": "2026-07-29 07:35:43,997 - INFO - DATABASE_URL から channel_binding=require を除去しました（psycopg2 互換）。"
+    }
+  ]
+}
