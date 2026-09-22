@@ -163,6 +163,15 @@ def _safe_log(msg: str, *args: Any) -> None:
     logger.warning(msg, *args)
 
 
+def _compact_outbound_state(state: dict[str, Any]) -> dict[str, Any]:
+    """Drop wire-only empty optionals without mutating the caller-owned state."""
+    compact = dict(state)
+    meta = compact.get("meta")
+    if isinstance(meta, dict) and not meta:
+        compact.pop("meta", None)
+    return compact
+
+
 def evaluate_system_one(
     *,
     state: dict[str, Any],
@@ -202,7 +211,7 @@ def evaluate_system_one(
     api_key = None
 
     payload = {
-        "state": state,
+        "state": _compact_outbound_state(state),
         "model": resolved_model,
         "questions": questions,
     }

@@ -8,7 +8,7 @@
 | `a40f353` | fix(eval): enforce raw accuracy and membership contracts |
 | `67b8ea9` | docs(jev): record overnight and Gate A-accuracy evidence |
 | `9ee28b4` | perf(jev): trim shadow context and add persona holdout suite |
-| *(pending)* | docs/test: overnight convergence evidence + holdout confirmation + log sync |
+| `74e4337` | docs(jev): record overnight convergence evidence |
 
 ## Excluded from all commits
 

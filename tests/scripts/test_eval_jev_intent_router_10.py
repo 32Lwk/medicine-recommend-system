@@ -190,6 +190,7 @@ def test_minimal_state_has_no_baseline_hint() -> None:
     assert "recent_context" in state
     assert state["recent_turns"] is state["recent_context"]
     assert "baseline_triage_hint" not in state
+    assert state["app_context"] == "Japanese OTC medicine routing"
 
 
 def test_disagreement_raw_required_even_when_alias_matches() -> None:
@@ -699,6 +700,52 @@ def test_bootstrap_seed_reproducibility() -> None:
     assert a["mean_diff_ms"] == b["mean_diff_ms"]
     # Different seed may or may not change CI with tiny identical diffs; mean is stable.
     assert a["mean_diff_ms"] == c["mean_diff_ms"]
+
+
+def test_rng_sensitivity_block_is_report_only() -> None:
+    mod = _load_mod()
+    results = []
+    for sid, cur, jev in [
+        ("s1", 2100.0, 300.0),
+        ("s1", 2200.0, 320.0),
+        ("s2", 1900.0, 350.0),
+        ("s2", 2000.0, 360.0),
+        ("s3", 1700.0, 400.0),
+        ("s3", 1800.0, 420.0),
+    ]:
+        results.append(
+            {
+                "backend": "current",
+                "scenario_id": sid,
+                "run_idx": 0 if cur in (2100.0, 1900.0, 1700.0) else 1,
+                "latency_ms": cur,
+                "outcome": "ok",
+                "latency_class": "warm",
+                "transport_ok": True,
+                "jev_eligible": True,
+                "latency_gate_eligible": True,
+            }
+        )
+        results.append(
+            {
+                "backend": "jev:minimal",
+                "scenario_id": sid,
+                "run_idx": 0 if jev in (300.0, 350.0, 400.0) else 1,
+                "latency_ms": jev,
+                "outcome": "ok",
+                "latency_class": "warm",
+                "transport_ok": True,
+                "jev_eligible": True,
+                "latency_gate_eligible": True,
+            }
+        )
+    block = mod._build_latency_ci_block(results, n_boot=100, seed=7, rng_sensitivity_n=5)
+    rng = block["rng_sensitivity"]
+    assert rng["report_only"] is True
+    assert rng["n_seeds_requested"] == 5
+    assert rng["n_seeds_available"] == 5
+    assert rng["threshold_ci95_low_ms"] == 900.0
+    assert rng["ci95_low_below_threshold_fraction"] == 0.0
 
 
 def test_api_and_eval_error_exclusion_recorded() -> None:

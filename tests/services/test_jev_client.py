@@ -1,6 +1,7 @@
 """Unit tests for TypeSafe System One (Jev) HTTP client."""
 from __future__ import annotations
 
+import json
 import logging
 from unittest.mock import MagicMock, patch
 
@@ -101,6 +102,25 @@ def test_success(monkeypatch):
     assert "questions" in kwargs["json"]
     assert client.post.call_args.args[0] == JEV_ENDPOINT
     assert kwargs["headers"]["Authorization"] == f"Bearer {SECRET}"
+
+
+def test_empty_meta_omitted_from_wire_payload_reduces_bytes(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    client = _mock_client([_ok_response()])
+    state = {"user_input": "頭痛", "recent_turns": [], "recent_context": [], "meta": {}}
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client):
+        result = evaluate_system_one(state=state, questions={})
+
+    assert result.ok is True
+    sent_state = client.post.call_args.kwargs["json"]["state"]
+    assert "meta" not in sent_state
+    assert state["meta"] == {}
+    raw_payload = {"state": state, "model": "jev-latest", "questions": {}}
+    sent_payload = client.post.call_args.kwargs["json"]
+    raw_bytes = len(json.dumps(raw_payload, ensure_ascii=False).encode("utf-8"))
+    sent_bytes = len(json.dumps(sent_payload, ensure_ascii=False).encode("utf-8"))
+    assert sent_bytes < raw_bytes
 
 
 def test_two_successful_calls_reuse_same_client(monkeypatch):
