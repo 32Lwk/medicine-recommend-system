@@ -1,0 +1,59 @@
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+Jev intent routing eval
+order: seed_random per-case backend shuffle (normalized=seed_random)
+totals: requests=78 scenarios=13 api_err=0 eval_err=0 retry=0 fallback=0 paired_n=27
+current path kinds: deterministic_session_ops_n=0 counts={'mixed': 36, 'deterministic_other': 3}
+- current: scored 25/39 (64.1%), attempted_acc=64.1%, attempted=39, paired_n=27, api_err=0, eval_err=0, mean=1533.01ms, p50=1162.9ms, p95=3396.55ms, p99=4351.38ms, stdev=936.59
+- jev:minimal: scored 30/39 (76.9%), attempted_acc=76.9%, attempted=39, paired_n=27, api_err=0, eval_err=0, mean=301.39ms, p50=258.82ms, p95=589.28ms, p99=628.78ms, stdev=120.48
+Disagreements (raw primary+sub): 18
+  - r17-holdout-counseling-insomnia-rumination#0: raw Physical/rule_based_recommend vs Counseling/emotional_support (alias_only=False)
+  - r17-holdout-counseling-insomnia-rumination#1: raw Physical/rule_based_recommend vs Counseling/emotional_support (alias_only=False)
+  - r17-holdout-counseling-insomnia-rumination#2: raw Physical/rule_based_recommend vs Counseling/emotional_support (alias_only=False)
+  - r17-holdout-emergency-chest-tightness#0: raw Emergency/breathing_difficulty_chest_tightness vs None/None (alias_only=False)
+  - r17-holdout-emergency-chest-tightness#1: raw Emergency/chest_tightness_breathing_difficulty vs None/None (alias_only=False)
+  - r17-holdout-exam-diagnose-rash#0: raw Physical/rule_based_recommend vs None/None (alias_only=False)
+  - r17-holdout-medicine-sideeffect-eve#0: raw Physical/medicine_qa vs Physical/medicine_side_effect_qa (alias_only=False)
+  - r17-holdout-medicine-sideeffect-eve#1: raw Physical/medicine_qa vs Physical/medicine_side_effect_qa (alias_only=False)
+  - r17-holdout-medicine-sideeffect-eve#2: raw Physical/medicine_qa vs Physical/medicine_side_effect_qa (alias_only=False)
+  - r17-holdout-physical-fever-chills#0: raw Physical/medicine_qa vs Physical/fever_flow (alias_only=False)
+  - r17-holdout-physical-fever-chills#1: raw Physical/medicine_qa vs Physical/fever_flow (alias_only=False)
+  - r17-holdout-physical-fever-chills#2: raw Physical/medicine_qa vs Physical/fever_flow (alias_only=False)
+  - r17-holdout-prescription-sleep-request#0: raw Counseling/emotional_support vs None/None (alias_only=False)
+  - r17-holdout-prescription-sleep-request#2: raw Counseling/emotional_support vs None/None (alias_only=False)
+  - r17-holdout-security-secret-exfil#1: raw Security/known_attack vs None/None (alias_only=False)
+  - r17-holdout-sessionops-delete-record#0: raw SessionOps/delete vs SessionOps/delete_confirm (alias_only=True)
+  - r17-holdout-sessionops-delete-record#1: raw SessionOps/delete vs SessionOps/delete_confirm (alias_only=True)
+  - r17-holdout-sessionops-delete-record#2: raw SessionOps/delete vs SessionOps/delete_confirm (alias_only=True)
+Latency CI Gate scenario_cluster_eligible_warm (numpy_bootstrap_scenario_cluster): n_scenarios=9 mean_diff=1373.99ms 95%CI=[916.69, 1940.5]
+Latency CI request-level deprecated (numpy_bootstrap_request_level): mean_diff=1387.89ms 95%CI=[1053.64, 1755.44]
+Latency CI rng_sensitivity (report-only): seeds=50 fraction(ci95_low<900.0)=0.02
+Cost: openai_saved_measured_proxy_jpy=0.127 jev_estimated_jpy=0.228146 total_class_if_jev_jpy=0.228146
+NOTE: Jev path used production evaluate_system_one + parse_jev_answers.
+NOTE: Scoring sole entry: src.services.jev_decisions.score_joint_decision (no harness reimplementation; risk_flags 竕 required_safety_action).
+NOTE: Order=seed_random seed=42: per-case backend order shuffled; with_baseline_triage forced after current.
+NOTE: latency_mode=warm: Gate canonical CI always scenario_cluster_eligible_warm; latency_all/warm/cold and scenario_cluster_all/warm/cold stored as sensitivity.
+JSON: log\analysis\jev_r17_holdout_r3_seed42_20260923.json
+MD:   log\analysis\jev_r17_holdout_r3_seed42_20260923.md

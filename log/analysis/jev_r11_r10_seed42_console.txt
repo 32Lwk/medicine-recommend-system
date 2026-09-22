@@ -1,0 +1,34 @@
+Jev intent routing eval
+order: seed_random per-case backend shuffle (normalized=seed_random)
+totals: requests=200 scenarios=10 api_err=0 eval_err=0 retry=0 fallback=0 paired_n=70
+current path kinds: deterministic_session_ops_n=10 counts={'mixed': 80, 'deterministic_session_ops': 10, 'llm_triage_and_route': 10}
+- current: scored 100/100 (100.0%), attempted_acc=100.0%, attempted=100, paired_n=70, api_err=0, eval_err=0, mean=1621.98ms, p50=1311.57ms, p95=3623.45ms, p99=4060.65ms, stdev=982.97
+- jev:minimal: scored 82/100 (82.0%), attempted_acc=82.0%, attempted=100, paired_n=70, api_err=0, eval_err=0, mean=281.39ms, p50=240.56ms, p95=537.2ms, p99=583.83ms, stdev=110.57
+Disagreements (raw primary+sub): 18
+  - jev-emergency-breathing#0: raw Emergency/chest_pain_with_breathlessness vs None/None (alias_only=False)
+  - jev-emergency-breathing#1: raw Emergency/chest_pain_breathlessness vs None/None (alias_only=False)
+  - jev-emergency-breathing#2: raw Emergency/chest_pain_breathing_difficulty vs None/None (alias_only=False)
+  - jev-emergency-breathing#3: raw Emergency/chest_pain_breathing_difficulty vs None/None (alias_only=False)
+  - jev-emergency-breathing#4: raw Emergency/chest_pain vs None/None (alias_only=False)
+  - jev-emergency-breathing#7: raw Emergency/chest_pain_breathing_difficulty vs None/None (alias_only=False)
+  - jev-emergency-breathing#9: raw Emergency/chest_pain_breathing_difficulty vs None/None (alias_only=False)
+  - jev-security-prompt-injection#2: raw Security/known_attack vs None/None (alias_only=False)
+  - jev-security-prompt-injection#4: raw Security/known_attack vs None/None (alias_only=False)
+  - jev-security-prompt-injection#6: raw Security/known_attack vs None/None (alias_only=False)
+  - jev-security-prompt-injection#9: raw Security/known_attack vs None/None (alias_only=False)
+  - jev-session-delete#0: raw SessionOps/delete vs None/None (alias_only=False)
+  - jev-session-delete#1: raw SessionOps/delete vs None/None (alias_only=False)
+  - jev-session-delete#4: raw SessionOps/delete vs None/None (alias_only=False)
+  - jev-session-delete#5: raw SessionOps/delete vs None/None (alias_only=False)
+  - jev-session-delete#7: raw SessionOps/delete vs None/None (alias_only=False)
+  - jev-session-delete#8: raw SessionOps/delete vs None/None (alias_only=False)
+  - jev-session-delete#9: raw SessionOps/delete vs None/None (alias_only=False)
+Latency CI Gate scenario_cluster_eligible_warm (numpy_bootstrap_scenario_cluster): n_scenarios=7 mean_diff=1245.75ms 95%CI=[989.32, 1656.8]
+Latency CI request-level deprecated (numpy_bootstrap_request_level): mean_diff=1247.93ms 95%CI=[1108.65, 1400.01]
+Cost: openai_saved_measured_proxy_jpy=0.8522 jev_estimated_jpy=0.635728 total_class_if_jev_jpy=0.635728
+NOTE: Jev path used production evaluate_system_one + parse_jev_answers.
+NOTE: Scoring sole entry: src.services.jev_decisions.score_joint_decision (no harness reimplementation; risk_flags 竕 required_safety_action).
+NOTE: Order=seed_random seed=42: per-case backend order shuffled; with_baseline_triage forced after current.
+NOTE: latency_mode=warm: Gate canonical CI always scenario_cluster_eligible_warm; latency_all/warm/cold and scenario_cluster_all/warm/cold stored as sensitivity.
+JSON: log\analysis\jev_r11_r10_seed42_20260923.json
+MD:   log\analysis\jev_r11_r10_seed42_20260923.md

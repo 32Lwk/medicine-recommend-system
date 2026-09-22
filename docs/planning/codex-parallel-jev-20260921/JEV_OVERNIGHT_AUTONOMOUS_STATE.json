@@ -1,33 +1,43 @@
 {
   "program": "Jev Overnight Autonomous R17+",
   "started_at": "2026-09-23T03:00:00+09:00",
-  "supervisor": "overnight-r17",
+  "ended_at": "2026-09-23T03:20:00+09:00",
   "branch": "main",
   "head_at_start": "b7066137e8afd1358ee1d4abb647f716963e5ae7",
-  "current_cycle": "R17-C2-eval-commit",
+  "current_cycle": "R17-C9-finalize",
   "gate_status": {
     "gate_a_code": "Conditional Passed",
     "gate_a_accuracy": "Conditional Passed",
+    "gate_a_accuracy_candidate": "Passed candidate",
     "gate_b": "Hard No-Go",
     "product_safety": "未合格",
     "critical_open": 0,
     "high_open": 0,
-    "medium_open": 3
+    "medium_open": 2,
+    "medium_isolated": true
   },
-  "prohibitions": {"push": true, "pr": true, "live": true, "primary_on": true, "default_on": true},
   "commits": [
-    {"hash": "9bcb882", "message": "refactor(jev): freeze local shadow and D2 foundations", "files": 65}
+    "9bcb882",
+    "a40f353",
+    "67b8ea9",
+    "9ee28b4"
   ],
-  "worker_ownership": {
-    "holdout": "97913198-65f8-468d-b5e6-9e9a69fb515e",
-    "persona_e2e": "466eb338-f26a-46e2-afc0-f1cea5d7a8c1",
-    "latency": "fe416ea3-b4a2-4fb0-b344-ccab5d7f46a4"
-  },
   "convergence": {
-    "foundation_committed": true,
-    "independent_holdout": false,
-    "latency_rng_stable": false,
-    "persona_e2e": false,
-    "flags_rolled_back": false
-  }
+    "independent_holdout": true,
+    "latency_rng_stable": true,
+    "persona_e2e_offline": true,
+    "medical_conditional_accept": true,
+    "flags_rolled_back": true,
+    "medium_cleared_or_isolated": true,
+    "push": false,
+    "all_operational_targets_met": true
+  },
+  "key_metrics": {
+    "holdout_r10_gate": "90/90",
+    "holdout_r10_ci_low": 940.63,
+    "holdout_r10_rng_below_900": "0/100",
+    "eval10_seed20260922_posttrim_ci_low": 999.18,
+    "eval10_posttrim_rng_below_900": "0/100"
+  },
+  "prohibitions_honored": ["push", "pr", "live", "primary_on", "default_on", "env_commit"]
 }
