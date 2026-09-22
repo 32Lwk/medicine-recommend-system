@@ -1,27 +1,167 @@
-"""Jev IntentRouter shadow 観測メトリクス（Phase 1B）。
+"""Jev IntentRouter shadow 観測メトリクス（Phase 1B / Agent D Observability）。
 
 書き込み失敗は本線へ伝播させない。生テキスト・SID・API key は記録しない。
+
+コスト命名規則（厳守）:
+- ``*_estimate`` / ``*_estimated`` … 単価×token 等からの**推定**。実測と呼ぶな。
+- ``*_actual`` … API/課金ログ等から得た**実測**（未取得時は null）。
+- **新規集計は ``jev_cost_usd_estimate`` のみ推奨。**
+- ``jev_cost_usd`` は **DEPRECATED** 互換エイリアス（中身は常に ``jev_cost_usd_estimate`` と同じ推定値）。
+  即削除は破壊的なため維持するが、実測と呼ぶな・新規ダッシュボードに使うな。
 """
 from __future__ import annotations
 
 import hashlib
 import logging
 import os
+import re
 from collections import OrderedDict
 from datetime import datetime, timezone
 from typing import Any, Mapping, MutableMapping, Optional
 
 logger = logging.getLogger(__name__)
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 LOG_FILE = "jev_intent_router_shadow.jsonl"
 LOG_TYPE = "jev_intent_router_shadow"
 ADAPTER_MODE = "minimal"
 JEV_INPUT_COST_USD_PER_MTOK = 0.042
 _EXECUTION_REGISTRY_MAX = 256
 
+# field_semantics 用。互換トップレベル jev_cost_usd の意味を機械可読で固定する。
+JEV_COST_USD_ALIAS_SEMANTICS = "estimated (alias of jev_cost_usd_estimate)"
+JEV_COST_USD_DEPRECATION_NOTE = (
+    "DEPRECATED: compatibility alias of jev_cost_usd_estimate; "
+    "value is estimated (not actual). New aggregations must use "
+    "jev_cost_usd_estimate only. Do not delete yet (breaking)."
+)
+
 # correlation_id -> executed_decision（dispatcher join 用。失敗は非伝播）
 _executed_by_correlation: OrderedDict[str, Any] = OrderedDict()
+
+# --- Event completeness -------------------------------------------------------
+
+REQUIRED_SHADOW_FIELDS: frozenset[str] = frozenset(
+    {
+        "log_type",
+        "schema_version",
+        "timestamp",
+        "environment",
+        "correlation_id",
+        "mode",
+        "adapter_mode",
+        "legacy_decision",
+        "jev_decision",
+        "executed_decision",
+        "matched",
+        "disagreement_class",
+        "attempted",
+        "succeeded",
+        "retry_count",
+        "fallback_reason",
+        "failure_reason",
+        "error_class",
+        "latency_ms",
+        "jev_usage",
+        "cost",
+    }
+)
+# event_completeness 自体はメタのため REQUIRED に含めない（自己参照で常に incomplete になる）
+
+# --- Failure reason enum（自由文禁止・未知は other に正規化）-------------------
+
+FAILURE_REASONS: frozenset[str] = frozenset(
+    {
+        "none",
+        "timeout",
+        "http_429",
+        "http_5xx",
+        "http_4xx",
+        "network_error",
+        "invalid_schema",
+        "invalid_json",
+        "low_confidence",
+        "missing_api_key",
+        "queue_full",
+        "submit_failed",
+        "unexpected",
+        "log_error",
+        "recent_context_mismatch",
+        "high_risk_disagreement",
+        "schema_error",
+        "OSError",
+        "other",
+    }
+)
+
+_FAILURE_ALIASES: dict[str, str] = {
+    "timeout": "timeout",
+    "TimeoutError": "timeout",
+    "http_429": "http_429",
+    "429": "http_429",
+    "http_5xx": "http_5xx",
+    "http_4xx": "http_4xx",
+    "network_error": "network_error",
+    "network": "network_error",
+    "invalid_schema": "invalid_schema",
+    "schema_error": "schema_error",
+    "invalid_json": "invalid_json",
+    "low_confidence": "low_confidence",
+    "missing_api_key": "missing_api_key",
+    "queue_full": "queue_full",
+    "submit_failed": "submit_failed",
+    "unexpected": "unexpected",
+    "log_error": "log_error",
+    "recent_context_mismatch": "recent_context_mismatch",
+    "high_risk_disagreement": "high_risk_disagreement",
+    "OSError": "OSError",
+    "none": "none",
+}
+
+# --- PII / secret（assert 禁止・-O でも有効）-----------------------------------
+
+FORBIDDEN_LOG_KEYS: frozenset[str] = frozenset(
+    {
+        "user_input",
+        "user_text",
+        "history",
+        "recent_turns",
+        "recent_context",
+        "api_key",
+        "authorization",
+        "Authorization",
+        "cookie",
+        "Cookie",
+        "raw_answers",
+        "answers",
+        "baseline_triage_hint",
+        "sid",
+        "session_id",
+        "user_id",
+        "line_user_id",
+        "user_attributes",
+        "email",
+        "phone",
+        "address",
+        "rag",
+        "rag_text",
+        "system_prompt",
+        "generation_prompt",
+        "prompt",
+        "password",
+        "secret",
+        "token",
+        "access_token",
+        "refresh_token",
+        "bearer",
+    }
+)
+
+# API key / Bearer っぽい値。マッチしたら redact（キー名ではなく値検査）。
+_SECRET_VALUE_RE = re.compile(
+    r"(?i)(?:sk-[A-Za-z0-9_\-]{8,}|Bearer\s+[A-Za-z0-9\-._~+/]+=*|api[_-]?key\s*[:=]\s*\S+)"
+)
+_REDACTED = "[REDACTED]"
 
 
 def _safe_dict(value: Any) -> dict[str, Any]:
@@ -195,6 +335,46 @@ def compute_disagreement_class(
     return "none"
 
 
+def normalize_failure_reason(
+    *,
+    succeeded: bool,
+    failure_reason: Any = None,
+    fallback_reason: Any = None,
+    error_class: Any = None,
+) -> str:
+    """失敗理由を enum に正規化。成功時は ``none``。未知は ``other``（assert なし）。
+
+    候補は failure_reason → fallback_reason → error_class の順。
+    未知ラベル（例: ``not_eligible``）はスキップし、後続の既知 enum
+    （``queue_full`` / ``submit_failed`` 等）を優先する。
+    """
+    if succeeded and not failure_reason and not fallback_reason and not error_class:
+        return "none"
+    saw_unknown = False
+    for candidate in (failure_reason, fallback_reason, error_class):
+        if candidate is None:
+            continue
+        text = str(candidate).strip()
+        if not text:
+            continue
+        if text in FAILURE_REASONS:
+            return text
+        aliased = _FAILURE_ALIASES.get(text) or _FAILURE_ALIASES.get(text.lower())
+        if aliased:
+            return aliased
+        # http_503 等
+        lowered = text.lower()
+        if lowered.startswith("http_5") or text.startswith("5"):
+            return "http_5xx"
+        if lowered.startswith("http_4") or text.startswith("4"):
+            return "http_4xx"
+        saw_unknown = True
+        continue
+    if succeeded and not saw_unknown:
+        return "none"
+    return "other"
+
+
 def trace_hash_for_sid(sid: Optional[str]) -> Optional[str]:
     """SID の一方向ハッシュ。生 sid は返さない。"""
     if not sid:
@@ -222,7 +402,10 @@ def _resolve_release_id() -> Optional[str]:
 
 
 def estimate_jev_cost_usd(input_tokens: Any) -> Optional[float]:
-    """input $0.042 / MTok。欠損は None（unknown として可視化）。"""
+    """Jev 入力コストの**推定**（input $0.042 / MTok）。実測ではない。
+
+    欠損は None（unknown として可視化）。
+    """
     try:
         tokens = int(input_tokens)
     except (TypeError, ValueError):
@@ -230,6 +413,121 @@ def estimate_jev_cost_usd(input_tokens: Any) -> Optional[float]:
     if tokens < 0:
         return None
     return round(tokens * JEV_INPUT_COST_USD_PER_MTOK / 1_000_000.0, 10)
+
+
+def build_cost_payload(
+    *,
+    jev_cost_usd_estimate: Optional[float],
+    legacy_saved_calls: int,
+    openai_cost_usd_actual: Any = None,
+    openai_cost_usd_saved_estimate: Any = None,
+    openai_cost_jpy_saved_estimate: Any = None,
+    cost_basis: Any = None,
+    usd_jpy_rate: Any = None,
+) -> dict[str, Any]:
+    """推定と実測を分離した cost ブロック。
+
+    - ``jev_cost_usd_estimate``: token×単価の**推定**（実測と呼ぶな）。**新規集計の正本**。
+    - ``field_semantics['jev_cost_usd']``: トップレベル互換エイリアスの意味
+      （``estimated (alias of jev_cost_usd_estimate)``）。値本体は payload トップに残す。
+    - ``openai_cost_usd_actual``: OpenAI 側の**実測**（未取得は null）
+    - ``openai_cost_*_saved_estimate``: 対照平均等に基づく**推定削減**
+    - ``total_classification_cost_usd_estimate``: Jev推定 + OpenAI実測(なければ0加算のみ明示)
+    """
+    openai_actual = _optional_float(openai_cost_usd_actual)
+    openai_saved_usd = _optional_float(openai_cost_usd_saved_estimate)
+    openai_saved_jpy = _optional_float(openai_cost_jpy_saved_estimate)
+    rate = _optional_float(usd_jpy_rate)
+
+    jev_est = jev_cost_usd_estimate
+    # 総分類コスト推定: Jev 推定 + OpenAI 実測（実測欠損時は Jev のみ・フラグで明示）
+    total_parts: list[str] = []
+    total = 0.0
+    total_known = False
+    if jev_est is not None:
+        total += float(jev_est)
+        total_parts.append("jev_cost_usd_estimate")
+        total_known = True
+    if openai_actual is not None:
+        total += float(openai_actual)
+        total_parts.append("openai_cost_usd_actual")
+        total_known = True
+
+    basis = None
+    if isinstance(cost_basis, Mapping):
+        basis = {
+            k: cost_basis.get(k)
+            for k in ("source_log", "path", "avg_cost_jpy", "avg_cost_usd", "calculated_at")
+            if k in cost_basis
+        }
+
+    return {
+        "jev_cost_usd_estimate": jev_est,
+        "jev_cost_estimation_basis": (
+            f"input_tokens * {JEV_INPUT_COST_USD_PER_MTOK} / 1e6"
+            if jev_est is not None
+            else None
+        ),
+        "openai_cost_usd_actual": openai_actual,
+        "openai_cost_usd_saved_estimate": openai_saved_usd,
+        "openai_cost_jpy_saved_estimate": openai_saved_jpy,
+        "usd_jpy_rate": rate,
+        "legacy_saved_calls": int(legacy_saved_calls or 0),
+        # shadow では二重実行のため削減は通常 0（実測カウント）。推定削減は別フィールド。
+        "legacy_saved_calls_measurement": "actual_count",
+        "total_classification_cost_usd_estimate": (
+            round(total, 10) if total_known else None
+        ),
+        "total_classification_cost_components": total_parts,
+        "cost_basis": basis,
+        "field_semantics": {
+            "jev_cost_usd_estimate": "estimated",
+            # トップレベル互換キー（削除禁止）。推定であり実測ではない。
+            "jev_cost_usd": JEV_COST_USD_ALIAS_SEMANTICS,
+            "openai_cost_usd_actual": "actual_or_null",
+            "openai_cost_usd_saved_estimate": "estimated",
+            "openai_cost_jpy_saved_estimate": "estimated",
+            "total_classification_cost_usd_estimate": "estimated_sum",
+            "legacy_saved_calls": "actual_count",
+        },
+    }
+
+
+def _optional_float(value: Any) -> Optional[float]:
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def assess_event_completeness(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """必須フィールドの有無を評価（assert なし）。"""
+    missing = sorted(f for f in REQUIRED_SHADOW_FIELDS if f not in payload)
+    # 値が必須で「キーはあるが意味欠損」も軽く見る
+    nullish_required: list[str] = []
+    for key in (
+        "log_type",
+        "schema_version",
+        "timestamp",
+        "mode",
+        "adapter_mode",
+        "disagreement_class",
+        "matched",
+        "cost",
+        "failure_reason",
+    ):
+        if key in payload and payload[key] is None:
+            nullish_required.append(key)
+    complete = not missing and not nullish_required
+    return {
+        "complete": complete,
+        "missing_required": missing,
+        "nullish_required": nullish_required,
+        "required_field_count": len(REQUIRED_SHADOW_FIELDS),
+        "schema_version": SCHEMA_VERSION,
+    }
 
 
 def notify_executed_decision(
@@ -283,6 +581,7 @@ def _extract_confidence_fields(jev_decision: Any) -> dict[str, Any]:
 
 
 def _usage_payload(usage: Any) -> dict[str, Any]:
+    """API から得た token 数（実測）。コスト金額は含めない。"""
     if not isinstance(usage, Mapping):
         return {}
     out: dict[str, Any] = {}
@@ -394,6 +693,70 @@ def build_state_shape(state: Optional[Mapping[str, Any]]) -> dict[str, Any]:
     return shape
 
 
+def scrub_forbidden_log_fields(
+    payload: MutableMapping[str, Any],
+    *,
+    path: str = "",
+) -> list[str]:
+    """禁止キー・秘密値らしき文字列を除去/redact。``assert`` は使わない（-O 耐性）。
+
+    戻り値: 削除または redact したパス一覧。失敗しても例外は外へ出さない想定で
+    呼び出し側が try する。
+    """
+    removed: list[str] = []
+    if not isinstance(payload, MutableMapping):
+        return removed
+
+    for key in list(payload.keys()):
+        key_s = str(key)
+        full = f"{path}.{key_s}" if path else key_s
+        if key_s in FORBIDDEN_LOG_KEYS or key_s.lower() in FORBIDDEN_LOG_KEYS:
+            payload.pop(key, None)
+            removed.append(full)
+            continue
+        value = payload.get(key)
+        if isinstance(value, MutableMapping):
+            removed.extend(scrub_forbidden_log_fields(value, path=full))
+        elif isinstance(value, list):
+            for i, item in enumerate(value):
+                if isinstance(item, MutableMapping):
+                    removed.extend(
+                        scrub_forbidden_log_fields(item, path=f"{full}[{i}]")
+                    )
+                elif isinstance(item, str) and _SECRET_VALUE_RE.search(item):
+                    value[i] = _REDACTED
+                    removed.append(f"{full}[{i}]")
+        elif isinstance(value, str) and _SECRET_VALUE_RE.search(value):
+            payload[key] = _REDACTED
+            removed.append(full)
+    return removed
+
+
+def validate_no_forbidden_log_content(payload: Mapping[str, Any]) -> list[str]:
+    """混入検査（読み取り専用）。検出パスを返す。raise/assert しない。"""
+    hits: list[str] = []
+
+    def _walk(obj: Any, path: str) -> None:
+        if isinstance(obj, Mapping):
+            for k, v in obj.items():
+                key_s = str(k)
+                full = f"{path}.{key_s}" if path else key_s
+                if key_s in FORBIDDEN_LOG_KEYS or key_s.lower() in FORBIDDEN_LOG_KEYS:
+                    hits.append(full)
+                _walk(v, full)
+        elif isinstance(obj, (list, tuple)):
+            for i, item in enumerate(obj):
+                _walk(item, f"{path}[{i}]")
+        elif isinstance(obj, str) and _SECRET_VALUE_RE.search(obj):
+            hits.append(path or "<root>")
+
+    try:
+        _walk(payload, "")
+    except Exception:
+        logger.debug("jev validate_no_forbidden_log_content failed", exc_info=True)
+    return hits
+
+
 def record_shadow_event(
     *,
     correlation_id: Optional[str],
@@ -409,10 +772,16 @@ def record_shadow_event(
     succeeded: bool = False,
     retry_count: int = 0,
     fallback_reason: Optional[str] = None,
+    failure_reason: Optional[str] = None,
     error_class: Optional[str] = None,
     latency_ms: Optional[float] = None,
     usage: Any = None,
     legacy_saved_calls: int = 0,
+    openai_cost_usd_actual: Any = None,
+    openai_cost_usd_saved_estimate: Any = None,
+    openai_cost_jpy_saved_estimate: Any = None,
+    cost_basis: Any = None,
+    usd_jpy_rate: Any = None,
     state_shape: Any = None,
     trace_hash: Optional[str] = None,
     sid: Optional[str] = None,
@@ -428,7 +797,7 @@ def record_shadow_event(
             executed = legacy_decision
 
         usage_payload = _usage_payload(usage)
-        cost = estimate_jev_cost_usd(usage_payload.get("input_tokens"))
+        jev_cost_estimate = estimate_jev_cost_usd(usage_payload.get("input_tokens"))
 
         confidence = _extract_confidence_fields(jev_decision)
         matched_payload = dict(matched) if isinstance(matched, Mapping) else compute_matched(
@@ -461,6 +830,31 @@ def record_shadow_event(
                 correlation_id,
             )
 
+        norm_failure = normalize_failure_reason(
+            succeeded=bool(succeeded),
+            failure_reason=failure_reason,
+            fallback_reason=fallback_reason,
+            error_class=effective_error,
+        )
+
+        jev_usage: Optional[dict[str, Any]] = None
+        if usage_payload or model:
+            jev_usage = dict(usage_payload)
+            if model:
+                jev_usage["model"] = model
+            # token 数は API usage 由来の実測。金額は入れない。
+            jev_usage["token_measurement"] = "actual_usage_or_empty"
+
+        cost_block = build_cost_payload(
+            jev_cost_usd_estimate=jev_cost_estimate,
+            legacy_saved_calls=int(legacy_saved_calls or 0),
+            openai_cost_usd_actual=openai_cost_usd_actual,
+            openai_cost_usd_saved_estimate=openai_cost_usd_saved_estimate,
+            openai_cost_jpy_saved_estimate=openai_cost_jpy_saved_estimate,
+            cost_basis=cost_basis,
+            usd_jpy_rate=usd_jpy_rate,
+        )
+
         payload: dict[str, Any] = {
             "log_type": LOG_TYPE,
             "schema_version": SCHEMA_VERSION,
@@ -487,11 +881,20 @@ def record_shadow_event(
             "succeeded": bool(succeeded),
             "retry_count": int(retry_count or 0),
             "fallback_reason": fallback_reason,
+            "failure_reason": norm_failure,
             "error_class": effective_error,
             "latency_ms": latency_ms,
+            # 互換: usage は token 実測。jev_usage が正本。
             "usage": usage_payload or None,
-            "jev_cost_usd": cost,
+            "jev_usage": jev_usage,
+            # DEPRECATED 互換エイリアス（即削除禁止）。中身は常に推定。
+            # 新規集計・ダッシュボードは jev_cost_usd_estimate のみ推奨。
+            "jev_cost_usd": jev_cost_estimate,
+            "jev_cost_usd_deprecated": True,
+            "jev_cost_usd_deprecation_note": JEV_COST_USD_DEPRECATION_NOTE,
+            "jev_cost_usd_estimate": jev_cost_estimate,
             "legacy_saved_calls": int(legacy_saved_calls or 0),
+            "cost": cost_block,
             "state_shape": shape_payload,
         }
         release_id = _resolve_release_id()
@@ -503,24 +906,35 @@ def record_shadow_event(
             for k, v in extra.items():
                 if k in payload:
                     continue
-                # 禁止フィールドを拒否
-                if k in (
-                    "user_input",
-                    "user_text",
-                    "history",
-                    "recent_turns",
-                    "api_key",
-                    "authorization",
-                    "Authorization",
-                    "raw_answers",
-                    "answers",
-                    "baseline_triage_hint",
-                    "sid",
-                    "session_id",
-                    "user_id",
-                ):
+                if k in FORBIDDEN_LOG_KEYS or str(k).lower() in FORBIDDEN_LOG_KEYS:
                     continue
                 payload[k] = v
+
+        # 本番耐性: assert ではなく scrub + error ログ
+        scrubbed = scrub_forbidden_log_fields(payload)
+        remaining = validate_no_forbidden_log_content(payload)
+        if scrubbed or remaining:
+            logger.error(
+                "jev shadow log forbidden/PII scrubbed=%s remaining=%s correlation_id=%s",
+                scrubbed,
+                remaining,
+                correlation_id,
+            )
+            if remaining and not effective_error:
+                payload["error_class"] = "forbidden_log_content"
+            payload["pii_scrub"] = {
+                "scrubbed_paths": scrubbed,
+                "remaining_hits": remaining,
+            }
+
+        payload["event_completeness"] = assess_event_completeness(payload)
+        if not payload["event_completeness"]["complete"]:
+            logger.error(
+                "jev shadow event incomplete missing=%s nullish=%s correlation_id=%s",
+                payload["event_completeness"].get("missing_required"),
+                payload["event_completeness"].get("nullish_required"),
+                correlation_id,
+            )
 
         _emit_jsonl(payload)
         return payload
@@ -549,15 +963,25 @@ __all__ = [
     "LOG_TYPE",
     "ADAPTER_MODE",
     "DISAGREEMENT_CLASSES",
+    "FAILURE_REASONS",
+    "FORBIDDEN_LOG_KEYS",
+    "REQUIRED_SHADOW_FIELDS",
     "JEV_INPUT_COST_USD_PER_MTOK",
+    "JEV_COST_USD_ALIAS_SEMANTICS",
+    "JEV_COST_USD_DEPRECATION_NOTE",
+    "assess_event_completeness",
+    "build_cost_payload",
     "build_state_shape",
     "clear_execution_registry_for_tests",
     "compute_disagreement_class",
     "compute_matched",
     "estimate_jev_cost_usd",
     "lookup_executed_decision",
+    "normalize_failure_reason",
     "normalize_sub_route",
     "notify_executed_decision",
     "record_shadow_event",
+    "scrub_forbidden_log_fields",
     "trace_hash_for_sid",
+    "validate_no_forbidden_log_content",
 ]

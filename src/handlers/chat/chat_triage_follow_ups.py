@@ -30,11 +30,17 @@ def run_triage_follow_ups(
     processed_message: str,
     triage_result: Optional[dict],
     recommendation_client: Any,
+    *,
+    skip_policy_kinds: bool = False,
 ) -> Tuple[Optional[Any], bool]:
     """
     治療中フラグ確認・主訴判定・不適切な要求検出とカウンセリング開始を実行する。
     早期リターンする場合（医薬的な予防／不適切な要求）は Response を返す。
     不適切要求を検出したかどうかを第二戻り値で返す（店舗案内処理のスキップ判定に使用）。
+
+    skip_policy_kinds:
+        POLICY_ENFORCEMENT_D2 ON 時。prescription / controlled_or_illegal /
+        medical_examination は typed enforcement が担当するため本関数では扱わない。
 
     Args:
         session: Flaskセッション
@@ -212,6 +218,42 @@ def run_triage_follow_ups(
 
             request_type = detect_inappropriate_request(sanitized_message, triage_result)
             if request_type:
+                if skip_policy_kinds and request_type in (
+                    "illegal",
+                    "controlled",
+                    "prescription",
+                    "medical_examination",
+                ):
+                    logger.warning(
+                        "D2 residual policy hit after continue type=%s sid=%s; fail-closed SF-E1",
+                        request_type,
+                        sid,
+                    )
+                    # Fail-closed: never silently continue to recommend/counseling.
+                    # Appending an error notice mutates history → NM suffix forbidden.
+                    from src.dialogue.routing.policy_enforce import build_sf_e1_response
+                    from src.services.sage_bot_response import build_bot_response
+
+                    sage = build_sf_e1_response(no_mutation_claim=False)
+                    bot = build_bot_response(
+                        session,
+                        sid,
+                        sage_diagnosis=sage,
+                        legacy_content=sage.get("message") or "",
+                    )
+                    session.setdefault("messages", []).append(bot)
+                    if hasattr(session, "modified"):
+                        session.modified = True
+                    inappropriate_request_detected = True
+                    body = {
+                        "status": "error",
+                        "error": "policy_enforcement_residual",
+                        "fallback_reason": "residual_policy_after_d2_continue",
+                        "sage_diagnosis": sage,
+                        "message_count": len(session.get("messages", [])),
+                    }
+                    return ((body, 200), inappropriate_request_detected)
+
                 inappropriate_request_detected = True
                 logger.info(f"⚠️ 不適切な要求を検出（店舗案内処理の前）: type={request_type}, session_id={sid}")
 

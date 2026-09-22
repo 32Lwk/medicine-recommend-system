@@ -7,6 +7,7 @@ from src.services.counseling_triage import detect_inappropriate_request
 from src.services.llm_triage import llm_triage
 from src.services.medical_examination_request import (
     MEDICAL_EXAMINATION_EXACT_PHRASES,
+    detect_medical_examination_request_contained,
     detect_medical_examination_request_exact,
     resolve_medical_examination_request_type,
 )
@@ -21,6 +22,26 @@ def test_exact_phrase_does_not_match_compound_sentence():
     assert not detect_medical_examination_request_exact("39度の熱があるので診察してください")
     assert not detect_medical_examination_request_exact("腹が痛いので診察してください")
     assert not detect_medical_examination_request_exact("診断された")
+
+
+def test_contained_phrase_matches_sessionops_mix_and_compound():
+    """S1-G02 + BR-H01: exact は False でも contained は混在・複合を拾う。"""
+    assert detect_medical_examination_request_contained("履歴消して診察してください")
+    assert detect_medical_examination_request_contained("腹が痛いので診察してください")
+    assert detect_medical_examination_request_contained("診察してください")
+    assert detect_medical_examination_request_contained("履歴消して診察してくれ")
+    assert detect_medical_examination_request_contained(
+        "履歴消してこの症状を診断してほしい"
+    )
+    # BR-H01: short markers inside composites are now in-scope (SessionOps bypass FN)
+    assert detect_medical_examination_request_contained("履歴消して診察して")
+    assert detect_medical_examination_request_contained("履歴消して診てください")
+    # R11: triage-aligned phrasing (SessionOps mix FN guard)
+    assert detect_medical_examination_request_contained("履歴消して、医者に見てほしい")
+    # Past/narrative "診断された" must not become a request just via 診断して substring...
+    # Note: "診断して" is a substring of "診断された"? 診断された = 診/断/さ/れ/た — no して.
+    assert not detect_medical_examination_request_contained("履歴消して診断された話を聞いた")
+    assert not detect_medical_examination_request_exact("頭痛で診察してください")
 
 
 def test_all_catalog_phrases_are_exact_only():

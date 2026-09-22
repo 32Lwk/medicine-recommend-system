@@ -492,7 +492,23 @@ def is_jev_intent_router_shadow_enabled() -> bool:
 def is_jev_intent_router_primary_enabled() -> bool:
     """IntentRouter の Jev primary（予約）。
 
-    Phase 1 では実行 route 変更に使ってはならない。既定 OFF。
+    Phase 1 では実行 route 変更に使ってはならない（shadow adapter /
+    ``jev_router`` は本フラグを参照しない）。既定 OFF。明示 true でも
+    ``resolve_route`` は legacy を返す（Supervisor 所有の router 契約）。
     """
     return is_jev_enabled() and _flag("JEV_INTENT_ROUTER_PRIMARY", False)
+
+
+# --- A-3 / D2 Policy Enforcement — 既定 OFF ---
+
+
+def is_policy_enforcement_d2_enabled() -> bool:
+    """Typed PolicyDecision enforcement (D2-b). Default OFF.
+
+    When OFF: production path unchanged (legacy follow-ups / orch).
+    When ON: snapshot → pure SessionOps → Safety → triage merge →
+    PolicyDecision → content-only adapters → MutationPlan apply.
+    Never maps PolicyDecision onto RouteDecision.primary_route.
+    """
+    return _flag("POLICY_ENFORCEMENT_D2", False)
 

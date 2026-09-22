@@ -12,6 +12,7 @@ from src.services.jev_decisions import (
     ADAPTER_MODE,
     DEFAULT_NOUL_THRESHOLD,
     INTENT_ROUTER_QUESTIONS,
+    JEV_ALONE_FORBIDDEN_CONFIRMATIONS,
     NOUL_HIGH_RISK_PRIORITY,
     PRESCRIPTION_ALLOWED_PHYSICAL_SUB_ROUTES,
     PRESCRIPTION_FORBIDDEN_PHYSICAL_SUB_ROUTES,
@@ -19,8 +20,14 @@ from src.services.jev_decisions import (
     JevPhysicalSubRoute,
     JevPrimaryRoute,
     JevSessionSubRoute,
+    controlled_block_contract_ok,
+    effective_high_risk,
     is_prescription_forbidden_sub_route,
+    jev_alone_may_confirm,
+    normalize_sub_route_for_scoring,
     parse_jev_answers,
+    prescription_block_contract_ok,
+    score_joint_decision,
     to_route_dict,
 )
 
@@ -481,4 +488,239 @@ def test_safety_fixture_pharmacist_schema_smoke_not_accuracy_gate() -> None:
         # Old field names from prior draft must not reappear as sole contract.
         assert "accept_primary_routes" not in expect
         assert "forbidden_primary_as_sole_gold" not in expect
+        # required_safety_action is optional; when absent joint treats safety as unscored.
+        # Do not invent labels on the fixture from this Agent.
+
+
+# --- Round 1 contract helpers -------------------------------------------------
+
+
+def test_effective_high_risk_or_gate_never_cleared_by_jev_negative() -> None:
+    assert effective_high_risk(deterministic_high_risk=True, jev_high_risk=False) is True
+    assert effective_high_risk(legacy_high_risk=True, jev_high_risk=False) is True
+    assert effective_high_risk(jev_high_risk=True) is True
+    assert effective_high_risk() is False
+    # Jev alone True is allowed as a *signal* in the OR; confirmation policy is separate.
+    assert effective_high_risk(
+        deterministic_high_risk=False, legacy_high_risk=False, jev_high_risk=True
+    ) is True
+
+
+def test_jev_alone_may_not_confirm_forbidden_axes() -> None:
+    for axis in (
+        "Emergency",
+        "Security",
+        "medical_examination",
+        "prescription",
+        "controlled_drug",
+        "illegal",
+        "self_harm",
+        "suicidal",
+        "overdose",
+        "red_flag",
+    ):
+        assert axis in JEV_ALONE_FORBIDDEN_CONFIRMATIONS
+        assert jev_alone_may_confirm(axis) is False
+    assert jev_alone_may_confirm("Physical") is True
+    assert jev_alone_may_confirm("Concierge") is True
+    assert jev_alone_may_confirm(None) is True
+
+
+def test_normalize_sub_route_aliases_match_metrics() -> None:
+    """Duplicate alias tables must stay identical to Agent D metrics (import-only check)."""
+    from src.services import jev_decisions as jd
+    from src.services import jev_metrics as jm
+
+    assert jd._EMERGENCY_SUB_ALIASES == jm._EMERGENCY_SUB_ALIASES
+    assert jd._SESSION_SUB_ALIASES == jm._SESSION_SUB_ALIASES
+    assert normalize_sub_route_for_scoring(
+        "Emergency", "chest_pain_breathing_difficulty"
+    ) == jm.normalize_sub_route("Emergency", "chest_pain_breathing_difficulty")
+    assert normalize_sub_route_for_scoring(
+        "Emergency", "chest_pain_breathlessness"
+    ) == "emergency_dispatch"
+    assert normalize_sub_route_for_scoring(
+        "SessionOps", "delete_confirm"
+    ) == jm.normalize_sub_route("SessionOps", "delete_confirm")
+    assert normalize_sub_route_for_scoring("Physical", "delete_confirm") == "delete_confirm"
+    assert normalize_sub_route_for_scoring("Emergency", "none") is None
+
+
+def test_score_joint_primary_and_sub_and_missing_safety_unscored() -> None:
+    expect = {
+        "primary_route": "Physical",
+        "accept_sub_routes": ["medicine_qa", "rule_based_recommend"],
+    }
+    ok = score_joint_decision(
+        expect, {"primary_route": "Physical", "sub_route": "medicine_qa"}
+    )
+    assert ok.joint_ok is True
+    assert ok.primary_ok is True
+    assert ok.sub_ok is True
+    assert ok.safety_scored is False
+    assert ok.safety_ok is True
+
+    bad_sub = score_joint_decision(
+        expect, {"primary_route": "Physical", "sub_route": "store_locator"}
+    )
+    assert bad_sub.joint_ok is False
+    assert bad_sub.sub_ok is False
+
+
+def test_score_joint_empty_accept_sub_skips_sub() -> None:
+    expect = {"primary_route": "Emergency", "accept_sub_routes": []}
+    scored = score_joint_decision(
+        expect, {"primary_route": "Emergency", "sub_route": "emergency_dispatch"}
+    )
+    assert scored.sub_ok is True
+    assert scored.joint_ok is True
+
+
+def test_score_joint_required_safety_action_and_when_present() -> None:
+    expect = {
+        "primary_route": "Physical",
+        "accept_sub_routes": ["none", "medicine_qa"],
+        "required_safety_action": "prescription_block",
+    }
+    missing = score_joint_decision(
+        expect, {"primary_route": "Physical", "sub_route": "medicine_qa"}
+    )
+    assert missing.safety_scored is True
+    assert missing.safety_ok is False
+    assert missing.joint_ok is False
+
+    hit = score_joint_decision(
+        expect,
+        {
+            "primary_route": "Physical",
+            "sub_route": "medicine_qa",
+            "safety_action": "prescription_block",
+        },
+    )
+    assert hit.safety_ok is True
+    assert hit.joint_ok is True
+
+
+def test_score_joint_accept_alternate_and_emergency_fp_without_expanding_arbitrarily() -> None:
+    expect = {
+        "primary_route": "Concierge",
+        "accept_alternate_primaries": ["Emergency"],
+        "accept_sub_routes": ["redirect", "chitchat", "none"],
+        "scoring": {
+            "emergency_fn_exempt": True,
+            "emergency_fp_tolerated": True,
+            "do_not_punish_emergency_keyword_hit": True,
+        },
+    }
+    concierge = score_joint_decision(
+        expect, {"primary_route": "Concierge", "sub_route": "redirect"}
+    )
+    assert concierge.joint_ok is True
+    assert concierge.alternate_primary_used is None
+
+    emergency_fp = score_joint_decision(
+        expect, {"primary_route": "Emergency", "sub_route": "emergency_dispatch"}
+    )
+    assert emergency_fp.joint_ok is True
+    assert emergency_fp.alternate_primary_used == "Emergency"
+    assert emergency_fp.sub_accuracy_exempt is True
+    assert emergency_fp.emergency_fp_sub_kind == "emergency_dispatch"
+    # E-H4: accept_sub_routes must NOT be inflated with medical_examination/none.
+    assert "medical_examination" not in emergency_fp.accept_sub_routes
+    assert set(emergency_fp.accept_sub_routes) == {"redirect", "chitchat", "none"}
+
+    # medical_examination on Emergency FP path: joint may pass (sub exempt) but
+    # must be tagged so Emergency FP stats can exclude it (F ruling).
+    med_mix = score_joint_decision(
+        expect, {"primary_route": "Emergency", "sub_route": "medical_examination"}
+    )
+    assert med_mix.joint_ok is True
+    assert med_mix.alternate_primary_used == "Emergency"
+    assert med_mix.emergency_fp_sub_kind == "medical_examination"
+    assert "medical_examination" not in med_mix.accept_sub_routes
+
+    # Physical is NOT an alternate — do not inflate accuracy via alternate abuse.
+    physical = score_joint_decision(
+        expect, {"primary_route": "Physical", "sub_route": "medicine_qa"}
+    )
+    assert physical.primary_ok is False
+    assert physical.joint_ok is False
+    assert physical.alternate_primary_used is None
+
+
+def test_score_joint_expand_emergency_fp_subs_opt_in_excludes_medical_examination() -> None:
+    expect = {
+        "primary_route": "Concierge",
+        "accept_alternate_primaries": ["Emergency"],
+        "accept_sub_routes": ["redirect"],
+        "scoring": {"expand_emergency_fp_subs": True, "emergency_fp_tolerated": True},
+    }
+    scored = score_joint_decision(
+        expect, {"primary_route": "Emergency", "sub_route": "emergency_dispatch"}
+    )
+    assert "emergency_dispatch" in scored.accept_sub_routes
+    assert "medical_examination" not in scored.accept_sub_routes
+    assert scored.alternate_primary_used == "Emergency"
+
+
+def test_score_joint_forbidden_sub_fails() -> None:
+    expect = {
+        "primary_route": "Physical",
+        "accept_sub_routes": ["none", "medicine_qa"],
+        "forbidden_sub": ["rule_based_recommend", "fever_flow"],
+    }
+    bad = score_joint_decision(
+        expect, {"primary_route": "Physical", "sub_route": "rule_based_recommend"}
+    )
+    assert bad.forbidden_hit is True
+    assert bad.joint_ok is False
+
+
+def test_score_joint_sub_alias_emergency_chest_pain() -> None:
+    expect = {
+        "primary_route": "Emergency",
+        "accept_sub_routes": ["emergency_dispatch"],
+    }
+    aliased = score_joint_decision(
+        expect,
+        {
+            "primary_route": "Emergency",
+            "sub_route": "chest_pain_breathing_difficulty",
+        },
+    )
+    assert aliased.normalized_sub == "emergency_dispatch"
+    assert aliased.sub_ok is True
+    assert aliased.joint_ok is True
+
+
+def test_prescription_and_controlled_block_helpers() -> None:
+    assert prescription_block_contract_ok(blocked=True, sub_route="medicine_qa") is True
+    assert prescription_block_contract_ok(blocked=True, sub_route=None) is True
+    assert prescription_block_contract_ok(blocked=False, sub_route="medicine_qa") is False
+    assert (
+        prescription_block_contract_ok(blocked=True, sub_route="rule_based_recommend")
+        is False
+    )
+
+    assert controlled_block_contract_ok(blocked=True, sub_route="known_attack") is True
+    assert controlled_block_contract_ok(blocked=True, sub_route=None) is True
+    assert controlled_block_contract_ok(blocked=False) is False
+    assert controlled_block_contract_ok(blocked=True, sub_route="rule_based_recommend") is False
+    assert controlled_block_contract_ok(blocked=True, sub_route="store_locator") is False
+
+
+def test_joint_on_safety_fixture_scenarios_schema_only() -> None:
+    """Run joint helper against fixture expects with mocked matching actuals (no live Jev)."""
+    raw = yaml.safe_load(_SAFETY_FIXTURE.read_text(encoding="utf-8")) or {}
+    for scenario in raw.get("scenarios") or []:
+        expect = scenario.get("expect") or {}
+        # required_safety_action absent on draft YAML → unscored
+        assert not expect.get("required_safety_action")
+        actual = {
+            "primary_route": expect.get("primary_route"),
+            "sub_route": (expect.get("accept_sub_routes") or [None])[0],
+        }
+        scored = score_joint_decision(expect, actual)
+        assert scored.safety_scored is False
+        assert scored.joint_ok is True, scenario.get("id")
 

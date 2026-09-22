@@ -131,6 +131,19 @@ def run_symptom_recommendation(
     from src.services.sage_bot_response import build_bot_response
 
     if detect_inappropriate_request(user_message, triage_result or {}) == "medical_examination":
+        from config.llm_flags import is_policy_enforcement_d2_enabled
+
+        if is_policy_enforcement_d2_enabled():
+            # D2 owns exam boundary; never continue into OTC recommend for exam.
+            # Terminal sticky session flags are forbidden — fail-closed on detection alone.
+            logger.info(
+                "D2 ON: skip symptom-route OTC recommend for medical_examination"
+            )
+            return (
+                {"status": "ok", "message_count": len(session.get("messages", []))},
+                200,
+            )
+
         logger.info("🚫 医療行為依頼のため推奨フローをスキップ: %s", user_message)
         boundary = generate_medical_examination_boundary_message()
         bot_response = build_bot_response(

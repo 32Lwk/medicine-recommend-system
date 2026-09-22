@@ -103,6 +103,9 @@ def detect_illegal_or_controlled_drug(user_text: str) -> Optional[str]:
     単語境界を考慮した検出を行い、誤検知を防止します。
     例: "DOC"は"document"の略として使われる場合があるため、単語境界をチェック
     OTC 不眠・睡眠薬相談文脈では規制薬物キーワード（睡眠薬等）を除外します。
+
+    S1-G04: 日本語の短いキーワード（例: 覚醒剤 len=3）は ``\\b`` が効かないため
+    非 ASCII は部分一致とする。ASCII 短語のみ単語境界を必須とする。
     
     Args:
         user_text: ユーザーの入力テキスト
@@ -115,6 +118,14 @@ def detect_illegal_or_controlled_drug(user_text: str) -> Optional[str]:
     from src.handlers.chat.controlled_drug_routing import should_skip_controlled_keyword
     
     user_text_lower = user_text.lower()
+
+    def _short_keyword_hit(keyword_lower: str) -> bool:
+        # ASCII short (DOC, GHB, …): require word boundaries to avoid "document".
+        if keyword_lower.isascii():
+            pattern = r"\b" + re.escape(keyword_lower) + r"\b"
+            return bool(re.search(pattern, user_text_lower))
+        # CJK / mixed short keywords: substring (Japanese has no \\b words).
+        return keyword_lower in user_text_lower
     
     # 違法薬物のキーワードチェック（単語境界を考慮）
     for keyword in ILLEGAL_DRUG_KEYWORDS:
@@ -122,9 +133,7 @@ def detect_illegal_or_controlled_drug(user_text: str) -> Optional[str]:
         # 短いキーワード（3文字以下）は単語境界を厳密にチェック
         # 特に"DOC"のような短いキーワードは誤検知を避けるため、単語境界を必須とする
         if len(keyword) <= 3:
-            # 単語境界を考慮したパターン（前後に単語文字が来ない）
-            pattern = r'\b' + re.escape(keyword_lower) + r'\b'
-            if re.search(pattern, user_text_lower):
+            if _short_keyword_hit(keyword_lower):
                 logger.info(f"🚫 違法薬物キーワード検出（キーワードマッチング）: {keyword}")
                 return "illegal"
         else:
@@ -140,9 +149,7 @@ def detect_illegal_or_controlled_drug(user_text: str) -> Optional[str]:
         keyword_lower = keyword.lower()
         # 短いキーワード（3文字以下）は単語境界を厳密にチェック
         if len(keyword) <= 3:
-            # 単語境界を考慮したパターン（前後に単語文字が来ない）
-            pattern = r'\b' + re.escape(keyword_lower) + r'\b'
-            if re.search(pattern, user_text_lower):
+            if _short_keyword_hit(keyword_lower):
                 logger.info(f"🚫 規制薬物キーワード検出（キーワードマッチング）: {keyword}")
                 return "controlled"
         else:

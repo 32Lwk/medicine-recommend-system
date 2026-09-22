@@ -4,21 +4,23 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import Any, Literal, Optional, Tuple
+from typing import Any, Optional, Tuple
 
 from src.agents.memory_delete_agent import (
     _looks_like_delete_request,
     classify_memory_delete_intent,
     execute_memory_delete,
 )
+from src.core.session_ops_classify import (
+    SessionIntent,
+    SessionOpsDetail,
+    classify_session_intent,
+    classify_session_ops_detail,
+)
 
 logger = logging.getLogger(__name__)
 
 ResponseTuple = Tuple[dict, int]
-SessionIntent = Literal["delete", "summarize", "status", "none"]
-SessionOpsDetail = Literal[
-    "delete", "status", "recorded_items", "summarize", "history_overview", "none"
-]
 
 _DELETE_CONFIRM_YES = frozenset(
     {"はい", "削除する", "削除して", "消して", "yes", "ok", "了解", "お願いします"}
@@ -53,23 +55,6 @@ _DELETE_EXPLAIN_HINTS = (
     r"教えて.*削除",
 )
 
-_DESTRUCTIVE_DELETE_RE = re.compile(
-    r"(消して|削除|消去|忘れて|全部消|すべて消|全て消|履歴消|記憶消|データ.*消|会話.*削除)",
-    re.I,
-)
-
-_SUMMARIZE_HINTS = (
-    r"履歴を要約",
-    r"履歴要約",
-    r"履歴を教えて",
-    r"相談履歴",
-    r"これまでの相談",
-    r"会話を要約",
-    r"チャット.*要約",
-    r"要約して",
-    r"まとめて",
-)
-
 _SESSION_ADMIN_LOOSE_DELETE = (
     r"履歴.*消",
     r"記憶.*消",
@@ -82,44 +67,12 @@ _SESSION_ADMIN_LOOSE_DELETE = (
     r"忘れて",
 )
 
-_SESSION_ADMIN_LOOSE_SUMMARIZE = (
-    r"要約",
-    r"まとめ",
-)
-
-_SESSION_ADMIN_LOOSE_STATUS = (
-    r"ステータス",
-    r"状態",
-    r"状況",
-    r"保存されている",
-    r"記録",
-)
-
-_RECORDED_ITEMS_HINTS = (
-    r"何が記録",
-    r"記録.*教えて",
-    r"保存されている情報",
-    r"保存されている",
-)
-
-_HISTORY_OVERVIEW_HINTS = (
-    r"履歴を教えて",
-    r"履歴を見せ",
-    r"会話履歴",
-)
-
 
 def _matches_any(text: str, patterns: tuple[str, ...]) -> bool:
     for pat in patterns:
         if re.search(pat, text):
             return True
     return False
-
-
-def _has_destructive_delete_intent(text: str) -> bool:
-    if _looks_like_delete_request(text):
-        return True
-    return bool(_DESTRUCTIVE_DELETE_RE.search(text or ""))
 
 
 def _is_pending_delete_explain_request(text: str) -> bool:
@@ -133,85 +86,36 @@ def _is_pending_delete_explain_request(text: str) -> bool:
     return False
 
 
-def _is_app_changelog_question(text: str) -> bool:
-    """本アプリの CHANGELOG 案内（SessionOps の会話履歴と区別）。"""
-    from src.services.concierge_intent import probe_meta_concierge_intent
+def _session_admin_probe_blocked_by_safety(user_text: str) -> bool:
+    """高リスク併存時は SessionOps probe を抑止し SafetyGate / Emergency を優先する。
 
-    return probe_meta_concierge_intent(text) == "doc_changelog"
+    F4-C02 / S1-G01: 共通 ``PreRouteSignals``（安全・政策のみ）を消費する。
+    Jev eligibility モジュールには依存しない（循環依存禁止）。
+    """
+    text = (user_text or "").strip()
+    if not text:
+        return False
+    try:
+        from src.dialogue.routing.pre_route_signals import (
+            collect_safety_policy_signals,
+            safety_or_policy_blocks_session_ops,
+        )
 
-
-def classify_session_intent(
-    user_text: str,
-    *,
-    triage_result: dict[str, Any] | None = None,
-) -> SessionIntent:
-    """削除・要約・ステータス意図を分類する。"""
-    t = (user_text or "").strip()
-    if not t:
-        return "none"
-
-    if _is_app_changelog_question(t):
-        return "none"
-
-    if _has_destructive_delete_intent(t):
-        return "delete"
-    if _matches_any(t, _SUMMARIZE_HINTS):
-        return "summarize"
-    if _matches_any(t, _STATUS_HINTS):
-        return "status"
-
-    sub = str((triage_result or {}).get("subcategory") or "").lower()
-    meta_intent = str((triage_result or {}).get("concierge_intent") or "").lower()
-    session_intent = str((triage_result or {}).get("session_intent") or "").lower()
-    triage_session = (
-        "session_admin" in sub
-        or meta_intent == "session_ops"
-        or session_intent in ("delete", "summarize", "status")
-    )
-    if not triage_session:
-        return "none"
-
-    if session_intent in ("delete", "summarize", "status"):
-        return session_intent  # type: ignore[return-value]
-
-    if _has_destructive_delete_intent(t):
-        return "delete"
-    if _matches_any(t, _SESSION_ADMIN_LOOSE_SUMMARIZE):
-        return "summarize"
-    if _matches_any(t, _SESSION_ADMIN_LOOSE_STATUS):
-        return "status"
-    return "none"
-
-
-def classify_session_ops_detail(
-    user_text: str,
-    *,
-    triage_result: dict[str, Any] | None = None,
-) -> SessionOpsDetail:
-    """SessionOps の細分類（UX_SESSION_OPS_REAL_DATA 用）。"""
-    coarse = classify_session_intent(user_text, triage_result=triage_result)
-    if coarse == "delete":
-        return "delete"
-    t = (user_text or "").strip()
-    if not t:
-        return "none"
-    if _matches_any(t, _RECORDED_ITEMS_HINTS):
-        return "recorded_items"
-    if (
-        _matches_any(t, _HISTORY_OVERVIEW_HINTS)
-        and not re.search(r"要約|まとめ", t)
-        and not _is_app_changelog_question(t)
-    ):
-        return "history_overview"
-    if coarse == "summarize":
-        return "summarize"
-    if coarse == "status":
-        return "status"
-    return "none"
+        signals = collect_safety_policy_signals(text)
+        return safety_or_policy_blocks_session_ops(signals)
+    except Exception:
+        # Import / collector failure: fail-closed — do not claim SessionOps.
+        return True
 
 
 def probe_session_admin_intent(user_text: str) -> SessionIntent | None:
-    """トリアージ前の高信頼キーワードプローブ。"""
+    """トリアージ前の高信頼キーワードプローブ。
+
+    決定的高リスク（Emergency / crisis / Security）併存時は None を返し、
+    呼び出し側が SafetyGate・Emergency 経路へ進めるようにする。
+    """
+    if _session_admin_probe_blocked_by_safety(user_text):
+        return None
     intent = classify_session_intent(user_text)
     return intent if intent != "none" else None
 

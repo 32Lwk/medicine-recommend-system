@@ -58,6 +58,9 @@ class ChatPostContext:
     trace_id: str = ""
     recommendation_client: OpenAI = field(default_factory=lambda: openai_client)
     routing: Any = None  # RoutingContext | None
+    # A-3/D2: request-local TurnSignalSnapshot (None when flag OFF)
+    turn_signal_snapshot: Any = None
+    policy_enforcement_handled: bool = False
 
     @property
     def llm_user_text(self) -> str:
@@ -226,19 +229,44 @@ def run_chat_post_pipeline(
     if manual_resp is not None:
         return _guard_return(manual_resp)
 
-    from src.agents.session_agent import probe_session_admin_intent
+    from config.llm_flags import is_policy_enforcement_d2_enabled
 
-    if probe_session_admin_intent(ctx.user_message):
-        session_admin_resp = _try_session_ops_handler(
+    d2_enabled = is_policy_enforcement_d2_enabled()
+    if d2_enabled:
+        from src.dialogue.routing.policy_d2_pipeline import (
+            create_pipeline_snapshot,
+            try_pure_session_ops,
+        )
+
+        ctx.turn_signal_snapshot = create_pipeline_snapshot(
+            ctx.user_message,
+            turn_id=ctx.trace_id,
+            correlation_id=ctx.trace_id,
+        )
+        pure_resp = try_pure_session_ops(
             session,
             sid,
-            ctx.user_message,
+            ctx.turn_signal_snapshot,
             ctx.recommendation_client,
-            phase="admin_probe",
+            session_ops_runner=_try_session_ops_handler,
         )
-        if session_admin_resp is not None:
+        if pure_resp is not None:
             sync_messages_to_db_for_admin(session, sid, client_info)
-            return _guard_return(session_admin_resp)
+            return _guard_return(pure_resp)
+    else:
+        from src.agents.session_agent import probe_session_admin_intent
+
+        if probe_session_admin_intent(ctx.user_message):
+            session_admin_resp = _try_session_ops_handler(
+                session,
+                sid,
+                ctx.user_message,
+                ctx.recommendation_client,
+                phase="admin_probe",
+            )
+            if session_admin_resp is not None:
+                sync_messages_to_db_for_admin(session, sid, client_info)
+                return _guard_return(session_admin_resp)
 
     mark_pipeline_step("before_llm_setup")
     setup_llm_request(session, sid)
@@ -269,6 +297,65 @@ def run_chat_post_pipeline(
     )
     if pre_gate.blocked and pre_gate.response:
         return _guard_return(pre_gate.response)
+
+    # R7-C01: snapshot may detect crisis via detector view while raw ZW missed validate.
+    # Fail-closed: dispatch emergency/crisis on detector_text before SessionOps/fast paths.
+    if (
+        d2_enabled
+        and ctx.turn_signal_snapshot is not None
+        and (
+            ctx.turn_signal_snapshot.signals.crisis_detected
+            or ctx.turn_signal_snapshot.signals.emergency_detected
+        )
+    ):
+        from src.handlers.chat.chat_emergency_handler import handle_emergency_if_detected
+
+        detect_text = (
+            ctx.turn_signal_snapshot.detector_text
+            or ctx.sanitized_message
+            or ctx.user_message
+        )
+        forced_triage = {
+            "category": "Emergency",
+            "requires_immediate_action": True,
+            "_d2_snapshot_crisis": bool(
+                ctx.turn_signal_snapshot.signals.crisis_detected
+            ),
+            "_d2_snapshot_emergency": bool(
+                ctx.turn_signal_snapshot.signals.emergency_detected
+            ),
+        }
+        crisis_resp = handle_emergency_if_detected(
+            session,
+            client_info,
+            sid,
+            detect_text,
+            ctx.recommendation_client,
+            forced_triage,
+        )
+        if crisis_resp is not None:
+            return _guard_return(crisis_resp)
+
+    # R10 H-SEC: snapshot.security_blocked → existing Security owners (not PolicyKind).
+    # Crisis/Emergency already handled above. Detector text avoids ZW evasion misses.
+    if (
+        d2_enabled
+        and ctx.turn_signal_snapshot is not None
+        and ctx.turn_signal_snapshot.signals.security_blocked
+    ):
+        from src.dialogue.routing.security_terminal_bridge import (
+            try_security_terminal_from_snapshot,
+        )
+
+        sec_resp = try_security_terminal_from_snapshot(
+            session,
+            client_info,
+            sid,
+            ctx.turn_signal_snapshot,
+            recommendation_client=ctx.recommendation_client,
+        )
+        if sec_resp is not None:
+            return _guard_return(sec_resp)
 
     mark_pipeline_step("after_security")
 
@@ -306,13 +393,15 @@ def run_chat_post_pipeline(
         if owner:
             apply_profile_to_session(session, owner)
 
-    session_fast_resp = _try_session_ops_handler(
-        session,
-        sid,
-        ctx.sanitized_message or ctx.user_message,
-        ctx.recommendation_client,
-        phase="fast",
-    )
+    session_fast_resp = None
+    if not d2_enabled:
+        session_fast_resp = _try_session_ops_handler(
+            session,
+            sid,
+            ctx.sanitized_message or ctx.user_message,
+            ctx.recommendation_client,
+            phase="fast",
+        )
     if session_fast_resp is not None:
         sync_messages_to_db_for_admin(session, sid, client_info)
         return _guard_return(session_fast_resp)
@@ -403,26 +492,43 @@ def run_chat_post_pipeline(
         except Exception:
             logger.debug("intent_router_shadow skipped", exc_info=True)
 
-    session_triage_resp = _try_session_ops_handler(
-        session,
-        sid,
-        ctx.sanitized_message or ctx.user_message,
-        ctx.recommendation_client,
-        triage_result=ctx.triage_result,
-        phase="triage",
-    )
+    session_triage_resp = None
+    if not d2_enabled:
+        session_triage_resp = _try_session_ops_handler(
+            session,
+            sid,
+            ctx.sanitized_message or ctx.user_message,
+            ctx.recommendation_client,
+            triage_result=ctx.triage_result,
+            phase="triage",
+        )
     if session_triage_resp is not None:
         sync_messages_to_db_for_admin(session, sid, client_info)
         return _guard_return(session_triage_resp)
 
     from src.agents.safety_gate import run_safety_gate
 
+    safety_detect_text = ctx.sanitized_message
+    if (
+        d2_enabled
+        and ctx.turn_signal_snapshot is not None
+        and ctx.turn_signal_snapshot.detector_text
+    ):
+        safety_detect_text = ctx.turn_signal_snapshot.detector_text
+        # Ensure triage reflects snapshot high-risk when detectors saw it only via view
+        if ctx.turn_signal_snapshot.signals.crisis_detected or (
+            ctx.turn_signal_snapshot.signals.emergency_detected
+        ):
+            ctx.triage_result = dict(ctx.triage_result or {})
+            ctx.triage_result.setdefault("category", "Emergency")
+            ctx.triage_result["requires_immediate_action"] = True
+
     post_gate = run_safety_gate(
         session,
         client_info,
         sid,
         ctx.user_message,
-        ctx.sanitized_message,
+        safety_detect_text,
         triage_result=ctx.triage_result,
         recommendation_client=ctx.recommendation_client,
         phase="full",
@@ -437,6 +543,23 @@ def run_chat_post_pipeline(
         session, sid, ctx.sanitized_message
     )
 
+    if d2_enabled and ctx.turn_signal_snapshot is not None:
+        from src.dialogue.routing.policy_d2_pipeline import try_policy_enforcement_d2
+
+        policy_resp = try_policy_enforcement_d2(
+            session,
+            sid,
+            ctx.turn_signal_snapshot,
+            user_text=ctx.original_user_message or ctx.user_message,
+            client_info=client_info,
+            triage_result=ctx.triage_result,
+        )
+        if policy_resp is not None:
+            ctx.policy_enforcement_handled = True
+            ctx.inappropriate_request_detected = True
+            # Request-local only — do not sticky-flag session across turns
+            return _guard_return(policy_resp)
+
     from src.handlers.chat.chat_triage_follow_ups import run_triage_follow_ups
 
     early_resp, ctx.inappropriate_request_detected = run_triage_follow_ups(
@@ -448,6 +571,7 @@ def run_chat_post_pipeline(
         ctx.processed_message,
         ctx.triage_result,
         ctx.recommendation_client,
+        skip_policy_kinds=d2_enabled,
     )
     if early_resp is not None:
         return _guard_return(early_resp)

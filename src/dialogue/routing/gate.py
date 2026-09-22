@@ -4,50 +4,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from src.dialogue.routing.medical_emergency_hints import (
+    MEDICAL_EMERGENCY_HINTS as _MEDICAL_EMERGENCY_HINTS,
+    is_hypothetical_side_effect_discussion as _is_hypothetical_side_effect_discussion,
+)
 from src.dialogue.routing.types import RouteDecision
-
-_MEDICAL_EMERGENCY_HINTS = (
-    "痙攣",
-    "引きつけ",
-    "けいれん",
-    "意識がもうろう",
-    "意識がない",
-    "意識を失",
-    "呼吸が苦しい",
-    "呼吸困難",
-    "呼吸ができない",
-    "息ができない",
-    "薬を大量",
-    "大量に飲",
-    "飲みすぎ",
-    "過量服薬",
-)
-
-_HYPOTHETICAL_SIDE_EFFECT_MARKERS = (
-    "出ることがある",
-    "出たら",
-    "もし",
-    "場合",
-    "ことがある",
-    "症状が出",
-    "副作用",
-    "アレルギー",
-    "教えて",
-    "説明",
-    "心配",
-    "使用をやめ",
-    "相談した方が",
-)
-
-
-def _is_hypothetical_side_effect_discussion(text: str) -> bool:
-    """副作用・アレルギーの説明・仮定話法では Emergency gate を抑止。"""
-    t = (text or "").strip()
-    if not t:
-        return False
-    if not any(h in t for h in _MEDICAL_EMERGENCY_HINTS):
-        return False
-    return any(m in t for m in _HYPOTHETICAL_SIDE_EFFECT_MARKERS)
 
 
 _EMOTIONAL_COUNSELING_HINTS = (
@@ -399,25 +360,6 @@ def run_deterministic_gate(
             source="physical_consultation_lifestyle",
         )
 
-    if (
-        session is not None
-        and hasattr(session, "get")
-        and isinstance(session.get("counseling_mode"), dict)
-        and session.get("counseling_mode", {}).get("active")
-        and not (
-            _physical_consultation_active(session)
-            and _looks_like_physical_lifestyle_followup(text)
-        )
-        and _looks_like_counseling_followup_answer(text)
-    ):
-        return RouteDecision(
-            primary_route="Counseling",
-            sub_route="counseling_continue",
-            confidence=0.92,
-            resolved_by="gate",
-            source="counseling_pending_answer",
-        )
-
     from src.security.known_attack_rules import match_known_attack
 
     matched, rule_id = match_known_attack(text)
@@ -457,6 +399,67 @@ def run_deterministic_gate(
                 source="pending_delete_cancel",
             )
 
+    # F4-C02: Emergency は session_admin_probe より先（混在発話で SessionOps が安全経路を迂回しない）
+    if triage.get("category") == "Emergency":
+        return RouteDecision(
+            primary_route="Emergency",
+            sub_route=str(triage.get("subcategory") or "emergency_dispatch"),
+            confidence=float(triage.get("confidence") or 0.9),
+            resolved_by="gate",
+            source="triage_emergency",
+        )
+
+    if any(h in text for h in _MEDICAL_EMERGENCY_HINTS):
+        if not _is_hypothetical_side_effect_discussion(text):
+            return RouteDecision(
+                primary_route="Emergency",
+                sub_route="medical_emergency",
+                confidence=0.95,
+                resolved_by="gate",
+                source="medical_emergency_hint",
+            )
+
+    counseling_active = (
+        session is not None
+        and hasattr(session, "get")
+        and isinstance(session.get("counseling_mode"), dict)
+        and bool(session.get("counseling_mode", {}).get("active"))
+    )
+
+    # S1-G06: active counseling 中だけ emergency_candidate を counseling_continue より先に。
+    # 全発話への emergency_candidate 挿入は副作用仮定話法などの既存契約を壊すため行わない。
+    if counseling_active and not _is_hypothetical_side_effect_discussion(text):
+        try:
+            from src.agents.emergency_classifier import is_emergency_candidate
+
+            if is_emergency_candidate(text):
+                return RouteDecision(
+                    primary_route="Emergency",
+                    sub_route="emergency_dispatch",
+                    confidence=0.95,
+                    resolved_by="gate",
+                    source="emergency_candidate",
+                )
+        except ImportError:
+            pass
+
+    # Counseling continue は Safety / Emergency の後（F4-C04 / S1-G06）
+    if (
+        counseling_active
+        and not (
+            _physical_consultation_active(session)
+            and _looks_like_physical_lifestyle_followup(text)
+        )
+        and _looks_like_counseling_followup_answer(text)
+    ):
+        return RouteDecision(
+            primary_route="Counseling",
+            sub_route="counseling_continue",
+            confidence=0.92,
+            resolved_by="gate",
+            source="counseling_pending_answer",
+        )
+
     from src.agents.session_agent import probe_session_admin_intent
 
     session_intent = probe_session_admin_intent(text)
@@ -478,25 +481,6 @@ def run_deterministic_gate(
                 confidence=1.0,
                 resolved_by="gate",
                 source="session_admin_probe",
-            )
-
-    if triage.get("category") == "Emergency":
-        return RouteDecision(
-            primary_route="Emergency",
-            sub_route=str(triage.get("subcategory") or "emergency_dispatch"),
-            confidence=float(triage.get("confidence") or 0.9),
-            resolved_by="gate",
-            source="triage_emergency",
-        )
-
-    if any(h in text for h in _MEDICAL_EMERGENCY_HINTS):
-        if not _is_hypothetical_side_effect_discussion(text):
-            return RouteDecision(
-                primary_route="Emergency",
-                sub_route="medical_emergency",
-                confidence=0.95,
-                resolved_by="gate",
-                source="medical_emergency_hint",
             )
 
     from src.utils.input_helpers import (

@@ -139,11 +139,60 @@ def _shutdown_executor() -> None:
     global _executor
     with _executor_lock:
         if _executor is not None:
-            _executor.shutdown(wait=False, cancel_futures=True)
+            try:
+                _executor.shutdown(wait=False, cancel_futures=True)
+            except TypeError:
+                # Python <3.9 compat: cancel_futures unsupported
+                try:
+                    _executor.shutdown(wait=False)
+                except Exception:
+                    pass
+            except Exception:
+                pass
             _executor = None
 
 
 atexit.register(_shutdown_executor)
+
+
+def _reset_runtime_for_tests() -> None:
+    """Test helper: drain pending counter and shut down the shadow executor."""
+    global _pending_count
+    _shutdown_executor()
+    with _pending_lock:
+        _pending_count = 0
+
+
+def _record_schedule_skip(
+    *,
+    correlation_id: Optional[str],
+    legacy_decision: Any,
+    snapshot: Mapping[str, Any],
+    sid: Optional[str],
+    error_class: str,
+) -> None:
+    """Fail-open skip metric (queue_full / submit_failed). Never raises."""
+    try:
+        from src.services.jev_metrics import build_state_shape, record_shadow_event
+
+        record_shadow_event(
+            correlation_id=correlation_id,
+            legacy_decision=_decision_to_payload(legacy_decision),
+            jev_decision=None,
+            executed_decision=_decision_to_payload(legacy_decision),
+            model=_jev_model(),
+            attempted=False,
+            succeeded=False,
+            retry_count=0,
+            fallback_reason="not_eligible",
+            error_class=error_class,
+            latency_ms=0.0,
+            legacy_saved_calls=0,
+            state_shape=build_state_shape(snapshot),
+            sid=sid,
+        )
+    except Exception:
+        logger.debug("jev schedule_skip metric failed error_class=%s", error_class)
 
 
 def _is_jev_enabled() -> bool:
@@ -541,7 +590,8 @@ def _shadow_worker(
                 error_class = getattr(jev_decision, "invalid_reason", None) or "invalid_schema"
     except Exception as exc:
         fallback_reason, error_class = _classify_failure(exc)
-        logger.debug("jev shadow worker failed: %s", error_class, exc_info=True)
+        # Never attach exc_info — exception chains must not reach logs.
+        logger.debug("jev shadow worker failed: %s", error_class)
         succeeded = False
 
     try:
@@ -570,7 +620,8 @@ def _shadow_worker(
             else None,
         )
     except Exception:
-        logger.debug("jev shadow metrics emit failed", exc_info=True)
+        # Log write failure must not reach the request path (sync) or crash workers.
+        logger.debug("jev shadow metrics emit failed")
 
 
 def schedule_jev_shadow(
@@ -586,7 +637,11 @@ def schedule_jev_shadow(
     """Jev shadow を schedule。True=投入/同期実行、False=スキップ。
 
     session は受け取らない（mutate 禁止）。flags OFF 時はスキップ。
-    queue full 時は not_eligible を記録して本線をブロックしない。
+    Eligibility v1: SessionOps / deterministic high-risk / policy block は
+    Jev API を呼ばず not-attempted として記録する（production/eval 共通契約）。
+    queue full / submit 失敗時は本線をブロックしない。
+    False を返すと呼び出し側（router）は correlation stash を行わない
+    （`_jev_shadow_correlation_id` lifecycle は Supervisor 所有の router/dispatcher）。
     """
     global _pending_count
 
@@ -597,6 +652,50 @@ def schedule_jev_shadow(
         snapshot = copy.deepcopy(dict(state))
         scrub_forbidden_jev_state_keys(snapshot)
         _sync_recent_aliases(snapshot)
+
+        user_text = ""
+        try:
+            user_text = str(snapshot.get("user_input") or snapshot.get("user_text") or "")
+        except Exception:
+            user_text = ""
+
+        try:
+            from src.dialogue.routing.pre_route_signals import collect_pre_route_signals
+            from src.services.jev_eligibility import decide_jev_intent_eligibility
+
+            signals = collect_pre_route_signals(
+                user_text,
+                deterministic_signals=deterministic_signals,
+            )
+            eligibility = decide_jev_intent_eligibility(signals)
+        except Exception:
+            # AE6-H2: fail closed for Jev API — do not call when eligibility cannot be decided.
+            eligibility = None
+            _record_eligibility_skip(
+                correlation_id=correlation_id,
+                legacy_decision=legacy_decision,
+                snapshot=snapshot,
+                sid=sid,
+                eligibility=type(
+                    "E",
+                    (),
+                    {
+                        "reason": "signal_evaluation_error",
+                        "sessionops_fast_path_suppressed": False,
+                    },
+                )(),
+            )
+            return False
+
+        if eligibility is not None and not eligibility.eligible and not force:
+            _record_eligibility_skip(
+                correlation_id=correlation_id,
+                legacy_decision=legacy_decision,
+                snapshot=snapshot,
+                sid=sid,
+                eligibility=eligibility,
+            )
+            return False
 
         kwargs = {
             "state": snapshot,
@@ -610,32 +709,18 @@ def schedule_jev_shadow(
             try:
                 _shadow_worker(**kwargs)
             except Exception:
-                logger.debug("jev shadow sync failed", exc_info=True)
+                logger.debug("jev shadow sync failed")
             return True
 
         with _pending_lock:
             if _pending_count >= _MAX_PENDING_SHADOW:
-                try:
-                    from src.services.jev_metrics import build_state_shape, record_shadow_event
-
-                    record_shadow_event(
-                        correlation_id=correlation_id,
-                        legacy_decision=_decision_to_payload(legacy_decision),
-                        jev_decision=None,
-                        executed_decision=_decision_to_payload(legacy_decision),
-                        model=_jev_model(),
-                        attempted=False,
-                        succeeded=False,
-                        retry_count=0,
-                        fallback_reason="not_eligible",
-                        error_class="queue_full",
-                        latency_ms=0.0,
-                        legacy_saved_calls=0,
-                        state_shape=build_state_shape(snapshot),
-                        sid=sid,
-                    )
-                except Exception:
-                    logger.debug("jev queue_full metric failed", exc_info=True)
+                _record_schedule_skip(
+                    correlation_id=correlation_id,
+                    legacy_decision=legacy_decision,
+                    snapshot=snapshot,
+                    sid=sid,
+                    error_class="queue_full",
+                )
                 logger.debug("jev shadow skipped: queue full")
                 return False
             _pending_count += 1
@@ -645,7 +730,7 @@ def schedule_jev_shadow(
             try:
                 _shadow_worker(**kwargs)
             except Exception:
-                logger.debug("jev shadow async failed", exc_info=True)
+                logger.debug("jev shadow async failed")
             finally:
                 with _pending_lock:
                     _pending_count = max(0, _pending_count - 1)
@@ -655,12 +740,67 @@ def schedule_jev_shadow(
         except Exception:
             with _pending_lock:
                 _pending_count = max(0, _pending_count - 1)
-            logger.debug("jev shadow submit failed", exc_info=True)
+            _record_schedule_skip(
+                correlation_id=correlation_id,
+                legacy_decision=legacy_decision,
+                snapshot=snapshot,
+                sid=sid,
+                error_class="submit_failed",
+            )
+            logger.debug("jev shadow submit failed")
             return False
         return True
     except Exception:
-        logger.debug("schedule_jev_shadow failed", exc_info=True)
+        logger.debug("schedule_jev_shadow failed")
         return False
+
+
+def _record_eligibility_skip(
+    *,
+    correlation_id: Optional[str],
+    legacy_decision: Any,
+    snapshot: Mapping[str, Any],
+    sid: Optional[str],
+    eligibility: Any,
+) -> None:
+    """Record intentional non-attempt (SessionOps / high-risk / policy). Never raises."""
+    try:
+        from src.services.jev_metrics import build_state_shape, record_shadow_event
+
+        reason = getattr(eligibility, "reason", None) or "not_eligible"
+        record_shadow_event(
+            correlation_id=correlation_id,
+            legacy_decision=_decision_to_payload(legacy_decision),
+            jev_decision=None,
+            executed_decision=_decision_to_payload(legacy_decision),
+            model=_jev_model(),
+            attempted=False,
+            succeeded=False,
+            retry_count=0,
+            fallback_reason="not_eligible",
+            error_class=str(reason),
+            latency_ms=0.0,
+            legacy_saved_calls=0,
+            state_shape=build_state_shape(snapshot),
+            sid=sid,
+            extra={
+                "jev_eligible": False,
+                "jev_eligibility_reason": str(reason),
+                "jev_attempted": False,
+                "sessionops_fast_path_suppressed": bool(
+                    getattr(eligibility, "sessionops_fast_path_suppressed", False)
+                ),
+                "eligibility_contract_version": getattr(
+                    eligibility, "eligibility_contract_version", None
+                )
+                or "jev-intent-eligibility-v1",
+            },
+        )
+    except Exception:
+        logger.debug("jev eligibility_skip metric failed")
+
+
+# NOTE: original schedule_jev_shadow body replaced above — keep helpers below.
 
 
 def run_jev_shadow_sync(

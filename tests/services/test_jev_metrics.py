@@ -1,4 +1,4 @@
-"""tests for src.services.jev_metrics (Phase 1B)."""
+"""tests for src.services.jev_metrics (Phase 1B / Agent D Observability)."""
 from __future__ import annotations
 
 from unittest.mock import patch
@@ -20,7 +20,7 @@ def test_trace_hash_never_equals_raw_sid():
 
 
 def test_estimate_jev_cost_usd():
-    # 1_000_000 tokens -> $0.042
+    # 1_000_000 tokens -> $0.042 （推定。実測ではない）
     assert jm.estimate_jev_cost_usd(1_000_000) == 0.042
     assert jm.estimate_jev_cost_usd(None) is None
     assert jm.estimate_jev_cost_usd("bad") is None
@@ -138,6 +138,9 @@ def test_record_shadow_event_write_failure_does_not_raise():
     assert result["legacy_saved_calls"] == 0
     assert "should-not-appear" not in str(result)
     assert result["trace_hash"] != "should-not-appear"
+    assert result["failure_reason"] == "log_error"
+    assert result["schema_version"] == jm.SCHEMA_VERSION
+    assert result["event_completeness"]["complete"] is True
 
 
 def test_record_shadow_event_outer_failure_returns_none():
@@ -193,12 +196,28 @@ def test_record_uses_notified_executed_decision():
     assert captured["file"] == "jev_intent_router_shadow.jsonl"
     data = captured["data"]
     assert data["executed_decision"]["primary_route"] == "Counseling"
-    assert data["jev_cost_usd"] is not None
+    assert data["jev_cost_usd_estimate"] is not None
+    # 互換エイリアスも推定と同じ値（DEPRECATED・即削除禁止）
+    assert data["jev_cost_usd"] == data["jev_cost_usd_estimate"]
+    assert data["jev_cost_usd_deprecated"] is True
+    assert "jev_cost_usd_estimate" in data["jev_cost_usd_deprecation_note"]
+    assert data["cost"]["field_semantics"]["jev_cost_usd_estimate"] == "estimated"
+    assert (
+        data["cost"]["field_semantics"]["jev_cost_usd"]
+        == jm.JEV_COST_USD_ALIAS_SEMANTICS
+    )
+    assert data["cost"]["field_semantics"]["jev_cost_usd"] == (
+        "estimated (alias of jev_cost_usd_estimate)"
+    )
+    assert data["jev_usage"]["input_tokens"] == 1358
+    assert data["jev_usage"]["token_measurement"] == "actual_usage_or_empty"
     assert "secret text" not in str(data)
     assert "raw-sid-xyz" not in str(data)
     assert data["state_shape"]["recent_turn_count"] == 1
     assert data["state_shape"]["recommended_medicine_count"] == 2
     assert "user_input" not in data
+    assert data["failure_reason"] == "none"
+    assert data["event_completeness"]["complete"] is True
 
 
 def test_notify_failure_non_propagating():
@@ -318,4 +337,198 @@ def test_state_shape_counts_both_aliases_and_flags_mismatch():
             succeeded=True,
         )
     assert captured["data"]["error_class"] == "recent_context_mismatch"
+    assert captured["data"]["failure_reason"] == "recent_context_mismatch"
     assert captured["data"]["state_shape"]["recent_context_mismatch"] is True
+
+
+def test_cost_separation_estimate_vs_actual():
+    cost = jm.build_cost_payload(
+        jev_cost_usd_estimate=0.00005704,
+        legacy_saved_calls=0,
+        openai_cost_usd_actual=0.0012,
+        openai_cost_usd_saved_estimate=0.0009,
+        openai_cost_jpy_saved_estimate=0.135,
+        usd_jpy_rate=150.0,
+        cost_basis={"path": "dialogue_intent_router_llm", "calculated_at": "2026-09-22"},
+    )
+    assert cost["jev_cost_usd_estimate"] == 0.00005704
+    assert cost["openai_cost_usd_actual"] == 0.0012
+    assert cost["openai_cost_usd_saved_estimate"] == 0.0009
+    assert cost["field_semantics"]["jev_cost_usd_estimate"] == "estimated"
+    assert "jev_cost_usd" in cost["field_semantics"]
+    assert cost["field_semantics"]["jev_cost_usd"] == jm.JEV_COST_USD_ALIAS_SEMANTICS
+    assert cost["field_semantics"]["jev_cost_usd"] == (
+        "estimated (alias of jev_cost_usd_estimate)"
+    )
+    assert cost["field_semantics"]["openai_cost_usd_actual"] == "actual_or_null"
+    assert cost["field_semantics"]["openai_cost_usd_saved_estimate"] == "estimated"
+    assert cost["total_classification_cost_usd_estimate"] == round(0.00005704 + 0.0012, 10)
+    assert "jev_cost_usd_estimate" in cost["total_classification_cost_components"]
+    assert "openai_cost_usd_actual" in cost["total_classification_cost_components"]
+
+
+def test_record_cost_block_and_latency_retry():
+    captured = {}
+
+    def _capture(log_file, data):
+        captured["data"] = data
+
+    with patch("src.utils.structured_logger._write_to_jsonl", side_effect=_capture):
+        jm.record_shadow_event(
+            correlation_id="cost-1",
+            legacy_decision={"primary_route": "Physical"},
+            jev_decision={"primary_route": "Physical"},
+            succeeded=False,
+            attempted=True,
+            retry_count=2,
+            latency_ms=1234.5,
+            fallback_reason="timeout",
+            error_class="timeout",
+            usage={"input_tokens": 1000, "output_tokens": 10},
+            legacy_saved_calls=0,
+            openai_cost_usd_actual=0.002,
+            openai_cost_usd_saved_estimate=0.0,
+        )
+    data = captured["data"]
+    assert data["retry_count"] == 2
+    assert data["latency_ms"] == 1234.5
+    assert data["failure_reason"] == "timeout"
+    assert data["fallback_reason"] == "timeout"
+    assert data["cost"]["openai_cost_usd_actual"] == 0.002
+    assert data["cost"]["openai_cost_usd_saved_estimate"] == 0.0
+    assert data["cost"]["legacy_saved_calls"] == 0
+    assert data["jev_cost_usd_estimate"] == jm.estimate_jev_cost_usd(1000)
+    # 推定を実測フィールドに入れていないこと
+    assert data["cost"]["openai_cost_usd_actual"] != data["jev_cost_usd_estimate"]
+
+
+def test_normalize_failure_reason():
+    assert (
+        jm.normalize_failure_reason(succeeded=True) == "none"
+    )
+    assert (
+        jm.normalize_failure_reason(
+            succeeded=False, fallback_reason="http_429"
+        )
+        == "http_429"
+    )
+    assert (
+        jm.normalize_failure_reason(
+            succeeded=False, error_class="TimeoutError"
+        )
+        == "timeout"
+    )
+    assert (
+        jm.normalize_failure_reason(
+            succeeded=False, error_class="weird_xyz"
+        )
+        == "other"
+    )
+    # schedule skip: not_eligible は未知 → 後続の queue_full / submit_failed を採用
+    assert (
+        jm.normalize_failure_reason(
+            succeeded=False,
+            fallback_reason="not_eligible",
+            error_class="queue_full",
+        )
+        == "queue_full"
+    )
+    assert (
+        jm.normalize_failure_reason(
+            succeeded=False,
+            fallback_reason="not_eligible",
+            error_class="submit_failed",
+        )
+        == "submit_failed"
+    )
+
+
+def test_pii_scrub_without_assert_and_under_optimize():
+    """assert に依存せず、forbidden key / secret 値を scrub する。"""
+    payload = {
+        "log_type": "jev_intent_router_shadow",
+        "sid": "raw-session-id",
+        "api_key": "sk-abcdefghijklmnopqrstuvwxyz",
+        "safe": "ok",
+        "nested": {"user_input": "should go", "note": "Bearer abcdefghijklmnop"},
+    }
+    removed = jm.scrub_forbidden_log_fields(payload)
+    assert "sid" in removed
+    assert "api_key" in removed
+    assert "nested.user_input" in removed
+    assert "sid" not in payload
+    assert "api_key" not in payload
+    assert "user_input" not in payload.get("nested", {})
+    assert payload["nested"]["note"] == "[REDACTED]"
+    assert payload["safe"] == "ok"
+    # validate は raise しない
+    hits = jm.validate_no_forbidden_log_content(
+        {"ok": 1, "authorization": "secret"}
+    )
+    assert "authorization" in hits
+
+
+def test_record_scrubs_poisoned_extra():
+    captured = {}
+
+    def _capture(log_file, data):
+        captured["data"] = data
+
+    with patch("src.utils.structured_logger._write_to_jsonl", side_effect=_capture):
+        jm.record_shadow_event(
+            correlation_id="pii-1",
+            legacy_decision={"primary_route": "Physical"},
+            jev_decision={"primary_route": "Physical"},
+            succeeded=True,
+            extra={
+                "debug_note": "sk-thisIsNotARealKeyButLongEnough123",
+                "user_input": "must never land",
+                "email": "user@example.com",
+                "phone": "090-1234-5678",
+                "Cookie": "sid=abc",
+                "address": "Tokyo",
+                "system_prompt": "SECRET SYSTEM",
+                "generation_prompt": "SECRET GEN",
+            },
+        )
+    data = captured["data"]
+    assert "user_input" not in data
+    assert "email" not in data
+    assert "phone" not in data
+    assert "Cookie" not in data
+    assert "address" not in data
+    assert "system_prompt" not in data
+    assert "generation_prompt" not in data
+    assert "sk-thisIsNotARealKeyButLongEnough123" not in str(data)
+    assert "user@example.com" not in str(data)
+    assert "SECRET SYSTEM" not in str(data)
+    assert data.get("debug_note") == "[REDACTED]"
+    assert "pii_scrub" in data
+
+
+def test_jev_cost_usd_alias_semantics_fixed():
+    """E-H/#13: field_semantics に互換エイリアスキーを estimated alias として固定。"""
+    cost = jm.build_cost_payload(jev_cost_usd_estimate=0.01, legacy_saved_calls=0)
+    assert "jev_cost_usd" in cost["field_semantics"]
+    assert cost["field_semantics"]["jev_cost_usd"] == (
+        "estimated (alias of jev_cost_usd_estimate)"
+    )
+    assert cost["field_semantics"]["jev_cost_usd"] == jm.JEV_COST_USD_ALIAS_SEMANTICS
+
+
+def test_assess_event_completeness_detects_missing():
+    incomplete = jm.assess_event_completeness({"log_type": "x"})
+    assert incomplete["complete"] is False
+    assert "disagreement_class" in incomplete["missing_required"]
+    assert "cost" in incomplete["missing_required"]
+
+
+def test_no_assert_in_jev_metrics_module():
+    """本番耐性: jev_metrics 本体に assert 文を置かない。"""
+    import inspect
+    import ast
+
+    src = inspect.getsource(jm)
+    tree = ast.parse(src)
+    asserts = [n for n in ast.walk(tree) if isinstance(n, ast.Assert)]
+    assert asserts == []

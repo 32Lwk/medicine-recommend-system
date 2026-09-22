@@ -22,6 +22,7 @@ from typing import Any
 
 import httpx
 
+from config.routing_config import jev_http_max_retries as configured_jev_http_max_retries
 from config.routing_config import jev_model as configured_jev_model
 from config.routing_config import jev_timeout_sec as configured_jev_timeout_sec
 
@@ -38,8 +39,15 @@ ERROR_NETWORK = "network_error"
 ERROR_INVALID_JSON = "invalid_json"
 ERROR_UNEXPECTED = "unexpected"
 
-_MAX_ATTEMPTS = 2  # initial + 1 retry (429 / 5xx only)
 _CONNECT_TIMEOUT_CAP_SEC = 1.0
+
+
+def _max_attempts() -> int:
+    """initial + configured retries (Phase1: 1 + 1 = 2)."""
+    retries = int(configured_jev_http_max_retries())
+    if retries < 0:
+        retries = 0
+    return 1 + retries
 
 _client_lock = threading.Lock()
 _shared_client: httpx.Client | None = None
@@ -201,10 +209,11 @@ def evaluate_system_one(
 
     retry_count = 0
     last_status: int | None = None
+    max_attempts = _max_attempts()
 
     try:
         client = _get_shared_client()
-        for attempt in range(_MAX_ATTEMPTS):
+        for attempt in range(max_attempts):
             try:
                 response = client.post(
                     JEV_ENDPOINT,
@@ -226,8 +235,9 @@ def evaluate_system_one(
                     model=resolved_model,
                 )
             except httpx.RequestError:
-                # Connection / network: no retry. Exception may embed request
-                # headers (Authorization) — never log or re-raise the object.
+                # DNS / connection refused / other network: no retry.
+                # Exception may embed request headers (Authorization) —
+                # never log or re-raise the object.
                 _safe_log(
                     "jev_client network_error error_class=%s attempt=%s",
                     ERROR_NETWORK,
@@ -244,7 +254,7 @@ def evaluate_system_one(
             last_status = status
 
             if status == 429 or status >= 500:
-                if attempt + 1 < _MAX_ATTEMPTS:
+                if attempt + 1 < max_attempts:
                     retry_count += 1
                     _safe_log(
                         "jev_client retryable status=%s retry_count=%s",

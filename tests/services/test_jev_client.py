@@ -10,9 +10,15 @@ import pytest
 from config.routing_config import (
     jev_confidence_floor,
     jev_high_confidence,
+    jev_http_max_retries,
     jev_model,
     jev_noul_threshold,
     jev_timeout_sec,
+)
+from config.llm_flags import (
+    is_jev_enabled,
+    is_jev_intent_router_primary_enabled,
+    is_jev_intent_router_shadow_enabled,
 )
 from src.services import jev_client as jev_client_mod
 from src.services.jev_client import (
@@ -319,12 +325,161 @@ def test_resolved_version_absent_is_none(monkeypatch):
     assert result.resolved_version is None
 
 
+# --- Fault injection (transport) ---
+
+
+def test_dns_failure_no_retry(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    err = httpx.ConnectError("[Errno 11001] getaddrinfo failed")
+    client = _mock_client([err])
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client):
+        result = evaluate_system_one(state={}, questions={})
+
+    assert result.ok is False
+    assert result.error_class == ERROR_NETWORK
+    assert result.retry_count == 0
+    assert client.post.call_count == 1
+
+
+def test_connection_refused_no_retry(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    err = httpx.ConnectError("[WinError 10061] Connection refused")
+    client = _mock_client([err])
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client):
+        result = evaluate_system_one(state={}, questions={})
+
+    assert result.ok is False
+    assert result.error_class == ERROR_NETWORK
+    assert result.retry_count == 0
+    assert client.post.call_count == 1
+
+
+def test_500_exhausted(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    r1 = MagicMock()
+    r1.status_code = 500
+    r2 = MagicMock()
+    r2.status_code = 500
+    client = _mock_client([r1, r2])
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client):
+        result = evaluate_system_one(state={}, questions={})
+
+    assert result.ok is False
+    assert result.error_class == ERROR_HTTP_5XX_EXHAUSTED
+    assert result.retry_count == 1
+    assert result.status_code == 500
+    assert client.post.call_count == 2
+
+
+def test_503_then_success(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    first = MagicMock()
+    first.status_code = 503
+    client = _mock_client([first, _ok_response()])
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client):
+        result = evaluate_system_one(state={}, questions={})
+
+    assert result.ok is True
+    assert result.retry_count == 1
+    assert client.post.call_count == 2
+
+
+def test_malformed_json_non_object(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    bad = MagicMock()
+    bad.status_code = 200
+    bad.json.return_value = ["not", "a", "dict"]
+    client = _mock_client([bad])
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client):
+        result = evaluate_system_one(state={}, questions={})
+
+    assert result.ok is False
+    assert result.error_class == ERROR_INVALID_JSON
+    assert result.retry_count == 0
+
+
+def test_usage_missing_returns_empty_dict(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    client = _mock_client(
+        [
+            _ok_response(
+                payload={
+                    "answers": {"primary_route": {"type": "choice", "choice": "Physical"}},
+                    "model": "jev-latest",
+                }
+            )
+        ]
+    )
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client):
+        result = evaluate_system_one(state={}, questions={})
+
+    assert result.ok is True
+    assert result.usage == {}
+    assert result.answers["primary_route"]["choice"] == "Physical"
+
+
+def test_answers_missing_returns_empty_dict(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    client = _mock_client(
+        [
+            _ok_response(
+                payload={
+                    "usage": {"input_tokens": 1},
+                    "model": "jev-latest",
+                }
+            )
+        ]
+    )
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client):
+        result = evaluate_system_one(state={}, questions={})
+
+    assert result.ok is True
+    assert result.answers == {}
+    assert result.usage == {"input_tokens": 1}
+
+
+def test_close_shared_client_idempotent(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    client = _mock_client([_ok_response()])
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client):
+        evaluate_system_one(state={}, questions={})
+        assert jev_client_mod._shared_client is client
+        jev_client_mod._close_shared_client()
+        assert jev_client_mod._shared_client is None
+        jev_client_mod._close_shared_client()  # second close must not raise
+        assert jev_client_mod._shared_client is None
+    assert client.close.call_count >= 1
+
+
+def test_client_constructor_failure_fail_open(monkeypatch):
+    """Shared client construction must not raise to callers."""
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+
+    with patch(
+        "src.services.jev_client.httpx.Client",
+        side_effect=RuntimeError("pool init failed"),
+    ):
+        result = evaluate_system_one(state={}, questions={})
+
+    assert result.ok is False
+    assert result.error_class == "unexpected"
+
+
 # --- routing_config Jev getters ---
 
 
 def test_routing_config_jev_defaults():
     assert jev_model() == "jev-latest"
     assert jev_timeout_sec() == 3.5
+    assert jev_http_max_retries() == 1
     assert jev_confidence_floor() == 0.70
     assert jev_high_confidence() == 0.85
     assert jev_noul_threshold() == 0.75
@@ -380,3 +535,25 @@ def test_routing_config_unit_interval_accepts_bounds(monkeypatch, env_name, gett
     assert getter() == 1.0
     monkeypatch.setenv(env_name, "0.42")
     assert getter() == 0.42
+
+
+# --- llm_flags: default OFF + PRIMARY must stay inert for Phase1 adapters ---
+
+
+def test_jev_flags_default_off(monkeypatch):
+    for name in ("JEV_ENABLED", "JEV_INTENT_ROUTER_SHADOW", "JEV_INTENT_ROUTER_PRIMARY"):
+        monkeypatch.delenv(name, raising=False)
+    assert is_jev_enabled() is False
+    assert is_jev_intent_router_shadow_enabled() is False
+    assert is_jev_intent_router_primary_enabled() is False
+
+
+def test_jev_primary_flag_not_referenced_by_client_module():
+    """Phase1: client must not branch on PRIMARY (execution remains fail-open transport)."""
+    import inspect
+
+    from src.services import jev_client
+
+    source = inspect.getsource(jev_client)
+    assert "JEV_INTENT_ROUTER_PRIMARY" not in source
+    assert "is_jev_intent_router_primary" not in source

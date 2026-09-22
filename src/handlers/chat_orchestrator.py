@@ -250,18 +250,29 @@ class ChatOrchestrator:
                         from config.llm_flags import is_intent_router_dispatch_enabled
 
                         if not is_intent_router_dispatch_enabled(ctx.sid):
-                            resp = self._try_session_agent(ctx)
-                        else:
-                            from src.dialogue.pipeline import try_session_ops_route
+                            from config.llm_flags import is_policy_enforcement_d2_enabled
 
-                            resp = try_session_ops_route(
-                                ctx.session,
-                                ctx.sid,
-                                ctx.sanitized_message or ctx.user_message,
-                                self._client,
-                                triage_result=ctx.triage_result,
-                                phase="orchestrator_other",
-                            )
+                            if is_policy_enforcement_d2_enabled():
+                                resp = None
+                            else:
+                                resp = self._try_session_agent(ctx)
+                        else:
+                            from config.llm_flags import is_policy_enforcement_d2_enabled
+
+                            # D2 ON: SessionOps only via pure_preflight; no late mutation.
+                            if is_policy_enforcement_d2_enabled():
+                                resp = None
+                            else:
+                                from src.dialogue.pipeline import try_session_ops_route
+
+                                resp = try_session_ops_route(
+                                    ctx.session,
+                                    ctx.sid,
+                                    ctx.sanitized_message or ctx.user_message,
+                                    self._client,
+                                    triage_result=ctx.triage_result,
+                                    phase="orchestrator_other",
+                                )
                         triage_after = ctx.triage_result or {}
                         if resp is None and triage_after.get("concierge_intent") != "session_ops":
                             from src.dialogue.history import resolve_concierge_history_with_fallback
@@ -640,6 +651,11 @@ class ChatOrchestrator:
             dec.get("sub_route"),
         )
         if primary == "SessionOps":
+            from config.llm_flags import is_policy_enforcement_d2_enabled
+
+            if is_policy_enforcement_d2_enabled():
+                # Impure or already-evaluated turns must not mutate via locked SessionOps.
+                return None
             from src.dialogue.pipeline import try_session_ops_route
 
             return try_session_ops_route(
@@ -743,6 +759,15 @@ class ChatOrchestrator:
         return resp
 
     def _route_inappropriate_drug_block(self, ctx: Any) -> Optional[ResponseTuple]:
+        from config.llm_flags import is_policy_enforcement_d2_enabled
+
+        # D2 owns controlled/illegal terminal path; avoid duplicate responses.
+        if is_policy_enforcement_d2_enabled():
+            if getattr(ctx, "policy_enforcement_handled", False):
+                return None
+            # Flag ON: typed enforcement already ran (or residual SF-E1 in follow-ups).
+            return None
+
         from src.handlers.chat.inappropriate_drug_block_route import (
             try_inappropriate_drug_block_response,
         )

@@ -25,6 +25,8 @@ def detect_crisis_keywords(user_message):
         'もうだめ', 'だめだ', '終わり', '終わらせたい', '命を絶ちたい',
         'この世から消えたい', '存在したくない', 'いなくなってしまいたい',
         '自殺願望', '自殺念慮', '死にたい気持ち', '死にたいです',
+        # BR-H02: past / inceptive forms (fail-safe; does not match 死にたくない)
+        '死にたかった', '死にたくなっ',
 
         # 薬物関連の危険表現
         '過量服薬', 'OD', '致死量', '大量服薬', '薬を全部飲む', '薬で死にたい',
@@ -103,7 +105,41 @@ def detect_crisis_keywords(user_message):
                 continue
         detected_keywords.append(keyword)
 
+    # BR-C01 (medical unit): affirmative double-negation of "don't want to die"
+    # is logically affirmative ideation and must not fall through as non-crisis.
+    # Does not soften / remove ordinary keyword hits (Option A preserved).
+    if _matches_affirmative_double_negation_crisis(user_message):
+        if "double_negation_affirmative_crisis" not in detected_keywords:
+            detected_keywords.append("double_negation_affirmative_crisis")
+
+    # NOTE: Explicit crisis-negation softening (S1-G05) was reverted from the
+    # Jev boundary-repair diff (Supervisor Option A). Negation handling is a
+    # separate medical-safety change and must not ride eligibility refactors.
     return len(detected_keywords) > 0, detected_keywords
+
+
+# Affirmative double negation (希死念慮を肯定する言い回し). Narrow on purpose.
+_AFFIRMATIVE_DOUBLE_NEGATION_CRISIS_PATTERNS = (
+    re.compile(
+        r"死にたくない(?:という)?(?:わけ|訳|ワケ)(?:で)?(?:は|も)?"
+        r"(?:ない|無い|ありません|ないです|じゃない|じゃありません|じゃありません)"
+    ),
+    re.compile(
+        r"死にたくない(?:って|という)?(?:わけ|訳|ワケ)"
+        r"(?:じゃない|じゃありません|ではない|ではありません|ない|無い)"
+    ),
+    re.compile(
+        r"死にたかった(?:こと)?(?:が|は)?ない(?:という)?(?:わけ|訳|ワケ)(?:で)?(?:は|も)?"
+        r"(?:ない|無い|ありません|ないです|じゃない|じゃありません)"
+    ),
+)
+
+
+def _matches_affirmative_double_negation_crisis(user_message: str) -> bool:
+    text = (user_message or "").strip()
+    if not text:
+        return False
+    return any(p.search(text) for p in _AFFIRMATIVE_DOUBLE_NEGATION_CRISIS_PATTERNS)
 
 
 def _keyword_matches(keyword: str, user_message_lower: str) -> bool:

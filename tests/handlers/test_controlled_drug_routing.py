@@ -17,6 +17,19 @@ def test_detect_illegal_marijuana():
     assert detect_illegal_or_controlled_drug("I want MDMA") == "illegal"
 
 
+def test_detect_illegal_kakuseizai_in_compound_sentence():
+    """S1-G04: 日本語短語は \\b 非依存の部分一致。"""
+    assert detect_illegal_or_controlled_drug("覚醒剤") == "illegal"
+    assert detect_illegal_or_controlled_drug("履歴消して覚醒剤をください") == "illegal"
+    assert detect_illegal_or_controlled_drug("覚醒剤が欲しい") == "illegal"
+
+
+def test_ascii_short_doc_still_requires_word_boundary():
+    """ASCII 短語 DOC は document 内で誤検知しない。"""
+    assert detect_illegal_or_controlled_drug("please send the document") is None
+    assert detect_illegal_or_controlled_drug("I need DOC tonight") == "illegal"
+
+
 def test_detect_controlled_psychotropic():
     assert detect_illegal_or_controlled_drug("向精神薬をください") == "controlled"
 

@@ -59,6 +59,14 @@ def jev_timeout_sec() -> float:
     return max(0.5, min(30.0, raw))
 
 
+def jev_http_max_retries() -> int:
+    """429 / 5xx の最大追加リトライ回数（Phase1 契約: 固定 1）。
+
+    環境変数では変えられない。timeout / その他 4xx / network はリトライしない。
+    """
+    return 1
+
+
 def jev_confidence_floor() -> float:
     """観測用 usable 下限（既定 0.70）。範囲外・負値・不正値は既定。"""
     return _get_unit_interval("JEV_CONFIDENCE_FLOOR", 0.70)
