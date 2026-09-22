@@ -108,7 +108,7 @@ def test_deterministic_signals_for_medical_examination_scenario() -> None:
 
 
 def test_medical_examination_deterministic_overrides_physical_jev_answers() -> None:
-    """Mocked Physical Jev answers become Emergency when medical_examination signal set."""
+    """Override changes executed route; soft accuracy scores raw model output (R8-H1)."""
     from src.services.jev_decisions import parse_jev_answers
 
     mod = _load_soft_module()
@@ -137,11 +137,35 @@ def test_medical_examination_deterministic_overrides_physical_jev_answers() -> N
     assert with_signal.sub_route == "medical_examination"
     assert with_signal.source == "deterministic_medical_examination_override"
 
-    scored = mod.soft_score_prediction(
+    # Raw wrong + override correct → raw soft accuracy fail
+    scored_raw = mod.soft_score_prediction(
+        scenario["expect"],
+        {
+            "primary_route": without.primary_route,
+            "sub_route": without.sub_route,
+        },
+    )
+    assert scored_raw["soft_pass"] is False
+
+    scored_effective = mod.soft_score_prediction(
         scenario["expect"],
         {
             "primary_route": with_signal.primary_route,
             "sub_route": with_signal.sub_route,
         },
+    )
+    assert scored_effective["soft_pass"] is True
+
+
+def test_raw_correct_and_override_correct_soft_pass() -> None:
+    """Raw correct + override correct → soft_pass True (R8-H1)."""
+    mod = _load_soft_module()
+    raw = yaml.safe_load(_SAFETY_FIXTURE.read_text(encoding="utf-8")) or {}
+    scenario = next(
+        s for s in (raw.get("scenarios") or []) if s["id"] == "safety-medical-examination-request"
+    )
+    scored = mod.soft_score_prediction(
+        scenario["expect"],
+        {"primary_route": "Emergency", "sub_route": "medical_examination"},
     )
     assert scored["soft_pass"] is True

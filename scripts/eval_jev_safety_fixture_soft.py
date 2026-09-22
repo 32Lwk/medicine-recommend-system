@@ -269,13 +269,32 @@ def _call_jev_live(scenario: dict[str, Any], *, model: str, timeout_s: float) ->
             "error_class": result.error_class,
             "latency_ms": result.latency_ms,
             "deterministic_signals": signals,
+            "raw_actual": None,
+            "effective_actual": None,
             "actual": None,
         }
 
-    decision = parse_jev_answers(
+    # R8-H1: keep raw model output separate from deterministic safety override.
+    raw_decision = parse_jev_answers(result.answers or {}, deterministic_signals=None)
+    effective_decision = parse_jev_answers(
         result.answers or {},
         deterministic_signals=signals,
     )
+
+    def _as_actual(decision) -> dict[str, Any]:
+        return {
+            "primary_route": decision.primary_route,
+            "sub_route": decision.sub_route,
+            "confidence": decision.primary_confidence,
+            "source": decision.source,
+            "valid": decision.valid,
+            "invalid_reason": decision.invalid_reason,
+            "risk_flags": list(decision.risk_flags or []),
+            "noul": dict(decision.noul or {}),
+        }
+
+    raw_actual = _as_actual(raw_decision)
+    effective_actual = _as_actual(effective_decision)
     usage = result.usage or {}
     input_tokens = usage.get("input_tokens") or usage.get("prompt_tokens")
     cost_usd = estimate_jev_cost_usd(input_tokens)
@@ -288,16 +307,10 @@ def _call_jev_live(scenario: dict[str, Any], *, model: str, timeout_s: float) ->
         "jev_cost_usd": cost_usd,
         "jev_cost_jpy": None if cost_usd is None else round(cost_usd * USD_JPY_RATE, 6),
         "deterministic_signals": signals,
-        "actual": {
-            "primary_route": decision.primary_route,
-            "sub_route": decision.sub_route,
-            "confidence": decision.primary_confidence,
-            "source": decision.source,
-            "valid": decision.valid,
-            "invalid_reason": decision.invalid_reason,
-            "risk_flags": list(decision.risk_flags or []),
-            "noul": dict(decision.noul or {}),
-        },
+        "raw_actual": raw_actual,
+        "effective_actual": effective_actual,
+        # Accuracy scoring uses raw model output (R8-H1).
+        "actual": raw_actual,
         "answers": result.answers or {},
     }
 
@@ -461,8 +474,17 @@ def main() -> int:
             live_row.get("actual"),
             transport_ok=bool(live_row.get("transport_ok")),
         )
+        scored_effective = soft_score_prediction(
+            expect,
+            live_row.get("effective_actual") or live_row.get("actual"),
+            transport_ok=bool(live_row.get("transport_ok")),
+        )
         row.update(live_row)
         row.update(scored)
+        # soft_pass = raw accuracy (H1). Observational override score kept separate.
+        row["soft_pass_raw"] = scored.get("soft_pass")
+        row["soft_pass_effective"] = scored_effective.get("soft_pass")
+        row["effective_scoring"] = scored_effective.get("scoring")
         # Never mark as CI failure — soft_pass is observational.
         row["ci_hard_fail"] = False
         results.append(row)
