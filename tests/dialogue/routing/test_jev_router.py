@@ -66,6 +66,15 @@ def test_state_allowlist_six_turns_truncates_to_five():
     assert state["recent_turns"][-1]["content"] == "turn-5-content"
 
 
+def test_recent_turn_content_capped_for_payload_size():
+    long_text = "あ" * (jr._MAX_RECENT_TURN_CHARS + 50)
+    session = {"messages": [{"type": "user", "content": long_text}]}
+    state = build_jev_router_state("質問", session, "sid")
+    assert len(state["recent_turns"]) == 1
+    assert len(state["recent_turns"][0]["content"]) == jr._MAX_RECENT_TURN_CHARS
+    assert state["recent_turns"][0]["content"] == long_text[: jr._MAX_RECENT_TURN_CHARS]
+
+
 def test_baseline_triage_hint_never_present_even_if_triage_has_category():
     session = {"messages": _msgs(2)}
     triage = {"category": "Physical", "subcategory": "fever", "confidence": 0.99}

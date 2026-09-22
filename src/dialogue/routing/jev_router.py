@@ -17,9 +17,11 @@ from typing import Any, Mapping, Optional
 logger = logging.getLogger(__name__)
 
 _MAX_RECENT_TURNS = 5
+# Keep 5 turns for shadow accuracy; shrink text per turn before shrinking depth.
+_MAX_RECENT_TURN_CHARS = 240
 _MAX_MEDICINE_NAMES = 3
 _MAX_ACTIVE_SYMPTOMS = 5
-_APP_CONTEXT = "OTC medicine assistant; choose one supported route"
+_APP_CONTEXT = "Japanese OTC medicine routing"
 _EXECUTOR_WORKERS = 2
 _MAX_PENDING_SHADOW = 8
 
@@ -248,6 +250,14 @@ def _content_of(msg: Mapping[str, Any]) -> str:
     return str(content or "").strip()
 
 
+def _trim_recent_turn_content(text: Any) -> str:
+    content = "" if text is None else str(text)
+    content = content.replace("\x00", "").strip()
+    if len(content) > _MAX_RECENT_TURN_CHARS:
+        content = content[:_MAX_RECENT_TURN_CHARS]
+    return content
+
+
 def _extract_recent_turns(session: Any, sid: Optional[str]) -> list[dict[str, str]]:
     messages: list[Any] = []
     try:
@@ -268,10 +278,10 @@ def _extract_recent_turns(session: Any, sid: Optional[str]) -> list[dict[str, st
     for msg in messages:
         if not isinstance(msg, Mapping):
             continue
-        content = _content_of(msg)
+        content = _trim_recent_turn_content(_content_of(msg))
         if not content:
             continue
-        turns.append({"role": _role_of(msg), "content": content[:500]})
+        turns.append({"role": _role_of(msg), "content": content})
     return turns[-_MAX_RECENT_TURNS:]
 
 
