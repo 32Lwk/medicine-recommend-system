@@ -2,7 +2,7 @@
 
 - 作成日: 2026-09-21
 - 位置づけ: Phase 1 local shadow（Gate A-code Passed）完了後の **次実行フロー正本**
-- 前提: Gate A-accuracy **未完**、Gate B **Hard No-Go**、PRIMARY / staging / production **Hard No-Go**
+- 前提: Gate A-accuracy **Not Passed**（live `012129` 実行済）、Gate B **Hard No-Go**、PRIMARY / staging / production **Hard No-Go**、Focus 本配線 **No-Go**
 - 参照:
   - Progress: `JEV_PROGRESS_AND_NEXT_PLAN_20260921.md`
   - Supervisor: `JEV_PHASE1_LOCAL_SHADOW_SUPERVISOR_REPORT_20260921.md`
@@ -10,14 +10,16 @@
   - Synthesis: `JEV_PARALLEL_SYNTHESIS_20260921.md`
   - Next targets: `JEV_NEXT_TARGETS_HYPOTHESIS_20260921.md`
   - Pharmacist draft: `JEV_SAFETY_FIXTURE_PHARMACIST_REVIEW_20260921.md`
+  - A-accuracy 判定: `JEV_GATE_A_ACCURACY_VERDICT_20260922.md`
+  - 現行 live: `log/analysis/jev_intent_router_eval_10_20260922_012129.{json,md}`
 
 ## 0. 現在地と辛口前提
 
 | 事実 | 意味 |
 | --- | --- |
 | Gate A-code Passed | 本線非干渉・PRIMARY ignore・unit 緑。**精度合格ではない** |
-| Gate A-accuracy Not Passed | production 契約での live 再評価が未完。ここで止まる |
-| pilot `013619` 30/30 | **smoke / 参考値のみ**。Gate A-accuracy クローズにも Gate B 入場にも使わない |
+| Gate A-accuracy Not Passed | live `012129` は方法論充足だが CI 保守・コスト純減未達。判定正本 `JEV_GATE_A_ACCURACY_VERDICT_20260922.md`。ここで止まる |
+| pilot `013619` / 旧 `033321` | **smoke / 参考値のみ**。Gate A-accuracy クローズにも Gate B 入場にも使わない |
 | `pharmacist_reviewed_draft` | 人間医療承認前。CI hard-fail 根拠にしてはならない |
 | Focus / Eligibility 統合 | **禁止**（仮説 T2 採用）。Focus は QA 内観点、Eligibility は route/pivot |
 
@@ -29,7 +31,7 @@
 
 ### 1.1 目的
 
-`013619` の有効値を **production state 契約**（`recent_turns` 優先 + `recent_context` alias）で再現し、接続失敗を除外した上で精度・latency・cost 分離を確定する。
+production state 契約での live 再評価。**現行結果:** `20260922_012129` → **Not Passed**（点推定 latency は達成、scenario-cluster CI 下限・コスト純減は未達）。追加 live は方法論変更後のみ。
 
 ### 1.2 実行条件（入場）
 

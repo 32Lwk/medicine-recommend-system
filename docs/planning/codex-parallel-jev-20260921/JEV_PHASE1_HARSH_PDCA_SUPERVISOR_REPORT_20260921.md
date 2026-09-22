@@ -1,5 +1,10 @@
 # Jev Phase 1 — 上司辛口レビュー & PDCA 改善レポート
 
+> ## ERRATUM（2026-09-22 Agent G）
+>
+> Gate A-accuracy を Gate B と同一の **Hard No-Go** に混ぜない。正は A-accuracy **Not Passed** / B **Hard No-Go**。証跡: `JEV_GATE_A_ACCURACY_VERDICT_20260922.md` / live `012129`。
+
+
 - 作成日: 2026-09-21
 - 役割: 実装上司（監修）＋ 医薬品監修部下（pharmacist）を含む対話的 PDCA
 - 対象: Phase 0–1 local shadow 並列成果（Decisions / Client / Metrics+Router / Docs / Integration）
@@ -15,7 +20,8 @@
 | **Round 1 後** | 致命傷の多くは塞いだ。ただし薬剤師と Decisions が **仮定・引用 Emergency で対立**。 |
 | **Round 2 後** | 医療裁定を優先して対立解消。技術残差は「Gate B 未達」に集約。 |
 | **Gate A-code** | **Passed**（実行不変・default OFF・secret 契約） |
-| **Gate A-accuracy / Gate B** | **Hard No-Go**（live 再評価未・人間医療承認未・dev 未準備） |
+| **Gate A-accuracy** | **Not Passed**（2026-09-22: live `012129` 実行済・CI/コスト未達。旧行は A-accuracy を Hard No-Go に誤混同） |
+| **Gate B** | **Hard No-Go**（人間医療承認未・dev 未準備） |
 
 **最初の Supervisor レポートの評点（A-/A）は甘すぎた。** 本レポートの初稿換算は **C〜B-**。PDCA 後でも **B+（コード）/ C（医療ラベル運用）**。
 

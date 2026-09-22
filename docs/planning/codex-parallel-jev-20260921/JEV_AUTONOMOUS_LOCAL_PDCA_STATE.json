@@ -1,0 +1,167 @@
+{
+  "program": "Jev Local Integration R11-R15 Autonomous PDCA",
+  "started_at": "2026-09-23T01:55:00+09:00",
+  "ended_at": "2026-09-23T02:20:00+09:00",
+  "supervisor_session": "autonomous-local-r11-r15-20260923",
+  "gate_status": {
+    "gate_a_code": "Conditional Passed",
+    "gate_a_code_remediation": "complete candidate",
+    "gate_a_accuracy": "Conditional Passed",
+    "gate_a_accuracy_review": "JEV_R16_GATE_A_ACCURACY_INDEPENDENT_REREVIEW_20260923.md",
+    "gate_a_accuracy_local_candidate": "Re-review Ready candidate → R16 Conditional Passed",
+    "gate_b": "Hard No-Go",
+    "product_safety": "未合格",
+    "critical_open": 0,
+    "high_open": 0
+  },
+  "allowed_labels_claimed": [
+    "Local Jev Shadow Integration Completed candidate",
+    "Accuracy/Latency Local Gate Passed candidate",
+    "Gate A-accuracy Re-review Ready candidate",
+    "Local PDCA Converged candidate"
+  ],
+  "forbidden_labels_not_claimed": [
+    "production deployed",
+    "product safety Passed",
+    "Gate B Go",
+    "live ready",
+    "Jev primary ready"
+  ],
+  "frozen_contracts": {
+    "accuracy_gate_pct_min": 100,
+    "warm_mean_delta_ms_min": 900.0,
+    "warm_scenario_cluster_ci_lower_ms_min": 900.0,
+    "cost_in_gate_a_pass_fail": false,
+    "cost_reporting_required": true,
+    "evaluation_contract_version": "jev-intent-gate-a-v2",
+    "eligibility_contract_version": "jev-intent-eligibility-v1",
+    "fixture_eval_10_sha256_16": "122f047cd2aaee1f",
+    "evaluator_sha256_16": "dcd3653d94f54263",
+    "jev_client_sha256_16": "8292b70fb9b25402",
+    "jev_router_sha256_16": "1faa489fa1d16cf6",
+    "pre_route_signals_sha256_16_after_vocab_fix": "7723cb2f6cd23ca8",
+    "medical_examination_request_sha256_16_after_vocab_fix": "eb690a5a6f85f46d",
+    "jev_eligibility_sha256_16_after_vocab_fix": "903c2ec0777801a3"
+  },
+  "flags_policy": {
+    "default_code": "OFF",
+    "session_temporary_on_allowed": true,
+    "primary_never": true,
+    "must_rollback_at_end": true,
+    "flags_rolled_back": true,
+    "verified_after_rollback": {
+      "JEV_ENABLED": false,
+      "JEV_INTENT_ROUTER_SHADOW": false,
+      "JEV_INTENT_ROUTER_PRIMARY": false,
+      "POLICY_ENFORCEMENT_D2": false
+    }
+  },
+  "current_phase": "converged_local",
+  "cycle_id": "R11-C6-finalize",
+  "cycles": [
+    {
+      "cycle_id": "R11-C0-init",
+      "hypothesis": "Local isolation + temp flags safe",
+      "decision": "proceed"
+    },
+    {
+      "cycle_id": "R11-C1-mock-smoke",
+      "hypothesis": "Mock shadow path green",
+      "decision": "accept → API smoke"
+    },
+    {
+      "cycle_id": "R11-C2-api-smoke5",
+      "hypothesis": "≤5 synthetic non-high-risk API smoke",
+      "decision": "accept 5/5"
+    },
+    {
+      "cycle_id": "R11-C3-stage1-r1",
+      "hypothesis": "Wiring + gate metrics",
+      "accuracy_gate_pct": 100,
+      "ci_low_ms": 1410.87,
+      "decision": "pass"
+    },
+    {
+      "cycle_id": "R11-C4-stage2-r3",
+      "hypothesis": "Variance check",
+      "accuracy_gate_pct": 100,
+      "ci_low_ms": 1023.04,
+      "decision": "pass"
+    },
+    {
+      "cycle_id": "R11-C5a-stage3-r10-seed42",
+      "hypothesis": "repeat=10 local shadow seed=42",
+      "accuracy_gate_pct": 100,
+      "accuracy_gate_n": 70,
+      "membership_unknown": 0,
+      "warm_mean_delta_ms": 1245.75,
+      "ci_low_ms": 989.32,
+      "ci_high_ms": 1656.8,
+      "token_input_sum": 96410,
+      "cost_jev_jpy_est": 0.635728,
+      "decision": "pass"
+    },
+    {
+      "cycle_id": "R11-C5b-stage3-r10-seed20260922",
+      "hypothesis": "repeat=10 reproducibility seed=20260922",
+      "accuracy_gate_pct": 100,
+      "accuracy_gate_n": 70,
+      "membership_unknown": 0,
+      "warm_mean_delta_ms": 1143.8,
+      "ci_low_ms": 903.14,
+      "ci_high_ms": 1483.05,
+      "cost_jev_jpy_est": 0.635728,
+      "decision": "pass"
+    },
+    {
+      "cycle_id": "R11-C5c-medical-adversarial",
+      "hypothesis": "Medical G/H find no Critical/High for local shadow",
+      "dominant_failure": "vocab drift H1/H2 + eligibility ambiguous H3",
+      "decision": "revise"
+    },
+    {
+      "cycle_id": "R11-C5d-vocab-fix",
+      "hypothesis": "Minimal marker + policy_block eligibility closes High",
+      "files_changed": [
+        "src/dialogue/routing/pre_route_signals.py",
+        "src/services/medical_examination_request.py",
+        "src/services/jev_eligibility.py",
+        "tests/dialogue/routing/test_r11_vocab_drift_guards.py",
+        "tests/services/test_medical_examination_request.py"
+      ],
+      "tests": "87 passed routing subset",
+      "medical_reaudit": {"critical": 0, "high": 0, "verdict": "Conditional Accept"},
+      "decision": "accept"
+    },
+    {
+      "cycle_id": "R11-C6-finalize",
+      "hypothesis": "Convergence + flag rollback + reports",
+      "decision": "converge_local_candidate",
+      "optimizer_loop_needed": false,
+      "note": "Accuracy/latency already met thresholds; no prompt/payload Pareto needed"
+    }
+  ],
+  "api_guard": {
+    "max_calls_per_batch": 50,
+    "worker_c_serial_only": true,
+    "high_risk_no_live_api": true,
+    "guard_trips": 0
+  },
+  "convergence": {
+    "accuracy_gate": true,
+    "latency_gate": true,
+    "safety": true,
+    "repeat10": true,
+    "three_consecutive": 3,
+    "independent_evaluators_critical_high_zero": true,
+    "regression_green": true,
+    "no_false_pass": true,
+    "cost_reported": true,
+    "flags_rolled_back": true,
+    "all_met": true
+  },
+  "measurements": {
+    "seed42_artifact": "log/analysis/jev_r11_r10_seed42_20260923.json",
+    "seed20260922_artifact": "log/analysis/jev_r11_r10_seed20260922_20260923.json"
+  }
+}

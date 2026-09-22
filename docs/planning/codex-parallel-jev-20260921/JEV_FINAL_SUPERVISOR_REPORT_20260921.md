@@ -5,6 +5,26 @@
 - 評価軸の優先順位: **①回答精度（joint） ②速度（latency） ③コスト**
 - 読者: プロダクトオーナー（辛口評価を前提）
 
+> ## ERRATUM（2026-09-22 Supervisor / Agent G）
+>
+> 本レポート旧 §3.4 の「Gate A-accuracy: **条件付き Passed**」は **無効**（禁止語）。
+> ゲート語は `Passed` / `Not Passed` / `Hard No-Go` のみ許可。
+>
+> **正式判定（変更不可）:**
+> - Phase1 local shadow / Gate A-code = **Passed**
+> - Gate A-accuracy = **Not Passed**
+> - Gate B / primary / staging / prod = **Hard No-Go**
+> - Focus 本配線 = **No-Go**
+>
+> **Gate A-accuracy の現行証跡（正本）:** live `20260922_012129`
+> （`log/analysis/jev_intent_router_eval_10_20260922_012129.{json,md}`）
+> 判定文書: `JEV_GATE_A_ACCURACY_VERDICT_20260922.md`
+> （scenario-cluster CI 下限 &lt;900ms・コスト純減未達・pilot 母数 → **Not Passed**）。
+>
+> 旧「正本」`033321` / `032512` / `013619` は **参考値のみ**（repeat=3 または方法論違反。Gate 証拠に使わない）。
+> 所有権: `JEV_SUPERVISOR_OWNERSHIP_20260922.md`。監査: `JEV_DOCS_AUDIT_AGENT_G_20260922.md`。
+> §3.2 の数値表は履歴。個別指標の Pass/Fail 表記はゲート語ではない。
+
 ---
 
 ## 1. 実施の目的
@@ -54,29 +74,31 @@
 
 ### 3.2 最新 live 評価（精度・速度・コスト）
 
-**正本ラン**: `log/analysis/jev_intent_router_eval_10_20260921_033321`（接続再利用後・paired・repeat=3）
+**Gate 証跡の正本ラン（実測）:** `log/analysis/jev_intent_router_eval_10_20260922_012129`
+（repeat=10 / `seed_random` / production scoring）。判定: `JEV_GATE_A_ACCURACY_VERDICT_20260922.md` → **Not Passed**。
 
-| Backend | Accuracy | Avg | P50 | P95 |
-| --- | ---: | ---: | ---: | ---: |
-| current | **30/30 (100%)** | 1331.12 ms | 1025.55 | 2720.99 |
-| `jev:minimal` | **30/30 (100%)** | **274.17 ms** | 246.93 | 358.43 |
+| Backend | Acc（実測） | warm mean | warm P95 |
+| --- | ---: | ---: | ---: |
+| current | 100/100 (100%) | 1576.93 ms | 3646.66 ms |
+| `jev:minimal` | 100/100 (100%) | 241.28 ms | 311.85 ms |
 
-| 指標 | 値 | ゲート判定 |
+| 指標 | 値 | ラベル | ゲート語への寄与 |
+| --- | --- | --- | --- |
+| warm mean Δ | **1335.65 ms** | 実測 | 点推定は ≥900 だが **ゲート合格ではない** |
+| warm P95 Δ | **3334.81 ms** | 実測 | 点推定は ≥2500 |
+| scenario-cluster 95% CI（mean Δ） | **[826.7, 1943.02]** | 実測 | 下限 <900 → **保守 Fail → A-accuracy Not Passed** |
+| OpenAI saved | 0.854 JPY | **measured_proxy** | 純減主張不可 |
+| Jev cost | 0.908 JPY | **estimated** | 同上 |
+| Net | **-0.054 JPY** | 推定同士 | 「安い」とは言えない |
+| fallback / api_err / eval_err | 0 | 実測 | 分母汚染なし |
+
+**履歴ラン（参考・Gate 証拠不適格）**
+
+| ラン | 位置づけ | 備考 |
 | --- | --- | --- |
-| Avg 短縮 | **1056.95 ms** | **Pass**（≥900） |
-| P95 短縮 | **2362.56 ms** | **Fail**（≥2500 未達） |
-| Bootstrap 95% CI（avg 短縮） | [797.15, 1345.33] | 保守側下限は **Fail**（<900） |
-| API error | 0 | Pass（分母汚染なし） |
-| OpenAI saved est | 0.2554 JPY / 集計単位 | 分離計測 OK |
-| Jev cost | 0.2725 JPY | IntentRouter 単独推定より **わずかに高い** |
-| Net（上記同士） | **-0.017 JPY** | 「安い」とは言えない |
-
-**接続再利用 PDCA の効果**（同一日）
-
-| 時点 | Jev avg | 備考 |
-| --- | ---: | --- |
-| `032512`（Client 都度生成） | 690 ms | latency Gate 未達 |
-| `033321`（プロセス共有 Client） | **274 ms** | avg Gate 達成 |
+| `033321` | 参考 | repeat=3・旧実行順。旧レポートが誤って「正本」扱いにしていた |
+| `032512` | 参考 | Client 都度生成・latency 不合格記録 |
+| `013619` | smoke のみ | pilot 30/30。Gate クローズに使わない |
 
 ### 3.3 Soft safety live（拡張 fixture）
 
@@ -89,7 +111,7 @@
 | Gate | 判定 | 根拠 |
 | --- | --- | --- |
 | **A-code**（local 実装） | **Passed** | default OFF、常に legacy、secret 契約、unit green |
-| **A-accuracy**（live） | **条件付き Passed** | joint 100%・avg 短縮 Pass。P95/CI 保守側は未達。pilot のみ |
+| **A-accuracy**（live） | **Not Passed** | 正本 live `012129` + `JEV_GATE_A_ACCURACY_VERDICT_20260922.md`。CI 下限未達・コスト純減未達・pilot 母数。旧「条件付き Passed」棄却 |
 | **B**（dev shadow） | **Hard No-Go** | 人間医療承認・150 decisions・運用準備未 |
 | **C+ / primary / prod** | **Hard No-Go** | 計画どおり |
 
@@ -280,15 +302,18 @@ Jev は「LLM を全部置き換える銀の弾丸」ではない。本リポジ
 | `JEV_NEXT_FLOW_PHASE1C-FOCUS_20260921.md` | 次フロー正本 |
 | `JEV_LIVE_EVAL_NOTES_20260921_032512.md` | latency 不合格ランの記録 |
 | `JEV_SOFT_SAFETY_LIVE_FINDINGS_20260921.md` | soft fail 分析 |
-| `log/analysis/jev_intent_router_eval_10_20260921_033321.*` | **最新 paired live** |
+| `JEV_GATE_A_ACCURACY_VERDICT_20260922.md` | Gate A-accuracy **Not Passed** 正本 |
+| `log/analysis/jev_intent_router_eval_10_20260922_012129.*` | **現行 Gate 証跡 live（実測）** |
+| `log/analysis/jev_intent_router_eval_10_20260921_033321.*` | 参考（旧・不適格） |
+| `JEV_DOCS_AUDIT_AGENT_G_20260922.md` | 文書監査 |
 
 ---
 
 ## 11. オーナーへの一文
 
-**精度はパイロットで納得水準、速度は接続再利用後に avg ゲートをクリア、コストはまだ「勝ち」と言えない。安全な導入経路（shadow・default OFF・医療 draft）は整った。dev 有効化はまだ早いが、次に進む準備は整っている。**
+**Gate A-accuracy は Not Passed（live `012129`）。Gate B / primary / staging / prod は Hard No-Go。Focus 本配線は No-Go。** 点推定の latency 改善や pilot 100% を合格と読まない。コスト純減は未実証。dev 有効化の議論に進むな。
 
-辛口で見ると総合 **B+**。がっかりさせないための最低ライン（測れる・止められる・100% pilot・avg 短縮）は満たした。P95・コスト・Gate B 医療承認が次の勝負所である。
+辛口総合: 方法論付き live は取れたが **ゲートは未達**。次は CI 保守基準・コスト実測・医療承認であり、「準備が整った」は Gate 語ではない。
 
 ---
 

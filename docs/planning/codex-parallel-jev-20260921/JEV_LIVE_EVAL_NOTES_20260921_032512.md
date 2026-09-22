@@ -1,3 +1,8 @@
+> ## ERRATUM（2026-09-22 Agent G）
+>
+> 本ノートは `032512` の履歴。**Gate A-accuracy の現行証跡ではない。**
+> 正本: `log/analysis/jev_intent_router_eval_10_20260922_012129.*` / `JEV_GATE_A_ACCURACY_VERDICT_20260922.md` → **Not Passed**。
+
 # Live eval notes — `20260921_032512`
 
 - Source report: `log/analysis/jev_intent_router_eval_10_20260921_032512.md`

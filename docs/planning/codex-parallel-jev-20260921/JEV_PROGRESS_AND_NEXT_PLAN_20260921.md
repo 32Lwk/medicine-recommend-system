@@ -1,8 +1,11 @@
 # Jev 進捗確認と今後の実行計画
 
 作成日: 2026-09-21  
+更新: 2026-09-22（Agent G: Gate 語統一・live `012129` リンク）  
 対象: `medicine-recommend` / Chat Pipeline v2 / IntentRouter Jev 導入  
 位置づけ: 並列Codex成果物 A-F の進捗確認と、次に実装へ進むための実行計画
+
+> **正式判定:** A-code **Passed** / A-accuracy **Not Passed**（`JEV_GATE_A_ACCURACY_VERDICT_20260922.md` / `log/analysis/jev_intent_router_eval_10_20260922_012129.*`）/ B・primary・staging・prod **Hard No-Go** / Focus 本配線 **No-Go**。禁止語: 条件付きPassed / ほぼPassed / 実質合格。
 
 ## 1. 現在の進捗
 
@@ -30,8 +33,10 @@
 | --- | --- | --- |
 | `jev:minimal` adapter 方針 | Go | 10ケース x 3回で 30/30、latency も条件達成 |
 | `with_baseline_triage` | No-Go / 廃止 | 10ケース中1件で medicine comparison の sub-route を落とした |
-| Phase 1 local shadow 実装 | **Gate A-code Passed** | 本線非干渉・PRIMARY ignore・フォローアップ配線済。**A-accuracy 未完** |
-| dev shadow 有効化 | **Hard No-Go** | 医療ラベル未承認、live 再評価未、dev secret/log/rollback 未確認 |
+| Phase 1 local shadow 実装 | **Gate A-code Passed** | 本線非干渉・PRIMARY ignore・フォローアップ配線済。**A-accuracy = Not Passed**（live 実行済） |
+| Gate A-accuracy | **Not Passed** | 正本 live `012129`。CI 下限・コスト純減未達。pilot 単独では Pass 不可 |
+| Focus 本配線 | **No-Go** | scaffold のみ可 |
+| dev shadow 有効化 | **Hard No-Go** | 医療ラベル未承認、A-accuracy 未達、dev secret/log/rollback 未確認 |
 | primary canary | **Hard No-Go** | Gate B 未達 |
 | staging / production | No-Go | dev primary 未完。別途明示承認が必要 |
 | OpenAI token-cost 70%削減 | 未判定 | primary運用ログと `legacy_saved_calls` 実測がまだない |
@@ -245,7 +250,7 @@ primary canary の最低条件:
 7. shadow ON/OFF で executed route 不変の integration を作る。
 8. local live再評価を、接続が安定している環境で再実行する。
 
-現在地: **Phase 1 local shadow の Gate A-code は Passed。Gate A-accuracy 未完。dev shadow / primary / staging / production は Hard No-Go。**
+現在地: **Gate A-code Passed。Gate A-accuracy Not Passed（live `012129`）。dev shadow / primary / staging / production は Hard No-Go。Focus 本配線 No-Go。**
 
 ## 9. Phase 0 契約凍結ステータス（2026-09-21）
 
@@ -263,7 +268,7 @@ Phase 0 の契約は文書上凍結済み。実装後ドリフト是正済み（
 | **R0** 契約凍結 | Synthesis §9 / Phase0 freeze | Test Plan §8–§9 同期、freeze 文書作成 | 契約表は実装方針と一致 | 凍結値を Gate 入場条件に固定 |
 | **R1** local shadow 実装 | Phase1A–B（client/DTO/metrics/resolve_route） | コード実装 + unit 111 | Supervisor: 構造 OK、ただし R1–R3 未配線指摘 | 指摘どおり alias / deterministic_signals / corr clear を実装 |
 | **R2** 監修フォローアップ | R1 残差を Gate A-code 残件として閉じる | 上記3点を production path に配線 | コード上は解消。**ドキュメント本体が「未配線」のまま残るドリフト** | Docs 辛口監査で freeze / Test Plan / Supervisor / Progress を現実同期（本 Round） |
-| **R3**（次）Gate A-accuracy | production 契約で live 再評価 | 未着手 | — | pilot 100% を Gate 通過に使わない |
+| **R3** Gate A-accuracy | production 契約で live 再評価 | **完了・Not Passed** | `012129` / verdict | CI下限・コスト純減未達。pilot 100% を Pass に使わない |
 | **R4**（次）Gate B prep | 医療ラベル承認 + 運用準備 | 未着手 | — | 未承認のまま `JEV_*=true` 禁止 |
 
 残ドキュメント負債（次の Act）:

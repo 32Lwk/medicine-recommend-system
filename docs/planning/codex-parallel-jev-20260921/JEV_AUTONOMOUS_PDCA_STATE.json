@@ -1,0 +1,872 @@
+{
+  "program": "Jev IntentRouter Autonomous PDCA",
+  "started_at": "2026-09-22T02:08:00+09:00",
+  "supervisor_session": "autonomous-pdca-20260922",
+  "gate_status": {
+    "phase1_local_shadow": "Passed",
+    "gate_a_code": "再審査必要",
+    "gate_a_accuracy": "Not Passed",
+    "gate_b_ai_medical_adversarial_review": "Hard No-Go",
+    "dev_shadow": "Hard No-Go",
+    "primary_canary": "Hard No-Go",
+    "staging_production": "Hard No-Go",
+    "focus_wiring": "Hard No-Go"
+  },
+  "frozen_contracts": {
+    "accuracy_gate_pct": 100,
+    "primary_sub_joint": 100,
+    "api_error": 0,
+    "eval_error": 0,
+    "fallback": 0,
+    "forbidden_payload": 0,
+    "shadow_main_path_mutation": 0,
+    "latency_speed_metric": "warm_mean_delta_and_scenario_cluster_warm_ci",
+    "warm_mean_delta_ms_min": 900,
+    "warm_scenario_cluster_ci_lower_ms_min": 900,
+    "alternate_p95_contract": "NOT_SELECTED_pre_fixed_mean_contract_only",
+    "cost_in_gate_a_pass_fail": false,
+    "cost_reporting_required": true,
+    "live_seeds_consecutive": [
+      42,
+      20260922
+    ],
+    "live_repeat": 10,
+    "live_order": "seed_random",
+    "use_cache": false,
+    "backends": "current,jev:minimal",
+    "latency_gate_canonical": "scenario_cluster_eligible_warm",
+    "latency_gate_population": "eligible_warm",
+    "evaluation_contract_version": "jev-intent-gate-a-v2",
+    "eligibility_contract_version": "jev-intent-eligibility-v1"
+  },
+  "evidence_labels_allowed": [
+    "実装済み",
+    "unit確認済み",
+    "integration確認済み",
+    "live確認済み",
+    "AI医療監修済み",
+    "人間医療未承認",
+    "推定",
+    "未検証"
+  ],
+  "worker_f_cycles_completed": [
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "F5"
+  ],
+  "worker_f_pending": [],
+  "worker_f_series_complete": true,
+  "worker_f_min3_before_fixture_change": "met",
+  "fixture_gold_auto_apply": false,
+  "worker_f_runtime_followups": [],
+  "worker_f_runtime_closed": [
+    "F4-C02_admin_probe_before_SafetyGate"
+  ],
+  "cycle_s1_f4c02": "Accepted",
+  "worker_a_h_lat_001": "Accepted",
+  "worker_e_ae5": {
+    "critical_open": 0,
+    "high_open_or_partial": 9,
+    "gate_a_not_passed_ruling": "YES_correct",
+    "live_blocked": true,
+    "live_block_reasons": [
+      "user_rule_requires_E_Critical_and_High_none",
+      "AE5-H2_H3_sessionops_population_needs_user",
+      "E_High_open_count_nonzero",
+      "no_fresh_live_with_scenario_cluster_warm"
+    ]
+  },
+  "gate_b_status_note": "Hard No-Go after F1+F2",
+  "cycle_count_max": 40,
+  "cycle_count_min_target": 20,
+  "worker_d_shadow": {
+    "status": "Accepted",
+    "unit": "passed",
+    "full_app_smoke": "未検証",
+    "jsonl_committed": false,
+    "privacy_critical_fixed": true
+  },
+  "worker_a_cycle2_shortpath": "Accepted",
+  "worker_a_gate_a_v2": "Accepted",
+  "last_improved_metric": "AE6-H3_cue_paraphrase_partial",
+  "cycle_count_valid": 28,
+  "worker_e_ae6": {
+    "critical_open_after_fix": 0,
+    "critical_closed": [
+      "AE6-C1"
+    ],
+    "high_closed": [
+      "AE6-H1",
+      "AE6-H2",
+      "AE6-H4_s1"
+    ],
+    "high_open": 3,
+    "high_open_ids": [
+      "AE6-H3_partial",
+      "AE6-H5",
+      "AE6-H6"
+    ],
+    "worker_e_reaudit": "JEV_AE6_REAUDIT_H1H2_G02_20260922.md",
+    "worker_e_h2a_post_fix": "Closed_candidate_signals_persisted_on_jev_rows",
+    "worker_f_s1g02": "Accept_with_High_residuals_H01_H02",
+    "worker_f_report": "JEV_F_S1G02_CONTAINED_EXAM_20260922.md",
+    "worker_f_agent_id": "dcce5eb2-dea7-4639-b969-46c4f3b1eb69",
+    "worker_e_agent_id": "7de1badd-eeb3-42c7-ac7d-a315946d3d2f",
+    "s1_closed": [
+      "G01",
+      "G02",
+      "G03_probe",
+      "G04",
+      "G05",
+      "G06",
+      "G07",
+      "G08"
+    ],
+    "live_blocked": true,
+    "live_block_reasons": [
+      "AE6_High_open_nonzero_H3_H5_H6",
+      "no_v2_live_eligible_warm",
+      "gate_b_hard_no_go_f_series_criticals",
+      "user_commit_approval_required_before_push"
+    ]
+  },
+  "stop_reason": "Option_B_boundary_complete_await_user_commit_approval",
+  "consecutive_no_improvement": 0,
+  "gate_status_snapshot": {
+    "gate_a_accuracy": "Not Passed",
+    "gate_b": "Hard No-Go",
+    "dev_shadow": "Hard No-Go",
+    "primary_staging_production": "Hard No-Go",
+    "focus_wiring": "No-Go",
+    "gate_a_code": "再審査必要"
+  },
+  "consecutive_same_failure": 0,
+  "live_run_1": null,
+  "live_run_2": null,
+  "medical_review_label": "ai_medical_adversarial_reviewed",
+  "human_medical_reviewed": false,
+  "ownership_doc": "JEV_SUPERVISOR_OWNERSHIP_20260922.md",
+  "active_hypothesis": "H-ELIG-001 SessionOps out of Jev scope via shared eligibility v1; Gate A v2 three-track eval",
+  "blocked_on_user": null,
+  "user_decision_sessionops": {
+    "choice": "B",
+    "formalized_as": "jev-intent-eligibility-v1",
+    "evaluation_contract_version": "jev-intent-gate-a-v2",
+    "decided_at": "2026-09-22T03:03:00+09:00"
+  },
+  "frozen_contracts_extra": {
+    "evaluation_contract_version": "jev-intent-gate-a-v2",
+    "eligibility_contract_version": "jev-intent-eligibility-v1",
+    "latency_gate_population": "warm_and_jev_eligible",
+    "012129_status": "legacy_reference_only_not_in_consecutive_pass_count"
+  },
+  "supervisor_decisions_cycle1": {
+    "jev_cold_client_close_api": "defer_no_production_change",
+    "scenario_cluster_alias": "keep_as_warm_alias",
+    "live_timing": "blocked_until_E_F3_and_sessionops_user_answer"
+  },
+  "cycles": [
+    {
+      "cycle_id": "C0",
+      "sequence": 0,
+      "category": "audit",
+      "hypothesis": "CI failure root-cause is population mismatch and/or SessionOps asymmetry",
+      "target_metric": "diagnostic clarity",
+      "files_changed": [
+        "JEV_AUTONOMOUS_PDCA_STATE.json"
+      ],
+      "tests_run": [
+        "offline recompute 012129"
+      ],
+      "independent_review": [],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "warm CI <900ms"
+      ],
+      "next_action": "Population contract",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C1",
+      "sequence": 1,
+      "category": "evaluation",
+      "hypothesis": "Unify Gate CI to scenario_cluster_warm",
+      "target_metric": "latency_population_contract",
+      "files_changed": [
+        "scripts/eval_jev_intent_router_10.py"
+      ],
+      "tests_run": [
+        "23 passed"
+      ],
+      "independent_review": [],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "live not rerun"
+      ],
+      "next_action": "Await E/F",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C2",
+      "sequence": 2,
+      "category": "evaluation",
+      "hypothesis": "Visualize SessionOps shortpath without silent exclusion",
+      "target_metric": "observability",
+      "files_changed": [
+        "scripts/eval_jev_intent_router_10.py"
+      ],
+      "tests_run": [
+        "30 passed"
+      ],
+      "independent_review": [],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "AE5-H2 open"
+      ],
+      "next_action": "User SessionOps answer",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C3",
+      "sequence": 3,
+      "category": "jev",
+      "hypothesis": "Eligibility v1 + Gate A v2 three-track contract",
+      "target_metric": "eligibility_v1",
+      "files_changed": [
+        "src/services/jev_eligibility.py"
+      ],
+      "tests_run": [
+        "31 passed"
+      ],
+      "independent_review": [],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "no new live"
+      ],
+      "next_action": "Eval wiring",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C4",
+      "sequence": 4,
+      "category": "evaluation",
+      "hypothesis": "Wire three-track eval and eligible_warm Gate",
+      "target_metric": "eval_three_track",
+      "files_changed": [
+        "scripts/eval_jev_intent_router_10.py"
+      ],
+      "tests_run": [
+        "46 passed"
+      ],
+      "independent_review": [],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "live blocked"
+      ],
+      "next_action": "E re-audit",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C5",
+      "sequence": 5,
+      "category": "evaluation",
+      "hypothesis": "Fix accuracy_gate denominator inflation",
+      "target_metric": "accuracy_denominator",
+      "files_changed": [
+        "scripts/eval_jev_intent_router_10.py"
+      ],
+      "tests_run": [
+        "38 passed"
+      ],
+      "independent_review": [
+        "AE6-C1"
+      ],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "High remain"
+      ],
+      "next_action": "Close AE6 High",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C6",
+      "sequence": 6,
+      "category": "evaluation",
+      "hypothesis": "Align prod/eval deterministic_signals",
+      "target_metric": "prod_eval_signals",
+      "files_changed": [
+        "scripts/eval_jev_intent_router_10.py"
+      ],
+      "tests_run": [
+        "40 passed"
+      ],
+      "independent_review": [
+        "AE6-H1"
+      ],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "live blocked"
+      ],
+      "next_action": "Continue",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C7",
+      "sequence": 7,
+      "category": "safety",
+      "hypothesis": "SessionOps+exam uses contained medical examination for policy_block",
+      "target_metric": "policy_block_exam",
+      "files_changed": [
+        "medical_examination_request.py",
+        "jev_eligibility.py"
+      ],
+      "tests_run": [
+        "39 passed"
+      ],
+      "independent_review": [],
+      "medical_review": [
+        "Worker F"
+      ],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "short exam phrase residual"
+      ],
+      "next_action": "Keep stage0 exact",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C8",
+      "sequence": 8,
+      "category": "jev",
+      "hypothesis": "Eligibility exception fail-closed; unexpected call detection",
+      "target_metric": "fail_closed",
+      "files_changed": [
+        "eval",
+        "jev_router",
+        "tests"
+      ],
+      "tests_run": [
+        "84 passed"
+      ],
+      "independent_review": [
+        "AE6-H2"
+      ],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "E reaudit pending"
+      ],
+      "next_action": "Continue",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C9",
+      "sequence": 9,
+      "category": "safety",
+      "hypothesis": "CJK short controlled-drug keywords without ASCII word-boundary",
+      "target_metric": "controlled_cjk",
+      "files_changed": [
+        "llm_triage.py",
+        "tests"
+      ],
+      "tests_run": [
+        "41 passed"
+      ],
+      "independent_review": [],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "later S1 gaps"
+      ],
+      "next_action": "Continue S1 gaps",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C10",
+      "sequence": 10,
+      "category": "safety",
+      "hypothesis": "Chest/stroke medical_emergency_hint before SessionOps",
+      "target_metric": "emergency_hints",
+      "files_changed": [
+        "gate.py",
+        "tests"
+      ],
+      "tests_run": [
+        "90 passed"
+      ],
+      "independent_review": [],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "counseling order"
+      ],
+      "next_action": "S1-G06",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C11",
+      "sequence": 11,
+      "category": "safety",
+      "hypothesis": "Counseling continue after Emergency/Security",
+      "target_metric": "counseling_order",
+      "files_changed": [
+        "gate.py",
+        "tests"
+      ],
+      "tests_run": [
+        "59 passed"
+      ],
+      "independent_review": [],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "negation scope"
+      ],
+      "next_action": "S1-G05",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C12",
+      "sequence": 12,
+      "category": "medical",
+      "hypothesis": "Narrow explicit crisis negation (REVISED: Option A revert in boundary repair)",
+      "target_metric": "crisis_negation",
+      "files_changed": [
+        "crisis_detection.py",
+        "tests"
+      ],
+      "tests_run": [
+        "68 passed"
+      ],
+      "independent_review": [],
+      "medical_review": [
+        "Worker F"
+      ],
+      "result": "revised",
+      "regression": false,
+      "residual_risks": [
+        "Negation softening separated from Jev; Option A revert"
+      ],
+      "next_action": "Independent medical change if revisited",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C13",
+      "sequence": 13,
+      "category": "evaluation",
+      "hypothesis": "Persist deterministic_signals on attempted Jev rows",
+      "target_metric": "signals_persistence",
+      "files_changed": [
+        "eval_jev_intent_router_10.py"
+      ],
+      "tests_run": [
+        "61+ passed"
+      ],
+      "independent_review": [
+        "AE6-H2a"
+      ],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "H3/H5/H6"
+      ],
+      "next_action": "Cue paraphrase",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "C14",
+      "sequence": 14,
+      "category": "evaluation",
+      "hypothesis": "Expand injection cues and exam markers",
+      "target_metric": "cue_paraphrase",
+      "files_changed": [
+        "jev_eligibility.py",
+        "medical_examination_request.py"
+      ],
+      "tests_run": [
+        "76 passed"
+      ],
+      "independent_review": [],
+      "medical_review": [
+        "Worker F H01"
+      ],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "shortest exam residual",
+        "Gate B Hard No-Go",
+        "live Blocked"
+      ],
+      "next_action": "Boundary repair R-series",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "R1",
+      "sequence": 15,
+      "category": "architecture",
+      "hypothesis": "Break session_agent↔jev_eligibility cycle",
+      "target_metric": "dependency",
+      "files_changed": [
+        "session_agent.py",
+        "pre_route_signals.py"
+      ],
+      "tests_run": [
+        "189 passed subset"
+      ],
+      "independent_review": [
+        "Worker E"
+      ],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "pre_route↔session_agent lazy remains for full collect"
+      ],
+      "next_action": "Continue R2",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "R2",
+      "sequence": 16,
+      "category": "architecture",
+      "hypothesis": "Introduce PreRouteSignals collector",
+      "target_metric": "shared_signals",
+      "files_changed": [
+        "pre_route_signals.py"
+      ],
+      "tests_run": [
+        "test_pre_route_signals"
+      ],
+      "independent_review": [
+        "Worker E"
+      ],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "hint duplication with gate"
+      ],
+      "next_action": "R3",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "R3",
+      "sequence": 17,
+      "category": "jev",
+      "hypothesis": "Pure decide_jev_intent_eligibility",
+      "target_metric": "eligibility_pure",
+      "files_changed": [
+        "jev_eligibility.py",
+        "jev_router.py"
+      ],
+      "tests_run": [
+        "eligibility+router"
+      ],
+      "independent_review": [
+        "Worker E"
+      ],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [],
+      "next_action": "R4",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "R4",
+      "sequence": 18,
+      "category": "jev",
+      "hypothesis": "Detector failure fail-closed for Jev API",
+      "target_metric": "fail_closed",
+      "files_changed": [
+        "pre_route_signals.py",
+        "jev_eligibility.py"
+      ],
+      "tests_run": [
+        "detector error unit"
+      ],
+      "independent_review": [
+        "Worker E"
+      ],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [],
+      "next_action": "R5",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "R5",
+      "sequence": 19,
+      "category": "safety",
+      "hypothesis": "Safety/SessionOps ordering regression green",
+      "target_metric": "routing_regression",
+      "files_changed": [
+        "matrix",
+        "gate",
+        "session_agent"
+      ],
+      "tests_run": [
+        "matrix+gate"
+      ],
+      "independent_review": [],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "short exam mixed residual"
+      ],
+      "next_action": "R6",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "R6",
+      "sequence": 20,
+      "category": "medical",
+      "hypothesis": "Option A crisis negation revert + medical adversarial",
+      "target_metric": "crisis_policy",
+      "files_changed": [
+        "crisis_detection.py"
+      ],
+      "tests_run": [
+        "crisis tests"
+      ],
+      "independent_review": [],
+      "medical_review": [
+        "Worker F"
+      ],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "BR-C01 double negation",
+        "BR-H01 short exam"
+      ],
+      "next_action": "Stop on Critical/High",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "R7",
+      "sequence": 21,
+      "category": "evaluation",
+      "hypothesis": "Keep three-track eval contracts unchanged",
+      "target_metric": "eval_tracks",
+      "files_changed": [
+        "eval scripts unchanged thresholds"
+      ],
+      "tests_run": [
+        "eval unit green"
+      ],
+      "independent_review": [
+        "Worker E"
+      ],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "live not run"
+      ],
+      "next_action": "R8",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "R8",
+      "sequence": 22,
+      "category": "observability",
+      "hypothesis": "Physical JSONL file verification in tmp",
+      "target_metric": "physical_jsonl",
+      "files_changed": [
+        "test_jev_metrics_physical_jsonl.py"
+      ],
+      "tests_run": [
+        "physical jsonl passed"
+      ],
+      "independent_review": [],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "full app smoke未検証"
+      ],
+      "next_action": "R9",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "R9",
+      "sequence": 23,
+      "category": "docs",
+      "hypothesis": "PDCA JSON cycles 0-14 complete + integrity test",
+      "target_metric": "pdca_json",
+      "files_changed": [
+        "JEV_AUTONOMOUS_PDCA_STATE.json",
+        "test_jev_pdca_state_integrity.py"
+      ],
+      "tests_run": [
+        "integrity unit"
+      ],
+      "independent_review": [
+        "Worker G"
+      ],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [],
+      "next_action": "R10",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "R10",
+      "sequence": 24,
+      "category": "docs",
+      "hypothesis": "Gate matrix SessionOps wording + A-code 再審査必要",
+      "target_metric": "docs_audit",
+      "files_changed": [
+        "JEV_GATE_RESPONSIBILITY_MATRIX_20260922.md"
+      ],
+      "tests_run": [
+        "doc review"
+      ],
+      "independent_review": [
+        "Worker G"
+      ],
+      "medical_review": [],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [],
+      "next_action": "R11",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "R11",
+      "sequence": 25,
+      "category": "audit",
+      "hypothesis": "Independent adversarial re-audit after repair",
+      "target_metric": "adversarial",
+      "files_changed": [
+        "JEV_E_BOUNDARY_REPAIR_ADVERSARIAL_20260922.md"
+      ],
+      "tests_run": [
+        "static"
+      ],
+      "independent_review": [
+        "Worker E"
+      ],
+      "medical_review": [
+        "Worker F"
+      ],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "F Critical/High open → stop"
+      ],
+      "next_action": "Await user decisions",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "R12",
+      "sequence": 26,
+      "category": "gate",
+      "hypothesis": "Gate A-code re-judgment without claiming Passed",
+      "target_metric": "gate_a_code",
+      "files_changed": [
+        "supervisor report"
+      ],
+      "tests_run": [
+        "189 related passed"
+      ],
+      "independent_review": [
+        "Worker E"
+      ],
+      "medical_review": [
+        "Worker F"
+      ],
+      "result": "rejected",
+      "regression": false,
+      "residual_risks": [
+        "Critical/High remain",
+        "Passed禁止"
+      ],
+      "next_action": "User: address medical Critical/High or accept residual",
+      "gate_status": "Not Passed"
+    },
+    {
+      "cycle_id": "R13",
+      "sequence": 27,
+      "category": "architecture",
+      "hypothesis": "Extract session_ops_classify; close BE-H1/BE-H2; remove session_agent↔pre_route bidirectional",
+      "target_metric": "boundary_deps_and_E_High",
+      "files_changed": [
+        "session_ops_classify.py",
+        "medical_emergency_hints.py",
+        "pre_route_signals.py",
+        "session_agent.py",
+        "gate.py",
+        "jev_eligibility.py",
+        "tests"
+      ],
+      "tests_run": [
+        "194 passed boundary regression suite"
+      ],
+      "independent_review": [
+        "Worker E re-audit boundary Critical=0 High=0"
+      ],
+      "medical_review": [
+        "BR-C01/H01-H05 out of scope per Option B"
+      ],
+      "result": "accepted",
+      "regression": false,
+      "residual_risks": [
+        "medical BR findings separate unit",
+        "Gate A-accuracy Not Passed",
+        "Gate B Hard No-Go",
+        "live Blocked"
+      ],
+      "next_action": "Boundary repair commit-candidate frozen; no live/commit/push",
+      "gate_status": "Not Passed"
+    }
+  ],
+  "boundary_repair": {
+    "status": "complete_commit_candidate",
+    "option": "B",
+    "crisis_negation_policy": "Option_A_revert",
+    "gate_a_code": "再審査必要",
+    "gate_a_accuracy": "Not Passed",
+    "gate_b": "Hard No-Go",
+    "live": "Blocked",
+    "commit": "No-Go_until_user",
+    "push": "No-Go",
+    "boundary_critical": 0,
+    "boundary_high": 0,
+    "medical_out_of_scope": [
+      "BR-C01",
+      "BR-H01",
+      "BR-H02",
+      "BR-H03",
+      "BR-H04",
+      "BR-H05"
+    ],
+    "be_h1": "Closed",
+    "be_h2": "Closed"
+  }
+}

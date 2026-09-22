@@ -1,7 +1,7 @@
 # Jev Phase 0 契約凍結（2026-09-21）
 
 - 作成日: 2026-09-21
-- 最終更新: 2026-09-21（Phase 1 local shadow 実装後のドリフト是正）
+- 最終更新: 2026-09-22（Agent G: A-accuracy live 実行済だが **Not Passed** に同期）
 - 位置づけ: Phase 1 local shadow の固定契約サマリ（実装前凍結 → 実装後も契約は不変、配線状態のみ更新）
 - 正本: `JEV_PARALLEL_SYNTHESIS_20260921.md`
 - 同期: `docs/planning/JEV_IMPLEMENTATION_TEST_PLAN_2026-09-21.md` §8–§9、`JEV_PHASE1_LOCAL_SHADOW_SUPERVISOR_REPORT_20260921.md`
@@ -14,7 +14,7 @@
 | `recent_turns` + `recent_context` alias | **実装済** |
 | `deterministic_signals` → shadow worker | **実装済**（実行 route は不変） |
 | `_jev_shadow_correlation_id` clear | **実装済**（schedule 失敗時 / notify 後） |
-| Gate A-accuracy（live 再評価） | **未完** |
+| Gate A-accuracy（live 再評価） | **Not Passed**（live `012129` 実行済・CI/コスト未達。旧「未完」表記は廃止） |
 | Gate B（dev shadow） | **Hard No-Go** |
 
 ## 凍結チェックリスト
@@ -56,7 +56,7 @@
 | medical_examination / prescription / controlled | レビュー待ち | 独立採点 |
 | Store+symptom / SessionOps+high-risk / Counseling+crisis | レビュー待ち | multi-intent |
 | follow-up state none/correct/stale/conflicting | レビュー待ち | cold-start 悪化 0 |
-| live 再評価（A-accuracy） | **未完** | Gate B の前提 |
+| live 再評価（A-accuracy） | **Not Passed** | 証跡 `012129` / `JEV_GATE_A_ACCURACY_VERDICT_20260922.md`。Gate B 入場不可 |
 | `medicine_qa_focus` router 注入 | 未完（任意だが観測品質に影響） | session 既存値のみ |
 | **医療安全レビュー承認** | **Gate B 必須** | 未承認のまま dev shadow しない |
 

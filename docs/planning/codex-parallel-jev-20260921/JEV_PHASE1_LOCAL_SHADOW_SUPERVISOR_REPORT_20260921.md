@@ -1,5 +1,10 @@
 # Jev Phase 1 Local Shadow — Supervisor Review Report
 
+> ## ERRATUM（2026-09-22 Agent G）
+>
+> 本書作成時点の「live 未実施」は **歴史記述**。現行は live `012129` 実行済だが Gate A-accuracy は引き続き **Not Passed**（`JEV_GATE_A_ACCURACY_VERDICT_20260922.md`）。Gate B / primary / staging / prod = Hard No-Go。Focus 本配線 = No-Go。
+
+
 - 作成日: 2026-09-21
 - 最終更新: 2026-09-21（実装フォローアップ反映後のドキュメント整合監査）
 - 役割: Phase 0–1 local shadow 実装の監修レビュー
@@ -11,15 +16,15 @@
 
 ## 1. 総合判定（Gate A local）
 
-### Gate A-code: **Passed（構造のみ）** — Gate A-accuracy: **未完 / Not Passed**
+### Gate A-code: **Passed（構造のみ）** — Gate A-accuracy: **Not Passed**
 
 「実行 route は常に legacy」「PRIMARY を構造的に無視」「禁止 payload / secret fallback なし」「本線非伝播」は実装と integration で確認できた。**これはコード契約の合格であり、精度ゲートの合格ではない。**
 
 | ゲート | 判定 | 辛口一言 |
 | --- | --- | --- |
 | Gate A-code（local 構造・配線・unit） | **Passed** | 不変条件とフォローアップ配線は揃った。これだけで「精度 OK」と呼ぶな |
-| Gate A-accuracy（live / production state） | **Not Passed** | production 契約での live 再評価未実施。pilot 30/30 は旧 eval 形状の参考値に過ぎない |
-| Gate B（dev shadow） | **Hard No-Go** | 医療ラベル未承認・live 未完・dev 運用未確認。unit 緑や pilot 100% で入場するな |
+| Gate A-accuracy（live / production state） | **Not Passed** | live `012129` 実行済・CI/コスト未達（`JEV_GATE_A_ACCURACY_VERDICT_20260922.md`）。pilot は smoke のみ |
+| Gate B（dev shadow） | **Hard No-Go** | 医療ラベル未承認・A-accuracy 未達・dev 運用未確認。unit 緑や pilot 100% で入場するな |
 | Gate C+ / primary / staging | **Hard No-Go** | 意図的未着手。議論すら時期尚早 |
 
 **禁止表現（本レポート以降）:** 「Gate A Go（条件付き）」を精度合格と読み替えること。Gate A は **code / accuracy の二層**に分割して報告する。
@@ -88,7 +93,7 @@
 
 **現状:** production は両キーを出すため、eval が `recent_context` を読んでも形状は整合する。  
 **負債:** eval スクリプトが契約名 `recent_turns` をまだ書いていない。live 再評価レポートには **両キー存在 / 契約名優先** を明記し、いずれ eval 側も `recent_turns` を正とするよう揃えること。  
-**禁止:** 「キー不一致だから Gate B 入場不可」を **現コード状態**の主因にすること（フォローアップ前の診断の残り）。Gate B Hard No-Go の主因は **医療ラベル未承認と live 未完**。
+**禁止:** 「キー不一致だから Gate B 入場不可」を **現コード状態**の主因にすること（フォローアップ前の診断の残り）。Gate B Hard No-Go の主因は **医療ラベル未承認と Gate A-accuracy Not Passed**。
 
 ---
 
@@ -106,7 +111,7 @@
 | A8 | SessionOps non-primary | **passed（Phase 1）** | primary path 未実装 |
 | A9 | shadow log path | **passed（schema 最低限）** | path OK。`disagreement_class` / OpenAI saved 分離は **partial** |
 | A10 | expanded fixture | **not a Gate A pass criterion** | 器のみ・draft。**精度合格材料に使うな** |
-| A11 | live 精度 / perf（production state） | **failed / not done** | Gate A-accuracy 未完。これ無しで Gate A を閉じるな |
+| A11 | live 精度 / perf（production state） | **done / Not Passed** | live `012129` 実行済だが Gate A-accuracy **Not Passed**（CI/コスト）。Gate A を閉じるな |
 
 **Gate A-code:** Passed。  
 **Gate A-accuracy:** **Not Passed。Gate A 全体を「完了」と呼ぶな。**
@@ -138,7 +143,7 @@
 | R6 | Med（Gate C） | `disagreement_class` / OpenAI saved cost 分離未実測 | canary コストゲート前 |
 | R7 | **High（Gate B）** | expanded fixture draft — **医療レビュー必須** | Gate B 入場条件 |
 | R8 | Low | eval の `TYPESAFE_API_KEY` fallback 残存 | 運用 docs で本番契約を再強調 |
-| R9 | **High（Gate A-acc）** | production state での live 再評価未実施 | Gate A 精度クローズ条件 |
+| R9 | **High（Gate A-acc）** | live `012129` 実行済・**Not Passed**（CI/コスト） | Gate A 精度クローズ条件 |
 
 ### 5.3 旧レポートのドリフト（監査で是正）
 
@@ -163,7 +168,7 @@
 
 ## 7. 次アクション
 
-### 7.1 Gate A-accuracy（必須・未完）
+### 7.1 Gate A-accuracy（必須・**Not Passed** — live `012129`）
 
 1. local flags ON で shadow JSONL 数件書き、禁止フィールド目視。
 2. production 契約（`recent_turns` 優先）で pilot live 再評価（repeat≥3）。接続失敗は accuracy 分母から除外。
