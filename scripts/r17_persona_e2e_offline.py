@@ -109,7 +109,12 @@ def _compare_expectations(actual: dict[str, Any], expect: dict[str, Any]) -> lis
     return mismatches
 
 
-def run_suite(*, fixture: Path, output: Path) -> dict[str, Any]:
+def run_suite(
+    *,
+    fixture: Path,
+    output: Path,
+    suite: str = "r17_persona_e2e_offline",
+) -> dict[str, Any]:
     scripts = _load_scripts(fixture)
     results: list[dict[str, Any]] = []
     total_turns = 0
@@ -151,10 +156,11 @@ def run_suite(*, fixture: Path, output: Path) -> dict[str, Any]:
             }
         )
 
+    hard_fail_count = total_turns - total_passed
     report = {
         "fixture": str(fixture),
         "output": str(output),
-        "suite": "r17_persona_e2e_offline",
+        "suite": suite,
         "mode": "offline_signal_only",
         "requires_network": False,
         "requires_db": False,
@@ -163,6 +169,7 @@ def run_suite(*, fixture: Path, output: Path) -> dict[str, Any]:
             "turns": total_turns,
             "hard_fail_passed": total_passed,
             "hard_fail_total": total_turns,
+            "hard_fail_count": hard_fail_count,
             "hard_fail_rate": round(total_passed / total_turns, 4) if total_turns else 0.0,
             "all_scripts_passed": all(item["all_turns_passed"] for item in results),
         },
@@ -178,11 +185,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run offline R17 persona routing suite.")
     parser.add_argument("--fixture", type=Path, default=DEFAULT_FIXTURE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--suite", type=str, default="r17_persona_e2e_offline")
     args = parser.parse_args()
 
-    report = run_suite(fixture=args.fixture, output=args.output)
+    report = run_suite(fixture=args.fixture, output=args.output, suite=args.suite)
     print(json.dumps(report["summary"], ensure_ascii=False, indent=2))
-    return 0
+    return 0 if report["summary"]["hard_fail_count"] == 0 else 1
 
 
 if __name__ == "__main__":

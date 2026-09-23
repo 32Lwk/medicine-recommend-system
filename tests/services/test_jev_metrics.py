@@ -516,6 +516,45 @@ def test_jev_cost_usd_alias_semantics_fixed():
     assert cost["field_semantics"]["jev_cost_usd"] == jm.JEV_COST_USD_ALIAS_SEMANTICS
 
 
+def test_r19_observability_fields_no_pii():
+    captured: dict = {}
+
+    def _fake_write(_name, data):
+        captured["data"] = data
+
+    with patch.object(jm, "_emit_jsonl", side_effect=lambda d: _fake_write("x", d)):
+        payload = jm.record_shadow_event(
+            correlation_id="obs-1",
+            legacy_decision={"primary_route": "Physical", "sub_route": "medicine_qa"},
+            jev_decision={"primary_route": "Store", "sub_route": "locator"},
+            executed_decision={"primary_route": "Physical", "sub_route": "medicine_qa"},
+            attempted=True,
+            succeeded=True,
+            eligible=True,
+            model="jev-latest",
+            prompt_hash="abc123",
+            config_hash="def456",
+            sre={"circuit": {"state": "closed"}, "queue": {"pending": 0}},
+            usage={"input_tokens": 100},
+        )
+    assert payload is not None
+    data = captured["data"]
+    assert data["eligible"] is True
+    assert data["attempted"] is True
+    assert data["succeeded"] is True
+    assert data["skipped"] is False
+    assert data["mismatch"] is True
+    assert data["raw_decision"]["primary_route"] == "Physical"
+    assert data["effective_decision"]["primary_route"] == "Store"
+    assert data["executed_decision"]["primary_route"] == "Physical"
+    assert data["prompt_hash"] == "abc123"
+    assert data["config_hash"] == "def456"
+    assert data["redaction_status"] == "ok"
+    assert "sre" in data
+    assert "user_input" not in data
+    assert "sid" not in data
+
+
 def test_assess_event_completeness_detects_missing():
     incomplete = jm.assess_event_completeness({"log_type": "x"})
     assert incomplete["complete"] is False

@@ -31,4 +31,13 @@
 - Gate A-accuracy recommendation: **Passed candidate** (not false Pass on R17 bookkeeping)
 - Flags remain OFF; no push/commit
 
+### Cycle 0d — Worker E+G+F (SRE Circuit / Cost / Observability)
+
+- Circuit + rate/cost: `src/dialogue/routing/jev_shadow_guards.py` → `schedule_jev_shadow`
+- Observability: eligible/skip/sre/prompt_hash/config_hash/raw-effective-executed/redaction_status
+- Local kill-switch rehearsal PASS: `scripts/jev_kill_switch_rollback_rehearsal.py`
+- Reports: `JEV_R19_CIRCUIT_ROLLBACK_REPORT_20260924.md`, `JEV_R19_COST_OBSERVABILITY_REPORT_20260924.md`
+- Cost caps = staging-tiny **candidates** only (not Owner production $)
+- Tests green (shadow_guards + rehearsal + metrics + router + client); no push / no AWS write
+
 (append below)

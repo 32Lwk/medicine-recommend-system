@@ -23,8 +23,8 @@ See `JEV_R19_HOLDOUT_REMEASURE_WORKER_I_20260923.md` — 80/80 Gate, membership 
 ## Failure injection
 
 Local kill-switch rehearsal: `scripts/jev_kill_switch_rollback_rehearsal.py` ALL CLEAR.  
-Broader chaos suite: in progress via Worker H+K.
+Reliability suite: `tests/reliability/test_jev_shadow_failure_injection.py` (timeout/429/500/schema/queue/circuit/kill/JSONL).
 
 ## Hard fails
 
-None in local persona offline run above.
+None in local persona offline runs (24/24).
