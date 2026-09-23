@@ -1,55 +1,24 @@
 {
   "program": "R19+_Overnight_Productionization",
-  "started_at": "2026-09-24T02:11:00+09:00",
-  "updated_at": "2026-09-24T02:20:00+09:00",
-  "supervisor": "Release Supervisor",
+  "updated_at": "2026-09-24T11:40:00+09:00",
   "verdicts": {
     "production_shadow": "Not Ready",
     "gate_a_code": "Conditional Passed",
-    "gate_a_accuracy": "Conditional Passed",
+    "gate_a_accuracy": "Passed candidate (holdout remasure 80/80; formalization pending Owner)",
     "gate_b": "Hard No-Go",
     "product_safety": "未合格",
-    "privacy": "Blocking (research in progress)",
-    "aws_staging": "Identified in docs; DEPLOY BLOCKED — AWS auth expired / staging 503"
+    "privacy": "Blocking (DPA/ZDR/account retention)",
+    "aws_staging": "DEPLOY_READY=no"
   },
-  "severity": {
-    "critical": 0,
-    "high_open": ["H-01", "H-02", "H-03", "H-04", "H-05"],
-    "medium_open": ["M-medical-1", "M-medical-2", "M-02-overdose", "M-03-security-events"],
-    "owner_blockers": ["aws login reauth", "TypeSafe DPA/retention", "cost budget approval", "push/PR"]
-  },
-  "flags": {
-    "JEV_ENABLED": false,
-    "JEV_INTENT_ROUTER_SHADOW": false,
-    "JEV_INTENT_ROUTER_PRIMARY": false,
-    "POLICY_ENFORCEMENT_D2": false
-  },
-  "forbidden": ["push", "PR", "production traffic", "primary ON", "default ON", "D2 production ON"],
-  "aws": {
-    "staging_hosts": ["aws-medicine.yutok.dev", "aws.medicine.yutok.dev"],
-    "production_hosts": ["medicine.yutok.dev"],
-    "region_doc": "ap-northeast-1",
-    "account_doc_anonymized": "620****6973",
-    "deploy_mode": "fargate_tunnel",
-    "sts_default": "session_expired",
-    "sts_medicine_recommend_dev": "InvalidClientTokenId",
-    "health_aws_medicine": "503",
-    "health_origin": "530",
-    "deploy_allowed": false,
-    "write_owner": "Worker D only"
-  },
-  "workers": {
-    "A_gate_b": "bef8a368-cd50-4f31-93c7-7b309d7c28fa",
-    "C_privacy": "fa73aeb1-415c-47a3-a38d-3fc913e40d8a",
-    "E_circuit": "273fa10a-49f9-4f36-98b2-f028228d5e0c",
-    "D_aws": "d80ad09a-155e-4c85-9394-8f4ccdaaff27",
-    "I_holdout": "ab6fef83-e21c-4b9c-a0af-d219152542dd"
-  },
-  "cycle": 0,
-  "next_actions": [
-    "Integrate Worker outputs when complete",
-    "Checkpoint commits (no push)",
-    "Local failure injection + kill rehearsal",
-    "Morning reports; Production Shadow re-verdict (likely still Not Ready without DPA+AWS)"
-  ]
+  "commits_r19": ["c446ab0", "7af0268"],
+  "flags_all_false": true,
+  "push": false,
+  "blockers": [
+    "Owner aws login for staging",
+    "TypeSafe account ZDR/retention confirmation",
+    "Gate B human pharmacist sign-off",
+    "Owner cost budget",
+    "Staging kill/rollback drill"
+  ],
+  "cycle": 1
 }
