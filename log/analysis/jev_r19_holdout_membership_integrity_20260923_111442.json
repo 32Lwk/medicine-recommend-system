@@ -1,0 +1,217 @@
+{
+  "check": "r19_holdout_membership_integrity_post_r18",
+  "timestamp": "2026-09-23T02:14:20.718166+00:00",
+  "fixture": "tests/fixtures/jev_intent_router_holdout_r17.yaml",
+  "commit_ref_fix": "876c718",
+  "scenario_count": 13,
+  "accuracy_gate_eligible_n": 8,
+  "accuracy_gate_ineligible_n": 5,
+  "expected_eligible_n": 8,
+  "expected_ineligible_n": 5,
+  "eligible_count_ok": true,
+  "membership_mismatches": [],
+  "membership_integrity_ok": true,
+  "sessionops_desire_form": {
+    "scenario_ids": [
+      "r17-holdout-sessionops-delete-record"
+    ],
+    "rows": [
+      {
+        "scenario_id": "r17-holdout-sessionops-delete-record",
+        "fixture_accuracy_gate_eligible": false,
+        "fixture_membership": "ineligible",
+        "fixture_eligibility_reason": "sessionops_fast_path",
+        "session_intent": "delete",
+        "session_operation": "delete",
+        "runtime_eligible": false,
+        "runtime_reason": "sessionops_fast_path",
+        "accuracy_gate_eligible_after_r18": false,
+        "would_attempt_jev": false
+      }
+    ],
+    "desire_form_text_check": {
+      "intent": "delete",
+      "eligible": false,
+      "reason": "sessionops_fast_path",
+      "would_attempt_jev": false,
+      "ok": true
+    },
+    "sessionops_ok": true
+  },
+  "rows": [
+    {
+      "scenario_id": "r17-holdout-physical-headache-office",
+      "fixture_accuracy_gate_eligible": true,
+      "fixture_membership": "eligible",
+      "fixture_eligibility_reason": "intent_classification_candidate",
+      "session_intent": "none",
+      "session_operation": null,
+      "runtime_eligible": true,
+      "runtime_reason": "intent_classification_candidate",
+      "accuracy_gate_eligible_after_r18": true,
+      "would_attempt_jev": true
+    },
+    {
+      "scenario_id": "r17-holdout-physical-fever-chills",
+      "fixture_accuracy_gate_eligible": true,
+      "fixture_membership": "eligible",
+      "fixture_eligibility_reason": "intent_classification_candidate",
+      "session_intent": "none",
+      "session_operation": null,
+      "runtime_eligible": true,
+      "runtime_reason": "intent_classification_candidate",
+      "accuracy_gate_eligible_after_r18": true,
+      "would_attempt_jev": true
+    },
+    {
+      "scenario_id": "r17-holdout-medicine-sideeffect-eve",
+      "fixture_accuracy_gate_eligible": true,
+      "fixture_membership": "eligible",
+      "fixture_eligibility_reason": "intent_classification_candidate",
+      "session_intent": "none",
+      "session_operation": null,
+      "runtime_eligible": true,
+      "runtime_reason": "intent_classification_candidate",
+      "accuracy_gate_eligible_after_r18": true,
+      "would_attempt_jev": true
+    },
+    {
+      "scenario_id": "r17-holdout-store-locator-open-now",
+      "fixture_accuracy_gate_eligible": true,
+      "fixture_membership": "eligible",
+      "fixture_eligibility_reason": "intent_classification_candidate",
+      "session_intent": "none",
+      "session_operation": null,
+      "runtime_eligible": true,
+      "runtime_reason": "intent_classification_candidate",
+      "accuracy_gate_eligible_after_r18": true,
+      "would_attempt_jev": true
+    },
+    {
+      "scenario_id": "r17-holdout-counseling-insomnia-rumination",
+      "fixture_accuracy_gate_eligible": true,
+      "fixture_membership": "eligible",
+      "fixture_eligibility_reason": "intent_classification_candidate",
+      "session_intent": "none",
+      "session_operation": null,
+      "runtime_eligible": true,
+      "runtime_reason": "intent_classification_candidate",
+      "accuracy_gate_eligible_after_r18": true,
+      "would_attempt_jev": true
+    },
+    {
+      "scenario_id": "r17-holdout-otc-compare-bufferin-tylenol",
+      "fixture_accuracy_gate_eligible": true,
+      "fixture_membership": "eligible",
+      "fixture_eligibility_reason": "intent_classification_candidate",
+      "session_intent": "none",
+      "session_operation": null,
+      "runtime_eligible": true,
+      "runtime_reason": "intent_classification_candidate",
+      "accuracy_gate_eligible_after_r18": true,
+      "would_attempt_jev": true
+    },
+    {
+      "scenario_id": "r17-holdout-sessionops-delete-record",
+      "fixture_accuracy_gate_eligible": false,
+      "fixture_membership": "ineligible",
+      "fixture_eligibility_reason": "sessionops_fast_path",
+      "session_intent": "delete",
+      "session_operation": "delete",
+      "runtime_eligible": false,
+      "runtime_reason": "sessionops_fast_path",
+      "accuracy_gate_eligible_after_r18": false,
+      "would_attempt_jev": false
+    },
+    {
+      "scenario_id": "r17-holdout-emergency-chest-tightness",
+      "fixture_accuracy_gate_eligible": false,
+      "fixture_membership": "ineligible",
+      "fixture_eligibility_reason": "deterministic_high_risk",
+      "session_intent": "none",
+      "session_operation": null,
+      "runtime_eligible": false,
+      "runtime_reason": "deterministic_high_risk",
+      "accuracy_gate_eligible_after_r18": false,
+      "would_attempt_jev": false
+    },
+    {
+      "scenario_id": "r17-holdout-security-secret-exfil",
+      "fixture_accuracy_gate_eligible": false,
+      "fixture_membership": "ineligible",
+      "fixture_eligibility_reason": "deterministic_high_risk",
+      "session_intent": "none",
+      "session_operation": null,
+      "runtime_eligible": false,
+      "runtime_reason": "deterministic_high_risk",
+      "accuracy_gate_eligible_after_r18": false,
+      "would_attempt_jev": false
+    },
+    {
+      "scenario_id": "r17-holdout-prescription-sleep-request",
+      "fixture_accuracy_gate_eligible": false,
+      "fixture_membership": "ineligible",
+      "fixture_eligibility_reason": "policy_block",
+      "session_intent": "none",
+      "session_operation": null,
+      "runtime_eligible": false,
+      "runtime_reason": "policy_block",
+      "accuracy_gate_eligible_after_r18": false,
+      "would_attempt_jev": false
+    },
+    {
+      "scenario_id": "r17-holdout-exam-diagnose-rash",
+      "fixture_accuracy_gate_eligible": false,
+      "fixture_membership": "ineligible",
+      "fixture_eligibility_reason": "policy_block",
+      "session_intent": "none",
+      "session_operation": null,
+      "runtime_eligible": false,
+      "runtime_reason": "policy_block",
+      "accuracy_gate_eligible_after_r18": false,
+      "would_attempt_jev": false
+    },
+    {
+      "scenario_id": "r17-holdout-physical-store-mixed-throat",
+      "fixture_accuracy_gate_eligible": true,
+      "fixture_membership": "eligible",
+      "fixture_eligibility_reason": "intent_classification_candidate",
+      "session_intent": "none",
+      "session_operation": null,
+      "runtime_eligible": true,
+      "runtime_reason": "intent_classification_candidate",
+      "accuracy_gate_eligible_after_r18": true,
+      "would_attempt_jev": true
+    },
+    {
+      "scenario_id": "r17-holdout-medicine-sideeffect-pabron-driving",
+      "fixture_accuracy_gate_eligible": true,
+      "fixture_membership": "eligible",
+      "fixture_eligibility_reason": "intent_classification_candidate",
+      "session_intent": "none",
+      "session_operation": null,
+      "runtime_eligible": true,
+      "runtime_reason": "intent_classification_candidate",
+      "accuracy_gate_eligible_after_r18": true,
+      "would_attempt_jev": true
+    }
+  ],
+  "remasure": {
+    "artifact_json": "log/analysis/jev_r19_holdout_r10_seed42_20260923_111442.json",
+    "artifact_md": "log/analysis/jev_r19_holdout_r10_seed42_20260923_111442.md",
+    "repeat": 10,
+    "seed": 42,
+    "backends": [
+      "current",
+      "jev:minimal"
+    ],
+    "jev_accuracy_gate": "80/80",
+    "accuracy_gate_n": 80,
+    "jev_eligible_n": 8,
+    "jev_ineligible_n": 5,
+    "sessionops_jev_attempted": false,
+    "unexpected_jev_call_count": 0,
+    "latency_ci95_low_ms": 1128.87,
+    "rng_below_900_fraction": 0.0
+  }
+}

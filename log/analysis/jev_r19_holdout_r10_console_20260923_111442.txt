@@ -1,0 +1,109 @@
+pyahocorasick縺後う繝ｳ繧ｹ繝医・繝ｫ縺輔ｌ縺ｦ縺・∪縺帙ｓ縲る壼ｸｸ縺ｮ豁｣隕剰｡ｨ迴ｾ繧剃ｽｿ逕ｨ縺励∪縺吶・
+笞・・pyahocorasick 譛ｪ蟆主・縺ｮ縺溘ａ蝠・刀辣ｧ蜷医・邱壼ｽ｢繝輔か繝ｼ繝ｫ繝舌ャ繧ｯ
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+Jev intent routing eval
+order: seed_random per-case backend shuffle (normalized=seed_random)
+totals: requests=260 scenarios=13 api_err=0 eval_err=0 retry=0 fallback=0 paired_n=80
+current path kinds: deterministic_session_ops_n=10 counts={'mixed': 110, 'deterministic_session_ops': 10, 'deterministic_other': 10}
+- current: scored 83/130 (63.8%), attempted_acc=63.8%, attempted=130, paired_n=80, api_err=0, eval_err=0, mean=1467.01ms, p50=1293.36ms, p95=3429.66ms, p99=4374.8ms, stdev=915.18
+- jev:minimal: scored 92/130 (70.8%), attempted_acc=70.8%, attempted=130, paired_n=80, api_err=0, eval_err=0, mean=244.82ms, p50=234.88ms, p95=350.19ms, p99=423.25ms, stdev=57.76
+Disagreements (raw primary+sub): 54
+  - r17-holdout-counseling-insomnia-rumination#0: raw Physical/rule_based_recommend vs Counseling/emotional_support (alias_only=False)
+  - r17-holdout-counseling-insomnia-rumination#1: raw Physical/rule_based_recommend vs Counseling/emotional_support (alias_only=False)
+  - r17-holdout-counseling-insomnia-rumination#2: raw Physical/rule_based_recommend vs Counseling/emotional_support (alias_only=False)
+  - r17-holdout-counseling-insomnia-rumination#3: raw Physical/rule_based_recommend vs Counseling/emotional_support (alias_only=False)
+  - r17-holdout-counseling-insomnia-rumination#4: raw Physical/rule_based_recommend vs Counseling/emotional_support (alias_only=False)
+  - r17-holdout-counseling-insomnia-rumination#5: raw Physical/rule_based_recommend vs Counseling/emotional_support (alias_only=False)
+  - r17-holdout-counseling-insomnia-rumination#6: raw Physical/rule_based_recommend vs Counseling/emotional_support (alias_only=False)
+  - r17-holdout-counseling-insomnia-rumination#7: raw Physical/rule_based_recommend vs Counseling/emotional_support (alias_only=False)
+  - r17-holdout-counseling-insomnia-rumination#8: raw Physical/rule_based_recommend vs Counseling/emotional_support (alias_only=False)
+  - r17-holdout-counseling-insomnia-rumination#9: raw Physical/rule_based_recommend vs Counseling/emotional_support (alias_only=False)
+  - r17-holdout-emergency-chest-tightness#0: raw Emergency/chest_pain_breathing_difficulty vs None/None (alias_only=False)
+  - r17-holdout-emergency-chest-tightness#1: raw Emergency/breathing_difficulty vs None/None (alias_only=False)
+  - r17-holdout-emergency-chest-tightness#4: raw Emergency/chest_tightness_breathing_difficulty vs None/None (alias_only=False)
+  - r17-holdout-emergency-chest-tightness#7: raw Emergency/breathing_difficulty vs None/None (alias_only=False)
+  - r17-holdout-emergency-chest-tightness#9: raw Emergency/chest_pain_breathing_difficulty vs None/None (alias_only=False)
+  - r17-holdout-exam-diagnose-rash#0: raw Physical/rule_based_recommend vs None/None (alias_only=False)
+  - r17-holdout-exam-diagnose-rash#3: raw Physical/rule_based_recommend vs None/None (alias_only=False)
+  - r17-holdout-exam-diagnose-rash#4: raw Physical/rule_based_recommend vs None/None (alias_only=False)
+  - r17-holdout-exam-diagnose-rash#5: raw Physical/rule_based_recommend vs None/None (alias_only=False)
+  - r17-holdout-exam-diagnose-rash#8: raw Physical/rule_based_recommend vs None/None (alias_only=False)
+Latency CI Gate scenario_cluster_eligible_warm (numpy_bootstrap_scenario_cluster): n_scenarios=8 mean_diff=1368.97ms 95%CI=[1128.87, 1762.55]
+Latency CI request-level deprecated (numpy_bootstrap_request_level): mean_diff=1392.91ms 95%CI=[1238.67, 1562.44]
+Latency CI rng_sensitivity (report-only): seeds=50 fraction(ci95_low<900.0)=0.0
+Cost: openai_saved_measured_proxy_jpy=0.0 jev_estimated_jpy=0.677204 total_class_if_jev_jpy=0.677204
+NOTE: Jev path used production evaluate_system_one + parse_jev_answers.
+NOTE: Scoring sole entry: src.services.jev_decisions.score_joint_decision (no harness reimplementation; risk_flags 竕 required_safety_action).
+NOTE: Order=seed_random seed=42: per-case backend order shuffled; with_baseline_triage forced after current.
+NOTE: latency_mode=warm: Gate canonical CI always scenario_cluster_eligible_warm; latency_all/warm/cold and scenario_cluster_all/warm/cold stored as sensitivity.
+JSON: log\analysis\jev_r19_holdout_r10_seed42_20260923_111442.json
+MD:   log\analysis\jev_r19_holdout_r10_seed42_20260923_111442.md
