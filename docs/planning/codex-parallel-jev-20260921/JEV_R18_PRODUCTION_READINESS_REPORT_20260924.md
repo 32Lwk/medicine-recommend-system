@@ -10,10 +10,10 @@ Not Ready
 - Gate B: Hard No-Go
 - product safety: 未合格
 - Critical open: 0
-- High open: 1 (commit-chain / overnight holdout membership integrity — remediated locally; residual until remeasure)
-- Medium open: 2+ (medical Conditional residuals; docs/log archive noise)
-- privacy: BLOCKING (TypeSafe retention/DPA unknown in-repo)
-- kill switch: implemented (env flags) — staging drill unproven
+- High open (product shadow path): 1 residual membership integrity until holdout remeasure; Gate B Highs H-01–H-05 tracked under Gate B (not product safety Passed)
+- Medium open: 2+ (medical Conditional; Gate B M-02/M-03+)
+- privacy: BLOCKING (TypeSafe DPA/retention unknown; free-text PII scrub absent)
+- kill switch: env flags present — staging drill unproven; circuit breaker absent
 - rollback: local runbook exists — staging drill unproven
 - cost guard: metrics present — production rate/budget limits not Owner-approved
 - observability: shadow JSONL + scrub — mismatch triage playbook missing
@@ -28,16 +28,16 @@ Not Ready
 | --- | --- |
 | Commit Auditor | [Commit Auditor](ce0409e7-8794-4d0f-943d-0538db7a15d8) → `JEV_R18_COMMIT_CHAIN_AUDIT_20260924.md` |
 | Gate A Auditor | [Gate A Auditor](8e822fe3-24e6-4055-b278-9987d0de962f) → `JEV_R18_GATE_A_FINAL_VERDICT_20260924.md` |
+| Gate B Safety Auditor | [Gate B Auditor](e0ac9cbe-a94f-4d19-af00-36d6ad70beba) → `JEV_R18_GATE_B_CONTRACT_AUDIT_20260924.md` |
 | Privacy/SRE | [Privacy SRE](a752a177-1bde-4ae5-bf4c-d636760ac5cd) → privacy + SRE runbook |
 | Release Challenger | [Release Challenger](8c7c8aac-30ff-4696-89ef-686ed43f7fe4) → **Not Ready** |
-| Gate B | this report + `JEV_R18_GATE_B_CONTRACT_AUDIT_20260924.md` |
 
 ## Why Not Ready (any one suffices)
 
-1. **Privacy/retention UNKNOWN** for TypeSafe System One — user_input + recent turns leave the trust boundary; no in-repo DPA/retention → directive forbids production shadow.
-2. **Gate B Hard No-Go** — Safety Action Contract incomplete for multi-axis E2E gold.
-3. **Kill switch / rollback** implemented in code (`JEV_ENABLED`, pending queue, ThreadPool) but **not proven** with staging drill.
-4. **Overnight holdout membership bug**: SessionOps desire-form (`消したい`) missed → counted in Gate denom / Jev attempted; **R18 local fix** added (new commit). Historical 90/90 artifact remains Conditional evidence until remeasure.
+1. **Privacy/retention UNKNOWN** for TypeSafe System One — user_input + recent turns leave the trust boundary; no in-repo DPA/retention → directive forbids production shadow. Privacy also: **PII scrub absent** on free-text `user_input` (BLOCKING).
+2. **Gate B Hard No-Go** — Safety Action Contract incomplete; High H-01–H-05 (D2 default OFF residual SF-E1; no `gate_b_approved` fixtures; detector FN→SF-E1; crisis×detector_error SF-E1; no HTTP E2E with D2=ON).
+3. **Kill switch / rollback** env-default OFF verifyable; **staging drill unproven**. **Circuit breaker absent** → async isolation Not Ready for prod shadow.
+4. **Overnight holdout membership bug**: SessionOps desire-form (`消したい`) missed → counted in Gate denom / Jev attempted; **R18 local fix** `876c718`. Historical 90/90 artifact remains Conditional evidence until remeasure.
 5. **No push/PR** — bits not on origin/main; production cannot consume them.
 6. **Medical Conditional Accept** Medium×2 + product safety 未合格.
 7. **Cost/rate production limits** and **shadow-mismatch triage** not Owner-approved.
