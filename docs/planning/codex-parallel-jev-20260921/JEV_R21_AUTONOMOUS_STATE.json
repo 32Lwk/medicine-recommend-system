@@ -1,29 +1,28 @@
 {
   "program": "R21_Production_Shadow_Ready_Candidate",
-  "updated_at": "2026-09-24T02:46:00+09:00",
-  "phase": 5,
-  "local_head_pending": true,
-  "commits": ["469c9fe", "047af9f", "3812e63"],
-  "staging_health_git_commit": "8a3c571",
-  "staging_task": "medicine-recommend-tunnel:5",
-  "sha_mismatch": true,
+  "updated_at": "2026-09-24T03:30:00+09:00",
+  "phase": 7,
+  "local_head": "f571480+",
+  "deployed_sha": "f571480",
+  "staging_task": "medicine-recommend-tunnel:13",
+  "sha_mismatch": false,
   "flags_staging": {
     "JEV_ENABLED": "0",
     "JEV_INTENT_ROUTER_SHADOW": "0",
     "JEV_INTENT_ROUTER_PRIMARY": "0",
     "POLICY_ENFORCEMENT_D2": "0"
   },
-  "cloudwatch_alarms": "medicine-recommend-jev-* (8) OK",
   "verdicts": {
     "production_shadow": "Not Ready",
-    "gate_a_code": "Conditional Passed",
-    "gate_a_accuracy": "Conditional Passed",
-    "gate_b": "Hard No-Go (H-03/04/05 Conditional Closed-candidate only)",
+    "gate_b": "Hard No-Go (Conditional Closed-candidate)",
     "product_safety": "未合格",
     "medical_multi_review": "AI多重医療監修 Conditional Accept candidate",
-    "observability": "alarms live; emit needs redeploy"
+    "accuracy_jev_only": "100% candidate",
+    "canary": "Partial green (44/50 200; 5x503; 1 timeout)",
+    "rollback": "Pass candidate",
+    "observability": "alarms live"
   },
-  "forbidden": ["push", "PR", "primary ON", "production D2 ON", "live", "real-user data"],
-  "next": ["accuracy holdout eval10", "RC deploy for SHA match", "synthetic canary", "AWS rollback drill", "final report"],
-  "cycle": 1
+  "forbidden_done": ["no_push", "no_primary", "no_prod_d2", "no_live"],
+  "cycle": 2,
+  "stop_reason": "Production Shadow Ready conditions not all met; escalate residuals to Owner"
 }

@@ -1,0 +1,10 @@
+{
+  "started_at": "2026-09-23T18:23:27Z",
+  "shadow_on_at": "2026-09-23T18:23:30Z",
+  "shadow_off_at": "2026-09-23T18:23:53Z",
+  "ended_at": "2026-09-23T18:27:54Z",
+  "flags_verify": {
+    "error": "[Errno 2] No such file or directory: '\\\\tmp\\\\r21_flags.json'"
+  },
+  "note": "Kill-switch = env flags OFF via new task revision. PRIMARY/D2 locked 0."
+}
