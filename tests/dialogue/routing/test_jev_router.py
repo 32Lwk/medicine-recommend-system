@@ -51,19 +51,19 @@ def test_state_allowlist_one_turn():
     assert set(state["recent_turns"][0].keys()) == {"role", "content"}
 
 
-def test_state_allowlist_five_turns():
-    session = {"messages": _msgs(5)}
+def test_state_allowlist_two_turns_is_max():
+    session = {"messages": _msgs(2)}
     state = build_jev_router_state("質問", session, "sid")
-    assert len(state["recent_turns"]) == 5
+    assert len(state["recent_turns"]) == 2
 
 
-def test_state_allowlist_six_turns_truncates_to_five():
-    session = {"messages": _msgs(6)}
+def test_state_allowlist_three_turns_truncates_to_two():
+    session = {"messages": _msgs(3)}
     state = build_jev_router_state("質問", session, "sid")
-    assert len(state["recent_turns"]) == 5
-    # 末尾5件（turn-1 .. turn-5）
+    assert len(state["recent_turns"]) == 2
+    # 末尾2件（turn-1 .. turn-2） when msgs are turn-0..turn-2
     assert state["recent_turns"][0]["content"] == "turn-1-content"
-    assert state["recent_turns"][-1]["content"] == "turn-5-content"
+    assert state["recent_turns"][-1]["content"] == "turn-2-content"
 
 
 def test_recent_turn_content_capped_for_payload_size():
@@ -286,7 +286,7 @@ def test_medicine_qa_focus_kwarg_api_accepts_injection():
 def test_recent_context_alias_same_object_and_length():
     state = build_jev_router_state("x", {"messages": _msgs(3)}, "sid")
     assert state["recent_turns"] is state["recent_context"]
-    assert len(state["recent_turns"]) == len(state["recent_context"]) == 3
+    assert len(state["recent_turns"]) == len(state["recent_context"]) == 2
 
 
 def test_schedule_scrubs_poisoned_recent_alias_divergence():

@@ -16,11 +16,11 @@ from typing import Any, Mapping, Optional
 
 logger = logging.getLogger(__name__)
 
-_MAX_RECENT_TURNS = 5
-# Keep 5 turns for shadow accuracy; shrink text per turn before shrinking depth.
-_MAX_RECENT_TURN_CHARS = 240
+# Production payload boundary: current turn is ``user_input``; recent context is
+# minimal prior turns only (not a session/medical-profile dump).
+_MAX_RECENT_TURNS = 2
+_MAX_RECENT_TURN_CHARS = 160
 _MAX_MEDICINE_NAMES = 3
-_MAX_ACTIVE_SYMPTOMS = 5
 _APP_CONTEXT = "Japanese OTC medicine routing"
 _EXECUTOR_WORKERS = 2
 _MAX_PENDING_SHADOW = 8
@@ -38,9 +38,28 @@ _FORBIDDEN_STATE_KEYS = frozenset(
         "user_id",
         "line_user_id",
         "user_attributes",
+        "medical_profile",
+        "profile",
+        "answers",
+        "raw_answers",
+        "dialogue_state",
+        "messages",
+        "history",
         "rag",
         "rag_text",
+        "system_prompt",
+        "prompt",
         "api_key",
+        "authorization",
+        "token",
+        "password",
+        "email",
+        "phone",
+        "address",
+        # Symptom / profile dumps — routing uses free-text user_input only.
+        "active_symptoms",
+        "symptoms",
+        "diagnosis",
     }
 )
 
@@ -126,12 +145,37 @@ def _sync_recent_aliases(state: dict[str, Any]) -> None:
 
 
 
+def _effective_executor_workers() -> int:
+    try:
+        from src.dialogue.routing.jev_shadow_guards import get_shadow_guards
+
+        return max(1, int(get_shadow_guards().config.concurrency or _EXECUTOR_WORKERS))
+    except Exception:
+        return int(_EXECUTOR_WORKERS)
+
+
+def _effective_max_pending() -> int:
+    """Soft pending cap.
+
+    Tests patch ``_MAX_PENDING_SHADOW`` (e.g. to 0). When left at the import
+    default (8), prefer live ``JEV_MAX_PENDING`` / shadow-guard config.
+    """
+    if int(_MAX_PENDING_SHADOW) != 8:
+        return max(0, int(_MAX_PENDING_SHADOW))
+    try:
+        from src.dialogue.routing.jev_shadow_guards import get_shadow_guards
+
+        return max(0, int(get_shadow_guards().config.max_pending))
+    except Exception:
+        return 8
+
+
 def _get_executor() -> ThreadPoolExecutor:
     global _executor
     with _executor_lock:
         if _executor is None:
             _executor = ThreadPoolExecutor(
-                max_workers=_EXECUTOR_WORKERS,
+                max_workers=_effective_executor_workers(),
                 thread_name_prefix="jev_shadow",
             )
         return _executor
@@ -163,6 +207,41 @@ def _reset_runtime_for_tests() -> None:
     _shutdown_executor()
     with _pending_lock:
         _pending_count = 0
+    try:
+        from src.dialogue.routing.jev_shadow_guards import reset_shadow_guards_for_tests
+
+        reset_shadow_guards_for_tests()
+    except Exception:
+        pass
+
+
+def _pending_depth() -> int:
+    with _pending_lock:
+        return int(_pending_count)
+
+
+def _obs_hashes(model: Optional[str] = None) -> dict[str, Optional[str]]:
+    try:
+        from src.services.jev_decisions import INTENT_ROUTER_QUESTIONS
+        from src.services.jev_metrics import config_hash_snapshot, prompt_hash_for_questions
+
+        return {
+            "prompt_hash": prompt_hash_for_questions(
+                INTENT_ROUTER_QUESTIONS, model=model or _jev_model()
+            ),
+            "config_hash": config_hash_snapshot(),
+        }
+    except Exception:
+        return {"prompt_hash": None, "config_hash": None}
+
+
+def _sre_bundle() -> dict[str, Any]:
+    try:
+        from src.services.jev_sre_guards import observability_bundle
+
+        return observability_bundle(queue_depth=_pending_depth())
+    except Exception:
+        return {"queue": {"pending": _pending_depth()}}
 
 
 def _record_schedule_skip(
@@ -172,11 +251,15 @@ def _record_schedule_skip(
     snapshot: Mapping[str, Any],
     sid: Optional[str],
     error_class: str,
+    eligible: bool = True,
+    skip_reason: Optional[str] = None,
 ) -> None:
-    """Fail-open skip metric (queue_full / submit_failed). Never raises."""
+    """Fail-open skip metric (queue_full / circuit / rate / submit). Never raises."""
     try:
         from src.services.jev_metrics import build_state_shape, record_shadow_event
 
+        hashes = _obs_hashes()
+        reason = skip_reason or error_class
         record_shadow_event(
             correlation_id=correlation_id,
             legacy_decision=_decision_to_payload(legacy_decision),
@@ -192,6 +275,11 @@ def _record_schedule_skip(
             legacy_saved_calls=0,
             state_shape=build_state_shape(snapshot),
             sid=sid,
+            eligible=eligible,
+            skip_reason=reason,
+            prompt_hash=hashes.get("prompt_hash"),
+            config_hash=hashes.get("config_hash"),
+            sre=_sre_bundle(),
         )
     except Exception:
         logger.debug("jev schedule_skip metric failed error_class=%s", error_class)
@@ -230,6 +318,12 @@ def _sanitize_user_text(user_text: Any) -> str:
     # 極端な長文は送らない（本文はログに出さない）
     if len(text) > 4000:
         text = text[:4000]
+    try:
+        from src.dialogue.routing.jev_pii_redact import redact_pii_text
+
+        text, _hits = redact_pii_text(text)
+    except Exception:
+        pass
     return text
 
 
@@ -255,6 +349,12 @@ def _trim_recent_turn_content(text: Any) -> str:
     content = content.replace("\x00", "").strip()
     if len(content) > _MAX_RECENT_TURN_CHARS:
         content = content[:_MAX_RECENT_TURN_CHARS]
+    try:
+        from src.dialogue.routing.jev_pii_redact import redact_pii_text
+
+        content, _hits = redact_pii_text(content)
+    except Exception:
+        pass
     return content
 
 
@@ -263,14 +363,14 @@ def _extract_recent_turns(session: Any, sid: Optional[str]) -> list[dict[str, st
     try:
         from src.services.triage_history import get_recent_messages
 
-        # limit を大きめに取り、role/content 化後に末尾5へ truncate
-        messages = list(get_recent_messages(session, sid, limit=_MAX_RECENT_TURNS + 1) or [])
+        # Pull a few extras then truncate to minimal recent depth.
+        messages = list(get_recent_messages(session, sid, limit=_MAX_RECENT_TURNS + 2) or [])
     except Exception:
         try:
             raw = []
             if session is not None and hasattr(session, "get"):
                 raw = list(session.get("messages") or [])
-            messages = raw[-(_MAX_RECENT_TURNS + 1) :]
+            messages = raw[-(_MAX_RECENT_TURNS + 2) :]
         except Exception:
             messages = []
 
@@ -342,42 +442,6 @@ def _medicine_names(session: Any, sid: Optional[str]) -> list[str]:
     return names[:_MAX_MEDICINE_NAMES]
 
 
-def _active_symptoms_if_present(session: Any) -> Optional[list[str]]:
-    """既にある diagnosis.symptoms のみ。再抽出しない。"""
-    try:
-        if session is None or not hasattr(session, "get"):
-            return None
-        messages = list(session.get("messages") or [])
-        for msg in reversed(messages):
-            if not isinstance(msg, Mapping):
-                continue
-            role = _role_of(msg)
-            if role != "assistant":
-                continue
-            diag = msg.get("diagnosis")
-            if not isinstance(diag, Mapping):
-                continue
-            symptoms = diag.get("symptoms")
-            if not symptoms:
-                continue
-            out: list[str] = []
-            if isinstance(symptoms, list):
-                for s in symptoms:
-                    text = str(s).strip() if not isinstance(s, Mapping) else str(
-                        s.get("name") or s.get("symptom") or ""
-                    ).strip()
-                    if text and text not in out:
-                        out.append(text)
-                    if len(out) >= _MAX_ACTIVE_SYMPTOMS:
-                        break
-            elif isinstance(symptoms, str) and symptoms.strip():
-                out = [symptoms.strip()]
-            return out or None
-    except Exception:
-        logger.debug("jev active_symptoms extract skipped", exc_info=True)
-    return None
-
-
 def _normalize_focus(medicine_qa_focus: Any) -> Optional[list[str]]:
     if medicine_qa_focus is None:
         return None
@@ -414,7 +478,6 @@ def build_jev_router_state(
 
     last_primary, last_sub = _last_routes(session)
     medicines = _medicine_names(session, sid)
-    symptoms = _active_symptoms_if_present(session)
     focus = _normalize_focus(medicine_qa_focus)
 
     meta: dict[str, Any] = {}
@@ -424,8 +487,7 @@ def build_jev_router_state(
         meta["last_sub_route"] = last_sub
     if medicines:
         meta["last_recommended_medicines"] = medicines
-    if symptoms:
-        meta["active_symptoms"] = symptoms
+    # Do not send active_symptoms / diagnosis / medical_profile dumps.
     if focus:
         meta["medicine_qa_focus"] = focus
 
@@ -605,6 +667,28 @@ def _shadow_worker(
         succeeded = False
 
     try:
+        from src.dialogue.routing.jev_shadow_guards import get_shadow_guards
+
+        guards = get_shadow_guards()
+        if succeeded:
+            tok = 0
+            try:
+                if usage is not None:
+                    tok = int(
+                        getattr(usage, "total_tokens", None)
+                        or getattr(usage, "input_tokens", None)
+                        or (usage.get("total_tokens") if isinstance(usage, Mapping) else 0)
+                        or 0
+                    )
+            except Exception:
+                tok = 0
+            guards.record_success(tokens=tok)
+        else:
+            guards.record_failure()
+    except Exception:
+        pass
+
+    try:
         latency_ms = round((time.monotonic() - started) * 1000.0, 3)
         executed = lookup_executed_decision(correlation_id) or _decision_to_payload(
             legacy_decision
@@ -628,6 +712,11 @@ def _shadow_worker(
             risk_flags=getattr(jev_decision, "risk_flags", None)
             if jev_decision is not None
             else None,
+            eligible=True,
+            skip_reason=None,
+            prompt_hash=_obs_hashes(model).get("prompt_hash"),
+            config_hash=_obs_hashes(model).get("config_hash"),
+            sre=_sre_bundle(),
         )
     except Exception:
         # Log write failure must not reach the request path (sync) or crash workers.
@@ -715,7 +804,46 @@ def schedule_jev_shadow(
             "sid_for_hash": sid,
         }
 
+        # R19: circuit / rate / cost admit (fail-open for user path; skip shadow only)
+        try:
+            from src.dialogue.routing.jev_shadow_guards import get_shadow_guards
+
+            guards = get_shadow_guards()
+            with _pending_lock:
+                pending_now = _pending_count
+            soft_cap = _effective_max_pending()
+            # Align admit queue check with module soft-cap (tests patch _MAX_PENDING_SHADOW).
+            admit_pending = pending_now
+            if soft_cap <= pending_now or soft_cap == 0:
+                admit_pending = max(pending_now, guards.config.max_pending)
+            est_tokens = max(1, len(user_text) // 2)
+            admit = guards.check_admit(
+                pending_count=admit_pending, est_tokens=est_tokens
+            )
+            if not admit.allow:
+                _record_schedule_skip(
+                    correlation_id=correlation_id,
+                    legacy_decision=legacy_decision,
+                    snapshot=snapshot,
+                    sid=sid,
+                    error_class=admit.reason,
+                )
+                logger.debug(
+                    "jev shadow skipped: guard=%s circuit=%s",
+                    admit.reason,
+                    admit.circuit_state,
+                )
+                return False
+        except Exception:
+            logger.debug("jev shadow guard check failed; continuing fail-open to queue")
+
         if sync:
+            try:
+                from src.dialogue.routing.jev_shadow_guards import get_shadow_guards
+
+                get_shadow_guards().record_scheduled()
+            except Exception:
+                pass
             try:
                 _shadow_worker(**kwargs)
             except Exception:
@@ -723,7 +851,7 @@ def schedule_jev_shadow(
             return True
 
         with _pending_lock:
-            if _pending_count >= _MAX_PENDING_SHADOW:
+            if _pending_count >= _effective_max_pending():
                 _record_schedule_skip(
                     correlation_id=correlation_id,
                     legacy_decision=legacy_decision,
@@ -744,6 +872,13 @@ def schedule_jev_shadow(
             finally:
                 with _pending_lock:
                     _pending_count = max(0, _pending_count - 1)
+
+        try:
+            from src.dialogue.routing.jev_shadow_guards import get_shadow_guards
+
+            get_shadow_guards().record_scheduled()
+        except Exception:
+            pass
 
         try:
             _get_executor().submit(_wrapped)
@@ -778,6 +913,7 @@ def _record_eligibility_skip(
         from src.services.jev_metrics import build_state_shape, record_shadow_event
 
         reason = getattr(eligibility, "reason", None) or "not_eligible"
+        hashes = _obs_hashes()
         record_shadow_event(
             correlation_id=correlation_id,
             legacy_decision=_decision_to_payload(legacy_decision),
@@ -793,6 +929,11 @@ def _record_eligibility_skip(
             legacy_saved_calls=0,
             state_shape=build_state_shape(snapshot),
             sid=sid,
+            eligible=False,
+            skip_reason=str(reason),
+            prompt_hash=hashes.get("prompt_hash"),
+            config_hash=hashes.get("config_hash"),
+            sre=_sre_bundle(),
             extra={
                 "jev_eligible": False,
                 "jev_eligibility_reason": str(reason),

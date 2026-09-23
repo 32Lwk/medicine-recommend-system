@@ -85,6 +85,21 @@ def build_sf_e1_response(*, no_mutation_claim: bool = False) -> dict[str, Any]:
     return status.to_client_dict()
 
 
+def build_crisis_resources_response(*, language: str = "ja") -> dict[str, Any]:
+    """Crisis resources UX for fail-closed disposition (H-04). Not SF-E1."""
+    from src.core.crisis_detection import get_crisis_support_resources
+    from src.services.status_diagnosis_builder import build_crisis_status
+
+    resources = get_crisis_support_resources(language)
+    status = build_crisis_status(
+        resources["message"],
+        resources=resources.get("resources"),
+        title=resources.get("title", "相談窓口のご案内"),
+        emergency_message=resources.get("emergency_message", ""),
+    )
+    return status.to_client_dict()
+
+
 class CheckpointBuildError(RuntimeError):
     """Raised when deepcopy fails before mutation may start."""
 
@@ -477,6 +492,80 @@ def _safe_fallback(
     )
 
 
+def _crisis_resources_terminal(
+    session: Any,
+    decision: PolicyDecision | None,
+    *,
+    snapshot: TurnSignalSnapshot,
+    sid: Optional[str] = None,
+) -> PolicyEnforcementResult:
+    """H-04: crisis/emergency + detector_error → crisis resources UX (not SF-E1).
+
+    Terminal: stops recommend / SessionOps / Jev continuation. Does not apply
+    SessionOps MutationPlan. Appends crisis bot message only.
+    """
+    from src.services.sage_bot_response import build_bot_response
+
+    language = "ja"
+    try:
+        if session is not None:
+            language = str(session.get("language") or "ja")
+    except Exception:
+        language = "ja"
+
+    sage = build_crisis_resources_response(language=language)
+    legacy = sage.get("message") or ""
+    try:
+        bot = build_bot_response(
+            session,
+            sid,
+            sage_diagnosis=sage,
+            legacy_content=legacy,
+            crisis_support=True,
+        )
+        if session is not None:
+            session.setdefault("messages", []).append(bot)
+            session["crisis_detected"] = True
+            if hasattr(session, "modified"):
+                session.modified = True
+    except Exception:
+        logger.exception("crisis_resources bot build failed; returning sage only")
+
+    body = {
+        "status": "ok",
+        "crisis_support": True,
+        "fallback_reason": "defer_to_crisis_safety",
+        "fallback_reason_primary": "defer_to_crisis_safety",
+        "sage_diagnosis": sage,
+        "message_count": len(session.get("messages", [])) if session is not None else 0,
+        # Gate B contract markers — no recommend / no SessionOps mutation claim
+        "recommend_stopped": True,
+        "session_ops_mutated": False,
+    }
+    logger.warning(
+        "policy_d2 crisis_resources_terminal turn=%s errors=%s",
+        snapshot.turn_id,
+        list(snapshot.signals.detector_errors),
+    )
+    return PolicyEnforcementResult(
+        handled=True,
+        response=body,
+        status_code=200,
+        policy_kind=getattr(decision, "kind", None),
+        action=getattr(decision, "action", None),
+        fallback_reason="defer_to_crisis_safety",
+        observability_fields={
+            **snapshot.observability_fields(),
+            "safe_fallback": "crisis_resources",
+            "disposition": "crisis_resources",
+            "fallback_reason_primary": "defer_to_crisis_safety",
+            "recommend_stopped": True,
+            "session_ops_mutated": False,
+        },
+        db_commit_status="skipped",
+    )
+
+
 def enforce_policy_decision(
     decision: PolicyDecision,
     snapshot: TurnSignalSnapshot,
@@ -488,8 +577,22 @@ def enforce_policy_decision(
     triage_result: Optional[dict] = None,
 ) -> PolicyEnforcementResult:
     """Enforce typed PolicyDecision. Returns handled=False to continue routing."""
+    # R19 H-04: explicit crisis deferral from resolve — never SF-E1.
+    if decision.reason_code == "defer_to_crisis_safety":
+        return _crisis_resources_terminal(
+            session, decision, snapshot=snapshot, sid=sid
+        )
+
     if decision.action == "continue" or decision.kind is None:
         if decision.reason_code == "incomplete_evaluation":
+            # Belt-and-suspenders: crisis/emergency cues on snapshot win over SF-E1.
+            sig = snapshot.signals
+            if getattr(sig, "crisis_detected", False) or getattr(
+                sig, "emergency_detected", False
+            ):
+                return _crisis_resources_terminal(
+                    session, decision, snapshot=snapshot, sid=sid
+                )
             return _safe_fallback(
                 session,
                 decision,

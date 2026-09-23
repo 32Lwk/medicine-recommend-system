@@ -23,6 +23,7 @@ FallbackReason = Literal[
     "detector_error",
     "adapter_error",
     "incomplete_evaluation",
+    "defer_to_crisis_safety",
     "unknown_kind",
     "empty_content",
     "db_commit_unknown",

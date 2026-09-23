@@ -84,6 +84,17 @@ FAILURE_REASONS: frozenset[str] = frozenset(
         "missing_api_key",
         "queue_full",
         "submit_failed",
+        "circuit_open",
+        "circuit_open_manual",
+        "circuit_half_open_saturated",
+        "rate_rpm",
+        "rate_rph",
+        "rate_rpd",
+        "tokens_day",
+        "cost_day_estimate",
+        "cost_day",
+        "emergency_disable",
+        "tokens_per_request",
         "unexpected",
         "log_error",
         "recent_context_mismatch",
@@ -99,7 +110,9 @@ _FAILURE_ALIASES: dict[str, str] = {
     "TimeoutError": "timeout",
     "http_429": "http_429",
     "429": "http_429",
+    "http_429_exhausted": "http_429",
     "http_5xx": "http_5xx",
+    "http_5xx_exhausted": "http_5xx",
     "http_4xx": "http_4xx",
     "network_error": "network_error",
     "network": "network_error",
@@ -110,6 +123,17 @@ _FAILURE_ALIASES: dict[str, str] = {
     "missing_api_key": "missing_api_key",
     "queue_full": "queue_full",
     "submit_failed": "submit_failed",
+    "circuit_open": "circuit_open",
+    "circuit_open_manual": "circuit_open_manual",
+    "circuit_half_open_saturated": "circuit_half_open_saturated",
+    "rate_rpm": "rate_rpm",
+    "rate_rph": "rate_rph",
+    "rate_rpd": "rate_rpd",
+    "tokens_day": "tokens_day",
+    "cost_day_estimate": "cost_day_estimate",
+    "cost_day": "cost_day_estimate",
+    "emergency_disable": "emergency_disable",
+    "tokens_per_request": "tokens_per_request",
     "unexpected": "unexpected",
     "log_error": "log_error",
     "recent_context_mismatch": "recent_context_mismatch",
@@ -413,6 +437,94 @@ def estimate_jev_cost_usd(input_tokens: Any) -> Optional[float]:
     if tokens < 0:
         return None
     return round(tokens * JEV_INPUT_COST_USD_PER_MTOK / 1_000_000.0, 10)
+
+
+def prompt_hash_for_questions(questions: Any, *, model: Optional[str] = None) -> Optional[str]:
+    """Stable hash of question schema + model (no user text / PII)."""
+    try:
+        import json
+
+        blob = json.dumps(
+            {"questions": questions, "model": model or ""},
+            sort_keys=True,
+            ensure_ascii=False,
+            default=str,
+        )
+        return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:32]
+    except Exception:
+        return None
+
+
+def config_hash_snapshot() -> Optional[str]:
+    """Hash of non-secret Jev runtime config (flags + caps). No API keys."""
+    try:
+        import json
+
+        from config.llm_flags import (
+            is_jev_enabled,
+            is_jev_intent_router_primary_enabled,
+            is_jev_intent_router_shadow_enabled,
+            is_policy_enforcement_d2_enabled,
+        )
+        from config.routing_config import (
+            jev_circuit_failure_threshold,
+            jev_circuit_half_open_probes,
+            jev_circuit_open_sec,
+            jev_cost_guard_enabled,
+            jev_est_cost_usd_day_max,
+            jev_executor_workers,
+            jev_http_max_retries,
+            jev_max_pending,
+            jev_model,
+            jev_rate_rpd,
+            jev_rate_rph,
+            jev_rate_rpm,
+            jev_shadow_emergency_disable,
+            jev_timeout_sec,
+            jev_tokens_day_max,
+            jev_tokens_per_request_max,
+        )
+
+        snap = {
+            "JEV_ENABLED": bool(is_jev_enabled()),
+            "JEV_INTENT_ROUTER_SHADOW": bool(is_jev_intent_router_shadow_enabled()),
+            "JEV_INTENT_ROUTER_PRIMARY": bool(is_jev_intent_router_primary_enabled()),
+            "POLICY_ENFORCEMENT_D2": bool(is_policy_enforcement_d2_enabled()),
+            "model": jev_model(),
+            "timeout_sec": jev_timeout_sec(),
+            "http_max_retries": jev_http_max_retries(),
+            "max_pending": jev_max_pending(),
+            "workers": jev_executor_workers(),
+            "circuit_failure_threshold": jev_circuit_failure_threshold(),
+            "circuit_open_sec": jev_circuit_open_sec(),
+            "circuit_half_open_probes": jev_circuit_half_open_probes(),
+            "rate_rpm": jev_rate_rpm(),
+            "rate_rph": jev_rate_rph(),
+            "rate_rpd": jev_rate_rpd(),
+            "tokens_per_request_max": jev_tokens_per_request_max(),
+            "tokens_day_max": jev_tokens_day_max(),
+            "est_cost_usd_day_max": jev_est_cost_usd_day_max(),
+            "cost_guard_enabled": jev_cost_guard_enabled(),
+            "emergency_disable": jev_shadow_emergency_disable(),
+        }
+        blob = json.dumps(snap, sort_keys=True, ensure_ascii=False)
+        return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:32]
+    except Exception:
+        return None
+
+
+def redaction_status_from_scrub(
+    scrubbed: Any = None,
+    remaining: Any = None,
+) -> str:
+    """ok | scrubbed | remaining_hits — never includes path contents with PII values."""
+    rem = list(remaining or [])
+    scr = list(scrubbed or [])
+    if rem:
+        return "remaining_hits"
+    if scr:
+        return "scrubbed"
+    return "ok"
 
 
 def build_cost_payload(
@@ -787,6 +899,11 @@ def record_shadow_event(
     sid: Optional[str] = None,
     gate_result: Any = None,
     extra: Optional[Mapping[str, Any]] = None,
+    eligible: Optional[bool] = None,
+    skip_reason: Optional[str] = None,
+    prompt_hash: Optional[str] = None,
+    config_hash: Optional[str] = None,
+    sre: Optional[Mapping[str, Any]] = None,
 ) -> Optional[dict[str, Any]]:
     """`jev_intent_router_shadow` を JSONL に書く。失敗時は None（例外なし）。"""
     try:
@@ -834,7 +951,7 @@ def record_shadow_event(
             succeeded=bool(succeeded),
             failure_reason=failure_reason,
             fallback_reason=fallback_reason,
-            error_class=effective_error,
+            error_class=effective_error or skip_reason,
         )
 
         jev_usage: Optional[dict[str, Any]] = None
@@ -855,6 +972,10 @@ def record_shadow_event(
             usd_jpy_rate=usd_jpy_rate,
         )
 
+        raw_route = _route_fields(legacy_decision)
+        effective_route = _route_fields(jev_decision) if jev_decision is not None else None
+        executed_route = _route_fields(executed)
+
         payload: dict[str, Any] = {
             "log_type": LOG_TYPE,
             "schema_version": SCHEMA_VERSION,
@@ -865,20 +986,27 @@ def record_shadow_event(
             "mode": mode,
             "adapter_mode": adapter_mode or ADAPTER_MODE,
             "model": model,
-            "legacy_decision": _route_fields(legacy_decision),
-            "jev_decision": _route_fields(jev_decision) if jev_decision is not None else None,
-            "executed_decision": _route_fields(executed),
+            # Naming: raw=legacy, effective=jev shadow parse, executed=production path
+            "legacy_decision": raw_route,
+            "jev_decision": effective_route,
+            "executed_decision": executed_route,
+            "raw_decision": raw_route,
+            "effective_decision": effective_route,
             "matched": {
                 "primary": bool(matched_payload.get("primary")),
                 "sub": bool(matched_payload.get("sub")),
                 "safety": bool(matched_payload.get("safety")),
                 "exact": bool(matched_payload.get("exact")),
             },
+            "mismatch": not bool(matched_payload.get("exact")),
             "disagreement_class": disagreement,
             "jev_confidence": confidence or None,
             "risk_flags": risk,
+            "eligible": eligible if eligible is not None else bool(attempted),
             "attempted": bool(attempted),
             "succeeded": bool(succeeded),
+            "skipped": not bool(attempted),
+            "skip_reason": skip_reason or (None if attempted else (effective_error or fallback_reason)),
             "retry_count": int(retry_count or 0),
             "fallback_reason": fallback_reason,
             "failure_reason": norm_failure,
@@ -896,7 +1024,12 @@ def record_shadow_event(
             "legacy_saved_calls": int(legacy_saved_calls or 0),
             "cost": cost_block,
             "state_shape": shape_payload,
+            "prompt_hash": prompt_hash,
+            "config_hash": config_hash if config_hash is not None else config_hash_snapshot(),
+            "redaction_status": "ok",
         }
+        if isinstance(sre, Mapping):
+            payload["sre"] = dict(sre)
         release_id = _resolve_release_id()
         if release_id:
             payload["release_id"] = release_id
@@ -913,6 +1046,7 @@ def record_shadow_event(
         # 本番耐性: assert ではなく scrub + error ログ
         scrubbed = scrub_forbidden_log_fields(payload)
         remaining = validate_no_forbidden_log_content(payload)
+        payload["redaction_status"] = redaction_status_from_scrub(scrubbed, remaining)
         if scrubbed or remaining:
             logger.error(
                 "jev shadow log forbidden/PII scrubbed=%s remaining=%s correlation_id=%s",
@@ -975,12 +1109,15 @@ __all__ = [
     "clear_execution_registry_for_tests",
     "compute_disagreement_class",
     "compute_matched",
+    "config_hash_snapshot",
     "estimate_jev_cost_usd",
     "lookup_executed_decision",
     "normalize_failure_reason",
     "normalize_sub_route",
     "notify_executed_decision",
+    "prompt_hash_for_questions",
     "record_shadow_event",
+    "redaction_status_from_scrub",
     "scrub_forbidden_log_fields",
     "trace_hash_for_sid",
     "validate_no_forbidden_log_content",

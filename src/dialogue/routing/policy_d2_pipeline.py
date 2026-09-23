@@ -88,7 +88,15 @@ def try_policy_enforcement_d2(
     client_info: Any,
     triage_result: Optional[dict],
 ) -> Optional[ResponseTuple]:
-    """Resolve+enforce. Return response tuple if terminal/fallback; else None."""
+    """Resolve+enforce. Return response tuple if terminal/fallback; else None.
+
+    Gate B / H-01 residual (D2 OFF): this hook is not called when
+    ``POLICY_ENFORCEMENT_D2`` defaults OFF. Prescription / controlled /
+    medical-examination typed PolicyDecision therefore remains inoperative on
+    the production default path; legacy triage follow-ups may still partially
+    handle some cases, but Gate B boundary UX is not claimed when D2 is OFF.
+    Staging should enable D2 explicitly; code default must stay OFF.
+    """
     from src.dialogue.routing.policy_enforce import resolve_and_enforce
 
     bag = triage_to_additive_bag(triage_result)

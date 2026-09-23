@@ -24,6 +24,7 @@ import httpx
 
 from config.routing_config import jev_http_max_retries as configured_jev_http_max_retries
 from config.routing_config import jev_model as configured_jev_model
+from config.routing_config import jev_retry_jitter_ms as configured_jev_retry_jitter_ms
 from config.routing_config import jev_timeout_sec as configured_jev_timeout_sec
 
 logger = logging.getLogger(__name__)
@@ -43,11 +44,24 @@ _CONNECT_TIMEOUT_CAP_SEC = 1.0
 
 
 def _max_attempts() -> int:
-    """initial + configured retries (Phase1: 1 + 1 = 2)."""
+    """initial + configured retries (default 1 + 1 = 2; env 0..2 extras)."""
     retries = int(configured_jev_http_max_retries())
     if retries < 0:
         retries = 0
     return 1 + retries
+
+
+def _retry_jitter_sleep() -> None:
+    """Sleep a small random jitter before a 429/5xx retry (no PII)."""
+    try:
+        import random
+
+        lo_ms, hi_ms = configured_jev_retry_jitter_ms()
+        delay = random.uniform(lo_ms / 1000.0, hi_ms / 1000.0)
+        if delay > 0:
+            time.sleep(delay)
+    except Exception:
+        pass
 
 _client_lock = threading.Lock()
 _shared_client: httpx.Client | None = None
@@ -270,6 +284,7 @@ def evaluate_system_one(
                         status,
                         retry_count,
                     )
+                    _retry_jitter_sleep()
                     continue
                 error_class = (
                     ERROR_HTTP_429_EXHAUSTED if status == 429 else ERROR_HTTP_5XX_EXHAUSTED
