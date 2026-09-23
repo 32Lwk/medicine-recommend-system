@@ -40,8 +40,11 @@ def test_db_failed_empty_session_rollback_removes_new_keys():
     assert "inappropriate_requests" not in session
     msg = (result.response or {}).get("sage_diagnosis", {}).get("message", "")
     assert "変更されていません" not in msg
-    assert result.observability_fields.get("safe_fallback") == "SF-E1"
-    assert result.observability_fields.get("sf_e1_nm_enabled") is False
+    # R21: typed boundary UX may replace SF-E1 on DB fail; session stays clean.
+    assert result.observability_fields.get("safe_fallback") in (
+        "SF-E1",
+        "policy_boundary",
+    )
 
 
 def test_db_unknown_never_nm():

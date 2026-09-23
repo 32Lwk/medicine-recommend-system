@@ -18,7 +18,12 @@ from src.dialogue.routing.turn_signal_snapshot import create_turn_signal_snapsho
 def _assert_no_nm(result) -> None:
     msg = (result.response or {}).get("sage_diagnosis", {}).get("message", "")
     assert "変更されていません" not in msg
-    assert result.observability_fields.get("safe_fallback") == "SF-E1"
+    # R21 F-H03-R2: typed PolicyDecision may surface boundary UX instead of SF-E1
+    # on DB failure, but must never claim NM / durable mutation success.
+    assert result.observability_fields.get("safe_fallback") in (
+        "SF-E1",
+        "policy_boundary",
+    )
 
 
 def test_c2_db_failed_empty_session_deep_equality_clean():

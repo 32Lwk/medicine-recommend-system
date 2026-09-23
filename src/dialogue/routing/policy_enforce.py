@@ -313,8 +313,21 @@ def _terminal_from_adapter(
     *,
     client_info: Any,
     snapshot: TurnSignalSnapshot,
+    user_text: str = "",
+    triage_result: Optional[dict] = None,
 ) -> PolicyEnforcementResult:
     if not (adapter.content or "").strip():
+        if decision.kind in _POLICY_BOUNDARY_KINDS:
+            return _policy_boundary_fallback(
+                session,
+                decision,
+                snapshot=snapshot,
+                user_text=user_text,
+                fallback_reason="empty_content",
+                sid=sid,
+                triage_result=triage_result,
+                mutation_started=False,
+            )
         return _safe_fallback(
             session,
             decision,
@@ -346,6 +359,17 @@ def _terminal_from_adapter(
         checkpoint = _build_checkpoint(session)
     except CheckpointBuildError:
         logger.exception("policy_d2 checkpoint build failed; mutation not started")
+        if decision.kind in _POLICY_BOUNDARY_KINDS:
+            return _policy_boundary_fallback(
+                session,
+                decision,
+                snapshot=snapshot,
+                user_text=user_text,
+                fallback_reason="adapter_error",
+                sid=sid,
+                triage_result=triage_result,
+                mutation_started=False,
+            )
         return _safe_fallback(
             session,
             decision,
@@ -362,6 +386,18 @@ def _terminal_from_adapter(
     except Exception:
         logger.exception("policy_d2 mutation apply failed")
         rolled = _restore_checkpoint(session, checkpoint)
+        if decision.kind in _POLICY_BOUNDARY_KINDS:
+            return _policy_boundary_fallback(
+                session,
+                decision,
+                snapshot=snapshot,
+                user_text=user_text,
+                fallback_reason="adapter_error",
+                sid=sid,
+                triage_result=triage_result,
+                mutation_started=True,
+                rollback_ok=rolled,
+            )
         return _safe_fallback(
             session,
             decision,
@@ -382,6 +418,19 @@ def _terminal_from_adapter(
         recovery = "rollback_ok" if rolled else "rollback_failed"
         if not rolled:
             logger.error("INTERNAL_ALERT policy_d2 rollback_failed sid=%s", sid)
+        if decision.kind in _POLICY_BOUNDARY_KINDS:
+            return _policy_boundary_fallback(
+                session,
+                decision,
+                snapshot=snapshot,
+                user_text=user_text,
+                fallback_reason=primary,
+                sid=sid,
+                triage_result=triage_result,
+                mutation_started=True,
+                rollback_ok=rolled,
+                db_commit_status=db_status,
+            )
         return _safe_fallback(
             session,
             decision,
@@ -492,6 +541,157 @@ def _safe_fallback(
     )
 
 
+_POLICY_BOUNDARY_KINDS = frozenset(
+    {
+        "prescription",
+        "controlled_or_illegal",
+        "medical_examination",
+        "ambiguous_controlled",
+    }
+)
+
+
+def _policy_boundary_fallback(
+    session: Any,
+    decision: PolicyDecision,
+    *,
+    snapshot: TurnSignalSnapshot,
+    user_text: str,
+    fallback_reason: str,
+    sid: Optional[str] = None,
+    triage_result: Optional[dict] = None,
+    mutation_started: bool = False,
+    rollback_ok: bool | None = None,
+    db_commit_status: str | None = None,
+) -> PolicyEnforcementResult:
+    """F-H03-R2: known policy cue → boundary UX even when adapter/DB fails.
+
+    Prefer typed boundary content over generic SF-E1. Does not claim durable
+    mutation / DB success. Never weakens crisis deferral.
+    """
+    from src.services.sage_bot_response import build_bot_response
+    from src.services.status_diagnosis_builder import build_notice_status
+
+    content = ""
+    title = "ご案内"
+    kind = f"policy_{decision.kind or 'boundary'}_fallback"
+    try:
+        adapter = run_policy_adapter(
+            decision,
+            snapshot,
+            user_text=user_text,
+            triage_result=triage_result,
+        )
+        if adapter is not None and (adapter.content or "").strip():
+            content = adapter.content.strip()
+            if adapter.mutation_plan and adapter.mutation_plan.bot_title:
+                title = adapter.mutation_plan.bot_title
+            if adapter.mutation_plan and adapter.mutation_plan.bot_kind:
+                kind = adapter.mutation_plan.bot_kind
+    except Exception:
+        logger.exception("policy_d2 boundary_fallback adapter re-entry failed")
+
+    if not content:
+        # Static last-resort copy — still boundary, never SF-E1 system_error.
+        if decision.kind == "prescription":
+            content = (
+                "申し訳ありません。当サービスでは医師の処方箋が必要な医薬品の処方や"
+                "処方の代行はできません。必要に応じて医療機関を受診してください。"
+            )
+            title = "処方について"
+        elif decision.kind == "controlled_or_illegal":
+            content = (
+                "ご相談の内容にはお応えできません。"
+                "違法・規制薬物に関する入手や使用の案内はできません。"
+            )
+            title = "ご案内"
+        elif decision.kind == "medical_examination":
+            content = (
+                "当サービスでは診断や病名の確定はできません。"
+                "症状が続く場合は医療機関を受診してください。"
+            )
+            title = "診察について"
+        else:
+            content = (
+                "睡眠薬・規制の可能性があるお薬については、処方の代行や入手案内はできません。"
+                "市販の一般的な情報であれば、症状などをお書きください。"
+            )
+            title = "ご案内"
+
+    sage = build_notice_status(
+        content,
+        title=title,
+        variant="notice",
+        kind=kind,
+        show_feedback=True,
+    ).to_client_dict()
+
+    recovery_status = None
+    if rollback_ok is not None:
+        recovery_status = "rollback_ok" if rollback_ok else "rollback_failed"
+
+    # R7 rollback invariant: after successful checkpoint restore, do NOT
+    # re-dirty the session. Boundary UX is returned in the HTTP body only.
+    # Pre-mutation adapter failures may append a boundary bot message.
+    session_append = not (mutation_started and rollback_ok is True)
+    try:
+        bot = build_bot_response(
+            session,
+            sid,
+            sage_diagnosis=sage,
+            legacy_content=content,
+            inappropriate_request=True,
+            request_type=str(decision.kind or "policy"),
+        )
+        if session is not None and session_append:
+            session.setdefault("messages", []).append(bot)
+            if hasattr(session, "modified"):
+                session.modified = True
+    except Exception:
+        logger.exception("policy_d2 boundary_fallback bot build failed")
+
+    body = {
+        "status": "ok",
+        "policy_boundary_fallback": True,
+        "fallback_reason": fallback_reason,
+        "fallback_reason_primary": fallback_reason,
+        "recovery_status": recovery_status,
+        "db_commit_status": db_commit_status or "skipped",
+        "rollback_ok": rollback_ok,
+        "sage_diagnosis": sage,
+        "message_count": len(session.get("messages", [])) if session is not None else 0,
+        "recommend_stopped": True,
+        "session_ops_mutated": False,
+        "session_boundary_appended": bool(session_append),
+    }
+    logger.warning(
+        "policy_d2 boundary_fallback reason=%s kind=%s turn=%s",
+        fallback_reason,
+        decision.kind,
+        snapshot.turn_id,
+    )
+    return PolicyEnforcementResult(
+        handled=True,
+        response=body,
+        status_code=200,
+        policy_kind=decision.kind,
+        action=decision.action,
+        fallback_reason=fallback_reason,
+        observability_fields={
+            **snapshot.observability_fields(),
+            "safe_fallback": "policy_boundary",
+            "disposition": "policy_boundary_fallback",
+            "fallback_reason_primary": fallback_reason,
+            "recovery_status": recovery_status,
+            "db_commit_status": db_commit_status or "skipped",
+            "rollback_ok": rollback_ok,
+            "recommend_stopped": True,
+            "session_ops_mutated": False,
+        },
+        db_commit_status=db_commit_status or "skipped",
+    )
+
+
 def _crisis_resources_terminal(
     session: Any,
     decision: PolicyDecision | None,
@@ -586,13 +786,29 @@ def enforce_policy_decision(
     if decision.action == "continue" or decision.kind is None:
         if decision.reason_code == "incomplete_evaluation":
             # Belt-and-suspenders: crisis/emergency cues OR crisis detector
-            # failure win over SF-E1 (H-04 residual when flags were never set).
+            # failure OR soft SI paraphrase win over SF-E1 (H-04 / F-H04-R1).
             sig = snapshot.signals
             errors = getattr(sig, "detector_errors", ()) or ()
+            detector_view = (
+                getattr(snapshot, "detector_text", None)
+                or getattr(snapshot, "normalized_text", None)
+                or user_text
+                or ""
+            )
+            soft_si = False
+            try:
+                from src.dialogue.routing.pre_route_signals import (
+                    _soft_si_paraphrase_cues,
+                )
+
+                soft_si = _soft_si_paraphrase_cues(detector_view)
+            except Exception:
+                soft_si = False
             if (
                 getattr(sig, "crisis_detected", False)
                 or getattr(sig, "emergency_detected", False)
                 or "crisis_detector_error" in errors
+                or soft_si
             ):
                 return _crisis_resources_terminal(
                     session, decision, snapshot=snapshot, sid=sid
@@ -615,12 +831,7 @@ def enforce_policy_decision(
             observability_fields=snapshot.observability_fields(),
         )
 
-    if decision.kind not in (
-        "prescription",
-        "controlled_or_illegal",
-        "medical_examination",
-        "ambiguous_controlled",
-    ):
+    if decision.kind not in _POLICY_BOUNDARY_KINDS:
         return _safe_fallback(
             session,
             decision,
@@ -638,13 +849,16 @@ def enforce_policy_decision(
         )
     except Exception:
         logger.exception("policy_d2 adapter exception")
-        return _safe_fallback(
+        # F-H03-R2: known cue → boundary UX, not SF-E1.
+        return _policy_boundary_fallback(
             session,
             decision,
-            fallback_reason="adapter_error",
-            no_mutation_claim=True,
-            mutation_started=False,
             snapshot=snapshot,
+            user_text=user_text,
+            fallback_reason="adapter_error",
+            sid=sid,
+            triage_result=triage_result,
+            mutation_started=False,
         )
 
     if adapter is None:
@@ -665,6 +879,8 @@ def enforce_policy_decision(
         adapter,
         client_info=client_info,
         snapshot=snapshot,
+        user_text=user_text,
+        triage_result=triage_result,
     )
 
 

@@ -112,6 +112,7 @@ def test_enforce_prescription_terminal(monkeypatch):
 
 
 def test_db_commit_unknown_forbids_nm():
+    """DB unknown: still no NM claim; R21 uses policy_boundary (not SF-E1) when cue known."""
     snap = create_turn_signal_snapshot("処方してください", turn_id="p8")
     session: dict = {"messages": []}
 
@@ -129,9 +130,13 @@ def test_db_commit_unknown_forbids_nm():
     assert result.handled is True
     assert result.fallback_reason == "db_commit_unknown"
     assert result.observability_fields.get("fallback_reason_primary") == "db_commit_unknown"
-    assert result.observability_fields.get("safe_fallback") == "SF-E1"
+    # F-H03-R2: known prescription cue → boundary UX, not generic SF-E1.
+    assert result.observability_fields.get("safe_fallback") == "policy_boundary"
+    assert result.observability_fields.get("safe_fallback") != "SF-E1"
     msg = (result.response or {}).get("sage_diagnosis", {}).get("message", "")
     assert "変更されていません" not in msg
+    sage = (result.response or {}).get("sage_diagnosis") or {}
+    assert sage.get("kind") != "system_error"
 
 
 def test_idempotent_receipt_replay():

@@ -184,6 +184,8 @@ def _high_precision_crisis_markers(user_text: str) -> bool:
 
     Used when crisis/emergency detectors raise — does not replace SafetyGate
     or relax negative crisis classification. Prefer crisis UX over SF-E1.
+    Includes paraphrase / past-tense / soft ideation used when evaluation is
+    incomplete (F-H04-R1). Does not match ordinary symptom help-seeking alone.
     """
     text = (user_text or "").strip()
     if not text:
@@ -194,17 +196,124 @@ def _high_precision_crisis_markers(user_text: str) -> bool:
         "死にたかった",
         "死にたくなっ",
         "消えたい",
+        "消えてしまいたい",
+        "いなくなりたい",
+        "いなくなってしまいたい",
         "自殺",
         "希死念慮",
         "生きていても意味がない",
+        "生きる意味がない",
+        "生きていても仕方ない",
+        "生きるのがつらい",
+        "生きたくない",
+        "命を絶ちたい",
+        "命を終わらせたい",
+        "終わらせたい",
+        "もう終わりたい",
+        "死を考えている",
+        "死ぬしかない",
         "kill myself",
         "want to die",
+        "end my life",
         "suicide",
         "リスカ",
         "リストカット",
         "自傷",
     )
-    return any(m in text or m in low for m in markers)
+    if any(m in text or m in low for m in markers):
+        return True
+    # Affirmative double-negation paraphrase (crisis_detection SSOT helper).
+    try:
+        from src.core.crisis_detection import _matches_affirmative_double_negation_crisis
+
+        if _matches_affirmative_double_negation_crisis(text):
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def _soft_si_paraphrase_cues(user_text: str) -> bool:
+    """Broader SI paraphrase for incomplete-eval fail-closed only (F-H04-R1).
+
+    Prefer crisis resources over SF-E1 when any detector failed and text looks
+    like ideation even if crisis_detected never latched. Not used as sole
+    positive crisis classification when evaluation_complete=True.
+    """
+    if _high_precision_crisis_markers(user_text):
+        return True
+    text = (user_text or "").strip()
+    if not text:
+        return False
+    soft = (
+        "楽に死にたい",
+        "眠るように死にたい",
+        "存在したくない",
+        "この世から消え",
+        "薬で死にたい",
+        "薬で消えたい",
+        # Intentionally omit vague complaints like「もうだめだ」alone —
+        # those FP into crisis when an unrelated detector_error is present.
+    )
+    return any(s in text for s in soft)
+
+
+def _latch_policy_lexical_failsafe(
+    text: str,
+    state: dict[str, Any],
+    *,
+    allow_ambiguous_sleep: bool = True,
+) -> None:
+    """OR-latch policy cues from detector-view lexical markers (F-H03-R1).
+
+    Closes detector FN / ZW-residue paths where high-precision policy vocabulary
+    is present on detector_text but upstream detectors never set flags.
+    Does not clear stronger crisis/emergency flags.
+    """
+    if not text:
+        return
+    if state.get("emergency_detected") or state.get("crisis_detected"):
+        return
+    if _detect_prescription_markers(text):
+        if "処方箋なし" not in text and "処方箋が不要" not in text:
+            state["prescription_block"] = True
+    # Controlled / illegal named cues (narrow; never ambiguous→illegal default)
+    controlled_cues = (
+        "覚醒剤",
+        "違法薬物",
+        "違法ドラッグ",
+        "麻薬が欲しい",
+        "大麻が欲しい",
+        "コカイン",
+        "ヘロイン",
+        "MDMA",
+        "危険ドラッグ",
+    )
+    if any(c in text for c in controlled_cues):
+        state["controlled_or_illegal_block"] = True
+        if not state.get("policy_subtype"):
+            state["policy_subtype"] = "illegal"
+    # Ambiguous sleep without self-harm (policy clarify, not criminal)
+    if (
+        allow_ambiguous_sleep
+        and "睡眠薬" in text
+        and not _detect_sleep_self_harm_cues(text)
+        and not state.get("controlled_or_illegal_block")
+        and not state.get("prescription_block")
+    ):
+        state["ambiguous_policy"] = True
+        if not state.get("policy_subtype"):
+            state["policy_subtype"] = "unknown_controlled_policy"
+    exam_cues = (
+        "診断してください",
+        "病気名を教えて",
+        "病名を教えて",
+        "診察して",
+        "医者に診てほしい",
+        "病院で診てもらった方がいい",
+    )
+    if any(c in text for c in exam_cues):
+        state["medical_examination"] = True
 
 
 def _detect_prescription_markers(user_text: str) -> bool:
@@ -328,6 +437,15 @@ def collect_safety_policy_signals(
                 state["medical_examination"] = True
         except Exception:
             errors.append("medical_examination_detector_error")
+            # Lexical fail-safe when exam detector raises (F-H03-R1).
+            exam_cues = (
+                "診断してください",
+                "病気名を教えて",
+                "病名を教えて",
+                "診察して",
+            )
+            if any(c in text for c in exam_cues):
+                state["medical_examination"] = True
 
         sleep_kind = None
         try:
@@ -353,6 +471,14 @@ def collect_safety_policy_signals(
                     state["policy_subtype"] = flags["policy_subtype"]
         except Exception:
             errors.append("sleep_med_policy_detector_error")
+            # Sleep detector raise + 睡眠薬 vocabulary → ambiguous clarify, not SF-E1.
+            if "睡眠薬" in text and not (
+                state["emergency_detected"] or state["crisis_detected"]
+            ):
+                if not _detect_sleep_self_harm_cues(text):
+                    state["ambiguous_policy"] = True
+                    if not state.get("policy_subtype"):
+                        state["policy_subtype"] = "unknown_controlled_policy"
 
         # Named-drug keyword hit must not override general-information classification
         if sleep_kind != "general_information" and not (
@@ -365,10 +491,27 @@ def collect_safety_policy_signals(
                     state["controlled_or_illegal_block"] = True
             except Exception:
                 errors.append("controlled_drug_detector_error")
+                controlled_cues = (
+                    "覚醒剤",
+                    "違法薬物",
+                    "違法ドラッグ",
+                    "危険ドラッグ",
+                )
+                if any(c in text for c in controlled_cues):
+                    state["controlled_or_illegal_block"] = True
+                    if not state.get("policy_subtype"):
+                        state["policy_subtype"] = "illegal"
         elif sleep_kind == "general_information":
             # Keep info path open — do not set criminal/controlled block
             state["controlled_or_illegal_block"] = False
             state["ambiguous_policy"] = False
+
+        # F-H03-R1: belt-and-suspenders lexical latch after detectors (ZW/FN).
+        # Do not re-open ambiguous sleep after sleep_med already classified
+        # (esp. general_information clear path).
+        _latch_policy_lexical_failsafe(
+            text, state, allow_ambiguous_sleep=(sleep_kind is None)
+        )
 
     del display  # reserved for future display-only probes
     evaluation_complete = len(errors) == 0

@@ -241,3 +241,43 @@ def test_crisis_detector_error_alone_defers_even_without_flag():
         bad, session=session, sid=None, user_text="頭痛がする"
     )
     assert result.observability_fields.get("safe_fallback") == "crisis_resources"
+
+
+def test_adapter_error_on_prescription_uses_boundary_ux():
+    """F-H03-R2: adapter failure must not collapse cued policy to SF-E1."""
+    snap = create_turn_signal_snapshot("処方してください", turn_id="h03-adapter")
+    session: dict = {"messages": []}
+    with patch(
+        "src.dialogue.routing.policy_enforce.run_policy_adapter",
+        side_effect=RuntimeError("boom"),
+    ):
+        _m, _d, result = resolve_and_enforce(
+            snap, session=session, sid=None, user_text="処方してください"
+        )
+    assert result.observability_fields.get("safe_fallback") == "policy_boundary"
+    assert result.observability_fields.get("safe_fallback") != "SF-E1"
+    assert "処方" in str(result.response or {})
+
+
+def test_paraphrase_si_with_non_crisis_detector_error():
+    """F-H04-R1: soft SI paraphrase + unrelated detector error → crisis_resources."""
+    text = "消えてしまいたい気持ちがある"
+    snap = create_turn_signal_snapshot(text, turn_id="h04-para")
+    bad = replace(
+        snap,
+        signals=replace(
+            snap.signals,
+            crisis_detected=False,
+            emergency_detected=False,
+            evaluation_complete=False,
+            detector_errors=("controlled_drug_detector_error",),
+        ),
+        detector_text=text,
+        normalized_text=text,
+    )
+    assert resolve_policy_decision(bad).reason_code == "defer_to_crisis_safety"
+    session: dict = {"messages": []}
+    _m, _d, result = resolve_and_enforce(
+        bad, session=session, sid=None, user_text=text
+    )
+    assert result.observability_fields.get("safe_fallback") == "crisis_resources"

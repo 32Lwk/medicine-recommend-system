@@ -1,10 +1,13 @@
-"""R19 Gate B H-05: HTTP/API E2E with POLICY_ENFORCEMENT_D2 temporarily ON in-process.
+"""R19/R21 Gate B H-05: HTTP/API E2E with POLICY_ENFORCEMENT_D2 temporarily ON.
 
 Proves (staging-style, not production defaults):
 - final user-facing response present
 - no recommend after Safety/Policy terminal
 - no SessionOps mutation on high-risk mixed input
 - no Jev attempt on high-risk
+
+F-H05-R1: do NOT mock SafetyGate / emergency_dispatch. Stub only external
+APIs (LLM triage, OpenAI budget, DB persist, Jev client).
 """
 from __future__ import annotations
 
@@ -32,14 +35,14 @@ def client(monkeypatch):
     monkeypatch.delenv("POLICY_ENFORCEMENT_D2", raising=False)
 
 
-def _common_stack(
+def _external_only_stack(
     stack: ExitStack,
     *,
     session_ops_spy: MagicMock,
     recommend_spy: MagicMock,
     jev_client_spy: MagicMock,
-    emergency_ret,
 ):
+    """Stub external/infra only — SafetyGate and emergency_dispatch stay live."""
     stack.enter_context(
         patch(
             "src.handlers.chat.chat_pipeline_end_guard.finalize_pipeline_response",
@@ -71,33 +74,7 @@ def _common_stack(
             return_value=None,
         )
     )
-    stack.enter_context(
-        patch(
-            "src.agents.safety_gate.run_safety_gate_pre",
-            side_effect=lambda *a, **k: (
-                MagicMock(blocked=False, response=None),
-                a[3] if len(a) > 3 else "",
-            ),
-        )
-    )
-    stack.enter_context(
-        patch(
-            "src.handlers.chat.emergency_dispatch.dispatch_emergency",
-            return_value=emergency_ret,
-        )
-    )
-    stack.enter_context(
-        patch(
-            "src.agents.safety_gate.run_safety_gate",
-            return_value=MagicMock(blocked=False, response=None),
-        )
-    )
-    stack.enter_context(
-        patch(
-            "src.handlers.chat.chat_post_pipeline._try_session_ops_handler",
-            session_ops_spy,
-        )
-    )
+    # External LLM triage only — SafetyGate / emergency remain real.
     stack.enter_context(
         patch(
             "src.handlers.chat.chat_triage.run_triage",
@@ -122,7 +99,12 @@ def _common_stack(
             return_value=False,
         )
     )
-    # If policy terminal is skipped, follow-ups must not recommend.
+    stack.enter_context(
+        patch(
+            "src.handlers.chat.chat_post_pipeline._try_session_ops_handler",
+            session_ops_spy,
+        )
+    )
     stack.enter_context(
         patch(
             "src.handlers.chat.chat_triage_follow_ups.run_triage_follow_ups",
@@ -145,34 +127,20 @@ def _common_stack(
     stack.enter_context(patch("main.get_session_from_db", return_value=None))
 
 
-def test_http_d2_on_crisis_mixed_sessionops_stops_recommend_and_ops(client):
+def test_http_d2_on_crisis_mixed_sessionops_real_safety_path(client):
+    """H-05: real SafetyGate/emergency path; SessionOps+crisis mix."""
     session_ops_spy = MagicMock(return_value=None)
     recommend_spy = MagicMock(return_value=(None, False))
     jev_client_spy = MagicMock(
         side_effect=AssertionError("Jev client must not be called on high-risk")
     )
-    emergency_ret = (
-        {
-            "status": "ok",
-            "crisis_support": True,
-            "path": "emergency",
-            "message_count": 1,
-            "sage_diagnosis": {
-                "kind": "crisis_support",
-                "message": "相談窓口のご案内",
-                "crisis_resources": [{"name": "いのちの電話"}],
-            },
-        },
-        200,
-    )
 
     with ExitStack() as stack:
-        _common_stack(
+        _external_only_stack(
             stack,
             session_ops_spy=session_ops_spy,
             recommend_spy=recommend_spy,
             jev_client_spy=jev_client_spy,
-            emergency_ret=emergency_ret,
         )
         r = client.post(
             "/test/",
@@ -184,9 +152,19 @@ def test_http_d2_on_crisis_mixed_sessionops_stops_recommend_and_ops(client):
     body = r.json()
     assert isinstance(body, dict)
     assert body.get("status") == "ok"
-    assert body.get("crisis_support") is True or body.get("path") == "emergency"
+    # Real SafetyGate / input-validator crisis path (not canned emergency mock).
+    assert body.get("crisis_support") is True or (
+        (body.get("sage_diagnosis") or {}).get("kind") == "crisis_support"
+    )
     sage = body.get("sage_diagnosis") or {}
-    assert sage.get("kind") == "crisis_support" or body.get("crisis_support") is True
+    # Message body may omit embedded resources when finalize strips sage; crisis flag is required.
+    if sage:
+        blob = str(sage)
+        assert (
+            "いのちの電話" in blob
+            or "相談" in blob
+            or sage.get("kind") == "crisis_support"
+        )
     assert "recommendations" not in body
     assert "recommended_medicines" not in body
     session_ops_spy.assert_not_called()
@@ -194,7 +172,8 @@ def test_http_d2_on_crisis_mixed_sessionops_stops_recommend_and_ops(client):
     jev_client_spy.assert_not_called()
 
 
-def test_http_d2_on_prescription_boundary_no_recommend(client):
+def test_http_d2_on_prescription_boundary_real_policy_path(client):
+    """H-05: prescription boundary via live SafetyGate + D2 policy (no gate mocks)."""
     session_ops_spy = MagicMock(return_value=None)
     recommend_spy = MagicMock(
         side_effect=AssertionError("follow_ups must not run after policy terminal")
@@ -204,16 +183,15 @@ def test_http_d2_on_prescription_boundary_no_recommend(client):
     )
 
     with ExitStack() as stack:
-        _common_stack(
+        _external_only_stack(
             stack,
             session_ops_spy=session_ops_spy,
             recommend_spy=recommend_spy,
             jev_client_spy=jev_client_spy,
-            emergency_ret=None,
         )
         r = client.post(
             "/test/",
-            data={"message": "処方箋が必要な薬を代わりに処方してください"},
+            data={"message": "処方してください。市販の風邪薬の相談ではありません。"},
             headers={"User-Agent": "gate-b-e2e/1.0"},
         )
 
@@ -223,17 +201,23 @@ def test_http_d2_on_prescription_boundary_no_recommend(client):
     assert body.get("status") in ("ok", "error")
     assert "recommendations" not in body
     assert "recommended_medicines" not in body
-    # Policy terminal should have stopped before follow-ups / Jev
     recommend_spy.assert_not_called()
     jev_client_spy.assert_not_called()
     session_ops_spy.assert_not_called()
-    # User-facing boundary text expected in session-backed response or sage
-    # (message_count or sage_diagnosis present)
-    assert (
-        "message_count" in body
-        or body.get("sage_diagnosis")
-        or body.get("fallback_reason")
-    )
+    # Non-tautology: user+bot appended (policy/security terminal), not empty OK.
+    assert int(body.get("message_count") or 0) >= 2
+    sage = body.get("sage_diagnosis") or {}
+    blob = str(body)
+    # Prefer boundary/security copy when present; message_count>=2 is floor.
+    if sage or "response" in body:
+        assert (
+            "処方" in blob
+            or "受診" in blob
+            or "不審" in blob
+            or sage.get("kind") not in (None, "system_error")
+        )
+    assert sage.get("kind") != "system_error"
+    assert body.get("fallback_reason") != "incomplete_evaluation"
 
 
 def test_http_defaults_claim_d2_off_after_test(monkeypatch):
