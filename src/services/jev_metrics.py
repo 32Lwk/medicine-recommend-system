@@ -1071,6 +1071,12 @@ def record_shadow_event(
             )
 
         _emit_jsonl(payload)
+        try:
+            from src.services.jev_cloudwatch_metrics import emit_shadow_cloudwatch_metrics
+
+            emit_shadow_cloudwatch_metrics(payload)
+        except Exception:
+            logger.debug("jev cloudwatch metrics emit failed", exc_info=True)
         return payload
     except Exception:
         logger.debug("jev record_shadow_event failed", exc_info=True)

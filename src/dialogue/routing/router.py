@@ -118,6 +118,15 @@ def _maybe_schedule_jev_shadow(
     Returns correlation_id when scheduled (or attempted), else None.
     """
     try:
+        # Flag anomaly gauges (PRIMARY / D2) — emit only when unexpectedly ON.
+        # Safe while shadow flags remain OFF; never carries user text.
+        try:
+            from src.services.jev_cloudwatch_metrics import emit_flag_anomaly_metrics
+
+            emit_flag_anomaly_metrics()
+        except Exception:
+            pass
+
         from config.llm_flags import is_jev_intent_router_shadow_enabled
 
         if not is_jev_intent_router_shadow_enabled():
