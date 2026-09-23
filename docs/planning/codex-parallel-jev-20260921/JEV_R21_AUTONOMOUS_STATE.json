@@ -1,0 +1,25 @@
+{
+  "program": "R21_Production_Shadow_Ready_Candidate",
+  "started_at": "2026-09-24T02:32:00+09:00",
+  "phase": 0,
+  "local_head": "56889ea",
+  "staging_health_git_commit": "8a3c571",
+  "staging_task": "medicine-recommend-tunnel:5",
+  "sha_mismatch": true,
+  "flags_staging": {
+    "JEV_ENABLED": "0",
+    "JEV_INTENT_ROUTER_SHADOW": "0",
+    "JEV_INTENT_ROUTER_PRIMARY": "0",
+    "POLICY_ENFORCEMENT_D2": "0"
+  },
+  "verdicts": {
+    "production_shadow": "Not Ready",
+    "gate_a_code": "Conditional Passed",
+    "gate_a_accuracy": "Conditional Passed",
+    "gate_b": "Hard No-Go",
+    "product_safety": "未合格"
+  },
+  "forbidden": ["push", "PR", "primary ON", "production D2 ON", "live", "real-user data"],
+  "privacy": "Owner-accepted residual for synthetic staging only. Not approved for real-user production data.",
+  "cycle": 0
+}
