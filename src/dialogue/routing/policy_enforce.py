@@ -585,10 +585,14 @@ def enforce_policy_decision(
 
     if decision.action == "continue" or decision.kind is None:
         if decision.reason_code == "incomplete_evaluation":
-            # Belt-and-suspenders: crisis/emergency cues on snapshot win over SF-E1.
+            # Belt-and-suspenders: crisis/emergency cues OR crisis detector
+            # failure win over SF-E1 (H-04 residual when flags were never set).
             sig = snapshot.signals
-            if getattr(sig, "crisis_detected", False) or getattr(
-                sig, "emergency_detected", False
+            errors = getattr(sig, "detector_errors", ()) or ()
+            if (
+                getattr(sig, "crisis_detected", False)
+                or getattr(sig, "emergency_detected", False)
+                or "crisis_detector_error" in errors
             ):
                 return _crisis_resources_terminal(
                     session, decision, snapshot=snapshot, sid=sid

@@ -179,6 +179,34 @@ def _detect_sleep_self_harm_cues(user_text: str) -> bool:
     return any(h in text for h in harm)
 
 
+def _high_precision_crisis_markers(user_text: str) -> bool:
+    """Narrow SI / self-harm markers for detector-exception fail-safe only.
+
+    Used when crisis/emergency detectors raise — does not replace SafetyGate
+    or relax negative crisis classification. Prefer crisis UX over SF-E1.
+    """
+    text = (user_text or "").strip()
+    if not text:
+        return False
+    low = text.lower()
+    markers = (
+        "死にたい",
+        "死にたかった",
+        "死にたくなっ",
+        "消えたい",
+        "自殺",
+        "希死念慮",
+        "生きていても意味がない",
+        "kill myself",
+        "want to die",
+        "suicide",
+        "リスカ",
+        "リストカット",
+        "自傷",
+    )
+    return any(m in text or m in low for m in markers)
+
+
 def _detect_prescription_markers(user_text: str) -> bool:
     text = (user_text or "").strip()
     if not text:
@@ -274,6 +302,11 @@ def collect_safety_policy_signals(
                 state["emergency_detected"] = True
         except Exception:
             errors.append("emergency_detector_error")
+            # emergency_classifier may call crisis_detection; on raise, keep
+            # high-precision SI markers rather than dropping to cue-less SF-E1.
+            if _high_precision_crisis_markers(text):
+                state["emergency_detected"] = True
+                state["crisis_detected"] = True
 
         try:
             from src.core.crisis_detection import detect_crisis_keywords
@@ -283,6 +316,8 @@ def collect_safety_policy_signals(
                 state["crisis_detected"] = True
         except Exception:
             errors.append("crisis_detector_error")
+            if _high_precision_crisis_markers(text):
+                state["crisis_detected"] = True
 
         try:
             from src.services.medical_examination_request import (

@@ -149,3 +149,95 @@ def test_crisis_resources_response_has_hotline():
     resources = sage.get("crisis_resources") or []
     names = " ".join(str(r.get("name") or "") for r in resources if isinstance(r, dict))
     assert "いのちの電話" in names
+
+
+def test_crisis_detector_exception_on_si_text_not_sf_e1():
+    """H-04 residual: crisis_detector raise must not erase SI → SF-E1.
+
+    emergency_classifier also calls detect_crisis_keywords; a crisis detector
+    exception therefore often clears both crisis and emergency flags. Collection
+    must fail-safe on high-precision markers; resolve must not emit SF-E1.
+    """
+    with patch(
+        "src.core.crisis_detection.detect_crisis_keywords",
+        side_effect=RuntimeError("crisis detector boom"),
+    ):
+        snap = create_turn_signal_snapshot("死にたい", turn_id="h04-det-err")
+    assert "crisis_detector_error" in snap.signals.detector_errors
+    assert snap.signals.evaluation_complete is False
+    # Fail-safe must keep a high-risk cue or crisis_detector_error handling
+    assert (
+        snap.signals.crisis_detected
+        or snap.signals.emergency_detected
+        or "crisis_detector_error" in snap.signals.detector_errors
+    )
+
+    decision = resolve_policy_decision(snap)
+    assert decision.reason_code == "defer_to_crisis_safety"
+
+    session: dict = {"messages": []}
+    _m, _d, result = resolve_and_enforce(
+        snap, session=session, sid=None, user_text="死にたい"
+    )
+    assert result.handled is True
+    assert result.observability_fields.get("safe_fallback") == "crisis_resources"
+    assert result.observability_fields.get("safe_fallback") != "SF-E1"
+    assert (result.response or {}).get("crisis_support") is True
+
+
+def test_ambiguous_policy_survives_incomplete_evaluation():
+    """H-03 residual: ambiguous_policy cue must not drop to SF-E1 when incomplete."""
+    snap = create_turn_signal_snapshot("睡眠薬ください", turn_id="h03-amb")
+    bad = replace(
+        snap,
+        signals=replace(
+            snap.signals,
+            ambiguous_policy=True,
+            prescription_block=False,
+            controlled_or_illegal_block=False,
+            medical_examination=False,
+            crisis_detected=False,
+            emergency_detected=False,
+            evaluation_complete=False,
+            detector_errors=("sleep_med_policy_detector_error",),
+        ),
+    )
+    decision = resolve_policy_decision(bad)
+    assert decision.kind == "ambiguous_controlled"
+    assert decision.action == "safe_clarification"
+    assert decision.evaluation_complete is False
+    assert decision.reason_code == "unknown_controlled_policy"
+
+    session: dict = {"messages": []}
+    with patch(
+        "src.dialogue.routing.policy_enforce._try_db_save_status",
+        return_value="memory_only",
+    ):
+        _m, _d, result = resolve_and_enforce(
+            bad, session=session, sid="sid-amb", user_text="睡眠薬ください"
+        )
+    assert result.handled is True
+    assert result.policy_kind == "ambiguous_controlled"
+    assert result.observability_fields.get("safe_fallback") != "SF-E1"
+
+
+def test_crisis_detector_error_alone_defers_even_without_flag():
+    """When crisis evaluation itself failed, prefer crisis UX over SF-E1."""
+    snap = create_turn_signal_snapshot("頭痛がする", turn_id="h04-err-only")
+    bad = replace(
+        snap,
+        signals=replace(
+            snap.signals,
+            crisis_detected=False,
+            emergency_detected=False,
+            evaluation_complete=False,
+            detector_errors=("crisis_detector_error",),
+        ),
+    )
+    decision = resolve_policy_decision(bad)
+    assert decision.reason_code == "defer_to_crisis_safety"
+    session: dict = {"messages": []}
+    _m, _d, result = resolve_and_enforce(
+        bad, session=session, sid=None, user_text="頭痛がする"
+    )
+    assert result.observability_fields.get("safe_fallback") == "crisis_resources"

@@ -50,14 +50,15 @@ def _policy_from_cues(
             subtype=None,
         )
 
-    if evaluation_complete and sig.ambiguous_policy:
+    # H-03: ambiguous cue must survive incomplete evaluation (not drop to SF-E1).
+    if sig.ambiguous_policy:
         return PolicyDecision(
             kind="ambiguous_controlled",
             action="safe_clarification",
             detector_source=detector_source,
-            confidence=0.6,
+            confidence=0.6 if evaluation_complete else 0.4,
             reason_code="unknown_controlled_policy",
-            evaluation_complete=True,
+            evaluation_complete=evaluation_complete,
             subtype="unknown_controlled_policy",
         )
     return None
@@ -87,7 +88,10 @@ def resolve_policy_decision(
 
     if incomplete:
         # H-04: crisis/emergency + detector_error must not become SF-E1.
-        if sig.crisis_detected or sig.emergency_detected:
+        # Also: crisis_detector_error alone → cannot rule out crisis; prefer
+        # crisis resources over generic SF-E1 (does not weaken SafetyGate).
+        crisis_eval_failed = "crisis_detector_error" in sig.detector_errors
+        if sig.crisis_detected or sig.emergency_detected or crisis_eval_failed:
             return PolicyDecision(
                 kind=None,
                 action="safe_clarification",
