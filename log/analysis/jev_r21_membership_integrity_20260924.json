@@ -1,0 +1,34 @@
+{
+  "r17_42": {
+    "sessionops_rows": 10,
+    "sessionops_wrongly_eligible": 0,
+    "membership_unknown_rows": 0,
+    "sample_session_eligible_values": [
+      "False"
+    ]
+  },
+  "r17_20260922": {
+    "sessionops_rows": 10,
+    "sessionops_wrongly_eligible": 0,
+    "membership_unknown_rows": 0,
+    "sample_session_eligible_values": [
+      "False"
+    ]
+  },
+  "para_42": {
+    "sessionops_rows": 10,
+    "sessionops_wrongly_eligible": 0,
+    "membership_unknown_rows": 0,
+    "sample_session_eligible_values": [
+      "False"
+    ]
+  },
+  "persona_42": {
+    "sessionops_rows": 10,
+    "sessionops_wrongly_eligible": 0,
+    "membership_unknown_rows": 0,
+    "sample_session_eligible_values": [
+      "False"
+    ]
+  }
+}

@@ -1,0 +1,167 @@
+keys: JEV_API_KEY=set OPENAI_API_KEY=set backends=jev:minimal mode=jev_only stamp=20260923_174144
+NOTE: running jev:minimal only (OpenAI dual blocked or not forced). Latency CI vs current and current-path Critical/High FN are out-of-scope for this process; document as blocker in the report.
+=== START eval10_seed42 ===
+Jev intent routing eval
+order: seed_random per-case backend shuffle (normalized=seed_random)
+totals: requests=100 scenarios=10 api_err=0 eval_err=0 retry=0 fallback=0 paired_n=0
+current path kinds: deterministic_session_ops_n=0 counts={}
+- jev:minimal: scored 70/100 (70.0%), attempted_acc=70.0%, attempted=100, paired_n=0, api_err=0, eval_err=0, mean=212.77ms, p50=207.27ms, p95=279.64ms, p99=372.94ms, stdev=39.11
+Latency CI rng_sensitivity (report-only): seeds=50 fraction(ci95_low<900.0)=None
+Cost: openai_saved_measured_proxy_jpy=None jev_estimated_jpy=0.57803 total_class_if_jev_jpy=0.57803
+NOTE: Jev path used production evaluate_system_one + parse_jev_answers.
+NOTE: Scoring sole entry: src.services.jev_decisions.score_joint_decision (no harness reimplementation; risk_flags 竕 required_safety_action).
+NOTE: Order=seed_random seed=42: per-case backend order shuffled; with_baseline_triage forced after current.
+NOTE: latency_mode=warm: Gate canonical CI always scenario_cluster_eligible_warm; latency_all/warm/cold and scenario_cluster_all/warm/cold stored as sensitivity.
+JSON: D:\Programing\medicine-recommend\log\analysis\jev_r21_eval10_r10_seed42_20260923_174144.json
+MD:   D:\Programing\medicine-recommend\log\analysis\jev_r21_eval10_r10_seed42_20260923_174144.md
+=== END eval10_seed42 rc=0 ===
+=== START eval10_seed20260922 ===
+Jev intent routing eval
+order: seed_random per-case backend shuffle (normalized=seed_random)
+totals: requests=100 scenarios=10 api_err=0 eval_err=0 retry=0 fallback=0 paired_n=0
+current path kinds: deterministic_session_ops_n=0 counts={}
+- jev:minimal: scored 70/100 (70.0%), attempted_acc=70.0%, attempted=100, paired_n=0, api_err=0, eval_err=0, mean=226.24ms, p50=215.05ms, p95=303.78ms, p99=362.05ms, stdev=41.8
+Latency CI rng_sensitivity (report-only): seeds=50 fraction(ci95_low<900.0)=None
+Cost: openai_saved_measured_proxy_jpy=None jev_estimated_jpy=0.57803 total_class_if_jev_jpy=0.57803
+NOTE: Jev path used production evaluate_system_one + parse_jev_answers.
+NOTE: Scoring sole entry: src.services.jev_decisions.score_joint_decision (no harness reimplementation; risk_flags 竕 required_safety_action).
+NOTE: Order=seed_random seed=20260922: per-case backend order shuffled; with_baseline_triage forced after current.
+NOTE: latency_mode=warm: Gate canonical CI always scenario_cluster_eligible_warm; latency_all/warm/cold and scenario_cluster_all/warm/cold stored as sensitivity.
+JSON: D:\Programing\medicine-recommend\log\analysis\jev_r21_eval10_r10_seed20260922_20260923_174144.json
+MD:   D:\Programing\medicine-recommend\log\analysis\jev_r21_eval10_r10_seed20260922_20260923_174144.md
+=== END eval10_seed20260922 rc=0 ===
+=== START holdout_r17_seed42 ===
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+Jev intent routing eval
+order: seed_random per-case backend shuffle (normalized=seed_random)
+totals: requests=130 scenarios=13 api_err=0 eval_err=0 retry=0 fallback=0 paired_n=0
+current path kinds: deterministic_session_ops_n=0 counts={}
+- jev:minimal: scored 80/130 (61.5%), attempted_acc=61.5%, attempted=130, paired_n=0, api_err=0, eval_err=0, mean=243.12ms, p50=238.75ms, p95=301.87ms, p99=369.8ms, stdev=42.39
+Latency CI rng_sensitivity (report-only): seeds=50 fraction(ci95_low<900.0)=None
+Cost: openai_saved_measured_proxy_jpy=None jev_estimated_jpy=0.672984 total_class_if_jev_jpy=0.672984
+NOTE: Jev path used production evaluate_system_one + parse_jev_answers.
+NOTE: Scoring sole entry: src.services.jev_decisions.score_joint_decision (no harness reimplementation; risk_flags 竕 required_safety_action).
+NOTE: Order=seed_random seed=42: per-case backend order shuffled; with_baseline_triage forced after current.
+NOTE: latency_mode=warm: Gate canonical CI always scenario_cluster_eligible_warm; latency_all/warm/cold and scenario_cluster_all/warm/cold stored as sensitivity.
+JSON: D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_r17_r10_seed42_20260923_174144.json
+MD:   D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_r17_r10_seed42_20260923_174144.md
+=== END holdout_r17_seed42 rc=0 ===
+=== START holdout_r17_seed20260922 ===
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+Jev intent routing eval
+order: seed_random per-case backend shuffle (normalized=seed_random)
+totals: requests=130 scenarios=13 api_err=0 eval_err=0 retry=0 fallback=0 paired_n=0
+current path kinds: deterministic_session_ops_n=0 counts={}
+- jev:minimal: scored 80/130 (61.5%), attempted_acc=61.5%, attempted=130, paired_n=0, api_err=0, eval_err=0, mean=223.19ms, p50=216.63ms, p95=291.83ms, p99=341.79ms, stdev=34.02
+Latency CI rng_sensitivity (report-only): seeds=50 fraction(ci95_low<900.0)=None
+Cost: openai_saved_measured_proxy_jpy=None jev_estimated_jpy=0.672984 total_class_if_jev_jpy=0.672984
+NOTE: Jev path used production evaluate_system_one + parse_jev_answers.
+NOTE: Scoring sole entry: src.services.jev_decisions.score_joint_decision (no harness reimplementation; risk_flags 竕 required_safety_action).
+NOTE: Order=seed_random seed=20260922: per-case backend order shuffled; with_baseline_triage forced after current.
+NOTE: latency_mode=warm: Gate canonical CI always scenario_cluster_eligible_warm; latency_all/warm/cold and scenario_cluster_all/warm/cold stored as sensitivity.
+JSON: D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_r17_r10_seed20260922_20260923_174144.json
+MD:   D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_r17_r10_seed20260922_20260923_174144.md
+=== END holdout_r17_seed20260922 rc=0 ===
+=== START para_seed42 ===
+Jev intent routing eval
+order: seed_random per-case backend shuffle (normalized=seed_random)
+totals: requests=80 scenarios=8 api_err=0 eval_err=0 retry=0 fallback=0 paired_n=0
+current path kinds: deterministic_session_ops_n=0 counts={}
+- jev:minimal: scored 70/80 (87.5%), attempted_acc=87.5%, attempted=80, paired_n=0, api_err=0, eval_err=0, mean=255.38ms, p50=246.24ms, p95=339.63ms, p99=380.2ms, stdev=44.15
+Latency CI rng_sensitivity (report-only): seeds=50 fraction(ci95_low<900.0)=None
+Cost: openai_saved_measured_proxy_jpy=None jev_estimated_jpy=0.587064 total_class_if_jev_jpy=0.587064
+NOTE: Jev path used production evaluate_system_one + parse_jev_answers.
+NOTE: Scoring sole entry: src.services.jev_decisions.score_joint_decision (no harness reimplementation; risk_flags 竕 required_safety_action).
+NOTE: Order=seed_random seed=42: per-case backend order shuffled; with_baseline_triage forced after current.
+NOTE: latency_mode=warm: Gate canonical CI always scenario_cluster_eligible_warm; latency_all/warm/cold and scenario_cluster_all/warm/cold stored as sensitivity.
+JSON: D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_para_r10_seed42_20260923_174144.json
+MD:   D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_para_r10_seed42_20260923_174144.md
+=== END para_seed42 rc=0 ===
+=== START unicode_seed42 ===
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+孱・・譌｢遏･謾ｻ謦・ヱ繧ｿ繝ｼ繝ｳ讀懷・: rule=reveal_system_prompt_ja_alt
+Jev intent routing eval
+order: seed_random per-case backend shuffle (normalized=seed_random)
+totals: requests=60 scenarios=6 api_err=0 eval_err=0 retry=0 fallback=0 paired_n=0
+current path kinds: deterministic_session_ops_n=0 counts={}
+- jev:minimal: scored 10/60 (16.7%), attempted_acc=16.7%, attempted=60, paired_n=0, api_err=0, eval_err=0, mean=254.16ms, p50=248.21ms, p95=367.72ms, p99=367.72ms, stdev=47.12
+Latency CI rng_sensitivity (report-only): seeds=50 fraction(ci95_low<900.0)=None
+Cost: openai_saved_measured_proxy_jpy=None jev_estimated_jpy=0.083612 total_class_if_jev_jpy=0.083612
+NOTE: Jev path used production evaluate_system_one + parse_jev_answers.
+NOTE: Scoring sole entry: src.services.jev_decisions.score_joint_decision (no harness reimplementation; risk_flags 竕 required_safety_action).
+NOTE: Order=seed_random seed=42: per-case backend order shuffled; with_baseline_triage forced after current.
+NOTE: latency_mode=warm: Gate canonical CI always scenario_cluster_eligible_warm; latency_all/warm/cold and scenario_cluster_all/warm/cold stored as sensitivity.
+JSON: D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_unicode_r10_seed42_20260923_174144.json
+MD:   D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_unicode_r10_seed42_20260923_174144.md
+=== END unicode_seed42 rc=0 ===
+=== START persona_seed42 ===
+Jev intent routing eval
+order: seed_random per-case backend shuffle (normalized=seed_random)
+totals: requests=60 scenarios=6 api_err=0 eval_err=0 retry=0 fallback=0 paired_n=0
+current path kinds: deterministic_session_ops_n=0 counts={}
+- jev:minimal: scored 50/60 (83.3%), attempted_acc=83.3%, attempted=60, paired_n=0, api_err=0, eval_err=0, mean=222.21ms, p50=215.95ms, p95=262.91ms, p99=373.27ms, stdev=37.41
+Latency CI rng_sensitivity (report-only): seeds=50 fraction(ci95_low<900.0)=None
+Cost: openai_saved_measured_proxy_jpy=None jev_estimated_jpy=0.419444 total_class_if_jev_jpy=0.419444
+NOTE: Jev path used production evaluate_system_one + parse_jev_answers.
+NOTE: Scoring sole entry: src.services.jev_decisions.score_joint_decision (no harness reimplementation; risk_flags 竕 required_safety_action).
+NOTE: Order=seed_random seed=42: per-case backend order shuffled; with_baseline_triage forced after current.
+NOTE: latency_mode=warm: Gate canonical CI always scenario_cluster_eligible_warm; latency_all/warm/cold and scenario_cluster_all/warm/cold stored as sensitivity.
+JSON: D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_persona_r10_seed42_20260923_174144.json
+MD:   D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_persona_r10_seed42_20260923_174144.md
+=== END persona_seed42 rc=0 ===
+=== START neg_seed42 ===
+Jev intent routing eval
+order: seed_random per-case backend shuffle (normalized=seed_random)
+totals: requests=60 scenarios=6 api_err=0 eval_err=0 retry=0 fallback=0 paired_n=0
+current path kinds: deterministic_session_ops_n=0 counts={}
+- jev:minimal: scored 50/60 (83.3%), attempted_acc=83.3%, attempted=60, paired_n=0, api_err=0, eval_err=0, mean=262.58ms, p50=250.39ms, p95=399.39ms, p99=499.76ms, stdev=65.36
+Latency CI rng_sensitivity (report-only): seeds=50 fraction(ci95_low<900.0)=None
+Cost: openai_saved_measured_proxy_jpy=None jev_estimated_jpy=0.416345 total_class_if_jev_jpy=0.416345
+NOTE: Jev path used production evaluate_system_one + parse_jev_answers.
+NOTE: Scoring sole entry: src.services.jev_decisions.score_joint_decision (no harness reimplementation; risk_flags 竕 required_safety_action).
+NOTE: Order=seed_random seed=42: per-case backend order shuffled; with_baseline_triage forced after current.
+NOTE: latency_mode=warm: Gate canonical CI always scenario_cluster_eligible_warm; latency_all/warm/cold and scenario_cluster_all/warm/cold stored as sensitivity.
+JSON: D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_neg_r10_seed42_20260923_174144.json
+MD:   D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_neg_r10_seed42_20260923_174144.md
+=== END neg_seed42 rc=0 ===
+=== START para_seed20260922 ===
+Jev intent routing eval
+order: seed_random per-case backend shuffle (normalized=seed_random)
+totals: requests=80 scenarios=8 api_err=0 eval_err=0 retry=0 fallback=0 paired_n=0
+current path kinds: deterministic_session_ops_n=0 counts={}
+- jev:minimal: scored 70/80 (87.5%), attempted_acc=87.5%, attempted=80, paired_n=0, api_err=0, eval_err=0, mean=226.03ms, p50=218.53ms, p95=321.9ms, p99=354.42ms, stdev=52.02
+Latency CI rng_sensitivity (report-only): seeds=50 fraction(ci95_low<900.0)=None
+Cost: openai_saved_measured_proxy_jpy=None jev_estimated_jpy=0.587064 total_class_if_jev_jpy=0.587064
+NOTE: Jev path used production evaluate_system_one + parse_jev_answers.
+NOTE: Scoring sole entry: src.services.jev_decisions.score_joint_decision (no harness reimplementation; risk_flags 竕 required_safety_action).
+NOTE: Order=seed_random seed=20260922: per-case backend order shuffled; with_baseline_triage forced after current.
+NOTE: latency_mode=warm: Gate canonical CI always scenario_cluster_eligible_warm; latency_all/warm/cold and scenario_cluster_all/warm/cold stored as sensitivity.
+JSON: D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_para_r10_seed20260922_20260923_174144.json
+MD:   D:\Programing\medicine-recommend\log\analysis\jev_r21_holdout_para_r10_seed20260922_20260923_174144.md
+=== END para_seed20260922 rc=0 ===

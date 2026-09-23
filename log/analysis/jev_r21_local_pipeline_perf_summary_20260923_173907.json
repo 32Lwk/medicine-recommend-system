@@ -1,0 +1,343 @@
+{
+  "eval": "jev_r21_local_pipeline_perf_summary",
+  "timestamp": "2026-09-23T17:39:07.169046+00:00",
+  "source": "D:/Programing/medicine-recommend/log/pipeline_perf_log.jsonl",
+  "n": 3946,
+  "total_ms": {
+    "p50": 9861.66,
+    "p95": 38033.08,
+    "p99": 49446.54,
+    "max": 227145.5,
+    "mean": 12864.76
+  },
+  "llm_total_latency_ms": {
+    "p50": 4299.03,
+    "p95": 16273.46,
+    "max": 64306.14
+  },
+  "non_llm_gap_ms": {
+    "p50": 3104.9,
+    "p95": 23115.35,
+    "note": "total_ms - llm_total_latency_ms (scoring/RAG/DB/wait/unmetered)"
+  },
+  "llm_call_count": {
+    "p50": 3.0,
+    "p95": 8.0,
+    "max": 20
+  },
+  "thresholds": {
+    "gt_30s": 378,
+    "gt_60s": 13,
+    "gt_100s": 7,
+    "gt_120s": 5
+  },
+  "path_frequency_all": [
+    [
+      "medicine_qa/focus_llm",
+      3950
+    ],
+    [
+      "llm_triage.stage1",
+      2240
+    ],
+    [
+      "missing_info_service",
+      967
+    ],
+    [
+      "explanation_generator.batch_usage_notes",
+      851
+    ],
+    [
+      "chat_response_service.personalized_advice",
+      724
+    ],
+    [
+      "dialogue.intent_router_llm",
+      718
+    ],
+    [
+      "llm_triage.stage2",
+      557
+    ],
+    [
+      "medicine_response_builder.chat_context",
+      444
+    ],
+    [
+      "concierge_agent.meta_architecture",
+      295
+    ],
+    [
+      "counseling_generator.main",
+      221
+    ],
+    [
+      "counseling_followup.alt",
+      175
+    ],
+    [
+      "concierge_agent.greeting",
+      174
+    ],
+    [
+      "dialogue.medicine_context_classifier",
+      104
+    ],
+    [
+      "concierge_agent.chitchat",
+      73
+    ],
+    [
+      "concierge_agent.meta_architecture_deep",
+      68
+    ],
+    [
+      "llm_medicine_service.select_symptoms",
+      64
+    ],
+    [
+      "concierge_agent.meta_capabilities",
+      51
+    ],
+    [
+      "concierge_agent.doc_changelog_intro",
+      45
+    ],
+    [
+      "meta_triage.classify",
+      26
+    ],
+    [
+      "llm_triage.combined",
+      21
+    ],
+    [
+      "concierge_agent.thanks",
+      19
+    ],
+    [
+      "local_rag/context_rewrite",
+      18
+    ],
+    [
+      "conversation/followup_intent",
+      18
+    ],
+    [
+      "medicine_thread/continuation_llm",
+      17
+    ],
+    [
+      "counseling_followup",
+      15
+    ]
+  ],
+  "path_frequency_ge_20s": [
+    [
+      "medicine_qa/focus_llm",
+      1074
+    ],
+    [
+      "missing_info_service",
+      770
+    ],
+    [
+      "explanation_generator.batch_usage_notes",
+      753
+    ],
+    [
+      "chat_response_service.personalized_advice",
+      650
+    ],
+    [
+      "llm_triage.stage1",
+      613
+    ],
+    [
+      "dialogue.intent_router_llm",
+      84
+    ],
+    [
+      "llm_medicine_service.select_symptoms",
+      46
+    ],
+    [
+      "medicine_response_builder.chat_context",
+      37
+    ],
+    [
+      "llm_triage.stage2",
+      33
+    ],
+    [
+      "dialogue.medicine_context_classifier",
+      27
+    ],
+    [
+      "llm_triage.combined",
+      15
+    ],
+    [
+      "explanation_generator.individual_usage",
+      5
+    ],
+    [
+      "counseling_generator.main",
+      4
+    ],
+    [
+      "concierge_agent.meta_architecture_deep",
+      4
+    ],
+    [
+      "conversation/followup_intent",
+      4
+    ],
+    [
+      "local_rag/context_rewrite",
+      3
+    ],
+    [
+      "counseling_followup.alt",
+      2
+    ],
+    [
+      "concierge_agent.meta_architecture",
+      2
+    ],
+    [
+      "concierge_agent.greeting",
+      2
+    ],
+    [
+      "store_inquiry_handler.classify",
+      2
+    ]
+  ],
+  "serial_chain_examples_ge_60s": [
+    {
+      "total_ms": 60819.6,
+      "llm_total_latency_ms": 29993.2,
+      "llm_call_count": 3,
+      "paths": [
+        "missing_info_service",
+        "explanation_generator.batch_usage_notes",
+        "chat_response_service.personalized_advice"
+      ],
+      "timestamp": "2026-07-02T11:01:16.659451",
+      "non_llm_gap_ms": 30826.3
+    },
+    {
+      "total_ms": 63562.3,
+      "llm_total_latency_ms": 30692.4,
+      "llm_call_count": 4,
+      "paths": [
+        "llm_triage.stage1",
+        "missing_info_service",
+        "explanation_generator.batch_usage_notes",
+        "explanation_generator.batch_usage_notes"
+      ],
+      "timestamp": "2026-07-02T15:08:55.075393",
+      "non_llm_gap_ms": 32869.9
+    },
+    {
+      "total_ms": 68839.6,
+      "llm_total_latency_ms": 36185.6,
+      "llm_call_count": 5,
+      "paths": [
+        "llm_triage.stage1",
+        "missing_info_service",
+        "explanation_generator.batch_usage_notes",
+        "explanation_generator.batch_usage_notes",
+        "chat_response_service.personalized_advice"
+      ],
+      "timestamp": "2026-07-02T15:11:56.817722",
+      "non_llm_gap_ms": 32654.1
+    },
+    {
+      "total_ms": 104936.2,
+      "llm_total_latency_ms": 9599.0,
+      "llm_call_count": 4,
+      "paths": [
+        "llm_triage.stage1",
+        "missing_info_service",
+        "explanation_generator.batch_usage_notes",
+        "chat_response_service.personalized_advice"
+      ],
+      "timestamp": "2026-07-25T10:33:04.630678",
+      "non_llm_gap_ms": 95337.2
+    },
+    {
+      "total_ms": 103792.7,
+      "llm_total_latency_ms": 10639.4,
+      "llm_call_count": 4,
+      "paths": [
+        "llm_triage.stage1",
+        "missing_info_service",
+        "explanation_generator.batch_usage_notes",
+        "chat_response_service.personalized_advice"
+      ],
+      "timestamp": "2026-07-25T10:43:45.200456",
+      "non_llm_gap_ms": 93153.3
+    },
+    {
+      "total_ms": 74537.6,
+      "llm_total_latency_ms": 64306.1,
+      "llm_call_count": 9,
+      "paths": [
+        "llm_triage.stage1",
+        "medicine_qa/focus_llm",
+        "medicine_qa/focus_llm",
+        "missing_info_service",
+        "medicine_qa/focus_llm",
+        "medicine_qa/focus_llm",
+        "medicine_qa/focus_llm",
+        "explanation_generator.batch_usage_notes",
+        "chat_response_service.personalized_advice"
+      ],
+      "timestamp": "2026-08-02T02:03:12.451019",
+      "non_llm_gap_ms": 10231.5
+    },
+    {
+      "total_ms": 62098.6,
+      "llm_total_latency_ms": 14142.0,
+      "llm_call_count": 9,
+      "paths": [
+        "llm_triage.stage1",
+        "medicine_qa/focus_llm",
+        "medicine_qa/focus_llm",
+        "missing_info_service",
+        "medicine_qa/focus_llm",
+        "medicine_qa/focus_llm",
+        "medicine_qa/focus_llm",
+        "explanation_generator.batch_usage_notes",
+        "chat_response_service.personalized_advice"
+      ],
+      "timestamp": "2026-08-03T01:07:11.423567",
+      "non_llm_gap_ms": 47956.6
+    },
+    {
+      "total_ms": 227145.5,
+      "llm_total_latency_ms": 16066.3,
+      "llm_call_count": 9,
+      "paths": [
+        "llm_triage.stage1",
+        "medicine_qa/focus_llm",
+        "medicine_qa/focus_llm",
+        "missing_info_service",
+        "medicine_qa/focus_llm",
+        "medicine_qa/focus_llm",
+        "medicine_qa/focus_llm",
+        "explanation_generator.batch_usage_notes",
+        "chat_response_service.personalized_advice"
+      ],
+      "timestamp": "2026-08-03T01:13:29.858095",
+      "non_llm_gap_ms": 211079.2
+    }
+  ],
+  "notes": [
+    "Local historical JSONL — not staging live TTFT.",
+    "Serial LLM chains dominate slow OTC turns; Jev intent alone is a small slice."
+  ]
+}

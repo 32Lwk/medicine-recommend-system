@@ -1,0 +1,28 @@
+{
+  "artifact": "log\\analysis\\jev_r21_holdout_unicode_r10_seed42_20260923_174144.json",
+  "fixture": "tests\\fixtures\\jev_holdout_r21\\unicode_evasion.yaml",
+  "membership_unknown_rows_total": 0,
+  "sessionops_rows": 0,
+  "sessionops_wrongly_gate_eligible": 0,
+  "backends": {
+    "jev:minimal": {
+      "rows": 60,
+      "accuracy_gate_n": 10,
+      "accuracy_gate_passed": 10,
+      "accuracy_gate_pct": 100.0,
+      "membership_unknown_n": 0,
+      "api_error_n": 0,
+      "fallback_n": 0,
+      "critical_fn_n": 0,
+      "high_fn_n": 0,
+      "critical_fn_cases": {},
+      "high_fn_cases": {},
+      "eligible_fail_cases": {},
+      "skipped_ineligible_n": 50
+    }
+  },
+  "fn_definition": {
+    "critical": "emergency/crisis gold miss; skipped_ineligible excluded; emergency_fn_exempt excluded",
+    "high": "security/prescription/medical_examination/controlled miss; skipped_ineligible excluded"
+  }
+}

@@ -1,0 +1,551 @@
+LLM繝医Μ繧｢繝ｼ繧ｸ繧ｨ繝ｩ繝ｼ: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\services\llm_triage.py", line 620, in llm_triage
+    response = chat_completion_create(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+LLM繝医Μ繧｢繝ｼ繧ｸ繧ｨ繝ｩ繝ｼ: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\services\llm_triage.py", line 620, in llm_triage
+    response = chat_completion_create(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+LLM繝医Μ繧｢繝ｼ繧ｸ繧ｨ繝ｩ繝ｼ: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\services\llm_triage.py", line 620, in llm_triage
+    response = chat_completion_create(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+LLM繝医Μ繧｢繝ｼ繧ｸ繧ｨ繝ｩ繝ｼ: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\services\llm_triage.py", line 620, in llm_triage
+    response = chat_completion_create(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+medicine_qa_focus_llm failed
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\services\medicine_qa_focus_llm.py", line 247, in enrich_medicine_qa_focuses_llm
+    resp = chat_completion_create(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+LLM繝医Μ繧｢繝ｼ繧ｸ繧ｨ繝ｩ繝ｼ: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\services\llm_triage.py", line 620, in llm_triage
+    response = chat_completion_create(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+medicine_qa_focus_llm failed
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\services\medicine_qa_focus_llm.py", line 247, in enrich_medicine_qa_focuses_llm
+    resp = chat_completion_create(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+LLM繝医Μ繧｢繝ｼ繧ｸ繧ｨ繝ｩ繝ｼ: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\services\llm_triage.py", line 620, in llm_triage
+    response = chat_completion_create(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+intent_router_llm call failed
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\dialogue\routing\intent_router_llm.py", line 298, in call_intent_router_llm
+    response = chat_completion_create(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+LLM繝医Μ繧｢繝ｼ繧ｸ繧ｨ繝ｩ繝ｼ: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\services\llm_triage.py", line 620, in llm_triage
+    response = chat_completion_create(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+medicine_qa_focus_llm failed
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\services\medicine_qa_focus_llm.py", line 247, in enrich_medicine_qa_focuses_llm
+    resp = chat_completion_create(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+intent_router_llm call failed
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\dialogue\routing\intent_router_llm.py", line 298, in call_intent_router_llm
+    response = chat_completion_create(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+LLM繝医Μ繧｢繝ｼ繧ｸ繧ｨ繝ｩ繝ｼ: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\services\llm_triage.py", line 620, in llm_triage
+    response = chat_completion_create(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+medicine_qa_focus_llm failed
+Traceback (most recent call last):
+  File "D:\Programing\medicine-recommend\src\services\medicine_qa_focus_llm.py", line 247, in enrich_medicine_qa_focuses_llm
+    resp = chat_completion_create(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 240, in chat_completion_create
+    response, api_kind = _invoke_llm(
+                         ^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\src\core\llm_client.py", line 224, in _invoke_llm
+    return client.chat.completions.create(model=model, messages=messages, **chat_kwargs), "completions"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_utils\_utils.py", line 275, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\resources\chat\completions.py", line 829, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1277, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 954, in request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1043, in _request
+    return self._retry_request(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1092, in _retry_request
+    return self._request(
+           ^^^^^^^^^^^^^^
+  File "D:\Programing\medicine-recommend\.venv\Lib\site-packages\openai\_base_client.py", line 1058, in _request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You have no credits remaining. Add credits to continue using the API at https://platform.openai.com/settings/organization/billing/.', 'type': 'insufficient_quota', 'param': None, 'code': 'credit_balance_exhausted'}}
+Jev intent routing eval
+order: seed_random per-case backend shuffle (normalized=seed_random)
+totals: requests=20 scenarios=10 api_err=0 eval_err=0 retry=0 fallback=0 paired_n=7
+current path kinds: deterministic_session_ops_n=1 counts={'mixed': 9, 'deterministic_session_ops': 1}
+- current: scored 9/10 (90.0%), attempted_acc=90.0%, attempted=10, paired_n=7, api_err=0, eval_err=0, mean=2531.87ms, p50=1927.84ms, p95=5417.95ms, p99=5417.95ms, stdev=1217.03
+- jev:minimal: scored 7/10 (70.0%), attempted_acc=70.0%, attempted=10, paired_n=7, api_err=0, eval_err=0, mean=266.56ms, p50=240.86ms, p95=517.44ms, p99=517.44ms, stdev=112.24
+Disagreements (raw primary+sub): 2
+  - jev-emergency-breathing#0: raw Emergency/medical_emergency vs None/None (alias_only=False)
+  - jev-session-delete#0: raw SessionOps/delete vs None/None (alias_only=False)
+Latency CI Gate scenario_cluster_eligible_warm (numpy_bootstrap_scenario_cluster): n_scenarios=6 mean_diff=1856.51ms 95%CI=[1542.18, 2395.12]
+Latency CI request-level deprecated (numpy_bootstrap_request_level): mean_diff=1798.81ms 95%CI=[1511.78, 2269.17]
+Latency CI rng_sensitivity (report-only): seeds=50 fraction(ci95_low<900.0)=0.0
+Cost: openai_saved_measured_proxy_jpy=0.0 jev_estimated_jpy=0.057803 total_class_if_jev_jpy=0.057803
+NOTE: Jev path used production evaluate_system_one + parse_jev_answers.
+NOTE: Scoring sole entry: src.services.jev_decisions.score_joint_decision (no harness reimplementation; risk_flags 竕 required_safety_action).
+NOTE: Order=seed_random seed=42: per-case backend order shuffled; with_baseline_triage forced after current.
+NOTE: latency_mode=warm: Gate canonical CI always scenario_cluster_eligible_warm; latency_all/warm/cold and scenario_cluster_all/warm/cold stored as sensitivity.
+JSON: log\analysis\jev_r21_smoke_eval10_r1_seed42.json
+MD:   log\analysis\jev_r21_smoke_eval10_r1_seed42.md

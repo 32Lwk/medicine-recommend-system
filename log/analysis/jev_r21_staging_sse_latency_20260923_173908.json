@@ -1,0 +1,354 @@
+{
+  "eval": "jev_r21_staging_sse_latency_probe",
+  "timestamp": "2026-09-23T17:40:53.350991+00:00",
+  "base": "https://aws-medicine.yutok.dev",
+  "synthetic_only": true,
+  "primary_must_remain_off": true,
+  "health": {
+    "status_code": 200,
+    "body": {
+      "status": "ok",
+      "git_commit": "8a3c571"
+    }
+  },
+  "new_session": {
+    "status_code": 200,
+    "ok": true
+  },
+  "turns": [
+    {
+      "name": "greeting",
+      "message_len": 5,
+      "http_status": 200,
+      "ok": true,
+      "ttft_ms": 41.9,
+      "ttf_advice_ms": null,
+      "ttf_cards_ms": null,
+      "ttf_done_ms": 3867.3,
+      "total_ms": 3867.3,
+      "status_steps": 6,
+      "advice_chunks": 0,
+      "stream_timeout": false,
+      "error_codes": [],
+      "done": {
+        "status": "ok",
+        "message_count": 2,
+        "http_status": 200
+      },
+      "event_timeline_head": [
+        {
+          "t_ms": 41.9,
+          "event": "status",
+          "step_id": "diagnosis"
+        },
+        {
+          "t_ms": 42.0,
+          "event": "status",
+          "step_id": "validate"
+        },
+        {
+          "t_ms": 105.0,
+          "event": "status",
+          "step_id": "diagnosis"
+        },
+        {
+          "t_ms": 105.0,
+          "event": "status",
+          "step_id": "triage"
+        },
+        {
+          "t_ms": 206.0,
+          "event": "status",
+          "step_id": "diagnosis"
+        },
+        {
+          "t_ms": 206.1,
+          "event": "status",
+          "step_id": "counseling"
+        },
+        {
+          "t_ms": 3867.3,
+          "event": "done",
+          "status": "ok",
+          "message_count": 2
+        }
+      ],
+      "event_count": 7
+    },
+    {
+      "name": "crisis_fast",
+      "message_len": 9,
+      "http_status": 200,
+      "ok": true,
+      "ttft_ms": 122.5,
+      "ttf_advice_ms": null,
+      "ttf_cards_ms": null,
+      "ttf_done_ms": 166.1,
+      "total_ms": 166.1,
+      "status_steps": 2,
+      "advice_chunks": 0,
+      "stream_timeout": false,
+      "error_codes": [],
+      "done": {
+        "status": "ok",
+        "message_count": 4,
+        "http_status": 200
+      },
+      "event_timeline_head": [
+        {
+          "t_ms": 122.5,
+          "event": "status",
+          "step_id": "validate"
+        },
+        {
+          "t_ms": 122.5,
+          "event": "status",
+          "step_id": "validate"
+        },
+        {
+          "t_ms": 166.1,
+          "event": "done",
+          "status": "ok",
+          "message_count": 4
+        }
+      ],
+      "event_count": 3
+    },
+    {
+      "name": "otc_headache_1",
+      "message_len": 20,
+      "http_status": 200,
+      "ok": true,
+      "ttft_ms": 77.1,
+      "ttf_advice_ms": null,
+      "ttf_cards_ms": null,
+      "ttf_done_ms": 30907.1,
+      "total_ms": 30907.1,
+      "status_steps": 15,
+      "advice_chunks": 0,
+      "stream_timeout": false,
+      "error_codes": [],
+      "done": {
+        "status": "ok",
+        "message_count": 7,
+        "http_status": 200
+      },
+      "event_timeline_head": [
+        {
+          "t_ms": 77.1,
+          "event": "status",
+          "step_id": "validate"
+        },
+        {
+          "t_ms": 77.2,
+          "event": "status",
+          "step_id": "validate"
+        },
+        {
+          "t_ms": 99.9,
+          "event": "status",
+          "step_id": "diagnosis"
+        },
+        {
+          "t_ms": 613.7,
+          "event": "status",
+          "step_id": "counseling"
+        },
+        {
+          "t_ms": 4284.2,
+          "event": "status",
+          "step_id": "attributes"
+        },
+        {
+          "t_ms": 4305.6,
+          "event": "status",
+          "step_id": "attributes"
+        },
+        {
+          "t_ms": 6167.2,
+          "event": "status",
+          "step_id": "symptom_analysis"
+        },
+        {
+          "t_ms": 6167.2,
+          "event": "status",
+          "step_id": "symptom_analysis"
+        },
+        {
+          "t_ms": 6188.2,
+          "event": "status",
+          "step_id": "symptom_analysis"
+        },
+        {
+          "t_ms": 6188.2,
+          "event": "status",
+          "step_id": "medicine_select"
+        },
+        {
+          "t_ms": 8013.0,
+          "event": "status",
+          "step_id": "safety"
+        },
+        {
+          "t_ms": 8013.0,
+          "event": "status",
+          "step_id": "medicine_select"
+        },
+        {
+          "t_ms": 10903.7,
+          "event": "status",
+          "step_id": "medicine_select"
+        },
+        {
+          "t_ms": 27112.3,
+          "event": "status",
+          "step_id": "medicine_select"
+        },
+        {
+          "t_ms": 29262.0,
+          "event": "status",
+          "step_id": "usage_notes"
+        },
+        {
+          "t_ms": 29262.0,
+          "event": "bot_followup"
+        },
+        {
+          "t_ms": 30907.1,
+          "event": "done",
+          "status": "ok",
+          "message_count": 7
+        }
+      ],
+      "event_count": 17
+    },
+    {
+      "name": "otc_headache_2",
+      "message_len": 17,
+      "http_status": 200,
+      "ok": true,
+      "ttft_ms": 101.3,
+      "ttf_advice_ms": null,
+      "ttf_cards_ms": null,
+      "ttf_done_ms": 68318.9,
+      "total_ms": 68318.9,
+      "status_steps": 18,
+      "advice_chunks": 0,
+      "stream_timeout": false,
+      "error_codes": [],
+      "done": {
+        "status": "ok",
+        "message_count": 9,
+        "http_status": 200
+      },
+      "event_timeline_head": [
+        {
+          "t_ms": 101.3,
+          "event": "status",
+          "step_id": "validate"
+        },
+        {
+          "t_ms": 104.6,
+          "event": "status",
+          "step_id": "validate"
+        },
+        {
+          "t_ms": 488.4,
+          "event": "status",
+          "step_id": "diagnosis"
+        },
+        {
+          "t_ms": 566.0,
+          "event": "status",
+          "step_id": "triage"
+        },
+        {
+          "t_ms": 2466.1,
+          "event": "status",
+          "step_id": "diagnosis"
+        },
+        {
+          "t_ms": 2466.1,
+          "event": "status",
+          "step_id": "counseling"
+        },
+        {
+          "t_ms": 31414.6,
+          "event": "status",
+          "step_id": "attributes"
+        },
+        {
+          "t_ms": 31468.6,
+          "event": "status",
+          "step_id": "attributes"
+        },
+        {
+          "t_ms": 33391.4,
+          "event": "status",
+          "step_id": "symptom_analysis"
+        },
+        {
+          "t_ms": 33391.4,
+          "event": "status",
+          "step_id": "symptom_analysis"
+        },
+        {
+          "t_ms": 33391.5,
+          "event": "status",
+          "step_id": "symptom_analysis"
+        },
+        {
+          "t_ms": 33391.5,
+          "event": "status",
+          "step_id": "medicine_select"
+        },
+        {
+          "t_ms": 35292.0,
+          "event": "status",
+          "step_id": "safety"
+        },
+        {
+          "t_ms": 35292.0,
+          "event": "status",
+          "step_id": "medicine_select"
+        },
+        {
+          "t_ms": 38266.6,
+          "event": "status",
+          "step_id": "medicine_select"
+        },
+        {
+          "t_ms": 64527.6,
+          "event": "status",
+          "step_id": "medicine_select"
+        },
+        {
+          "t_ms": 66374.8,
+          "event": "status",
+          "step_id": "usage_notes"
+        },
+        {
+          "t_ms": 66374.8,
+          "event": "bot_followup"
+        },
+        {
+          "t_ms": 68297.9,
+          "event": "status",
+          "step_id": "finalize"
+        },
+        {
+          "t_ms": 68318.9,
+          "event": "done",
+          "status": "ok",
+          "message_count": 9
+        }
+      ],
+      "event_count": 20
+    }
+  ],
+  "contract_notes": [
+    "ttft_ms = first status|advice_delta|cards|done|error (not keepalive)",
+    "total_ms may equal CHAT_STREAM_TIMEOUT_SEC (~120s) when stream_timeout=true",
+    "Jev ~227ms shadow API is NOT comparable to these full-path numbers"
+  ]
+}

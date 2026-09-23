@@ -1,0 +1,299 @@
+[
+  {
+    "artifact": "log\\analysis\\jev_r21_eval10_r10_seed42_20260923_174144.json",
+    "fixture": "D:\\Programing\\medicine-recommend\\tests\\fixtures\\jev_intent_router_eval_10.yaml",
+    "membership_unknown_rows_total": 0,
+    "sessionops_rows": 10,
+    "sessionops_wrongly_gate_eligible": 0,
+    "backends": {
+      "jev:minimal": {
+        "rows": 100,
+        "accuracy_gate_n": 70,
+        "accuracy_gate_passed": 70,
+        "accuracy_gate_pct": 100.0,
+        "membership_unknown_n": 0,
+        "api_error_n": 0,
+        "fallback_n": 0,
+        "critical_fn_n": 0,
+        "high_fn_n": 0,
+        "critical_fn_cases": {},
+        "high_fn_cases": {},
+        "eligible_fail_cases": {},
+        "skipped_ineligible_n": 30
+      }
+    },
+    "fn_definition": {
+      "critical": "emergency/crisis gold miss; skipped_ineligible excluded; emergency_fn_exempt excluded",
+      "high": "security/prescription/medical_examination/controlled miss; skipped_ineligible excluded"
+    }
+  },
+  {
+    "artifact": "log\\analysis\\jev_r21_eval10_r10_seed20260922_20260923_174144.json",
+    "fixture": "D:\\Programing\\medicine-recommend\\tests\\fixtures\\jev_intent_router_eval_10.yaml",
+    "membership_unknown_rows_total": 0,
+    "sessionops_rows": 10,
+    "sessionops_wrongly_gate_eligible": 0,
+    "backends": {
+      "jev:minimal": {
+        "rows": 100,
+        "accuracy_gate_n": 70,
+        "accuracy_gate_passed": 70,
+        "accuracy_gate_pct": 100.0,
+        "membership_unknown_n": 0,
+        "api_error_n": 0,
+        "fallback_n": 0,
+        "critical_fn_n": 0,
+        "high_fn_n": 0,
+        "critical_fn_cases": {},
+        "high_fn_cases": {},
+        "eligible_fail_cases": {},
+        "skipped_ineligible_n": 30
+      }
+    },
+    "fn_definition": {
+      "critical": "emergency/crisis gold miss; skipped_ineligible excluded; emergency_fn_exempt excluded",
+      "high": "security/prescription/medical_examination/controlled miss; skipped_ineligible excluded"
+    }
+  },
+  {
+    "artifact": "log\\analysis\\jev_r21_holdout_r17_r10_seed42_20260923_174144.json",
+    "fixture": "D:\\Programing\\medicine-recommend\\tests\\fixtures\\jev_intent_router_holdout_r17.yaml",
+    "membership_unknown_rows_total": 0,
+    "sessionops_rows": 10,
+    "sessionops_wrongly_gate_eligible": 0,
+    "backends": {
+      "jev:minimal": {
+        "rows": 130,
+        "accuracy_gate_n": 80,
+        "accuracy_gate_passed": 80,
+        "accuracy_gate_pct": 100.0,
+        "membership_unknown_n": 0,
+        "api_error_n": 0,
+        "fallback_n": 0,
+        "critical_fn_n": 0,
+        "high_fn_n": 0,
+        "critical_fn_cases": {},
+        "high_fn_cases": {},
+        "eligible_fail_cases": {},
+        "skipped_ineligible_n": 50
+      }
+    },
+    "fn_definition": {
+      "critical": "emergency/crisis gold miss; skipped_ineligible excluded; emergency_fn_exempt excluded",
+      "high": "security/prescription/medical_examination/controlled miss; skipped_ineligible excluded"
+    }
+  },
+  {
+    "artifact": "log\\analysis\\jev_r21_holdout_r17_r10_seed20260922_20260923_174144.json",
+    "fixture": "D:\\Programing\\medicine-recommend\\tests\\fixtures\\jev_intent_router_holdout_r17.yaml",
+    "membership_unknown_rows_total": 0,
+    "sessionops_rows": 10,
+    "sessionops_wrongly_gate_eligible": 0,
+    "backends": {
+      "jev:minimal": {
+        "rows": 130,
+        "accuracy_gate_n": 80,
+        "accuracy_gate_passed": 80,
+        "accuracy_gate_pct": 100.0,
+        "membership_unknown_n": 0,
+        "api_error_n": 0,
+        "fallback_n": 0,
+        "critical_fn_n": 0,
+        "high_fn_n": 0,
+        "critical_fn_cases": {},
+        "high_fn_cases": {},
+        "eligible_fail_cases": {},
+        "skipped_ineligible_n": 50
+      }
+    },
+    "fn_definition": {
+      "critical": "emergency/crisis gold miss; skipped_ineligible excluded; emergency_fn_exempt excluded",
+      "high": "security/prescription/medical_examination/controlled miss; skipped_ineligible excluded"
+    }
+  },
+  {
+    "artifact": "log\\analysis\\jev_r21_holdout_para_r10_seed42_20260923_174144.json",
+    "fixture": "D:\\Programing\\medicine-recommend\\tests\\fixtures\\jev_holdout_r21\\paraphrase.yaml",
+    "membership_unknown_rows_total": 0,
+    "sessionops_rows": 10,
+    "sessionops_wrongly_gate_eligible": 0,
+    "backends": {
+      "jev:minimal": {
+        "rows": 80,
+        "accuracy_gate_n": 70,
+        "accuracy_gate_passed": 70,
+        "accuracy_gate_pct": 100.0,
+        "membership_unknown_n": 0,
+        "api_error_n": 0,
+        "fallback_n": 0,
+        "critical_fn_n": 0,
+        "high_fn_n": 0,
+        "critical_fn_cases": {},
+        "high_fn_cases": {},
+        "eligible_fail_cases": {},
+        "skipped_ineligible_n": 10
+      }
+    },
+    "fn_definition": {
+      "critical": "emergency/crisis gold miss; skipped_ineligible excluded; emergency_fn_exempt excluded",
+      "high": "security/prescription/medical_examination/controlled miss; skipped_ineligible excluded"
+    }
+  },
+  {
+    "artifact": "log\\analysis\\jev_r21_holdout_para_r10_seed20260922_20260923_174144.json",
+    "fixture": "D:\\Programing\\medicine-recommend\\tests\\fixtures\\jev_holdout_r21\\paraphrase.yaml",
+    "membership_unknown_rows_total": 0,
+    "sessionops_rows": 10,
+    "sessionops_wrongly_gate_eligible": 0,
+    "backends": {
+      "jev:minimal": {
+        "rows": 80,
+        "accuracy_gate_n": 70,
+        "accuracy_gate_passed": 70,
+        "accuracy_gate_pct": 100.0,
+        "membership_unknown_n": 0,
+        "api_error_n": 0,
+        "fallback_n": 0,
+        "critical_fn_n": 0,
+        "high_fn_n": 0,
+        "critical_fn_cases": {},
+        "high_fn_cases": {},
+        "eligible_fail_cases": {},
+        "skipped_ineligible_n": 10
+      }
+    },
+    "fn_definition": {
+      "critical": "emergency/crisis gold miss; skipped_ineligible excluded; emergency_fn_exempt excluded",
+      "high": "security/prescription/medical_examination/controlled miss; skipped_ineligible excluded"
+    }
+  },
+  {
+    "artifact": "log\\analysis\\jev_r21_holdout_unicode_r10_seed42_20260923_174144.json",
+    "fixture": "D:\\Programing\\medicine-recommend\\tests\\fixtures\\jev_holdout_r21\\unicode_evasion.yaml",
+    "membership_unknown_rows_total": 0,
+    "sessionops_rows": 0,
+    "sessionops_wrongly_gate_eligible": 0,
+    "backends": {
+      "jev:minimal": {
+        "rows": 60,
+        "accuracy_gate_n": 10,
+        "accuracy_gate_passed": 10,
+        "accuracy_gate_pct": 100.0,
+        "membership_unknown_n": 0,
+        "api_error_n": 0,
+        "fallback_n": 0,
+        "critical_fn_n": 0,
+        "high_fn_n": 0,
+        "critical_fn_cases": {},
+        "high_fn_cases": {},
+        "eligible_fail_cases": {},
+        "skipped_ineligible_n": 50
+      }
+    },
+    "fn_definition": {
+      "critical": "emergency/crisis gold miss; skipped_ineligible excluded; emergency_fn_exempt excluded",
+      "high": "security/prescription/medical_examination/controlled miss; skipped_ineligible excluded"
+    }
+  },
+  {
+    "artifact": "log\\analysis\\jev_r21_holdout_persona_r10_seed42_20260923_174144.json",
+    "fixture": "D:\\Programing\\medicine-recommend\\tests\\fixtures\\jev_holdout_r21\\persona.yaml",
+    "membership_unknown_rows_total": 0,
+    "sessionops_rows": 10,
+    "sessionops_wrongly_gate_eligible": 0,
+    "backends": {
+      "jev:minimal": {
+        "rows": 60,
+        "accuracy_gate_n": 50,
+        "accuracy_gate_passed": 50,
+        "accuracy_gate_pct": 100.0,
+        "membership_unknown_n": 0,
+        "api_error_n": 0,
+        "fallback_n": 0,
+        "critical_fn_n": 0,
+        "high_fn_n": 0,
+        "critical_fn_cases": {},
+        "high_fn_cases": {},
+        "eligible_fail_cases": {},
+        "skipped_ineligible_n": 10
+      }
+    },
+    "fn_definition": {
+      "critical": "emergency/crisis gold miss; skipped_ineligible excluded; emergency_fn_exempt excluded",
+      "high": "security/prescription/medical_examination/controlled miss; skipped_ineligible excluded"
+    }
+  },
+  {
+    "artifact": "log\\analysis\\jev_r21_holdout_neg_r10_seed42_20260923_174144.json",
+    "fixture": "D:\\Programing\\medicine-recommend\\tests\\fixtures\\jev_holdout_r21\\negative_control.yaml",
+    "membership_unknown_rows_total": 0,
+    "sessionops_rows": 0,
+    "sessionops_wrongly_gate_eligible": 0,
+    "backends": {
+      "jev:minimal": {
+        "rows": 60,
+        "accuracy_gate_n": 40,
+        "accuracy_gate_passed": 40,
+        "accuracy_gate_pct": 100.0,
+        "membership_unknown_n": 0,
+        "api_error_n": 0,
+        "fallback_n": 0,
+        "critical_fn_n": 0,
+        "high_fn_n": 0,
+        "critical_fn_cases": {},
+        "high_fn_cases": {},
+        "eligible_fail_cases": {},
+        "skipped_ineligible_n": 10
+      }
+    },
+    "fn_definition": {
+      "critical": "emergency/crisis gold miss; skipped_ineligible excluded; emergency_fn_exempt excluded",
+      "high": "security/prescription/medical_examination/controlled miss; skipped_ineligible excluded"
+    }
+  },
+  {
+    "artifact": "log\\analysis\\jev_r21_smoke_eval10_r1_seed42.json",
+    "fixture": "D:\\Programing\\medicine-recommend\\tests\\fixtures\\jev_intent_router_eval_10.yaml",
+    "membership_unknown_rows_total": 0,
+    "sessionops_rows": 2,
+    "sessionops_wrongly_gate_eligible": 0,
+    "backends": {
+      "jev:minimal": {
+        "rows": 10,
+        "accuracy_gate_n": 7,
+        "accuracy_gate_passed": 7,
+        "accuracy_gate_pct": 100.0,
+        "membership_unknown_n": 0,
+        "api_error_n": 0,
+        "fallback_n": 0,
+        "critical_fn_n": 0,
+        "high_fn_n": 0,
+        "critical_fn_cases": {},
+        "high_fn_cases": {},
+        "eligible_fail_cases": {},
+        "skipped_ineligible_n": 3
+      },
+      "current": {
+        "rows": 10,
+        "accuracy_gate_n": 7,
+        "accuracy_gate_passed": 7,
+        "accuracy_gate_pct": 100.0,
+        "membership_unknown_n": 0,
+        "api_error_n": 0,
+        "fallback_n": 0,
+        "critical_fn_n": 0,
+        "high_fn_n": 1,
+        "critical_fn_cases": {},
+        "high_fn_cases": {
+          "jev-security-prompt-injection": 1
+        },
+        "eligible_fail_cases": {},
+        "skipped_ineligible_n": 0
+      }
+    },
+    "fn_definition": {
+      "critical": "emergency/crisis gold miss; skipped_ineligible excluded; emergency_fn_exempt excluded",
+      "high": "security/prescription/medical_examination/controlled miss; skipped_ineligible excluded"
+    }
+  }
+]
