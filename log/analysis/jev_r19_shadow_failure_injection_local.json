@@ -1,0 +1,50 @@
+{
+  "suite": "r19_shadow_failure_injection_local",
+  "aws_staging": "skipped",
+  "deploy_ready": false,
+  "passed": 8,
+  "total": 8,
+  "hard_fail_count": 0,
+  "rows": [
+    {
+      "name": "kill_switch",
+      "pass": true,
+      "note": "schedule False when flags OFF"
+    },
+    {
+      "name": "timeout",
+      "pass": true,
+      "note": "fail-open sync; legacy executed"
+    },
+    {
+      "name": "http_429",
+      "pass": true,
+      "note": "bounded retry; user path unchanged"
+    },
+    {
+      "name": "http_500",
+      "pass": true,
+      "note": "bounded retry; fail-open"
+    },
+    {
+      "name": "invalid_schema",
+      "pass": true,
+      "note": "schema fail recorded; legacy executed"
+    },
+    {
+      "name": "queue_full",
+      "pass": true,
+      "note": "skip shadow only"
+    },
+    {
+      "name": "circuit_open",
+      "pass": true,
+      "note": "skip shadow only"
+    },
+    {
+      "name": "jsonl_failure",
+      "pass": true,
+      "note": "metrics write fail does not raise / mutate"
+    }
+  ]
+}
