@@ -30,7 +30,7 @@ import time
 from dataclasses import asdict, is_dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -557,6 +557,7 @@ def _apply_eligibility_flags(
     *,
     latency_class: str | None = None,
     jev_attempted: bool = False,
+    fixture_expect: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Merge shared gate_flags_for_row onto an eval result row."""
     outcome = str(row.get("outcome") or "")
@@ -584,8 +585,15 @@ def _apply_eligibility_flags(
         and not eval_error
         and not fallback
     )
+    # R18: fixture may explicitly exclude from Hard Gate (cannot force-include).
+    expect = fixture_expect if isinstance(fixture_expect, Mapping) else {}
+    if "accuracy_gate_eligible" in expect and expect.get("accuracy_gate_eligible") is False:
+        flags["accuracy_gate_eligible"] = False
+        flags["latency_gate_eligible"] = False
+        flags["membership_status"] = "ineligible"
+        flags["fixture_accuracy_gate_exclude"] = True
     # R8-H2: membership explicit; never treat missing as True later.
-    if "accuracy_gate_eligible" in flags:
+    elif "accuracy_gate_eligible" in flags:
         flags["membership_status"] = (
             "eligible" if flags["accuracy_gate_eligible"] else "ineligible"
         )
@@ -642,7 +650,11 @@ def _evaluate_jev_ineligible_placeholder(
         **verdict,
     }
     _apply_eligibility_flags(
-        row, decision, latency_class=latency_class, jev_attempted=False
+        row,
+        decision,
+        latency_class=latency_class,
+        jev_attempted=False,
+        fixture_expect=scenario.get("expect") or {},
     )
     return row
 
@@ -3067,7 +3079,11 @@ def main() -> int:
                     _deterministic_signals_from_current_result(row) or {}
                 )
                 _apply_eligibility_flags(
-                    row, decision, latency_class=latency_class, jev_attempted=False
+                    row,
+                    decision,
+                    latency_class=latency_class,
+                    jev_attempted=False,
+                    fixture_expect=scenario.get("expect") or {},
                 )
                 results.append(row)
                 current_by_key[(scenario_id, run_idx)] = row
@@ -3089,7 +3105,11 @@ def main() -> int:
                     "pass": False,
                 }
                 _apply_eligibility_flags(
-                    err_row, decision, latency_class=latency_class, jev_attempted=False
+                    err_row,
+                    decision,
+                    latency_class=latency_class,
+                    jev_attempted=False,
+                    fixture_expect=scenario.get("expect") or {},
                 )
                 results.append(err_row)
             continue
@@ -3102,8 +3122,11 @@ def main() -> int:
         decision = _eligibility_decision_for_scenario(
             scenario, current_result=current_result
         )
-        if not decision.eligible:
-            # Option B: do not call Jev API; still emit product-regression row.
+        expect = scenario.get("expect") or {}
+        fixture_gate_exclude = expect.get("accuracy_gate_eligible") is False
+        if (not decision.eligible) or fixture_gate_exclude:
+            # Option B / R18: do not call Jev API; still emit product-regression row.
+            # Fixture may exclude Hard Gate membership without forcing include.
             row = _evaluate_jev_ineligible_placeholder(
                 scenario,
                 mode=mode,
@@ -3113,6 +3136,11 @@ def main() -> int:
             )
             row["run_idx"] = run_idx
             row["latency_class"] = latency_class
+            if fixture_gate_exclude and decision.eligible:
+                row["fixture_accuracy_gate_exclude"] = True
+                row["skipped_reason"] = (
+                    str(expect.get("eligibility_reason") or "") or "fixture_gate_exclude"
+                )
             results.append(row)
             continue
         try:
@@ -3133,7 +3161,11 @@ def main() -> int:
                 row["fallback"] = True
                 row["jev_transport"] = "inline_httpx_fallback"
             _apply_eligibility_flags(
-                row, decision, latency_class=latency_class, jev_attempted=True
+                row,
+                decision,
+                latency_class=latency_class,
+                jev_attempted=True,
+                fixture_expect=expect,
             )
             # AE6-H2(a): persist peer signals on Jev rows for unexpected recompute.
             row["deterministic_signals"] = (
@@ -3162,7 +3194,11 @@ def main() -> int:
                 "pass": False,
             }
             _apply_eligibility_flags(
-                err_row, decision, latency_class=latency_class, jev_attempted=True
+                err_row,
+                decision,
+                latency_class=latency_class,
+                jev_attempted=True,
+                fixture_expect=expect,
             )
             err_row["deterministic_signals"] = (
                 _deterministic_signals_from_current_result(current_result) or {}

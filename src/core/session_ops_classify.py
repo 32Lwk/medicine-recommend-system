@@ -39,7 +39,9 @@ _STATUS_HINTS = (
 )
 
 _DESTRUCTIVE_DELETE_RE = re.compile(
-    r"(消して|削除|消去|忘れて|全部消|すべて消|全て消|履歴消|記憶消|データ.*消|会話.*削除)",
+    # Include desire forms (消したい / 消してほしい) — R18 holdout FN
+    # 「この相談の記録を丸ごと消したいです」 must hit SessionOps, not Jev.
+    r"(消して|消したい|消してほしい|削除|消去|忘れて|全部消|すべて消|全て消|履歴消|記憶消|データ.*消|会話.*削除)",
     re.I,
 )
 
