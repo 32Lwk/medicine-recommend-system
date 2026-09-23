@@ -1,0 +1,116 @@
+# holdout_id: r21-holdout-paraphrase-v1
+# Independent paraphrase holdout for R21. Not a reshuffle of eval_10 or r17.
+# Labels are holdout-only; do not retarget eval_10 gold to pass these.
+version: 1
+updated: "2026-09-24"
+holdout_id: r21-holdout-paraphrase-v1
+label_status_default: holdout_provisional
+description: >
+  Fresh paraphrase population for R21 independent accuracy holdout.
+  Distinct surface forms from jev_intent_router_eval_10.yaml and
+  jev_intent_router_holdout_r17.yaml.
+
+scenarios:
+  - id: r21-para-physical-stiff-neck
+    channel: web
+    input: 首筋が張ってうずくので、市販で試せる痛み止めの候補を教えてください。
+    expect:
+      primary_route: Physical
+      accept_sub_routes: [rule_based_recommend, medicine_qa]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: high
+      review_note: Neck pain OTC consult; novel vs headache office / throat mixed.
+
+  - id: r21-para-fever-night-sweat
+    channel: web
+    input: 夜中に汗が出るほどの熱っぽさがあります。市販の解熱剤を探す前に確認したいです。
+    expect:
+      primary_route: Physical
+      accept_sub_routes: [fever_flow, rule_based_recommend]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: high
+      review_note: Fever framing without exact 38/39 number from eval_10.
+
+  - id: r21-para-sideeffect-allegra
+    channel: web
+    input: アレグラを飲むと眠気は出やすいですか？仕事中に飲みたいので気になります。
+    expect:
+      primary_route: Physical
+      accept_sub_routes: [medicine_side_effect_qa, medicine_qa]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: high
+      review_note: Different drug vs ロキソニン/EVE/パブロン holdouts.
+
+  - id: r21-para-store-stock-hours
+    channel: web
+    input: この近くで在庫がありそうな薬局と、いまの時間帯に開いているかを知りたいです。
+    expect:
+      primary_route: Store
+      accept_sub_routes: [store_locator]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: high
+      review_note: Stock+hours store locator paraphrase.
+
+  - id: r21-para-counseling-work-stress
+    channel: web
+    input: 仕事のストレスで気持ちが沈み気味です。薬の話より、少し聞いてもらえると助かります。
+    expect:
+      primary_route: Counseling
+      accept_sub_routes: [emotional_support]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: medium
+      review_note: Non-crisis emotional support; not sleep/rumination clone.
+
+  - id: r21-para-otc-compare-kakkonto-gegen
+    channel: web
+    input: 葛根湯と総合感冒薬って、かぜの引きはじめに使うならどう違いますか？
+    expect:
+      primary_route: Physical
+      accept_sub_routes: [medicine_qa]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: high
+      review_note: Novel OTC pair vs ロキソニン/イブ or バファリン/タイレノール.
+
+  - id: r21-para-sessionops-clear-chat
+    channel: line
+    input: これまでのやり取りを全部クリアしたいです。
+    expect:
+      primary_route: SessionOps
+      accept_sub_routes: [delete, delete_confirm]
+      high_risk: []
+      accuracy_gate_eligible: false
+      membership: ineligible
+      eligibility_reason: sessionops_fast_path
+      label_confidence: high
+      review_note: SessionOps fast-path; kept in fixture for membership integrity (not Gate denom).
+
+  - id: r21-para-concierge-what-is-app
+    channel: web
+    input: このチャットって何ができるアプリなんですか？
+    expect:
+      primary_route: Concierge
+      accept_sub_routes: [app_about, greeting]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: high
+      review_note: Concierge coverage gap fill vs r17 holdout.

@@ -1,8 +1,9 @@
 {
   "program": "R21_Production_Shadow_Ready_Candidate",
-  "started_at": "2026-09-24T02:32:00+09:00",
-  "phase": 0,
-  "local_head": "56889ea",
+  "updated_at": "2026-09-24T02:46:00+09:00",
+  "phase": 5,
+  "local_head_pending": true,
+  "commits": ["469c9fe", "047af9f", "3812e63"],
   "staging_health_git_commit": "8a3c571",
   "staging_task": "medicine-recommend-tunnel:5",
   "sha_mismatch": true,
@@ -12,14 +13,17 @@
     "JEV_INTENT_ROUTER_PRIMARY": "0",
     "POLICY_ENFORCEMENT_D2": "0"
   },
+  "cloudwatch_alarms": "medicine-recommend-jev-* (8) OK",
   "verdicts": {
     "production_shadow": "Not Ready",
     "gate_a_code": "Conditional Passed",
     "gate_a_accuracy": "Conditional Passed",
-    "gate_b": "Hard No-Go",
-    "product_safety": "未合格"
+    "gate_b": "Hard No-Go (H-03/04/05 Conditional Closed-candidate only)",
+    "product_safety": "未合格",
+    "medical_multi_review": "AI多重医療監修 Conditional Accept candidate",
+    "observability": "alarms live; emit needs redeploy"
   },
   "forbidden": ["push", "PR", "primary ON", "production D2 ON", "live", "real-user data"],
-  "privacy": "Owner-accepted residual for synthetic staging only. Not approved for real-user production data.",
-  "cycle": 0
+  "next": ["accuracy holdout eval10", "RC deploy for SHA match", "synthetic canary", "AWS rollback drill", "final report"],
+  "cycle": 1
 }

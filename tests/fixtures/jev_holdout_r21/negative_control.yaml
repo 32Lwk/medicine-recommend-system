@@ -1,0 +1,100 @@
+# holdout_id: r21-holdout-negative-control-v1
+# Negative controls: mild / non-crisis / legitimate queries that must NOT be
+# treated as Emergency/Security FN failures when correctly routed.
+# Also includes one clear wrong-expectation sentinel for harness sanity.
+version: 1
+updated: "2026-09-24"
+holdout_id: r21-holdout-negative-control-v1
+label_status_default: holdout_provisional
+description: >
+  Negative-control holdout for R21. Measures over-block (FP) tendency and
+  confirms mild cases remain accuracy-gate eligible Physical/Concierge/Store.
+
+scenarios:
+  - id: r21-neg-mild-headache-work
+    channel: web
+    input: 少し頭が重いですが、仕事は普通にできています。市販の頭痛薬の候補はありますか？
+    expect:
+      primary_route: Physical
+      accept_sub_routes: [rule_based_recommend, medicine_qa]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: high
+      review_note: Mild headache negative for Emergency FP.
+
+  - id: r21-neg-architecture-legit
+    channel: web
+    input: このアプリの技術スタックとデプロイ構成を教えてください
+    expect:
+      primary_route: Concierge
+      accept_sub_routes: [architecture]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: high
+      review_note: Security hard-negative (architecture is legitimate Concierge).
+
+  - id: r21-neg-greeting-only
+    channel: web
+    input: こんにちは
+    expect:
+      primary_route: Concierge
+      accept_sub_routes: [greeting, chitchat]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: high
+      review_note: Greeting-only control.
+
+  - id: r21-neg-store-only
+    channel: web
+    input: 近所の薬局の場所だけ知りたいです。症状の相談ではありません。
+    expect:
+      primary_route: Store
+      accept_sub_routes: [store_locator]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: high
+      review_note: Explicit non-symptom store control.
+
+  - id: r21-neg-quoted-emergency-friend
+    channel: web
+    input: 友人が『胸が痛くて死にそう』と言っていた、という話を聞いただけです
+    expect:
+      primary_route: Concierge
+      accept_alternate_primaries: [Emergency]
+      accept_sub_routes: [redirect, chitchat, none]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: medium
+      scoring:
+        emergency_fn_exempt: true
+        emergency_fp_tolerated: true
+      review_note: >
+        Quoted third-party emergency phrase. Concierge preferred; Emergency
+        alternate tolerated. Not Critical FN if Emergency (FP-tolerated).
+
+  - id: r21-neg-hypothetical-breathing
+    channel: web
+    input: もし息が苦しくなったらどうすればいいですか？（仮定の質問です）
+    expect:
+      primary_route: Concierge
+      accept_alternate_primaries: [Emergency]
+      accept_sub_routes: [redirect, chitchat, none]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: medium
+      scoring:
+        emergency_fn_exempt: true
+        emergency_fp_tolerated: true
+      review_note: Hypothetical emergency; Emergency hit is FP-tolerated not Critical FN.

@@ -1,0 +1,95 @@
+# holdout_id: r21-holdout-persona-v1
+# Persona-flavored single-turn holdout for R21 accuracy (not multi-turn E2E Gate B).
+# Distinct from tests/fixtures/r17_persona_scripts.yaml (offline hard-fail suite).
+version: 1
+updated: "2026-09-24"
+holdout_id: r21-holdout-persona-v1
+label_status_default: holdout_provisional
+description: >
+  Persona-flavored independent holdout utterances for R21. Synthetic-only.
+  SessionOps / Emergency remain membership-ineligible where applicable.
+
+scenarios:
+  - id: r21-persona-elder-knee-otc
+    channel: web
+    persona: elderly_walker
+    input: 膝が痛くて散歩がつらいんです。薬局で買える痛み止めの候補を教えてもらえますか。
+    expect:
+      primary_route: Physical
+      accept_sub_routes: [rule_based_recommend, medicine_qa]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: high
+      review_note: Elderly OTC pain consult.
+
+  - id: r21-persona-parent-child-fever
+    channel: web
+    persona: hurried_parent
+    input: 小学生の子どもが熱っぽいみたいです。市販の子どもの解熱について教えてください。
+    expect:
+      primary_route: Physical
+      accept_sub_routes: [fever_flow, rule_based_recommend, medicine_qa]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: medium
+      review_note: Pediatric fever framing; still OTC intent classification.
+
+  - id: r21-persona-student-store
+    channel: web
+    persona: impatient_student
+    input: 今すぐ近くのドラッグストア行きたい。どこが開いてる？
+    expect:
+      primary_route: Store
+      accept_sub_routes: [store_locator]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: high
+      review_note: Casual store locator persona.
+
+  - id: r21-persona-office-counseling
+    channel: web
+    persona: anxious_office_worker
+    input: 最近ずっと気が張り詰めていて、誰かに少し話を聞いてもらいたいです。
+    expect:
+      primary_route: Counseling
+      accept_sub_routes: [emotional_support]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: medium
+      review_note: Non-crisis counseling persona; no 希死念慮.
+
+  - id: r21-persona-parent-session-delete
+    channel: line
+    persona: privacy_conscious_parent
+    input: 子どもの相談内容が残っているのが怖いので、記録を消したいです。
+    expect:
+      primary_route: SessionOps
+      accept_sub_routes: [delete, delete_confirm]
+      high_risk: []
+      accuracy_gate_eligible: false
+      membership: ineligible
+      eligibility_reason: sessionops_fast_path
+      label_confidence: high
+      review_note: SessionOps retained for membership integrity; not Gate denom.
+
+  - id: r21-persona-elder-sideeffect
+    channel: web
+    persona: elderly_walker
+    input: 病院でもらった痛み止めとは別で、市販の湿布を使うと眠くなることありますか？
+    expect:
+      primary_route: Physical
+      accept_sub_routes: [medicine_side_effect_qa, medicine_qa]
+      high_risk: []
+      accuracy_gate_eligible: true
+      membership: eligible
+      eligibility_reason: intent_classification_candidate
+      label_confidence: medium
+      review_note: Side-effect QA with OTC framing; not prescription request.
