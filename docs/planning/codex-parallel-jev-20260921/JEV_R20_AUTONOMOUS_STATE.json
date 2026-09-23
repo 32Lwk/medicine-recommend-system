@@ -1,0 +1,28 @@
+{
+  "program": "R20_AWS_Staging_Activation_Accuracy_Latency",
+  "started_at": "2026-09-24T01:37:00+09:00",
+  "cycle": 1,
+  "verdicts": {
+    "production_shadow": "Not Ready",
+    "gate_a_accuracy": "Conditional Passed (local synthetic remasure 100%; formal label Supervisor-owned)",
+    "gate_a_latency": "Not Passed on fragile eval_10 r10 seed20260922 (CI low 898.8 < 900)",
+    "gate_b": "Hard No-Go",
+    "privacy_dpa": "Owner-accepted residual for synthetic staging only. Not approved for real-user production data.",
+    "aws_staging": "identity_probe_pending"
+  },
+  "priorities": ["accuracy", "latency", "aws_staging_synthetic"],
+  "forbidden": ["push", "PR", "primary ON", "default ON", "D2 production ON", "live", "real-user data"],
+  "flags": {
+    "JEV_ENABLED": false,
+    "JEV_INTENT_ROUTER_SHADOW": false,
+    "JEV_INTENT_ROUTER_PRIMARY": false,
+    "POLICY_ENFORCEMENT_D2": false
+  },
+  "workers_def": {
+    "payload_cut_recent_context_wire": true,
+    "latency_breakdown_artifact": "log/analysis/jev_r20_latency_breakdown_20260924.json",
+    "accuracy_report": "docs/planning/codex-parallel-jev-20260921/JEV_R20_ACCURACY_REPORT_20260924.md",
+    "latency_report": "docs/planning/codex-parallel-jev-20260921/JEV_R20_LATENCY_REPORT_20260924.md",
+    "committed": false
+  }
+}

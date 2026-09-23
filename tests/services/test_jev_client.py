@@ -115,12 +115,43 @@ def test_empty_meta_omitted_from_wire_payload_reduces_bytes(monkeypatch):
     assert result.ok is True
     sent_state = client.post.call_args.kwargs["json"]["state"]
     assert "meta" not in sent_state
+    assert "recent_context" not in sent_state
+    assert "recent_turns" in sent_state
     assert state["meta"] == {}
+    assert "recent_context" in state  # caller state unchanged
     raw_payload = {"state": state, "model": "jev-latest", "questions": {}}
     sent_payload = client.post.call_args.kwargs["json"]
     raw_bytes = len(json.dumps(raw_payload, ensure_ascii=False).encode("utf-8"))
     sent_bytes = len(json.dumps(sent_payload, ensure_ascii=False).encode("utf-8"))
     assert sent_bytes < raw_bytes
+
+
+def test_recent_context_alias_omitted_from_wire_when_recent_turns_present(monkeypatch):
+    monkeypatch.setenv("JEV_API_KEY", SECRET)
+    client = _mock_client([_ok_response()])
+    turns = [{"role": "user", "content": "昨夜から熱があります"}]
+    state = {
+        "user_input": "頭痛がします",
+        "recent_turns": turns,
+        "recent_context": turns,
+        "meta": {"last_primary_route": "Physical"},
+        "app_context": "Japanese OTC medicine routing",
+    }
+
+    with patch("src.services.jev_client.httpx.Client", return_value=client):
+        result = evaluate_system_one(state=state, questions={"q": {"type": "noul"}})
+
+    assert result.ok is True
+    sent_state = client.post.call_args.kwargs["json"]["state"]
+    assert sent_state["recent_turns"] == turns
+    assert "recent_context" not in sent_state
+    assert state["recent_context"] is turns  # caller unchanged
+    # Wire bytes must shrink vs sending both keys.
+    with_dup = dict(sent_state)
+    with_dup["recent_context"] = turns
+    assert len(json.dumps(sent_state, ensure_ascii=False).encode()) < len(
+        json.dumps(with_dup, ensure_ascii=False).encode()
+    )
 
 
 def test_two_successful_calls_reuse_same_client(monkeypatch):

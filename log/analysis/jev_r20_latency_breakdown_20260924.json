@@ -1,0 +1,84 @@
+{
+  "eval": "jev_r20_shadow_latency_breakdown",
+  "timestamp": "2026-09-23T16:42:36.855833+00:00",
+  "synthetic_only": true,
+  "jev_api_key": "present",
+  "repeats": 8,
+  "cold_prep_ms": 616.199,
+  "phases": {
+    "prep_ms": {
+      "n": 8,
+      "mean_ms": 0.132,
+      "p50_ms": 0.138,
+      "p95_ms": 0.148,
+      "min_ms": 0.083,
+      "max_ms": 0.148
+    },
+    "payload_serialize_ms": {
+      "n": 8,
+      "mean_ms": 0.045,
+      "p50_ms": 0.045,
+      "p95_ms": 0.054,
+      "min_ms": 0.04,
+      "max_ms": 0.054
+    },
+    "api_ms": {
+      "n": 8,
+      "mean_ms": 226.887,
+      "p50_ms": 222.357,
+      "p95_ms": 328.923,
+      "min_ms": 167.363,
+      "max_ms": 328.923
+    },
+    "parse_ms": {
+      "n": 8,
+      "mean_ms": 0.032,
+      "p50_ms": 0.031,
+      "p95_ms": 0.035,
+      "min_ms": 0.029,
+      "max_ms": 0.035
+    },
+    "jsonl_ms": {
+      "n": 8,
+      "mean_ms": 1.372,
+      "p50_ms": 0.627,
+      "p95_ms": 6.595,
+      "min_ms": 0.588,
+      "max_ms": 6.595
+    },
+    "shadow_total_ms": {
+      "n": 8,
+      "mean_ms": 228.489,
+      "p50_ms": 223.223,
+      "p95_ms": 335.701,
+      "min_ms": 168.204,
+      "max_ms": 335.701
+    }
+  },
+  "payload": {
+    "wire_bytes_mean": 3999,
+    "wire_bytes_after_recent_context_drop": 3999,
+    "wire_bytes_if_recent_context_kept": 4216,
+    "saved_by_recent_context_drop": 217,
+    "questions_bytes": 3503,
+    "state_bytes_compact": 447,
+    "questions_share_pct": 87.6,
+    "state_has_recent_context_on_wire": false
+  },
+  "api_error_classes": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "notes": [
+    "API phase uses JevClientResult.latency_ms when key present.",
+    "Parse may use last successful answers or synthetic answers if API failed.",
+    "JSONL writes to log/jev_intent_router_shadow.jsonl (synthetic correlation ids).",
+    "Flags remain default OFF; this script calls client/metrics directly."
+  ]
+}

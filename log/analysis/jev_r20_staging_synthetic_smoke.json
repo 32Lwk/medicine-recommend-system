@@ -1,0 +1,32 @@
+{
+  "base": "https://aws-medicine.yutok.dev",
+  "health": {
+    "status_code": 200,
+    "body": "{\"status\":\"ok\",\"git_commit\":\"8a3c571\"}"
+  },
+  "new_session": {
+    "status_code": 200,
+    "ok": true
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "http_status": 200,
+      "ms": 120463.4,
+      "status_steps": 13,
+      "done_keys": [],
+      "ok": true
+    },
+    {
+      "turn": 2,
+      "http_status": 200,
+      "ms": 120057.8,
+      "status_steps": 12,
+      "done_keys": [],
+      "ok": true
+    }
+  ],
+  "primary_must_remain_off": true,
+  "synthetic_only": true,
+  "transport": "sse"
+}

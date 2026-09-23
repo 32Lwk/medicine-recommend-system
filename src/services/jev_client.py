@@ -178,11 +178,19 @@ def _safe_log(msg: str, *args: Any) -> None:
 
 
 def _compact_outbound_state(state: dict[str, Any]) -> dict[str, Any]:
-    """Drop wire-only empty optionals without mutating the caller-owned state."""
+    """Drop wire-only empty / duplicate optionals without mutating caller state.
+
+    ``recent_context`` is a local eval alias of ``recent_turns``. IntentRouter
+    questions instruct the model to read ``recent_turns`` only; sending both
+    duplicates the turn array on the wire (JSON cannot preserve Python aliases).
+    """
     compact = dict(state)
     meta = compact.get("meta")
     if isinstance(meta, dict) and not meta:
         compact.pop("meta", None)
+    # Prefer recent_turns on the wire; drop the alias duplicate.
+    if "recent_turns" in compact:
+        compact.pop("recent_context", None)
     return compact
 
 

@@ -1,0 +1,15 @@
+{
+  "prep_ms_mean": 20.456,
+  "prep_ms_p95": 0.054,
+  "payload_bytes_mean": 452,
+  "payload_bytes_max": 452,
+  "recent_turns": 2,
+  "meta_keys": [],
+  "api_ran": true,
+  "api_ms": [
+    321.449,
+    217.239,
+    204.451
+  ],
+  "api_ms_mean": 247.713
+}
