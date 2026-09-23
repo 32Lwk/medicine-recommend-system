@@ -54,7 +54,22 @@ Safety/Policy signals (emergency / security / store / counseling Noul questions 
 - Recent turns already trimmed (`_MAX_RECENT_TURNS=2`, `_MAX_RECENT_TURN_CHARS=160`).
 - Shadow worker runs on executor (request path not blocked when async).
 
-## Not implemented (candidates)
+## Post-compact remasure (fragile seed `20260922`, r10)
+
+Artifact: `log/analysis/jev_r20_eval10_r10_postcompact_20260924.*`
+
+| Metric | Value |
+| --- | ---: |
+| Latency CI lower (eligible_warm) | **983.75 ms** (≥900 **Pass**) |
+| mean_diff | 1255.51 ms |
+| rng_sensitivity fraction(ci_low&lt;900) | **0.0** / 50 |
+
+Prior pre-compact CI lower was **898.8** (Not Passed by &lt;2 ms). Compact `recent_context` drop coincides with remasure crossing threshold — treat as **Pass candidate** pending Accuracy Challenger; do not auto-upgrade Gate A formal label alone.
+
+## Staging user-path note
+
+Synthetic SSE chat on AWS staging remains ~120 s/turn for OTC recommend paths (full LLM pipeline). Shadow API local mean ~227 ms and must stay async / fail-open.
+
 
 | Candidate | Why deferred |
 | --- | --- |

@@ -1,28 +1,22 @@
 {
   "program": "R20_AWS_Staging_Activation_Accuracy_Latency",
-  "started_at": "2026-09-24T01:37:00+09:00",
-  "cycle": 1,
+  "updated_at": "2026-09-24T02:05:00+09:00",
   "verdicts": {
+    "aws_staging": "Validated candidate (deployed 8a3c571; synthetic smoke OK; flags returned OFF on :5)",
+    "accuracy_local": "eval10/holdout remasure 100% eligible gate (r3/r10 as documented)",
+    "latency_local": "postcompact CI lower 983.75 ms Pass candidate on fragile seed",
+    "gate_b": "Hard No-Go; H-03/H-04 Open",
     "production_shadow": "Not Ready",
-    "gate_a_accuracy": "Conditional Passed (local synthetic remasure 100%; formal label Supervisor-owned)",
-    "gate_a_latency": "Not Passed on fragile eval_10 r10 seed20260922 (CI low 898.8 < 900)",
-    "gate_b": "Hard No-Go",
-    "privacy_dpa": "Owner-accepted residual for synthetic staging only. Not approved for real-user production data.",
-    "aws_staging": "identity_probe_pending"
+    "privacy_dpa": "Owner-accepted residual for synthetic staging only. Not approved for real-user production data."
   },
-  "priorities": ["accuracy", "latency", "aws_staging_synthetic"],
-  "forbidden": ["push", "PR", "primary ON", "default ON", "D2 production ON", "live", "real-user data"],
-  "flags": {
-    "JEV_ENABLED": false,
-    "JEV_INTENT_ROUTER_SHADOW": false,
-    "JEV_INTENT_ROUTER_PRIMARY": false,
-    "POLICY_ENFORCEMENT_D2": false
+  "staging": {
+    "account_suffix": "6973",
+    "task_family_rev_off": "medicine-recommend-tunnel:5",
+    "image_commit": "8a3c571",
+    "hosts": ["aws-medicine.yutok.dev"]
   },
-  "workers_def": {
-    "payload_cut_recent_context_wire": true,
-    "latency_breakdown_artifact": "log/analysis/jev_r20_latency_breakdown_20260924.json",
-    "accuracy_report": "docs/planning/codex-parallel-jev-20260921/JEV_R20_ACCURACY_REPORT_20260924.md",
-    "latency_report": "docs/planning/codex-parallel-jev-20260921/JEV_R20_LATENCY_REPORT_20260924.md",
-    "committed": false
-  }
+  "commits": ["8f03b03"],
+  "flags_code_default": false,
+  "flags_staging": "OFF on :5",
+  "push": false
 }
