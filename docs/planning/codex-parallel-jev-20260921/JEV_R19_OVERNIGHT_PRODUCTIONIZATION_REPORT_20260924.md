@@ -8,18 +8,18 @@ Gate A-accuracy: Passed candidate (holdout remasure 80/80; formal Owner lock pen
 Gate B: Hard No-Go
 product safety: 未合格
 Critical: 0
-High (Gate B): H-01..H-05 remediation candidates; Go not claimed
+High (Gate B): H-01..H-05 candidates; False-pass Challenger closed two High residuals (crisis detector exception → SF-E1, ambiguous_policy drop) — H-03/H-04 still not Closed; Go not claimed
 Medium: medical residuals + overdose contract etc.
 privacy: BLOCKING (ZDR/account retention/subprocessors)
 AWS staging: DEPLOY_READY=no (auth expired; uniquely identified but not deployed)
 E2E: local persona 24/24 hard-fail pass; AWS E2E skipped
-failure drill: local kill-switch ALL CLEAR; staging drill unproven
+failure drill: local kill-switch ALL CLEAR; shadow injection 8/8; staging drill unproven
 load: not run (AWS blocked)
 circuit: implemented locally
 kill switch: local proven; staging unproven
 rollback: local runbook + rehearsal script; staging unproven
 cost: candidate guards present; Owner budget pending
-commits: c446ab0, 7af0268 (+ prior overnight chain)
+commits: c446ab0 … 669d966 (+ prior overnight chain)
 flags: all False
 push/live: 未実施・禁止
 ```
@@ -27,10 +27,11 @@ push/live: 未実施・禁止
 ## What landed
 
 1. Gate B H-03/H-04 disposition fixes + H-01/H-02/H-05 test/fixture candidates
-2. Shadow circuit/rate/cost guards + PII redact on outbound
-3. TypeSafe primary-source privacy research (still Blocking)
-4. Holdout remasure after SessionOps FN fix
-5. AWS staging uniquely identified; deploy stopped on auth
+2. False-pass Challenger: crisis_detector_error fail-safe + ambiguous_policy under incomplete eval
+3. Shadow circuit/rate/cost guards + PII redact on outbound
+4. TypeSafe primary-source privacy research (still Blocking)
+5. Holdout remasure after SessionOps FN fix
+6. AWS staging uniquely identified; deploy stopped on auth
 
 ## Why still Not Ready
 
