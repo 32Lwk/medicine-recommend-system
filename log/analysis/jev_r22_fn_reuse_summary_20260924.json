@@ -1,0 +1,25 @@
+{
+  "program": "R22",
+  "source": "r21_crosscheck",
+  "summary": {
+    "membership_unknown_total": 0,
+    "critical_fn_total": 0,
+    "high_fn_total": 0,
+    "accuracy_gate_fail_total": 0,
+    "artifacts_n": 9,
+    "present_n": 9
+  },
+  "verdict": {
+    "oracle_critical_fn_pass": true,
+    "oracle_high_fn_pass": false,
+    "oracle_membership_integrity_pass": false,
+    "adversarial_critical_fn_pass": true,
+    "adversarial_high_fn_pass": false,
+    "adversarial_membership_integrity_pass": false,
+    "r21_reuse_critical_fn_pass": true,
+    "r21_reuse_high_fn_pass": true,
+    "r21_reuse_membership_unknown_pass": true,
+    "openai_dual_available": false,
+    "label": "alt-dual Mixed — jev_only reuse Pass + Critical oracle Pass; High oracle gaps on unicode/spaced adversarial (OpenAI dual blocked)"
+  }
+}

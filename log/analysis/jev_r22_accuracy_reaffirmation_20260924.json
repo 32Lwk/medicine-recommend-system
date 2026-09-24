@@ -1,0 +1,152 @@
+{
+  "program": "R22",
+  "reuse_of": "R21 jev_only package",
+  "r21_stamp": "20260923_174144",
+  "application_sha": "f571480",
+  "tooling_sha_note": "HEAD may advance; app not redeployed",
+  "gold_retarget": false,
+  "mode": "jev:minimal only — OpenAI dual blocked (credit_balance_exhausted); see jev_r22_alt_dual_evaluator_20260924.json",
+  "fixture_shas": {
+    "eval_10": {
+      "path": "tests/fixtures/jev_intent_router_eval_10.yaml",
+      "sha256_16": "122f047cd2aaee1f"
+    },
+    "holdout_r17": {
+      "path": "tests/fixtures/jev_intent_router_holdout_r17.yaml",
+      "sha256_16": "209325dfe8680731"
+    },
+    "r21_paraphrase": {
+      "path": "tests/fixtures/jev_holdout_r21/paraphrase.yaml",
+      "sha256_16": "3fa63f5b8ce65edc"
+    },
+    "r21_unicode": {
+      "path": "tests/fixtures/jev_holdout_r21/unicode_evasion.yaml",
+      "sha256_16": "074ed2d046cfffe6"
+    },
+    "r21_persona": {
+      "path": "tests/fixtures/jev_holdout_r21/persona.yaml",
+      "sha256_16": "748c91a728d04821"
+    },
+    "r21_negative": {
+      "path": "tests/fixtures/jev_holdout_r21/negative_control.yaml",
+      "sha256_16": "c8197a73ae2dbd41"
+    }
+  },
+  "runs": [
+    {
+      "population": "eval10",
+      "seed": "seed42",
+      "artifact": "jev_r21_eval10_r10_seed42_20260923_174144.json",
+      "accuracy_gate": "70/70",
+      "accuracy_gate_pct": 100.0,
+      "membership_unknown": 0,
+      "api_error": 0,
+      "fallback": 0,
+      "mode": "jev_only",
+      "evidence_class": "measured_reuse_r21"
+    },
+    {
+      "population": "eval10",
+      "seed": "seed20260922",
+      "artifact": "jev_r21_eval10_r10_seed20260922_20260923_174144.json",
+      "accuracy_gate": "70/70",
+      "accuracy_gate_pct": 100.0,
+      "membership_unknown": 0,
+      "api_error": 0,
+      "fallback": 0,
+      "mode": "jev_only",
+      "evidence_class": "measured_reuse_r21"
+    },
+    {
+      "population": "holdout_r17",
+      "seed": "seed42",
+      "artifact": "jev_r21_holdout_r17_r10_seed42_20260923_174144.json",
+      "accuracy_gate": "80/80",
+      "accuracy_gate_pct": 100.0,
+      "membership_unknown": 0,
+      "api_error": 0,
+      "fallback": 0,
+      "mode": "jev_only",
+      "evidence_class": "measured_reuse_r21"
+    },
+    {
+      "population": "holdout_r17",
+      "seed": "seed20260922",
+      "artifact": "jev_r21_holdout_r17_r10_seed20260922_20260923_174144.json",
+      "accuracy_gate": "80/80",
+      "accuracy_gate_pct": 100.0,
+      "membership_unknown": 0,
+      "api_error": 0,
+      "fallback": 0,
+      "mode": "jev_only",
+      "evidence_class": "measured_reuse_r21"
+    },
+    {
+      "population": "holdout_para",
+      "seed": "seed42",
+      "artifact": "jev_r21_holdout_para_r10_seed42_20260923_174144.json",
+      "accuracy_gate": "70/70",
+      "accuracy_gate_pct": 100.0,
+      "membership_unknown": 0,
+      "api_error": 0,
+      "fallback": 0,
+      "mode": "jev_only",
+      "evidence_class": "measured_reuse_r21"
+    },
+    {
+      "population": "holdout_para",
+      "seed": "seed20260922",
+      "artifact": "jev_r21_holdout_para_r10_seed20260922_20260923_174144.json",
+      "accuracy_gate": "70/70",
+      "accuracy_gate_pct": 100.0,
+      "membership_unknown": 0,
+      "api_error": 0,
+      "fallback": 0,
+      "mode": "jev_only",
+      "evidence_class": "measured_reuse_r21"
+    },
+    {
+      "population": "holdout_unicode",
+      "seed": "seed42",
+      "artifact": "jev_r21_holdout_unicode_r10_seed42_20260923_174144.json",
+      "accuracy_gate": "10/10",
+      "accuracy_gate_pct": 100.0,
+      "membership_unknown": 0,
+      "api_error": 0,
+      "fallback": 0,
+      "mode": "jev_only",
+      "evidence_class": "measured_reuse_r21"
+    },
+    {
+      "population": "holdout_persona",
+      "seed": "seed42",
+      "artifact": "jev_r21_holdout_persona_r10_seed42_20260923_174144.json",
+      "accuracy_gate": "50/50",
+      "accuracy_gate_pct": 100.0,
+      "membership_unknown": 0,
+      "api_error": 0,
+      "fallback": 0,
+      "mode": "jev_only",
+      "evidence_class": "measured_reuse_r21"
+    },
+    {
+      "population": "holdout_neg",
+      "seed": "seed42",
+      "artifact": "jev_r21_holdout_neg_r10_seed42_20260923_174144.json",
+      "accuracy_gate": "40/40",
+      "accuracy_gate_pct": 100.0,
+      "membership_unknown": 0,
+      "api_error": 0,
+      "fallback": 0,
+      "mode": "jev_only",
+      "evidence_class": "measured_reuse_r21"
+    }
+  ],
+  "rollup": {
+    "all_accuracy_gate_100": true,
+    "membership_unknown_total": 0,
+    "api_error_total": 0,
+    "fallback_total": 0
+  },
+  "rationale": "App code f571480..HEAD has no src/config delta; fixtures SHA-pinned and unchanged vs R21 report prefixes (eval_10=122f047cd2aaee1f, r17=209325dfe8680731). Fresh full r10 remasure deferred; R21 JSON reused as measured evidence with explicit fixture SHAs."
+}
