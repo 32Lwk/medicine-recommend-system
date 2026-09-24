@@ -154,6 +154,8 @@ def _detect_overdose_cues(user_text: str) -> bool:
         "過量",
         "大量に飲",
         "薬を大量",
+        "たくさん飲",
+        "沢山飲",
         "オーバードーズ",
         "overdose",
         "全部飲",
@@ -193,6 +195,7 @@ def _high_precision_crisis_markers(user_text: str) -> bool:
     low = text.lower()
     markers = (
         "死にたい",
+        "しにたい",
         "死にたかった",
         "死にたくなっ",
         "消えたい",

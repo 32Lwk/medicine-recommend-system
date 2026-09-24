@@ -21,6 +21,8 @@ def detect_crisis_keywords(user_message):
     crisis_keywords = [
         # 直接的な表現
         '死にたい', '消えたい', '自殺', '希死念慮', '死にたいです', '消えたいです',
+        # R22 medical Critical FN: hiragana / common typo (narrow; not general したい)
+        'しにたい', 'しにたひ', '死にたひ',
         '生きていても意味がない', '生きる意味がない', '生きていても仕方ない',
         'もうだめ', 'だめだ', '終わり', '終わらせたい', '命を絶ちたい',
         'この世から消えたい', '存在したくない', 'いなくなってしまいたい',
