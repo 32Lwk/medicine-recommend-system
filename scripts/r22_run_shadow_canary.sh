@@ -9,8 +9,12 @@ export AWS_PROFILE="${AWS_PROFILE:-default}"
 
 OUT="${1:-log/analysis/jev_r22_persona_canary.json}"
 LIMIT="${LIMIT:-50}"
+PY="${ROOT}/.venv/Scripts/python.exe"
+if [[ ! -x "$PY" && ! -f "$PY" ]]; then
+  PY="python"
+fi
 
-echo "==> R22 canary pipeline start"
+echo "==> R22 canary pipeline start (py=$PY)"
 bash "$ROOT/scripts/r21_staging_shadow_flags.sh" on
 
 # Wait ECS primary completed
@@ -27,7 +31,7 @@ done
 sleep 20
 
 set +e
-python "$ROOT/scripts/r22_staging_persona_canary.py" --wait-stable --limit "$LIMIT" --out "$OUT"
+"$PY" "$ROOT/scripts/r22_staging_persona_canary.py" --wait-stable --limit "$LIMIT" --out "$ROOT/$OUT"
 RC=$?
 set -e
 
@@ -35,7 +39,7 @@ echo "==> Always OFF after canary (rc=$RC)"
 bash "$ROOT/scripts/r21_staging_shadow_flags.sh" off
 
 for i in $(seq 1 24); do
-  if python "$ROOT/scripts/r21_verify_staging_flags.py"; then
+  if "$PY" "$ROOT/scripts/r21_verify_staging_flags.py"; then
     break
   fi
   sleep 10

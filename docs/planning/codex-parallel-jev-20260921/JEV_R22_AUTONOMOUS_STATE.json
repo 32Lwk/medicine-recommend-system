@@ -1,27 +1,23 @@
 {
   "program": "R22_Production_Shadow_Ready_Candidate",
-  "started_at": "2026-09-24T10:19:00+09:00",
-  "phase": 0,
-  "application_deployed_sha": "f571480",
-  "evaluation_tooling_sha": "cbed3c4",
-  "local_head": "cbed3c4",
-  "staging_task": "medicine-recommend-tunnel:13",
-  "sha_mismatch_app": false,
-  "redeploy_required": false,
-  "redeploy_reason": "f571480..cbed3c4 has zero src/config/main/Dockerfile app diff; tooling/docs only",
+  "updated_at": "2026-09-24T11:00:00+09:00",
+  "phase": 7,
+  "application_deployed_sha": "f3af9c3",
+  "staging_task": "medicine-recommend-tunnel:19",
   "flags_staging": {
     "JEV_ENABLED": "0",
     "JEV_INTENT_ROUTER_SHADOW": "0",
     "JEV_INTENT_ROUTER_PRIMARY": "0",
     "POLICY_ENFORCEMENT_D2": "0"
   },
-  "alarms": "medicine-recommend-jev-* x8 OK",
-  "deployment": "PRIMARY COMPLETED running=1",
+  "canary": {"scored_ok": "50/50", "wake_503": 0, "timeout": 0},
+  "shadow_cw_attempts_approx": 22,
   "verdicts": {
     "production_shadow": "Not Ready",
     "gate_b": "Hard No-Go",
-    "h03_h05": "Conditional Closed-candidate"
+    "h03_h05": "Conditional Closed-candidate",
+    "canary_harness": "Pass candidate"
   },
-  "forbidden": ["push", "PR", "primary", "prod_d2", "live"],
-  "cycle": 0
+  "forbidden_done": ["no_push", "no_primary", "no_prod_d2", "no_live"],
+  "stop_reason": "Gate B Conditional only; mismatch triage / Closed agreement unmet"
 }

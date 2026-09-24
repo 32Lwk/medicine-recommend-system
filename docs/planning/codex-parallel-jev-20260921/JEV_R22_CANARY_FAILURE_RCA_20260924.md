@@ -29,7 +29,8 @@ Body title (truncated, no PII): `ステージングを起動しています`.
 ### inferred
 
 - Flag ON registered new task revision (`:10`); canary began when `/health` looked ok but edge still serving **staging-starting** interstitial (Cloudflare Tunnel / stop-start guard / rolling replace).
-- Not ECS OOM, not LLM 503, not Jev queue — HTML interstitial proves **deploy/warm gate**, not app handler.
+- **Layer confirmed in code**: `workers/src/index.js` returns STARTING_HTML with status 503 when origin fetch fails or origin status ≥500 (ECS rolling replace after env patch).
+- Not ECS OOM, not LLM 503, not Jev queue — HTML interstitial proves **edge wake gate during task replace**, not app chat handler.
 
 ### Not claimed
 
