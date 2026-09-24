@@ -1,0 +1,27 @@
+{
+  "program": "R22_Production_Shadow_Ready_Candidate",
+  "started_at": "2026-09-24T10:19:00+09:00",
+  "phase": 0,
+  "application_deployed_sha": "f571480",
+  "evaluation_tooling_sha": "cbed3c4",
+  "local_head": "cbed3c4",
+  "staging_task": "medicine-recommend-tunnel:13",
+  "sha_mismatch_app": false,
+  "redeploy_required": false,
+  "redeploy_reason": "f571480..cbed3c4 has zero src/config/main/Dockerfile app diff; tooling/docs only",
+  "flags_staging": {
+    "JEV_ENABLED": "0",
+    "JEV_INTENT_ROUTER_SHADOW": "0",
+    "JEV_INTENT_ROUTER_PRIMARY": "0",
+    "POLICY_ENFORCEMENT_D2": "0"
+  },
+  "alarms": "medicine-recommend-jev-* x8 OK",
+  "deployment": "PRIMARY COMPLETED running=1",
+  "verdicts": {
+    "production_shadow": "Not Ready",
+    "gate_b": "Hard No-Go",
+    "h03_h05": "Conditional Closed-candidate"
+  },
+  "forbidden": ["push", "PR", "primary", "prod_d2", "live"],
+  "cycle": 0
+}
