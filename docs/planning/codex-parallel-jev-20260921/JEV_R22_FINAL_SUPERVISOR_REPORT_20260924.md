@@ -126,3 +126,8 @@ Unrelated AWS ops dirt / tmp / notebooklm — not staged.
 4. Push timing (still forbidden)  
 
 **push / Primary / production D2 / live: not performed.**
+
+## Errata (Supervisor, post-deploy)
+
+Workers who probed against `f571480` recorded Critical FN open for `しにたい` / `薬をたくさん飲んだ`. Those cues are **latched and deployed on `f3af9c3`** (local probe: crisis/emergency True). Gate B remains **Hard No-Go** / Conditional Closed-candidate only. [False-pass](13299549) canary 50/50 denial is superseded by measured `jev_r22_persona_canary.json` (50/50 after warm-up); Ready still denied on Gate B / mismatch residuals.
+
