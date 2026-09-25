@@ -27,32 +27,75 @@ GCP 本番 `medicine.yutok.dev` には影響なし。AWS ステージング `aws
 
 ## CLI ログイン
 
-旧プロファイル `admin` / `medicine-recommend-dev` には**旧アカウントのアクセスキー**が残っています。
-`aws login` する前に、どちらかを選んでください。
+旧プロファイル `admin` / `admin-cli` / `medicine-recommend-dev` には**旧アカウントのアクセスキー**が残っています。
+Access Key が残ったまま同名で `aws login` すると次で失敗します（2026-09-24 再現）:
 
-### 方法 A: 新プロファイル名で login（推奨）
+```text
+Profile 'medicine-recommend-dev' is already configured with Access Key credentials.
+```
+
+`default` は `login_session`（新アカウント `620992446973` root）向け。セッション期限切れ時は:
+
+```text
+Your session has expired. Please reauthenticate using 'aws login'.
+```
+
+**推奨（診断 → 再ログイン）**:
+
+```powershell
+.\scripts\aws-login-staging.ps1              # 原因表示のみ
+.\scripts\aws-login-staging.ps1 -Login       # default でブラウザ login
+# 同名プロファイルを aws login 可能にしたい場合のみ:
+.\scripts\aws-login-staging.ps1 -QuarantineStaleKeys -Login -Profile medicine-recommend-dev
+```
+
+スクリプト既定プロファイルは **`default`**（`scripts/lib/aws_common.sh` / `scripts/aws-env.ps1`）。
+
+### 方法 A: 新プロファイル名で login（キーを残す）
 
 ```powershell
 aws login --profile admin-620992446973
 aws login --profile medicine-recommend-dev-620992446973
 ```
 
-### 方法 B: 旧キーを削除して同名プロファイルで login
-
-`~/.aws/credentials` から `[admin]` と `[medicine-recommend-dev]` の
-`aws_access_key_id` / `aws_secret_access_key` 行を削除してから:
+### 方法 B: 旧キーを隔離して同名プロファイルで login
 
 ```powershell
-aws login --profile admin
+.\scripts\aws-login-staging.ps1 -QuarantineStaleKeys
+# credentials は .bak.* / credentials.legacy-old-account.* に退避
 aws login --profile medicine-recommend-dev
 ```
 
-### 方法 C: 移行作業中は default（root login）を使用
+手動なら `~/.aws/credentials` から `[admin]` / `[admin-cli]` / `[medicine-recommend-dev]` の
+`aws_access_key_id` / `aws_secret_access_key` 行を削除してから同名で `aws login`。
+
+### 方法 C: 移行作業中は default（root login）を使用（最短）
 
 ```powershell
-aws login
-aws sts get-caller-identity
+aws login --profile default
+# または: .\scripts\aws-login-staging.ps1 -Login
+aws sts get-caller-identity --profile default
 # Account: 620992446973
+```
+
+### ブラウザ 400「要求の形式が正しくありません」
+
+表示文言は Cookie/古いリンクだが、実体は多くの場合次のいずれか:
+
+1. **ブラウザのコンソールセッションに `SignInLocalDevelopmentAccess` が無い**（IAM）。root は追加ポリシー不要（AWS 公式）。
+2. **スイッチロール前のベースアカウント**で `aws login` の認可が走っている。
+3. **古い authorize URL** の再利用 / Cookie 汚染。
+
+対処:
+
+```powershell
+# 1) プライベートウィンドウで先に 620992446973 の Console にログイン
+#    （root、または SignInLocalDevelopmentAccess 付き IAM。スイッチロールなら先に切替）
+# 2) リポジトリ直下で fresh login（--remote 推奨）
+cd D:\Programing\medicine-recommend
+.\scripts\aws-login-staging.ps1 -ClearLoginCache -Login -Remote
+# 3) ターミナルに出た「新しい」URL だけを開く（400 になった旧タブは閉じる）
+.\scripts\aws-login-staging.ps1 -Show400Help   # 詳細
 ```
 
 ## 初回構築手順（新アカウント向け）

@@ -2,7 +2,7 @@
 # Amazon Personalize — 最小 Dataset Group + Campaign + Event Tracker
 #
 # Usage:
-#   # AWS_PROFILE=medicine-recommend-dev（省略可 — aws_common.sh 既定）
+#   # AWS_PROFILE=default（省略可 — aws_common.sh 既定）
 #   ./scripts/setup-aws-personalize.sh
 #
 set -euo pipefail

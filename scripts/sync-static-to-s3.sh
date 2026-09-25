@@ -2,7 +2,7 @@
 # static/ を S3 に同期（CloudFront オリジン）
 #
 # Usage:
-#   # AWS_PROFILE=medicine-recommend-dev（省略可 — aws_common.sh 既定）
+#   # AWS_PROFILE=default（省略可 — aws_common.sh 既定）
 #   ./scripts/sync-static-to-s3.sh
 #   ./scripts/sync-static-to-s3.sh --invalidate   # CloudFront キャッシュ削除も
 #

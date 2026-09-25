@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # One-time: IAM roles, S3, CodeStar connection, CodeBuild, CodePipeline
 # Usage: ./scripts/setup-aws-codepipeline.sh
-# AWS_PROFILE=medicine-recommend-dev（省略可 — aws_common.sh 既定）
+# AWS_PROFILE=default（省略可 — aws_common.sh 既定）
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

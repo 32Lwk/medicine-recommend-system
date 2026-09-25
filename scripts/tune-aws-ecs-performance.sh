@@ -7,7 +7,7 @@
 #   - GUNICORN_WORKERS=1 → 同時リクエスト 1 本のみ
 #
 # Usage:
-#   # AWS_PROFILE=medicine-recommend-dev（省略可 — aws_common.sh 既定）
+#   # AWS_PROFILE=default（省略可 — aws_common.sh 既定）
 #   ./scripts/tune-aws-ecs-performance.sh
 #
 set -euo pipefail

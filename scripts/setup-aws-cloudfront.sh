@@ -2,7 +2,7 @@
 # S3 + CloudFront — static/ CDN（AWS ステージング向け）
 #
 # Usage:
-#   # AWS_PROFILE=medicine-recommend-dev（省略可 — aws_common.sh 既定）
+#   # AWS_PROFILE=default（省略可 — aws_common.sh 既定）
 #   ./scripts/setup-aws-cloudfront.sh
 #   # 出力された STATIC_CDN_BASE_URL を ECS env に設定
 #

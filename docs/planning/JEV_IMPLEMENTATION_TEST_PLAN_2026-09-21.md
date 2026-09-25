@@ -1,10 +1,18 @@
 # Jev 実装計画・テスト計画更新
 
 作成日: 2026-09-21  
+更新: 2026-09-22 — Agent G: Gate A-accuracy live `012129` = **Not Passed** 同期。旧「live 未完」を廃止  
 更新: 2026-09-21 — Phase 0 契約凍結同期 + 実装後ドリフト是正（Gate A-code/accuracy 二層、§8.4 誤記修正）  
 対象: `medicine-recommend` Chat Pipeline v2 / IntentRouter / classifier 層  
 関連セッション: `01a0ba8c-b8e9-7f83-afdd-9e6771b85121`  
 契約凍結サマリ: `docs/planning/codex-parallel-jev-20260921/JEV_PHASE0_CONTRACT_FREEZE_20260921.md`
+
+
+> ## ERRATUM（2026-09-22 Agent G）
+>
+> **正式判定:** Phase1 local shadow / Gate A-code = **Passed**。Gate A-accuracy = **Not Passed**（`docs/planning/codex-parallel-jev-20260921/JEV_GATE_A_ACCURACY_VERDICT_20260922.md`、live `log/analysis/jev_intent_router_eval_10_20260922_012129.*`）。Gate B / primary / staging / prod = **Hard No-Go**。Focus 本配線 = **No-Go**。
+> §2 の `013619` 数値は **smoke / 履歴**。Gate クローズに使わない。実測/推定ラベルは verdict と監査報告に従う。
+> 禁止語: 条件付きPassed / ほぼPassed / 実質合格。
 
 ## 1. 指定 ID の確認結果
 
@@ -318,7 +326,7 @@ Phase 1: IntentRouter local shadow implementation
 - state: 契約名 `recent_turns` + eval 互換 `recent_context` alias。`deterministic_signals` は shadow 比較用に配線（実行不変）。corr clear 実装済。
 - shadow log: `log/jev_intent_router_shadow.jsonl`。
 - 既存 10 ケースは **pilot のみ**。expanded fixture は **draft — CI hard-fail 禁止**。
-- **Gate A-accuracy（live 再評価）未完。Gate B（dev shadow）は Hard No-Go。**
+- **Gate A-accuracy（live `012129`）= Not Passed。Gate B（dev shadow）は Hard No-Go。Focus 本配線 No-Go。**
 - 「精度検証が済み次第に自動で dev へ」は **禁止**。Gate B 条件を全部満たすまで flag ON しない。
 
 Phase 2: IntentRouter primary canary
@@ -517,7 +525,8 @@ cost: **OpenAI IntentRouter saved（≥70%）** と **Jev 込み総分類費**�
 
 参照: `JEV_PHASE1_LOCAL_SHADOW_SUPERVISOR_REPORT_20260921.md`。
 
-- Gate A-code **Passed**。Gate A-accuracy **Not Passed**。Gate B **Hard No-Go**。
-- 実装済: alias、`deterministic_signals` 配線、corr clear。
-- 残債: live 再評価、医療ラベル承認、`medicine_qa_focus` router 注入、cost 分離実測、eval スクリプトの契約名寄せ、eval の `TYPESAFE` fallback 残存。
+- Gate A-code **Passed**。Gate A-accuracy **Not Passed**（正本 live `012129`）。Gate B **Hard No-Go**。Focus 本配線 **No-Go**。
+- 実装済: alias、`deterministic_signals` 配線、corr clear。live 再評価は実行済だがゲート未達。
+- 残債: A-accuracy 未達項目（CI 保守・コスト純減）、医療ラベル承認、`medicine_qa_focus` router 注入、OpenAI cost **実測**突合、eval の `TYPESAFE` fallback 残存。
+- 監査: `docs/planning/codex-parallel-jev-20260921/JEV_DOCS_AUDIT_AGENT_G_20260922.md`
 - Test Plan 旧 §8.4「いま: dev shadow まで」は **誤記**（本版で削除）。現状は local のみ。

@@ -4,12 +4,12 @@ AWS ステージング `aws-medicine.yutok.dev` / `aws.medicine.yutok.dev` 向�
 
 > **2026-08-07**: ランタイム入口は **ECS Express + ALB + WAF** から **Fargate + Cloudflare Tunnel** に移行。WAF / ALB はステージング入口から **削除済**。詳細: [AWS_FARGATE_TUNNEL.md](./AWS_FARGATE_TUNNEL.md)
 
-**CLI プロファイル**: 新アカウント作業は `AWS_PROFILE=default`（`620992446973`）。旧バックアップは `medicine-recommend-dev`（`290780119994`）。`scripts/lib/aws_common.sh` 参照。
+**CLI プロファイル**: 新アカウント作業は `AWS_PROFILE=default`（`620992446973`、`aws login`）。旧 Access Key 残骸は `medicine-recommend-dev` / `admin`（`290780119994`、多くの場合無効）。`scripts/lib/aws_common.sh` 既定 = **`default`**。認証診断: `.\scripts\aws-login-staging.ps1`。
 
 ## 一括セットアップ
 
 ```bash
-# AWS_PROFILE の export は省略可（aws_common.sh 既定 = medicine-recommend-dev）
+# AWS_PROFILE の export は省略可（aws_common.sh 既定 = default）
 chmod +x scripts/setup-aws-infra.sh scripts/setup-aws-*.sh scripts/sync-static-to-s3.sh
 ./scripts/setup-aws-infra.sh
 ```

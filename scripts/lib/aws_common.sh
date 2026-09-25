@@ -5,13 +5,17 @@
 # Git Bash (MSYS): prevent /ecs/... style args from becoming C:/Program Files/Git/ecs/...
 export MSYS2_ARG_CONV_EXCL="${MSYS2_ARG_CONV_EXCL:-*}"
 
-# ローカル CLI 既定プロファイル（~/.aws/credentials の [medicine-recommend-dev]）
+# ローカル CLI 既定プロファイル:
+#   新アカウント staging (620992446973) → default（login_session / aws login）
+#   旧アカウント残骸の Access Key プロファイル medicine-recommend-dev / admin は
+#   InvalidClientTokenId または「already configured with Access Key credentials」で
+#   aws login 不能になりやすい。明示指定時のみ使用。
 # CodeBuild / ECS 等では IAM ロールを使うため profile を付けない。
 if [[ -z "${AWS_PROFILE:-}" ]]; then
   if [[ -n "${CODEBUILD_BUILD_ID:-}" || -n "${AWS_CONTAINER_CREDENTIALS_RELATIVE_URI:-}" || -n "${AWS_LAMBDA_FUNCTION_NAME:-}" ]]; then
     :
   else
-    export AWS_PROFILE="medicine-recommend-dev"
+    export AWS_PROFILE="default"
   fi
 fi
 

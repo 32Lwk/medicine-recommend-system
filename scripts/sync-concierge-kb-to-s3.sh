@@ -2,7 +2,7 @@
 # Concierge KB ソースを S3 に同期
 #
 # Usage:
-#   # AWS_PROFILE=medicine-recommend-dev（省略可 — aws_common.sh 既定）
+#   # AWS_PROFILE=default（省略可 — aws_common.sh 既定）
 #   ./scripts/sync-concierge-kb-to-s3.sh
 #
 set -euo pipefail

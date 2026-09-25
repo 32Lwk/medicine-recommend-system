@@ -2,7 +2,7 @@
 # ECS Express: タスクサイズアップ + min 2 タスク + オートスケール
 #
 # Usage:
-#   # AWS_PROFILE=medicine-recommend-dev（省略可 — aws_common.sh 既定）
+#   # AWS_PROFILE=default（省略可 — aws_common.sh 既定）
 #   ./scripts/tune-aws-ecs-capacity.sh
 #
 # 上書き例:

@@ -2,7 +2,7 @@
 # Bedrock Knowledge Base（Concierge RAG）— S3 同期 + KB 作成/更新
 #
 # Usage:
-#   # AWS_PROFILE=medicine-recommend-dev（省略可 — aws_common.sh 既定）
+#   # AWS_PROFILE=default（省略可 — aws_common.sh 既定）
 #   ./scripts/setup-aws-bedrock-kb.sh
 #
 set -euo pipefail

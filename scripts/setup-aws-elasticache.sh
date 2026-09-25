@@ -2,7 +2,7 @@
 # ElastiCache Serverless (Redis) — ECS VPC 内
 #
 # Usage:
-#   # AWS_PROFILE=medicine-recommend-dev（省略可 — aws_common.sh 既定）
+#   # AWS_PROFILE=default（省略可 — aws_common.sh 既定）
 #   ./scripts/setup-aws-elasticache.sh
 #
 set -euo pipefail

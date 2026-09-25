@@ -2,7 +2,7 @@
 # AWS WAF v2 — ALB に Web ACL アタッチ
 #
 # Usage:
-#   # AWS_PROFILE=medicine-recommend-dev（省略可 — aws_common.sh 既定）
+#   # AWS_PROFILE=default（省略可 — aws_common.sh 既定）
 #   ./scripts/setup-aws-waf.sh
 #
 set -euo pipefail

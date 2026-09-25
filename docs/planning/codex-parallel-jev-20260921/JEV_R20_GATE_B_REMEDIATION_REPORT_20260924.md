@@ -1,19 +1,17 @@
-# JEV R20 Gate B Remediation Report (WIP)
+# JEV R20 Gate B Remediation Report (superseded by R21)
 
 **Date**: 2026-09-24  
-**Verdict**: Gate B remains **Hard No-Go**. H-03/H-04 stay **Open** (not Closed).
+**Note**: R20 left H-03/H-04 Open. See `JEV_R21_GATE_B_FINAL_REPORT_20260924.md` for Closed-candidate status (not Owner Go).
 
-## Status
+## Status (historical R20)
 
 | ID | Status | Notes |
 | --- | --- | --- |
 | H-01 | Candidate | D2 staging ON only; default OFF |
 | H-02 | Candidate | pending-human fixtures only |
-| H-03 | Open | False-pass residuals remain (FN/ZW, adapter SF-E1) |
-| H-04 | Open | Paraphrase SI + non-crisis detector failure residual |
-| H-05 | Candidate | HTTP E2E exists; SafetyGate mocked risk |
-
-R19 Challenger fixes (`669d966`) remain; no new Gate B Closed claim in R20.
+| H-03 | Open → see R21 | False-pass residuals addressed in R21 candidate |
+| H-04 | Open → see R21 | Paraphrase SI residual addressed in R21 candidate |
+| H-05 | Candidate → see R21 | SafetyGate mocks removed in R21 |
 
 ## Non-claims
 

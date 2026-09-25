@@ -28,9 +28,10 @@ curl -s https://origin-aws-medicine.yutok.dev/health
 
 ## 前提（IAM）
 
-- [x] `aws sts get-caller-identity --profile medicine-recommend-dev` が成功
-- [ ] Admin に **GUI で必要な最大権限**を付与（任意 — Bedrock KB 初回は `AWS_PROFILE=admin` 推奨）
-- [ ] `medicine-recommend-dev` に [AWS_IAM_MEDICINE_RECOMMEND_DEV_EXTRA.json](./AWS_IAM_MEDICINE_RECOMMEND_DEV_EXTRA.json) をアタッチ（`iam:CreateRole` / Bedrock KB CLI 用）
+- [ ] `.\scripts\aws-login-staging.ps1 -Login` 後、`aws sts get-caller-identity --profile default` が **Account `620992446973`** で成功
+- [ ] （任意）同名 `medicine-recommend-dev` を使う場合は先に `-QuarantineStaleKeys`（Access Key 残存だと `aws login` が Configuration エラー）
+- [ ] Admin に **GUI で必要な最大権限**を付与（任意 — Bedrock KB 初回は `AWS_PROFILE=admin` 推奨。要 quarantine または新プロファイル名）
+- [ ] `medicine-recommend-dev`（新アカウント側）に [AWS_IAM_MEDICINE_RECOMMEND_DEV_EXTRA.json](./AWS_IAM_MEDICINE_RECOMMEND_DEV_EXTRA.json) をアタッチ（`iam:CreateRole` / Bedrock KB CLI 用）
 - [ ] Git Bash 利用時は [AWS_INFRA.md](./AWS_INFRA.md) の MSYS 注意を確認
 
 ## Secrets Manager（Fargate Tunnel — 移行後）
@@ -62,7 +63,7 @@ curl -s https://origin-aws-medicine.yutok.dev/health
 ## Phase 1 — インフラ
 
 ```bash
-export AWS_PROFILE=medicine-recommend-dev
+export AWS_PROFILE=default
 ./scripts/setup-aws-infra.sh
 ```
 
@@ -77,7 +78,7 @@ export AWS_PROFILE=medicine-recommend-dev
 ECS env 反映:
 
 ```bash
-# ECS Express（推奨 — medicine-recommend-dev プロファイル）
+# ECS Express（レガシー — AWS_PROFILE=default）
 STATIC_CDN_BASE_URL=$(cat scripts/.aws-static-cdn-url)
 STATIC_CDN_BASE_URL=$STATIC_CDN_BASE_URL ./scripts/update-aws-express-env.sh
 

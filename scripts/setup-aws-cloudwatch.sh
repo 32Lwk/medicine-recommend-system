@@ -2,7 +2,7 @@
 # CloudWatch Logs（ECS awslogs）+ アラーム
 #
 # Usage:
-#   # AWS_PROFILE=medicine-recommend-dev（省略可 — aws_common.sh 既定）
+#   # AWS_PROFILE=default（省略可 — aws_common.sh 既定）
 #   ./scripts/setup-aws-cloudwatch.sh
 #
 set -euo pipefail
@@ -123,6 +123,14 @@ aws cloudwatch put-metric-alarm \
   "${alarm_actions[@]}" \
   --region "$AWS_REGION" 2>/dev/null || echo "WARN: Pipeline alarm skipped"
 
+# Optional: Jev shadow observability alarms (R21). Never flips JEV flags / no canary.
+# Opt-in only — default skip so existing callers stay unchanged.
+if [[ "${SETUP_JEV_CW:-false}" == "true" ]]; then
+  echo "==> SETUP_JEV_CW=true — r21 Jev CloudWatch alarms"
+  bash "$ROOT/scripts/r21_setup_jev_cloudwatch.sh"
+fi
+
 echo ""
 echo "Done. Log group: ${LOG_GROUP} (retention ${RETENTION_DAYS}d)"
 echo "Optional: export ALARM_SNS_TOPIC_ARN=arn:aws:sns:... and re-run for notifications"
+echo "Optional Jev: SETUP_JEV_CW=true ./scripts/setup-aws-cloudwatch.sh (or scripts/r21_setup_jev_cloudwatch.sh)"

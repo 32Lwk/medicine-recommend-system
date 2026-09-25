@@ -1,0 +1,223 @@
+2026-09-21|b706613|feat(jev): close Phase1C live eval PDCA and advance Focus next-flow
+2026-09-21|b536620|feat(routing): add Jev IntentRouter Phase 1 local shadow (default OFF)
+2026-09-20|7c5c662|docs: add Jev introduction analysis and intent-router eval harness
+2026-08-29|40c8a1f|chore: sync AWS log exports and contest capacity state
+2026-08-08|2db10fa|fix(ops): point GCP dev trigger at cloudbuild.yaml for GIT_COMMIT env sync
+2026-08-08|4c116b3|fix: flush trailing SSE buffer on Safari and forward Worker POST bodies
+2026-08-08|7027dc3|fix: restore medicine thread continuation before Physical routing and sync CI tests
+2026-08-08|a33a34c|feat: Physical NLU refinement, no_candidates UX, and E2E docs/RAG sync
+2026-08-08|cddca4a|perf: Tier1 latency gates and targeted E2E test map
+2026-08-08|bd501be|feat: expand GPT diverse personas and context-aware follow-up QA
+2026-08-08|e636c93|feat: improve GPT E2E follow-up routing and patient sim CI gate
+2026-08-07|0f4e7fa|feat: Cloud Run-like staging with auto idle stop and single URL
+2026-08-07|1d12e64|fix: add lambda:InvokeFunction for public Function URL
+2026-08-07|1934842|fix: move wrangler routes above [vars] section
+2026-08-06|4926ed2|fix: put Worker ORIGIN_URL/WAKE_API_URL in wrangler.toml vars
+2026-08-06|d5280a4|fix: use aws-medicine.yutok.dev for Wake Worker route
+2026-08-06|5881bdb|feat: add AWS wake-on-access via Cloudflare Worker and Lambda
+2026-08-06|a2b3d11|chore: sync log/ artifacts from AWS migration and staging ops
+2026-08-06|40260f2|fix: enforce ECS cold-start with autoscaling min/max zero on stop
+2026-08-06|f908d0d|fix: write budget staged-actions JSON with Windows-safe paths
+2026-08-06|5d5ea3f|fix: export account id when writing budget staged-actions JSON
+2026-08-06|5471c41|feat: AWS cost ops 窶・WAF removal, \ budget, cold-start default
+2026-08-06|6ef5a9d|fix: harden AWS custom domain TLS and document staging cost plan
+2026-08-06|280df63|docs: update AWS migration runbook after DNS and OAuth completion
+2026-08-06|6a40759|feat: migrate AWS staging to account 620992446973
+2026-08-05|e3c16a6|chore: AWS post-deploy architecture E2E script and 6/6 results
+2026-08-05|7de029f|fix: 謦､蟒・GCP 髱櫁｡ｨ遉ｺ譁ｹ驥昴＠繧ｯ繝ｭ繧ｹ繧ｯ繝ｩ繧ｦ繝画橿陦灘屓遲斐ｒ邨ｱ荳
+2026-08-05|3863207|test: fix operator card E2E false positive on disclaimer text
+2026-08-05|cc15310|fix: contact channel routing, inline operator card, and UI message order
+2026-08-04|4e40f90|chore: add AWS medicine comparison E2E script and post-deploy pass report
+2026-08-04|d6d48e1|chore: sync E2E pass report, AWS contest slides, and log artifacts
+2026-08-04|5324b5e|fix: RequestSafeSession 縺ｧ medicine QA 荳紋ｻ｣繝医・繧ｯ繝ｳ縺御ｿ晏ｭ倥＆繧後↑縺・撫鬘・2026-08-04|43722e4|fix: 豈碑ｼゲ&A繧ｿ繧､繝繧｢繧ｦ繝郁ｧ｣豸医→ concierge AWS 繧ｳ繝ｳ繝・Φ繝・峩譁ｰ
+2026-08-03|647d073|docs: AWS contest multiagent pdf-style 繧ｹ繝ｩ繧､繝芽ｪｬ譏弱ｒ霑ｽ險・2026-08-03|ee97c22|feat: Windows dev server謾ｹ蝟・・Q&A陬ｽ蜩∬｡粂TML繝ｻLocal RAG warmup
+2026-08-03|f4967ec|feat: 豈碑ｼゲ&A繝ｫ繝ｼ繝・ぅ繝ｳ繧ｰ蠑ｷ蛹悶・OTC逕ｻ蜒上Ξ繝薙Η繝ｼ繝ｻ蟆丞・蛻・｡槫勣
+2026-08-01|454d170|chore: sync OTC image versions, AWS contest docs, and log artifacts
+2026-08-01|5c559e8|feat: restore counsel LLM for Japanese personalized advice
+2026-08-01|507d7cd|fix: 繝舌ヵ繧｡繝ｪ繝ｳ縺九●EX骭逑ｶ縺ｮOTC逕ｻ蜒上ｒ豁｣縺励＞繝代ャ繧ｱ繝ｼ繧ｸ縺ｫ蟾ｮ縺玲崛縺・2026-07-31|3da910f|docs: AWS staging complete draw.io layout update
+2026-07-31|038d1be|docs: add accurate AWS architecture and flowchart PNGs (arch-v2, flow-v2)
+2026-07-31|6e169ae|docs: AWS 蜈ｨ繧ｵ繝ｼ繝薙せ邨ｱ蜷医い繝ｼ繧ｭ繝・け繝√Ε蝗ｳ縺ｨ逕滓・ PNG 繧定ｿｽ蜉
+2026-07-31|d61ac6f|docs: AWS 繧ｹ繝・・繧ｸ繝ｳ繧ｰ邨ｱ蜷医い繝ｼ繧ｭ繝・け繝√Ε蝗ｳ縺ｨ GCP 繝ｭ繧ｰ蛻・梵謌先棡迚ｩ繧定ｿｽ蜉
+2026-07-29|e909a8c|feat: 豕募漁讓ｪ譁ｭ豈碑ｼ・RAG繝ｻSSE 蝗槫ｾｩ蠑ｷ蛹悶・Concierge 蠢懃ｭ秘・ｺ丞宛蠕｡
+2026-07-28|0cd0970|fix: Docker 繝薙Ν繝峨〒 medicine KB 逕滓・蜑阪↓ src/ 繧偵さ繝斐・
+2026-07-28|27730ec|fix: Cloud Build 縺ｮ Python 繝吶・繧ｹ繧､繝｡繝ｼ繧ｸ繧・mirror.gcr.io 縺ｫ蛻・崛
+2026-07-28|6d9ba23|feat: Concierge Meta KB L3 螳牙ｮ壼喧繝ｻLocal RAG 蝗ｺ螳壹・enterprise/legal FAQ
+2026-07-28|8114743|feat: Google Cloud TTS縲∝些讖滓髪謠ｴUI縲￣MDA謌仙・繧ｯ繝ｩ繧ｦ繝牙叙蠕励ヽAG諡｡蠑ｵ
+2026-07-28|38603e2|fix: prevent stale SSE stream_result from blocking second chat turn
+2026-07-28|e7c34dd|docs: raw 繝ｭ繧ｰ GitHub 蛻ｶ髯舌↓髢｢縺吶ｋ豕ｨ險倥ｒ繝ｬ繝昴・繝医↓霑ｽ蜉
+2026-07-28|dd72875|chore: 繝・・繝ｭ繧､蠕・E2E繝ｻGCP 繝ｭ繧ｰ隗｣譫舌Ξ繝昴・繝・(v3)
+2026-07-28|a774afd|fix: defer restoreSubmitButton until getSidFromCookie is initialized
+2026-07-28|d24f4f7|feat: 霑比ｿ｡驕・ｻｶ謾ｹ蝟・v3・・SE/Upstash/LLM dedup/繝輔Ο繝ｳ繝・session豺ｷ邱夲ｼ・2026-07-28|91ead57|docs: add AWS architecture draw.io diagrams and generator script
+2026-07-27|19bcb8e|feat: add medicine QA eligibility gate, about redesign, and routing e2e tests
+2026-07-27|cec79d9|fix: skip Local RAG retrieve when MEDICINE_RAG_PROVIDER=none
+2026-07-27|7e3325d|fix(chat): skip counsel LLM and duplicate physical RB preview on prod path
+2026-07-27|8736bdb|fix(chat): bound explain LLM and skip counsel during SSE
+2026-07-27|516cf5d|fix(chat): cap Medicine KB augment latency and harden explain fallback
+2026-07-27|6d34e9c|fix(chat): recover from SSE timeout and reduce prod polling latency
+2026-07-26|0fd8593|fix(deploy): prefer Cloud Run GIT_COMMIT env over stale build-meta
+2026-07-26|5105e9b|chore: retry GCP deploy after ECR rate limit
+2026-07-26|88181e7|fix(deploy): write .ci-commit-sha for build-meta when build-args are absent
+2026-07-26|318af00|fix(deploy): pass COMMIT_SHA build-arg for build-meta in Cloud Build
+2026-07-26|7421c02|fix(deploy): reset build-meta.json in CI when GIT_COMMIT is set
+2026-07-26|1f1a8e4|fix(deploy): invalidate build-meta cache when GIT_COMMIT changes
+2026-07-26|9d718c0|chore: empty commit to benchmark deploy cache on second run
+2026-07-26|de0a517|perf(deploy): speed up AWS/GCP builds with Docker cache and parallel post_deploy
+2026-07-26|c3381e5|fix(qa): run product_image QA before KB/LLM to avoid SSE timeout
+2026-07-26|388694c|fix(qa): disable provisional streaming bubble and fix OTC image display on GCP
+2026-07-26|d98352e|fix(deploy): remove Dockerfile .git dependency for CodeBuild
+2026-07-26|2813126|fix: limit Heptagon budget alerts to 90% and above
+2026-07-26|fa8f763|docs(ui): refresh dev onboarding progress checklist
+2026-07-26|9e33433|feat: add AWS Budget staged cost reduction via SNS and Lambda
+2026-07-26|d6332e5|fix(deploy): resolve GCP onboarding commit/date from git at Docker build
+2026-07-26|f2ea59b|Merge branch 'cursor/tech-qa-context-brand-pin-4858'
+2026-07-26|4303990|docs: CHANGELOG繝ｻMedicine QA/Concierge 謚陦捺枚譖ｸ繧・253/253 邨先棡縺ｧ譖ｴ譁ｰ
+2026-07-26|5cb61a2|test(qa): GPT螟壹ち繝ｼ繝ｳ蜷ｫ繧繝ｭ繝舌せ繝医ロ繧ｹ隧穂ｾ｡ 253/253
+2026-07-26|e71086b|feat(qa): LLM陬懷ｮ後→繝ｩ繧､繝輔せ繝・・繧ｸ譁・ц縺ｧ蟷ｴ鮨｢繝ｻ諢丞峙蛻､螳壹ｒ荳闊ｬ蛹・2026-07-26|350042a|docs: note GPT fidelity robustness 234/234 in CHANGELOG
+2026-07-26|17d8310|test(qa): live GPT conversation fidelity and multilingual intent coverage
+2026-07-26|4ef4fcc|chore: sync log/ after robustness expansion eval
+2026-07-26|a3085e5|test(qa): expand everyday/conversation-sim coverage and generalize intent routing
+2026-07-26|ef6daa5|fix(routing): treat meta follow-ups by intent family, not phrase lists
+2026-07-26|53ff499|fix(qa): session brand pins and grounded technical Q&A context
+2026-07-26|b7180e4|fix(chat): SSE worker deadlock when GUNICORN_WORKERS=1 on Cloud Run
+2026-07-26|99bf141|fix: GCP jsonPayload log parsing and web recommendation message_count
+2026-07-26|7ea6bb1|Merge pull request #93 from 32Lwk/cursor/fix-cloud-run-startup-probe-d423
+2026-07-26|a2ee12a|fix(deploy): unblock Cloud Run startup probe after local RAG warmup
+2026-07-26|79f6f25|fix(ui): align sage chat input bar controls and sync otc images
+2026-07-26|4006bf8|chore: sync otc image batch 4 discover logs
+2026-07-26|ec6b7c0|feat(medicine-qa): unify product image answers and Noimage UI
+2026-07-26|5adc35e|fix(medicine-qa): improve comparison HTML and product image answers
+2026-07-26|d42d494|feat(medicine-qa): local RAG integration and robust everyday routing
+2026-07-26|20db730|docs(pmda): close OTC orphans analysis and record C-3 KB reflect
+2026-07-26|0689097|merge: cursor/pmda-otc-live-fetch-07ea OTC Cloud live fetch complete
+2026-07-25|74a3597|chore(gitignore): allow tracking data/pmda/raw/**/*.jsonl
+2026-07-25|20346cf|chore(pmda): track OTC applied-updates jsonl archive
+2026-07-25|9350de4|feat(pmda): add pmda_* OTC columns and archive applied updates
+2026-07-25|b4bef00|feat(pmda): complete OTC Cloud live fetch and preserve taxonomy
+2026-07-25|1385cb7|fix(images): OTC CDN URL 縺ｮ繧ｨ繝ｳ繧ｳ繝ｼ繝峨→繧ｭ繝｣繝・す繝･繝舌せ繝・ぅ繝ｳ繧ｰ繧定ｿｽ蜉
+2026-07-25|cce8c5a|fix(qa): render medicine QA section markdown as HTML in Sage UI
+2026-07-25|78a1886|docs: changelog and technical docs for SSE QA fix and fast deploy
+2026-07-25|cdad315|feat(qa): medicine comparison routing, brand registry, and side-effect UI
+2026-07-25|d6b0959|fix(ui): compact safety rail CTA 繧偵メ繝・・鬮倥＆縺ｮ120%縺ｫ隱ｿ謨ｴ
+2026-07-25|39d4d39|fix(chat): SSE done 縺ｫ bot_message 繧定ｼ峨○蜑ｯ菴懃畑 Q&A 縺ｮ UI 陦ｨ遉ｺ繧貞ｾｩ譌ｧ
+2026-07-25|77b823b|feat(routing): unified pipeline, side-effect QA, and AWS log analysis
+2026-07-25|d4f147c|feat(otc): complete top50 OTC image sync to R2 with docs
+2026-07-25|b7908fa|docs: changelog and ops docs for OTC images and recommendation filters
+2026-07-25|a5a2383|feat(recommendation): exclude generic ibuprofen 200S/200SC from candidates
+2026-07-25|ff956ac|feat(ui,tts): changelog polish, Polly SSML, and localhost static assets
+2026-07-24|594950d|feat(pmda): reflect canonical CSV to Medicine KB and fix ﾂｧ17 leak
+2026-07-24|4f454a0|feat(pmda): persist raw HTML, fix parser, and regenerate canonical CSV
+2026-07-24|138c0ff|fix(ops): preserve aws CLI on PATH during CodeBuild KB sync
+2026-07-24|132643c|fix(ops): use AL2023 python3.11 + ensurepip on CodeBuild KB sync
+2026-07-24|5810c1d|chore: log Step 5-F CodePipeline KB verification results
+2026-07-24|0068938|fix(ops): pick python with pip on CodeBuild for KB build
+2026-07-24|6edd504|fix(ops): bypass pyenv on CodeBuild for KB document build
+2026-07-24|d090734|fix(ops): use PYENV_VERSION=system for KB build on CodeBuild
+2026-07-24|4a2ffb8|fix(ops): CodeBuild KB sync 窶・pandas on host and IAM for ingestion
+2026-07-24|88d14b0|feat(kb): dual KB RAG Phase 1.5窶・ 窶・ingestion fix, pipeline hooks, Ask sanitize
+2026-07-24|398430e|feat(pmda): live fetch, CSV merge, and import operational docs
+2026-07-24|09d74b3|feat: add PMDA data import pipeline and validation tests
+2026-07-24|b99f98e|chore: gitignore local Bedrock medicine KB id file
+2026-07-24|22e0324|feat: connect Managed Bedrock KB to Concierge, AskAgent, and ExplanationAgent
+2026-07-24|5056825|feat: OTC蝠・刀逕ｻ蜒上・R2荳諡ｬ蜷梧悄縺ｨ繝ｭ繝ｼ繧ｫ繝ｫexport
+2026-07-23|3ca8f87|docs: add CHANGELOG entry for UI polish and CodePipeline fixes
+2026-07-23|7b15881|fix: unblock CodePipeline when ECS smoke lacks AWS feature IAM
+2026-07-23|170e807|fix: skip AWS_PROFILE in CodeBuild so post_build static sync succeeds
+2026-07-23|c45fe51|fix: polish changelog status cards and Sage reco bulk render
+2026-07-23|a09e652|fix: rebalance Concierge tech cards and end_guard medicine errors on AWS
+2026-07-23|7482327|feat: Concierge FAQ Q2-prep score threshold and representative10 E2E
+2026-07-23|04cf8d6|feat: Concierge Amazon Q technical FAQ Phases Q2-prep-Q4
+2026-07-23|e467f28|feat: Concierge Amazon Q-style technical FAQ (Phase Q1)
+2026-07-23|215a7eb|feat: automate AWS staging smoke/sync and fix Concierge changelog answers
+2026-07-23|74b7fde|feat: AWS/Cloudflare staging rollout with env-gated feature flags
+2026-07-23|28485df|fix: restore onboarding commit links to GitHub
+2026-07-22|1b10fc9|docs: add 2026-07-22 CHANGELOG and improve ECS deploy speed
+2026-07-22|c5c467d|feat: default v2 pipeline ON and improve LLM error UX
+2026-07-22|19818e6|fix: skip ECS deploy when CodeBuild build phase fails
+2026-07-22|3357e54|fix: use AWS Public ECR base image for CodeBuild Docker Hub rate limits
+2026-07-22|624684c|feat: add AWS CodePipeline buildspec and deploy scripts
+2026-07-16|0fc9eb5|README.md 繧呈峩譁ｰ
+2026-07-15|e59ef12|docs: align ARCHITECTURE_MULTI_AGENT with current pipeline implementation
+2026-07-08|895ec11|fix(security): redact sensitive dict keys and remaining runtime secrets
+2026-07-08|b48a337|fix(security): redact secrets in GCP log pipeline and sanitize log/
+2026-06-30|16d588c|docs: update 6/30 work log after 6d10814 history split
+2026-07-07|4ee2c1a|docs: note 2026-06-30 anchor commit for contribution graph
+2026-07-07|2f59caa|chore: restore GitHub as primary remote after 2026-07-07 recovery
+2026-07-04|a4eeb5b|chore: update build-meta for deploy 777388f
+2026-07-04|b5f2e33|fix: keep LINE bot in memory after recommendation for Reply delivery
+2026-07-04|4ae8085|fix: use gpt-5.4 for explain role instead of gpt-5.5
+2026-07-04|d1c3ea3|feat: multi-select cold symptom chips and dedupe user message append
+2026-07-04|a3c15b6|fix: preserve fever and emergency routes before medicine context gate
+2026-07-04|ce82a7f|feat: improve cold swim recommendations
+2026-07-03|0fe1084|feat: diagnosis abbrev display, ASCII boundary match, changelog UI merge
+2026-07-03|a7fcb87|feat: CHANGELOG digest deploy metadata and UI display
+2026-07-03|690f47d|feat: CHANGELOG Concierge縲∥pp_about 繧ｬ繝ｼ繝峨∝・逅・ｸｭ繝槭せ繧ｳ繝・ヨ繝ｻUI謾ｹ蝟・2026-07-03|e5475b8|Merge branch 'feature/chat-pipeline-v2' into 'main'
+2026-07-03|a1c1b47|chore: p4b-5c-dev post-deploy smoke and monitoring t0 reset
+2026-07-03|fd8fd10|chore: sync log/ post-commit runtime updates
+2026-07-03|a5710ea|Merge branch 'main' of https://gitlab.com/blank2703726/medicine-recommend into feature/chat-pipeline-v2
+2026-07-03|9c00bd6|feat: local Docker DB, input block categories, store inquiry, admin UI refresh
+2026-07-03|5936499|feat: Phase 4b router primary + dev runtime auto-on flags
+2026-07-01|6a0b123|Merge branch 'feature/chat-pipeline-v2' into 'main'
+2026-07-02|b503ed4|feat: Phase 0-3 CHANGELOG and concierge followup hotfix
+2026-07-01|9b4a3a2|feat: UX蜩∬ｳｪ謾ｹ蝟・・v2邨ｱ蜷医ユ繧ｹ繝亥渕逶､繝ｻIntentRouter gate諡｡蠑ｵ
+2026-07-02|12c9abc|feat: Phase 1b-3 UX quality improvements (flags default OFF)
+2026-06-30|82135cf|chore: sync 6/30 GCP log analysis and local v2 chat test artifacts
+2026-07-02|a408823|feat: p1 latency controls and evaluation reports
+2026-07-02|e190247|feat: Phase 0 險域ｸｬ蝓ｺ逶､縺ｨ v2 繝・せ繝郁ｩ穂ｾ｡縺ｮ謾ｹ蝟・(p0-measure)
+2026-06-29|3ea1b8e|feat: Chat Pipeline v2 dev 荳諡ｬ ON env・医き繧ｹ繧ｱ繝ｼ繝峨ヵ繝ｩ繧ｰ繝ｻdevelopment 閾ｪ蜍墓怏蜉ｹ・・2026-06-29|451c81a|feat: Chat Pipeline v2 Wave 0-4 螳溯｣・ｼ・rc/dialogue/ IntentRouter 螻･豁ｴ邨ｱ蜷・KPI・・2026-06-28|41b58ba|chore: sync log/ counseling_detail JSONL
+2026-06-28|e9a8e16|fix: counseling_detail 繧・Cloud Run 蜷代￠縺ｫ stdout 蜷梧悄蜃ｺ蜉・2026-06-28|837048d|feat: GCP繝ｭ繧ｰ繧ｨ繧ｯ繧ｹ繝昴・繝域隼蝟・→2026-06-26縲・7蛻・梵謌先棡迚ｩ
+2026-06-27|81e0a6d|feat: About蜷代￠逕滓・逕ｻ蜒上・Sage繝・ャ繧ｭ繧ｹ繝ｩ繧､繝峨・繝峨Λ繝・げ繧ｹ繝医い邏譚舌ｒ霑ｽ蜉
+2026-06-27|2322706|chore: log/ 蜷梧悄縺ｨ GitLab push 譁ｹ驥昴Ν繝ｼ繝ｫ霑ｽ蜉
+2026-06-27|6e8e14e|feat: 邂｡逅・PI隱崎ｨｼ邨ｱ荳繝ｻLINE莠碁㍾驟堺ｿ｡髦ｲ豁｢繝ｻ蛹ｻ阮ｬ蜩∬ｳｼ蜈･蜈医Ν繝ｼ繝・ぅ繝ｳ繧ｰ
+2026-06-27|8bd956e|feat: Concierge譁・ц繝ｫ繝ｼ繝・ぅ繝ｳ繧ｰ縺ｨGCP繝ｭ繧ｰ蛻・梵蠑ｷ蛹悶，HANGELOG譖ｴ譁ｰ
+2026-06-27|50b045f|feat: SessionAgent 縺ｨ LINE QA 謾ｹ蝟・ｼ・0窶撤2・・2026-06-26|22eb090|fix: Windows髱槫ｯｾ蠢懊・繧ｳ繝ｭ繝ｳ蜈･繧翫Ο繧ｰ繝輔ぃ繧､繝ｫ蜷阪ｒ繝ｪ繝阪・繝
+2026-06-26|63be615|chore: log/ 驟堺ｸ九・霑ｽ霍｡縺ｨGCP繝ｭ繧ｰ蛻・梵謌先棡迚ｩ繝ｻ繝ｩ繝ｳ繧ｿ繧､繝繝ｭ繧ｰ繧定ｿｽ蜉
+2026-06-26|6f53a04|fix: 繝悶Ο繝・け遒ｺ螳壼ｾ後・讌ｽ隕ｳuser DOM辣ｧ蜷医→驥崎､・椛豁｢
+2026-06-26|e15acb4|feat: jailbreak蜊ｳ譎ゅヶ繝ｭ繝・け繝ｻ繝代う繝励Λ繧､繝ｳ邨らｫｯ繧ｬ繝ｼ繝峨・Concierge redirect繝輔か繝ｼ繝ｫ繝舌ャ繧ｯ
+2026-06-25|2c422ee|feat: 豕穂ｻ､繧ｳ繝ｳ繝励Λ繧､繧｢繝ｳ繧ｹ繝ｫ繝ｼ繝・ぅ繝ｳ繧ｰ繝ｻ蜈崎ｲｬ隨ｬ3譚｡謾ｹ螳壹・CHANGELOG霑ｽ險・2026-06-25|a03b0b6|fix: architecture雉ｪ蝠上・蠖ｹ蜑ｲ荳隕ｧ繧ｫ繝ｼ繝臥ｵｱ蜷医→蛻､螳壹・繝ｫ繝代・謨ｴ逅・2026-06-25|073455b|feat: Concierge謖ｨ諡ｶ繝ｻ諢溯ｬ昴・繝｡繧ｿ陦ｨ遉ｺ縺ｮ蜩∬ｳｪ謾ｹ蝟・→謖醍匱蜻ｼ縺ｳ縺九￠蟇ｾ遲・2026-06-25|af0bd7d|feat: GCP繝ｭ繧ｰ蟾ｮ蛻・叙蠕励→繧ｫ繧ｦ繝ｳ繧ｻ繝ｪ繝ｳ繧ｰ隧ｳ邏ｰ繝ｭ繧ｰ縺ｮ邯ｲ鄒・・隗｣譫先隼蝟・2026-06-25|ee52b48|feat: LINE 邨ｵ譁・ｭ・繧ｹ繧ｿ繝ｳ繝怜ｯｾ蠢懊→ GCP 繝ｭ繧ｰ繧ｻ繝・す繝ｧ繝ｳ繝医Λ繝ｳ繧ｹ繧ｯ繝ｪ繝励ヨ
+2026-06-25|8ac8c82|fix: Cloud Run startup probe 縺ｮ gcloud 讒区枚繧・httpGet.path/port 縺ｫ菫ｮ豁｣
+2026-06-25|773a915|docs: CHANGELOG 縺ｫ 6/25 譖ｴ譁ｰ繧定ｿｽ險倥＠ GCP 繝ｭ繧ｰ隗｣譫・CLI繝ｻskill繝ｻ繝・せ繝医ｒ霑ｽ蜉
+2026-06-25|e0a24b2|fix: GCP繝ｭ繧ｰ隗｣譫舌↓蝓ｺ縺･縺・Concierge繝ｻ繧ｫ繧ｦ繝ｳ繧ｻ繝ｪ繝ｳ繧ｰ繝ｻ驕狗畑縺ｮ荳諡ｬ謾ｹ蝟・2026-06-24|3d51dea|chore: build-meta.json 繧偵ョ繝励Ο繧､繧ｳ繝溘ャ繝・4829c2e 縺ｫ譖ｴ譁ｰ
+2026-06-24|9c552b7|fix: 闃ｱ邊臥裸+逞・憾縺ｮ險ｺ譁ｭ繝悶Ο繝・け蝗樣∩繝ｻ繝ｦ繝ｼ繧ｶ繝ｼ螻樊ｧ騾夂衍繝ｻConcierge 謖ｨ諡ｶ謾ｹ蝟・2026-06-24|cc652b5|chore: build-meta.json 繧偵ョ繝励Ο繧､繧ｳ繝溘ャ繝・c613c13 縺ｫ譖ｴ譁ｰ
+2026-06-24|b4ca411|feat: 闃ｱ邊臥裸OTC逶ｸ隲・・蜿｣繝ｻ迺ｰ蠅・い繝ｬ繝ｫ繧ｮ繝ｼ螻樊ｧ繝ｻ繝ｦ繝ｼ繧ｶ繝ｼ諠・ｱ逋ｻ骭ｲ騾夂衍
+2026-06-24|557fe43|fix: Cloud Run 繝・・繝ｭ繧､縺ｧ迺ｰ蠅・､画焚縺梧ｶ医∴繧句撫鬘後ｒ菫ｮ豁｣
+2026-06-24|72e7551|chore: build-meta.json 繧偵ョ繝励Ο繧､繧ｳ繝溘ャ繝・8ba5267 縺ｫ譖ｴ譁ｰ
+2026-06-24|a774432|feat: Concierge 謖ｨ諡ｶ蠑ｷ蛹悶・謾ｻ謦・噪蜈･蜉帛｢・阜繝ｻLLM 逕溷・蜉帙・繝√Ε繝・ヨ UI 蜷梧悄
+2026-06-23|07bd366|feat: 蛹ｻ逋り｡檎ぜ萓晞ｼ蠅・阜縺ｨ繧ｵ繝ｼ繝薙せ譛ｬ莠ｺ遒ｺ隱崎ｳｪ蝠上・繝ｫ繝ｼ繝・ぅ繝ｳ繧ｰ繧貞ｼｷ蛹・2026-06-23|d9ba450|feat: 繧ｪ繝ｳ繝懊・繝・ぅ繝ｳ繧ｰ縺ｮ GitLab 繧ｳ繝溘ャ繝医Μ繝ｳ繧ｯ縺ｨ遘ｻ陦瑚ｪｬ譏弱・°逕ｨ繝峨く繝･繝｡繝ｳ繝域紛蛯・2026-06-23|6735792|fix: Cloud Build 縺ｧ Artifact Registry 縺ｸ docker push 繧定ｿｽ蜉
+2026-06-23|c24bdcb|fix: 逞・憾譁・・蝨ｨ蠎ｫ隱､讀懷・繧帝亟縺・Cloud Build 縺ｮ bash 螟画焚繧剃ｿｮ豁｣
+2026-06-23|52aae9e|docs: GitHub 蛛懈ｭ｢荳ｭ縺ｮ GitLab 荳譎る°逕ｨ繧・Cursor rules 縺ｨ ops doc 縺ｫ譏手ｨ・2026-06-23|005975b|docs: GitHub 繧｢繧ｫ繧ｦ繝ｳ繝亥●豁｢繧､繝ｳ繧ｷ繝・Φ繝郁ｨ倬鹸縺ｨ issue 譖ｴ譁ｰ繧ｹ繧ｯ繝ｪ繝励ヨ繧定ｿｽ蜉
+2026-06-22|f4948a6|chore: MIT 縺九ｉ PolyForm Noncommercial License 縺ｸ遘ｻ陦後＠髢｢騾｣譁・嶌繧呈峩譁ｰ
+2026-06-22|5c0944c|docs: LINE 髟ｷ譛溯ｨ俶・驕狗畑繧ｬ繧､繝峨→ issue 繝ｬ繝昴・繝亥ｽ｢蠑上ｒ霑ｽ蜉
+2026-06-22|bd47fca|fix: 邂｡逅・判髱｢縺ｮAI閾ｪ蜍募ｿ懃ｭ斐′諢丞峙縺帙★OFF縺ｫ謌ｻ繧句撫鬘後ｒ菫ｮ豁｣
+2026-06-22|ce369c7|chore: build-meta.json 繧・HEAD ac614d2 縺ｫ蜷梧悄
+2026-06-22|72e90b1|chore: build-meta.json 繧偵ョ繝励Ο繧､繧ｳ繝溘ャ繝・edb0667 縺ｫ蜷梧悄
+2026-06-22|03d4616|fix: 繧ｪ繝ｳ繝懊・繝・ぅ繝ｳ繧ｰ譛邨よ峩譁ｰ譌･縺梧悽逡ｪ縺ｧ豸医∴繧句撫鬘後ｒ菫ｮ豁｣
+2026-06-22|bccb549|fix: Docker 繝薙Ν繝峨〒 write_build_meta.py 縺・.dockerignore 縺ｫ繧医ｊ髯､螟悶＆繧後※縺・◆蝠城｡後ｒ菫ｮ豁｣
+2026-06-22|3a39459|feat: 繝・・繝ｭ繧､ Git 繝｡繧ｿ辟ｼ縺崎ｾｼ縺ｿ繝ｻ繧ｪ繝ｳ繝懊・繝・ぅ繝ｳ繧ｰ譛邨よ峩譁ｰ譌･縺ｨ邂｡逅・判髱｢繝｡繝・そ繝ｼ繧ｸ蜑企勁
+2026-06-22|ea38bf6|feat: LINE JST 繧ｿ繧､繝繧ｹ繧ｿ繝ｳ繝玲ｭ｣隕丞喧繝ｻWebhook 諤ｧ閭ｽ謾ｹ蝟・→邂｡逅・判髱｢蜷梧悄蠑ｷ蛹・2026-06-22|316f679|feat: 蠎苓・蝠・刀繧､繝ｳ繝・ャ繧ｯ繧ｹ蛹悶・繝ｫ繝ｼ繝・ぅ繝ｳ繧ｰ鬮倬溷喧縺ｨ邂｡逅・判髱｢/LINE Flex 謾ｹ蝟・2026-06-22|855bd30|feat: LINE 髟ｷ譛溯ｨ俶・繝ｻ邂｡逅・判髱｢繝代ロ繝ｫ繝ｻ繝代う繝励Λ繧､繝ｳ險域ｸｬ蠑ｷ蛹悶・繝励Λ繧､繝舌す繝ｼ繝昴Μ繧ｷ繝ｼ謾ｹ螳・2026-06-22|09758ff|feat: LINE竊淡eb 蠑輔″邯吶℃繧・Sage diagnosis 邨ｱ蜷医＠ diagnosis 豌ｸ邯壼喧繧貞・髮｢
+2026-06-21|8a9d8ae|Merge pull request #86 from 32Lwk/cursor/fix-docker-missing-legacy-28d8
+2026-06-21|d9ab45b|fix: Docker 繧､繝｡繝ｼ繧ｸ縺ｫ legacy/ 繧貞性繧√※襍ｷ蜍墓凾縺ｮ ModuleNotFoundError 繧定ｧ｣豸・2026-06-21|a2ec2e4|feat: Diagnosis v1 / Sage UI Big Bang 遘ｻ陦後→髢狗匱繝励Ξ繝薙Η繝ｼ 16 繝代ち繝ｼ繝ｳ
+2026-06-20|f451ae0|feat: Sage 陦ｨ遉ｺ險ｭ螳壹・繧ｫ繝ｩ繝ｼ繝・・繝槭→繧ｻ繝ｼ繝輔ユ繧｣繝ｬ繝ｼ繝ｫ蠢懃ｭ斐Ξ繧､繧｢繧ｦ繝医ｒ霑ｽ蜉
+2026-06-19|8f4c712|docs: 繧ｪ繝ｳ繝懊・繝・ぅ繝ｳ繧ｰ髢狗匱荳ｭ繝√ぉ繝・け繝ｪ繧ｹ繝医↓螳溯｣・ｸ医∩鬆・岼縺ｮ繝√ぉ繝・け繧貞渚譏
+2026-06-18|dc13758|feat: Sage 謗ｨ螂ｨ繧ｫ繝ｼ繝牙ｼｷ蛹悶・繝√Ε繝・ヨ謠冗判螳牙ｮ壼喧繝ｻ繝輔ぅ繝ｼ繝峨ヰ繝・け繝医Ξ繝ｼ繧ｹ
+2026-06-17|21087d3|feat: Sage Terrace UI 縺ｮ谿ｵ髫守ｧｻ陦後→ LINE竊淡eb 莨夊ｩｱ蠑輔″邯吶℃繧定ｿｽ蜉
+2026-06-16|44c6468|feat: UI/patterns 39-56 縺ｨ蜈ｱ譛峨す繧ｧ繝ｫ繧貞ｾｩ蜈・2026-06-16|63247af|chore: Cloud Run 繝ｭ繧ｰ隗｣譫千畑縺ｮ荳譎ゅせ繧ｯ繝ｪ繝励ヨ繧定ｿｽ蜉
+2026-06-16|75f7111|docs: 54 Sage Terrace 譛ｬ逡ｪUI遘ｻ陦後・隧ｦ陦後→繝ｭ繝ｼ繝ｫ繝舌ャ繧ｯ繧・CHANGELOG 縺ｫ險倬鹸
+2026-06-15|b4953c1|feat: 繝ｦ繝ｼ繧ｶ繝ｼ蜷代￠UI蛻ｷ譁ｰ譯・8繝代ち繝ｼ繝ｳ縺ｮ髱咏噪繝励Ο繝医ち繧､繝励ｒ霑ｽ蜉
+2026-06-15|17ba510|fix: LINE 莠碁㍾霑比ｿ｡繧帝亟豁｢縺・Reply API 蜆ｪ蜈医・邨ｱ荳驟堺ｿ｡縺ｫ螟画峩
+2026-06-15|ffbab4a|feat: 莨夊ｩｱ險隱櫁ｧ｣豎ｺ縺ｮ蜆ｪ蜈磯・ｽ榊喧繝ｻLINE繝励Ο繝輔ぅ繝ｼ繝ｫ騾｣謳ｺ縺ｨ邂｡逅・判髱｢UI諡｡蠑ｵ
+2026-06-15|564ea5d|feat: LINE繝励Ο繝輔ぅ繝ｼ繝ｫ蜿門ｾ励・繧ｻ繝・す繝ｧ繝ｳ繝ｩ繧､繝輔し繧､繧ｯ繝ｫ逶｣譟ｻ縺ｨ邂｡逅・判髱｢UI蠑ｷ蛹・2026-06-15|52eaf25|feat: LINE 繝輔ぅ繝ｼ繝峨ヰ繝・け豌ｸ邯壼喧繝ｻ邂｡逅・判髱｢謇句虚霑比ｿ｡ Push繝ｻ隧穂ｾ｡ postback 驥崎､・椛蛻ｶ
+2026-06-13|1ec2143|fix: DB 襍ｷ蜍戊ｨｺ譁ｭ蠑ｷ蛹悶→ lifespan 縺ｸ縺ｮ init 遘ｻ陦・2026-06-13|f15e81d|fix: LINE 繝帙ャ繝医ヱ繧ｹ縺ｧ縺ｮ DB 蠕・■繧偵＆繧峨↓謗帝勁
+2026-06-13|7453603|perf: LINE/Web 霑比ｿ｡騾溷ｺｦ隨ｬ2蠑ｾ繝ｻDB逶｣隕悶・驕狗畑繝峨く繝･繝｡繝ｳ繝・2026-06-13|f0002ea|fix: DB 荳崎憶譎ゅ・蜀肴磁邯壼ｾ・■縺ｧ繝代う繝励Λ繧､繝ｳ縺梧焚蜊∫ｧ呈ｭ｢縺ｾ繧句撫鬘後ｒ隗｣豸・2026-06-13|f888b15|fix: LINE get_session_from_db 繧偵Γ繝｢繝ｪ蟆ら畑縺ｫ縺怜・邨瑚ｷｯ縺ｮ DB 蠕・■繧呈賜髯､
+2026-06-13|2d0b9ba|fix: LINE 蠢懃ｭ皮ｵ瑚ｷｯ縺ｧ DB 隱ｭ霎ｼ蠕・■縺ｫ繧医ｋ謨ｰ蜊∫ｧ偵ヶ繝ｭ繝・け繧貞屓驕ｿ
+2026-06-13|021d7bd|docs: CHANGELOG 縺ｫ騾溷ｺｦ謾ｹ蝟・ｒ霑ｽ險倥´INE loading 繧呈怙蜆ｪ蜈医〒陦ｨ遉ｺ
+2026-06-13|f4771ec|test: 騾溷ｺｦ謾ｹ蝟・ｨ育判縺ｮ谿九ｊ繝・せ繝磯・岼繧定ｿｽ蜉
+2026-06-13|60852ae|LINE/Web 霑比ｿ｡騾溷ｺｦ謾ｹ蝟・ 荳ｦ蛻・NLU縲∵ｮｵ髫・Push縲∥sync 繝代う繝励Λ繧､繝ｳ
+2026-06-13|fb9d82e|fix: Artifact Registry 繧ｯ繝ｪ繝ｼ繝ｳ繧｢繝・・縺ｮ蟇ｾ雎｡繝ｪ繝昴ず繝医Μ繧・cloud-run-source-deploy 縺ｫ菫ｮ豁｣
+2026-06-12|c900f09|fix: Cloud Build 蜷代￠縺ｫ docs/public 繝代せ縺ｸ Docker 繧ｳ繝斐・繧呈峩譁ｰ
+2026-06-12|d3e17c9|docs 縺ｨ tests 繧偵ラ繝｡繧､繝ｳ蛻･縺ｫ謨ｴ逅・＠縲；CP 繝・・繝ｭ繧､繝ｻpytest 蝓ｺ逶､縺ｨ golden 繝輔ぅ繧ｯ繧ｹ繝√Ε繧呈紛蛯吶・2026-06-11|a28dad7|繝医Μ繧｢繝ｼ繧ｸ隨ｬ莠梧ｮｵ髫弱ｒ逵∫払縺・LINE loading keepalive 縺ｨ Reply 驟堺ｿ｡繧呈隼蝟・・2026-06-11|05ce980|Concierge 蜈郁｡後Ν繝ｼ繝医→ LINE 繧ｻ繝・す繝ｧ繝ｳ謨ｴ逅・〒蠢懃ｭ秘≦蟒ｶ縺ｨ閧･螟ｧ蛹悶ｒ謚大宛縲・2026-06-11|1fefa32|LINE status Flex 繧貞・蟆主・縺・Concierge 縺ｮ line_flex 繧ｹ繝壹ャ繧ｯ繧帝｣謳ｺ縲・2026-06-11|15b0fce|譁ｹ險螟画鋤繧貞燕蜃ｦ逅・°繧牙､悶＠ LLM 縺ｫ蟋碑ｭｲ縲´INE 縺ｮ蠢懃ｭ秘≦蟒ｶ蟇ｾ遲悶ｒ蠑ｷ蛹悶・2026-06-11|075f69a|LINE 縺ｫ Quick Reply 繝輔ぅ繝ｼ繝峨ヰ繝・け縺ｨ loading UX 繧定ｿｽ蜉縺怜ｿ懃ｭ泌ｽ｢蠑上ｒ謨ｴ逅・・2026-06-11|c143e96|LINE Flex 繧呈僑蠑ｵ縺・Webhook 縺ｮ螳牙ｮ壽ｧ縺ｨ髢狗匱繝励Ξ繝薙Η繝ｼ繧貞ｼｷ蛹悶・2026-06-10|a3f782e|LINE Flex Message E2E: Webhook 縺九ｉ謗ｨ螂ｨ繝代う繝励Λ繧､繝ｳ騾｣謳ｺ縺ｨ Reply/Push 繧貞ｮ溯｣・・2026-06-10|f3bb6eb|LINE Webhook 縺ｮ迺ｰ蠅・ｧ狗ｯ牙渕逶､繧定ｿｽ蜉・育ｽｲ蜷肴､懆ｨｼ繝ｻ200 蠢懃ｭ斐・縺ｿ・峨・2026-06-08|7e8993f|LINE騾｣謳ｺ繧｢繧ｻ繝・ヨ縺ｮ霑ｽ蜉縺ｨ繝輔ぅ繝ｼ繝峨ヰ繝・け鬆・岼縺ｮ螟夊ｨ隱槫ｯｾ蠢懊・2026-06-02|df38ab8|繝ｦ繝ｼ繧ｶ繝ｼ蝸懷･ｽ繧・GPT 荳ｦ蛻・NLU 縺ｧ邨ｱ蜷医＠謗ｨ螂ｨ繧ｹ繧ｳ繧｢縺ｫ蜿肴丐縲・2026-06-02|0a6a80f|闃ｱ邊臥裸謗ｨ螂ｨ縺ｮ蠑ｷ蛹悶→ LLM 譌｢螳壹・繝ｭ繝輔ぃ繧､繝ｫ繧・gpt5 縺ｫ螟画峩縲・2026-06-02|077475d|Optimize seasonal particle sprites and update chat response styling.
+2026-06-02|ee57ff5|Expand golden cases: chronic headache deny list, pollen bug, i18n, over-block.
+2026-06-02|b75c91b|Implement diagnosis guard for pattern-based Physical OTC blocking.
+2026-06-02|2227f70|Finalize diagnosis guard round 3: chronic deny list, pregnancy, insomnia on treatment.
+2026-06-02|2e85906|Document diagnosis counseling orchestrator, chronic risk tiers, and session flag rename.
+2026-06-02|b93440d|Refine diagnosis guard policy: pattern-based OTC, insomnia and hypertension exceptions.
+2026-06-02|1fddd94|Add medicine-recommendation-advisor skill for OTC evaluation and review workflow.
