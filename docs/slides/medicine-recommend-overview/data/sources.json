@@ -1,0 +1,50 @@
+{
+  "checked": "2026-09-30",
+  "primary": [
+    {"id": "P1", "name": "収録データ（市販薬・飲み合わせ・副作用・効能・辞書・画像）", "who": "このリポジトリ", "when": "2026-09",
+     "how": "data/ の CSV・JSON を calc.py で集計", "where": "data/otc_medicine_data.csv ほか",
+     "pages": ["summary", "problem", "data", "a-db", "a-inter", "a-dict", "a-import"]},
+    {"id": "P2", "name": "推薦のオフライン点検（600件）", "who": "開発者", "when": "2026-09-30",
+     "how": "規則だけで実行（AIなし）。scripts/eval_reco_offline_safety.py", "where": "log/analysis/2026-09-30_reco_offline_eval.md・.json・_before_fix.*",
+     "pages": ["summary", "eval", "eval2", "risk", "a-gate", "a-tie", "a-inter", "a-dict", "a-eval-method", "a-eval-metrics", "a-eval-all", "a-eval-emer", "a-eval-limits"]},
+    {"id": "P3", "name": "開発の履歴", "who": "このリポジトリ", "when": "2025-10〜2026-09",
+     "how": "git log・ファイル数の集計", "where": "git の履歴（calc.py の dev_stats）",
+     "pages": ["summary", "track", "a-hist", "a-agents"]},
+    {"id": "P4", "name": "Jev による意図の判定の試験", "who": "開発者", "when": "2026-09-21〜24",
+     "how": "10 の場面 × 3 回の比較と、安全の関門の判定", "where": "docs/planning/codex-parallel-jev-20260921/",
+     "pages": ["jev", "a-jev-what", "a-jev-lat", "a-jev-gate"]},
+    {"id": "P5", "name": "AWS 検証環境の費用計画と実績", "who": "開発者", "when": "2026-08-07 更新",
+     "how": "見積もりと請求の実績", "where": "docs/ops/AWS_COST_PLAN.md",
+     "pages": ["arch-aws", "a-aws", "a-env", "a-cost"]},
+    {"id": "P6", "name": "画面の撮影", "who": "開発者", "when": "2026-09-30",
+     "how": "ローカル環境をブラウザで操作して撮影", "where": "docs/slides/medicine-recommend-overview/screens/",
+     "pages": ["cover", "screens1", "screens2", "risk", "a-llm", "a-scr-safety", "a-scr-a11y"]},
+    {"id": "P7", "name": "コードと利用規約", "who": "このリポジトリ", "when": "2026-09",
+     "how": "重み・部品・規約の原文", "where": "src/security/enhanced_safety_checker.py・src/agents・src/content/about_modal_html.json",
+     "pages": ["pipeline", "scoring", "safety", "a-flow", "a-pipe", "a-agents", "a-weights", "a-exclude", "a-privacy", "a-license"]}
+  ],
+  "external": [
+    {"key": "mhlw", "pub": "厚生労働省", "title": "薬事工業生産動態統計調査 令和6年 年報（一般用医薬品の生産金額）", "date": "2025",
+     "url": "https://www.mhlw.go.jp/toukei/list/105-1.html", "pages": ["market"]},
+    {"key": "stat", "pub": "総務省統計局", "title": "人口推計（2024年10月1日現在）", "date": "2025-04",
+     "url": "https://www.stat.go.jp/data/jinsui/2024np/index.html", "pages": ["market"]},
+    {"key": "jnto", "pub": "日本政府観光局（JNTO）", "title": "訪日外客統計（2024年）", "date": "2025-01",
+     "url": "https://statistics.jnto.go.jp/", "pages": ["market"]},
+    {"key": "law", "pub": "e-Gov 法令検索", "title": "医薬品、医療機器等の品質、有効性及び安全性の確保等に関する法律 第36条の10", "date": "2026",
+     "url": "https://laws.e-gov.go.jp/law/335AC0000000145", "pages": ["problem", "a-law"]},
+    {"key": "pmda", "pub": "医薬品医療機器総合機構（PMDA）", "title": "一般用医薬品・要指導医薬品 情報検索", "date": "2026",
+     "url": "https://www.pmda.go.jp/PmdaSearch/otcSearch/", "pages": ["data", "a-import"]},
+    {"key": "polyform", "pub": "PolyForm Project", "title": "PolyForm Noncommercial License 1.0.0", "date": "2019",
+     "url": "https://polyformproject.org/licenses/noncommercial/1.0.0/", "pages": ["business", "a-license"]}
+  ],
+  "assumptions": [
+    {"id": "A1", "item": "いまの運用費", "value": "約3,000円/月", "status": "仮置き",
+     "basis": "開発者の申告（2026-09-30）。本番・検証・AIの合計で、内訳は未集計", "where": "calc.py の COST_MONTHLY_YEN", "pages": ["business", "a-cost"]},
+    {"id": "A2", "item": "検証環境の月額", "value": "止めておくと $6〜7、ずっと動かすと $31〜32", "status": "推計",
+     "basis": "AWS の費用計画の見積もり（一次調査 P5）。実績は 2026-08-01〜07 の $1.28", "where": "calc.py の AWS", "pages": ["arch-aws", "a-aws", "a-cost"]},
+    {"id": "A3", "item": "困りごと・使われる場面", "value": "夜・読みにくさ・言葉の壁", "status": "仮置き",
+     "basis": "開発者の店頭での経験から置いた仮説。利用者での実証はこれから", "where": "本文", "pages": ["problem", "market"]},
+    {"id": "A4", "item": "似たサービスの整理", "value": "5つの相手", "status": "推計",
+     "basis": "2026年9月時点の内部の整理（docs/planning/ux-pdca-20260922/02_MARKET_AND_COMPETITIVE.md）", "where": "本文", "pages": ["a-comp", "a-pos"]}
+  ]
+}

@@ -1,0 +1,2824 @@
+<!doctype html>
+<html lang="ja" data-theme="wa" data-mode="doc">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>チャット型医薬品相談ツール</title>
+<style id="html-slides-lib">/*LIB:CSS*/
+/* 配色テーマ。<html data-theme="…"> で切り替える。どのテーマも「強調（accent）」と「お金・注意・未定（warn）」の2色＋灰色で組む。
+   c1〜c6 はグラフの系列、seq1〜seq5 は塗り分け地図・濃淡の段階（薄い → 濃い）。 */
+:root, html[data-theme="green"] {
+  --bg: #ffffff; --page: #e6e9ef;
+  --ink: #1a1d24; --sub: #5b6270; --line: #d9dde5; --lane: #f6f7f9;
+  --accent: #1f9d55; --accent-bg: #e9f7ef; --accent-mid: #8fd1ab;
+  --warn: #c2410c; --warn-bg: #fff4ec;
+  --on-accent: #ffffff;
+  --c1: #1f9d55; --c2: #5fbb87; --c3: #a7dbbd; --c4: #c2410c; --c5: #e0a458; --c6: #9aa3b2;
+  --seq1: #eef8f2; --seq2: #c6e8d4; --seq3: #8fd1ab; --seq4: #3fae6e; --seq5: #16723d;
+  --map-land: #e3e7ec; --map-edge: #ffffff; --map-sea: transparent;
+}
+html[data-theme="navy"] {
+  --bg: #ffffff; --page: #e4e8ef;
+  --ink: #16213a; --sub: #58637a; --line: #d6dce7; --lane: #f4f6fa;
+  --accent: #1f3a68; --accent-bg: #e9eef7; --accent-mid: #8ea3c7;
+  --warn: #e4572e; --warn-bg: #fdefe9;
+  --on-accent: #ffffff;
+  --c1: #1f3a68; --c2: #4a6fa5; --c3: #9fb5d6; --c4: #e4572e; --c5: #f2a07b; --c6: #a3abb8;
+  --seq1: #eef2f8; --seq2: #c9d5e8; --seq3: #93abd0; --seq4: #4a6fa5; --seq5: #1f3a68;
+  --map-land: #e2e6ee; --map-edge: #ffffff; --map-sea: transparent;
+}
+html[data-theme="mono"] {
+  --bg: #ffffff; --page: #e7e7e7;
+  --ink: #111111; --sub: #5f5f5f; --line: #d8d8d8; --lane: #f4f4f4;
+  --accent: #111111; --accent-bg: #f0f0f0; --accent-mid: #9a9a9a;
+  --warn: #d62828; --warn-bg: #fdecec;
+  --on-accent: #ffffff;
+  --c1: #111111; --c2: #555555; --c3: #a8a8a8; --c4: #d62828; --c5: #ef8a8a; --c6: #cfcfcf;
+  --seq1: #f3f3f3; --seq2: #d4d4d4; --seq3: #a3a3a3; --seq4: #5c5c5c; --seq5: #111111;
+  --map-land: #e6e6e6; --map-edge: #ffffff; --map-sea: transparent;
+}
+html[data-theme="blue"] {
+  --bg: #ffffff; --page: #e3e9f3;
+  --ink: #0f172a; --sub: #526079; --line: #d5deeb; --lane: #f3f6fb;
+  --accent: #2563eb; --accent-bg: #eaf1ff; --accent-mid: #93b4f5;
+  --warn: #b7791f; --warn-bg: #fff6d9;
+  --on-accent: #ffffff;
+  --c1: #2563eb; --c2: #60a5fa; --c3: #bfdbfe; --c4: #eab308; --c5: #fcd34d; --c6: #a1a9b8;
+  --seq1: #eef4ff; --seq2: #c7dbfe; --seq3: #8db5fb; --seq4: #3b7bf0; --seq5: #1d4ed8;
+  --map-land: #e1e7f0; --map-edge: #ffffff; --map-sea: transparent;
+}
+html[data-theme="wa"] {
+  --bg: #fffdf8; --page: #e9e5dc;
+  --ink: #1f2430; --sub: #5f6370; --line: #e0dbcf; --lane: #f6f2e9;
+  --accent: #264e86; --accent-bg: #eaeff6; --accent-mid: #93a9c9;
+  --warn: #d9480f; --warn-bg: #fcefe6;
+  --on-accent: #ffffff;
+  --c1: #264e86; --c2: #5b7fb0; --c3: #a9bcd7; --c4: #d9480f; --c5: #eea07a; --c6: #b3ad9f;
+  --seq1: #f1f3f7; --seq2: #cdd8e7; --seq3: #93a9c9; --seq4: #4d71a3; --seq5: #1c3d6b;
+  --map-land: #e9e4d8; --map-edge: #fffdf8; --map-sea: transparent;
+}
+html[data-theme="dark"] {
+  --bg: #0f172a; --page: #050914;
+  --ink: #e8edf5; --sub: #9aa6b8; --line: #2c3a52; --lane: #17223a;
+  --accent: #34d399; --accent-bg: #10332b; --accent-mid: #1f8f69;
+  --warn: #fb923c; --warn-bg: #3a2414;
+  --on-accent: #0f172a;
+  --c1: #34d399; --c2: #22a37a; --c3: #1a5f4c; --c4: #fb923c; --c5: #fcd34d; --c6: #64748b;
+  --seq1: #17223a; --seq2: #173d3a; --seq3: #1c6b55; --seq4: #27a57b; --seq5: #5eeab4;
+  --map-land: #1e2a42; --map-edge: #0f172a; --map-sea: transparent;
+}
+
+/* html-slides 共通 CSS。1920×1080 固定、1 ページ＝1 <section id>。
+   <html lang="ja|en" data-theme="green|navy|mono|blue|wa|dark" data-mode="doc|pitch"> */
+@font-face { font-family: "Noto Sans JP"; src: url("fonts/NotoSansJP.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+@font-face { font-family: "Inter"; src: url("fonts/Inter.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+
+:root {
+  --font: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  --chart-fs: 19px; --chart-fs-v: 24px;
+  --r: 16px;
+}
+html[lang^="en"] { --font: "Inter", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif; }
+html[data-mode="pitch"] { --chart-fs: 54px; --chart-fs-v: 60px; }
+
+* { box-sizing: border-box; margin: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--page); }
+body { font-family: var(--font); color: var(--ink); -webkit-font-smoothing: antialiased; }
+html[lang^="ja"] :is(h1, h2, h3, .kicker, .big, .kpi .v, .lead) { font-feature-settings: "palt" 1; }
+section { display: none; position: absolute; left: var(--x, 0px); top: var(--y, 0px); width: 1920px; height: 1080px; padding: 56px 72px 40px; background: var(--bg); transform: scale(var(--k, 1)); transform-origin: 0 0; overflow: hidden; }
+section.on { display: block; }
+aside.notes { display: none; }
+a { color: inherit; }
+img { display: block; max-width: 100%; }
+b, strong { font-weight: 800; }
+.accent { color: var(--accent); }
+.warn { color: var(--warn); }
+.sub { color: var(--sub); }
+.num { font-variant-numeric: tabular-nums; }
+
+/* ページ送り（マウスを動かしたときだけ出す。PNG には写らない） */
+.nav { position: fixed; right: 16px; bottom: 16px; z-index: 30; display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 999px; background: rgba(20, 24, 32, 0.82); color: #fff; font: 600 14px var(--font); opacity: 0; transition: opacity 0.3s; }
+.nav.show { opacity: 1; }
+.nav button { width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: #fff; font-size: 18px; cursor: pointer; }
+.nav button:hover { background: rgba(255, 255, 255, 0.16); }
+.nav span { min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; }
+
+/* ページの型：kicker → h1（結論の1文）→ rule → 本文 → strip → foot */
+.kicker { font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; }
+h1 { font-size: 46px; font-weight: 800; line-height: 1.3; margin-top: 8px; letter-spacing: -0.005em; }
+.rule { height: 3px; background: var(--accent); margin: 18px 0 26px; }
+.foot { position: absolute; left: 72px; right: 140px; bottom: 26px; display: flex; justify-content: space-between; gap: 40px; font-size: 17px; color: var(--sub); line-height: 1.45; }
+.foot > span:last-child:not(:first-child) { white-space: nowrap; }
+.sec { display: inline-block; margin-right: 12px; padding: 2px 12px; border-radius: 8px; background: var(--ink); color: var(--bg); font-size: 18px; vertical-align: 3px; letter-spacing: 0.04em; }
+.pno { position: absolute; right: 0; bottom: 0; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: var(--accent); color: var(--on-accent); font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+a.ref { text-decoration: none; border-bottom: 2px solid var(--accent-mid); }
+a.ref .pg { margin-left: 4px; font-size: max(0.7em, 16px); color: var(--sub); font-weight: 600; }
+html[data-mode="pitch"] a.ref .pg { font-size: max(0.7em, 54px); }
+/* 出典の番号・用語の下線・戻るリンク・飛び先を光らせる（runtime.js が付ける） */
+.cites { position: absolute; left: 72px; right: 140px; bottom: 3px; overflow: hidden; white-space: nowrap; font-size: 16px; font-weight: 700; line-height: 21px; color: var(--sub); }
+.cites .cw + .cw { margin-left: 16px; }
+a.cite, a.glc { display: inline-block; min-width: 24px; margin: 0 2px; padding: 0 5px; border-radius: 5px; background: var(--accent-bg); color: var(--accent); font-size: 16px; font-weight: 800; line-height: 20px; text-align: center; text-decoration: none; }
+a.cite.p, a.glc { background: var(--lane); color: var(--sub); }
+a.gl { color: inherit; text-decoration: underline dotted var(--accent); text-decoration-thickness: 2px; text-underline-offset: 5px; }
+.back { display: none; position: absolute; right: 72px; top: 44px; z-index: 5; padding: 8px 20px; border: 2px solid var(--accent); border-radius: 999px; background: var(--bg); color: var(--accent); font-size: 18px; font-weight: 800; text-decoration: none; }
+.back.show { display: block; }
+html[data-mode="pitch"] .back { font-size: 54px; padding: 10px 34px; }
+.flash, tr.flash > td { background: var(--warn-bg) !important; }
+.flash:not(tr) { outline: 4px solid var(--warn); outline-offset: 2px; }
+
+/* レイアウト */
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+.cols.mid { align-items: center; }
+.cols.c37 { grid-template-columns: 3fr 7fr; } .cols.c73 { grid-template-columns: 7fr 3fr; }
+.cols.c46 { grid-template-columns: 4fr 6fr; } .cols.c64 { grid-template-columns: 6fr 4fr; }
+.cols.c3 { grid-template-columns: repeat(3, 1fr); }
+.stack > * + * { margin-top: 24px; }
+.center { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.fill { height: 100%; }
+
+/* カード */
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; }
+.grid.g4 { grid-template-columns: repeat(4, 1fr); gap: 22px; }
+.grid.g2 { grid-template-columns: 1fr 1fr; gap: 40px; }
+.grid.g5 { grid-template-columns: repeat(5, 1fr); gap: 18px; }
+.card { border: 2px solid var(--line); border-radius: var(--r); padding: 28px 30px; display: flex; flex-direction: column; background: var(--bg); }
+.card .when { font-size: 18px; font-weight: 700; color: var(--sub); letter-spacing: 0.06em; }
+.card h2 { font-size: 32px; font-weight: 800; line-height: 1.3; margin: 10px 0 14px; }
+.card p { font-size: 23px; line-height: 1.6; font-weight: 600; }
+.card .note { margin-top: auto; padding-top: 16px; font-size: 18px; color: var(--sub); line-height: 1.5; font-weight: 500; }
+.card .ill { width: 100%; height: 250px; object-fit: contain; margin: -6px 0 12px; }
+.card.key { border-color: var(--accent); background: var(--accent-bg); }
+.card.open { border-color: var(--warn); }
+.card.solid { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.card.solid .when, .card.solid .note { color: inherit; opacity: 0.8; }
+.tag { display: inline-block; margin-left: 8px; padding: 3px 12px; border-radius: 999px; background: var(--warn-bg); color: var(--warn); font-size: 17px; font-weight: 700; vertical-align: 5px; letter-spacing: 0; }
+.tag.ok { background: var(--accent-bg); color: var(--accent); }
+.tag.gray { background: var(--lane); color: var(--sub); }
+
+/* 結論の帯・見出し・箇条書き */
+.strip { margin-top: 28px; padding: 22px 30px; border-radius: 14px; background: var(--lane); font-size: 24px; font-weight: 700; line-height: 1.6; }
+.strip b { color: var(--accent); }
+.strip .w { color: var(--warn); }
+.strip.bottom { position: absolute; left: 72px; right: 72px; bottom: 78px; margin: 0; }
+h3 { font-size: 27px; font-weight: 800; line-height: 1.35; margin-bottom: 14px; }
+h3 small { font-size: 18px; font-weight: 600; color: var(--sub); margin-left: 10px; }
+ul.pts { padding-left: 1.1em; font-size: 23px; line-height: 1.6; font-weight: 600; }
+ul.pts li + li { margin-top: 10px; }
+ul.pts li::marker { color: var(--accent); }
+ul.check { list-style: none; padding: 0; font-size: 23px; line-height: 1.55; font-weight: 600; }
+ul.check li { position: relative; padding-left: 44px; }
+ul.check li + li { margin-top: 14px; }
+ul.check li::before { content: ""; position: absolute; left: 0; top: 0.18em; width: 28px; height: 28px; border-radius: 50%; background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/20px no-repeat; }
+ol.steps { list-style: none; padding: 0; counter-reset: s; font-size: 23px; line-height: 1.55; font-weight: 600; }
+ol.steps li { position: relative; padding-left: 54px; counter-increment: s; }
+ol.steps li + li { margin-top: 16px; }
+ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 19px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.lead { font-size: 30px; font-weight: 700; line-height: 1.55; }
+.quote { position: relative; padding: 30px 36px 30px 104px; border-radius: var(--r); background: var(--lane); font-size: 28px; font-weight: 700; line-height: 1.6; }
+.quote::before { content: "“"; position: absolute; left: 22px; top: -8px; font-size: 120px; font-weight: 900; color: var(--accent); line-height: 1; }
+.quote cite { display: block; margin-top: 12px; font-size: 19px; font-style: normal; font-weight: 600; color: var(--sub); }
+
+/* 大きな数字 */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+.kpis.k3 { grid-template-columns: repeat(3, 1fr); } .kpis.k2 { grid-template-columns: 1fr 1fr; } .kpis.k1 { grid-template-columns: 1fr; }
+.kpi { border: 2px solid var(--line); border-radius: var(--r); padding: 26px 28px; background: var(--bg); }
+.kpi.key { border-color: var(--accent); background: var(--accent-bg); }
+.kpi .v { font-size: 62px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.kpi .v small { font-size: 26px; margin-left: 4px; }
+.kpi.key .v { color: var(--accent); }
+.kpi .k { font-size: 23px; font-weight: 800; margin-top: 6px; }
+.kpi .d { font-size: 18px; color: var(--sub); margin-top: 8px; line-height: 1.45; font-weight: 500; }
+.big { font-size: 60px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.big small { display: inline; font-size: 26px; font-weight: 700; margin-left: 4px; color: inherit; }
+
+/* 横の流れ（手順・足し算の内訳） */
+.flow { display: flex; align-items: stretch; }
+.step { flex: 1; position: relative; border: 2px solid var(--ink); border-radius: 12px; background: var(--bg); padding: 20px 18px; font-size: 24px; font-weight: 800; line-height: 1.35; }
+.step small { display: block; margin-top: 8px; font-size: 18px; font-weight: 500; color: var(--sub); line-height: 1.45; }
+.step .n { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; margin-right: 6px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 17px; vertical-align: 2px; }
+.step .who { display: block; font-size: 17px; font-weight: 700; color: var(--sub); letter-spacing: 0.04em; margin-bottom: 6px; }
+.step .big small { display: inline; margin-top: 0; font-size: 26px; font-weight: 700; color: inherit; }
+.step img { width: 100%; height: 150px; object-fit: contain; margin-bottom: 10px; }
+.step.key { border-color: var(--accent); background: var(--accent-bg); }
+.step.key .n { background: var(--accent); color: var(--on-accent); }
+.step.money { border-color: var(--warn); background: var(--warn-bg); }
+.step.money .n { background: var(--warn); color: var(--bg); }
+.flow .gap { width: 44px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 30px; color: var(--sub); font-weight: 800; }
+
+/* 時間の帯（幅は style="flex:数"） */
+.timeline { display: flex; height: 150px; border-radius: 12px; overflow: hidden; border: 2px solid var(--ink); }
+.seg { display: flex; flex-direction: column; justify-content: center; padding: 0 16px; border-right: 2px solid var(--bg); font-size: 22px; font-weight: 800; background: var(--lane); min-width: 0; }
+.seg:last-child { border-right: 0; }
+.seg small { font-size: 18px; font-weight: 600; color: var(--sub); margin-top: 4px; }
+.seg.play, .seg.key { background: var(--accent-bg); }
+.seg.bid, .seg.money { background: var(--warn-bg); }
+
+/* 横棒（棒の長さは style="width:%"） */
+.bars { display: grid; grid-template-columns: fit-content(380px) 1fr fit-content(200px); column-gap: 24px; row-gap: 28px; align-items: center; }
+.bars .l { font-size: 24px; font-weight: 800; line-height: 1.3; }
+.bars .l small { display: block; font-size: 17px; font-weight: 500; color: var(--sub); }
+.bars .b { height: 58px; border-radius: 8px; background: var(--line); }
+.bars .b.key { background: var(--accent); } .bars .b.mid { background: var(--accent-mid); } .bars .b.money { background: var(--warn); }
+.bars .v { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+/* 表 */
+table.tbl { border-collapse: collapse; width: 100%; font-size: 22px; }
+table.tbl th { text-align: left; font-size: 18px; color: var(--sub); font-weight: 700; padding: 8px 10px; border-bottom: 2px solid var(--ink); white-space: nowrap; }
+table.tbl td { padding: 14px 12px; border-bottom: 1px solid var(--line); font-weight: 600; line-height: 1.45; vertical-align: top; }
+table.tbl td.r, table.tbl th.r { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.tbl td.c, table.tbl th.c { text-align: center; }
+table.tbl td.s { font-weight: 500; color: var(--sub); font-size: 19px; }
+table.tbl tr.em td { font-weight: 800; background: var(--accent-bg); }
+table.tbl tr.sum td { font-weight: 800; border-top: 2px solid var(--ink); }
+table.tbl.tight td { padding: 9px 10px; font-size: 20px; }
+table.tbl .mk { display: inline-flex; width: 34px; height: 34px; border-radius: 50%; align-items: center; justify-content: center; font-weight: 900; }
+table.tbl .mk.o { background: var(--accent-bg); color: var(--accent); } table.tbl .mk.t { background: var(--warn-bg); color: var(--warn); } table.tbl .mk.x { background: var(--lane); color: var(--sub); }
+/* 財務の表（tables.js が data-fin から作る） */
+.fin table { border-collapse: collapse; width: 100%; font-size: 19px; font-variant-numeric: tabular-nums; }
+.fin th, .fin td { padding: 8px 9px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); font-weight: 600; }
+.fin th { font-size: 17px; color: var(--sub); font-weight: 700; border-bottom: 2px solid var(--ink); }
+.fin tr.grp th { border-bottom: 0; padding-bottom: 2px; color: var(--ink); font-size: 18px; text-align: center; }
+.fin .lb { text-align: left; font-weight: 700; padding-left: 4px; }
+.fin th.lb { font-weight: 600; font-size: 16px; }
+.fin .gs { border-left: 2px solid var(--line); }
+.fin .em { background: var(--lane); }
+.fin tr.sum td { font-weight: 800; border-top: 2px solid var(--ink); }
+.fin tr.key td { font-weight: 800; background: var(--accent-bg); }
+.fin tr.pct td { color: var(--sub); font-size: 17px; font-weight: 600; }
+.fin tr.head td { color: var(--accent); font-weight: 800; padding-top: 12px; }
+.fin tr.i1 td.lb { padding-left: 30px; font-weight: 600; } .fin tr.i2 td.lb { padding-left: 56px; font-weight: 600; }
+.fin td.neg { color: var(--warn); }
+.fin.tight td, .fin.tight th { padding: 5px 7px; }
+/* 出典・前提の一覧（build-sources.mjs が作る） */
+table.src { table-layout: fixed; width: 100%; border-collapse: collapse; }
+table.src th { font-size: 16px; font-weight: 700; color: var(--sub); text-align: left; padding: 6px 8px; border-bottom: 2px solid var(--ink); }
+table.src td { font-size: 17px; font-weight: 500; line-height: 1.4; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; overflow-wrap: anywhere; }
+table.src td.no { font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+table.src td.dt { font-variant-numeric: tabular-nums; }
+table.src .pub { font-weight: 700; }
+table.src .nt { color: var(--sub); font-size: 16px; }
+table.src td.u { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 16px; }
+table.src td.u a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--line); }
+table.src td.pg a { margin-right: 8px; color: var(--accent); font-weight: 700; text-decoration: none; white-space: nowrap; }
+table.src tr.grp td { padding-top: 10px; font-weight: 800; color: var(--accent); border-bottom: 2px solid var(--accent); }
+table.src.prim td { padding: 10px 8px; }
+.stag { display: inline-block; margin-left: 6px; padding: 0 8px; border-radius: 999px; background: var(--lane); color: var(--sub); font-size: 16px; font-weight: 700; }
+.st { display: inline-block; padding: 1px 12px; border-radius: 999px; font-size: 16px; font-weight: 800; white-space: nowrap; }
+.st.plan { background: var(--accent-bg); color: var(--accent); } .st.est { background: var(--lane); color: var(--ink); } .st.tbd { background: var(--warn-bg); color: var(--warn); }
+/* 用語集（build-glossary.mjs が作る） */
+.gls { display: grid; grid-template-columns: 1fr 1fr; column-gap: 48px; margin-top: 14px; align-items: start; }
+.gls .gh { padding: 10px 8px 4px; font-size: 18px; font-weight: 800; color: var(--accent); border-bottom: 2px solid var(--accent); }
+.ge { display: grid; grid-template-columns: 220px 1fr; gap: 14px; align-items: baseline; padding: 9px 8px; border-bottom: 1px solid var(--line); }
+.ge b { font-size: 21px; font-weight: 800; line-height: 1.3; }
+.ge b small { display: block; margin-top: 2px; font-size: 16px; font-weight: 600; color: var(--sub); }
+.ge p { font-size: 19px; font-weight: 600; line-height: 1.45; }
+.ge a.ref { margin-left: 6px; font-size: 17px; font-weight: 800; color: var(--accent); white-space: nowrap; border: 0; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 26px; font-size: 19px; color: var(--sub); font-weight: 600; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { display: inline-block; width: 20px; height: 14px; border-radius: 3px; }
+
+/* 画像 */
+.ph { display: flex; align-items: center; justify-content: center; border: 3px dashed var(--line); border-radius: var(--r); background: var(--lane); color: var(--sub); font-size: 22px; font-weight: 700; min-height: 200px; }
+html[data-mode="pitch"] .ph { font-size: 54px; }
+.fig { margin: 0; }
+.fig img { width: 100%; height: 100%; object-fit: contain; }
+.fig.cover img { object-fit: cover; border-radius: var(--r); }
+.fig figcaption { margin-top: 12px; font-size: 20px; font-weight: 700; color: var(--sub); line-height: 1.45; }
+.hero-img { position: absolute; right: 90px; top: 100px; width: 700px; height: 700px; object-fit: contain; }
+.phones { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+.phones figure { margin: 0; display: flex; flex-direction: column; align-items: center; }
+.phones img { width: 300px; height: 649px; object-fit: cover; border: 7px solid var(--ink); border-radius: 36px; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22); }
+.phones figcaption { margin-top: 16px; align-self: stretch; font-size: 22px; font-weight: 800; line-height: 1.35; }
+
+/* 比べる：左右（前と後）・2×2・ピラミッド・ベン図 */
+.vs { display: grid; grid-template-columns: 1fr 90px 1fr; align-items: stretch; }
+.vs .mid { display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 900; color: var(--accent); }
+.matrix { position: relative; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 14px; padding: 0 0 46px 56px; }
+.matrix .q { border-radius: 14px; background: var(--lane); padding: 22px 26px; font-size: 22px; font-weight: 600; line-height: 1.5; }
+.matrix .q h4 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+.matrix .q.key { background: var(--accent-bg); outline: 3px solid var(--accent); outline-offset: -3px; }
+.matrix .ax-x, .matrix .ax-y { position: absolute; font-size: 19px; font-weight: 700; color: var(--sub); }
+.matrix .ax-x { left: 56px; right: 0; bottom: 6px; display: flex; justify-content: space-between; }
+.matrix .ax-y { left: 0; top: 0; bottom: 46px; width: 40px; display: flex; flex-direction: column-reverse; justify-content: space-between; align-items: center; }
+.matrix .ax-y span { writing-mode: vertical-rl; }
+.pyramid { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.pyramid > div { display: flex; align-items: center; justify-content: center; height: 96px; clip-path: polygon(var(--i) 0, calc(100% - var(--i)) 0, 100% 100%, 0 100%); background: var(--accent-mid); color: var(--ink); font-size: 24px; font-weight: 800; text-align: center; padding: 0 60px; }
+.pyramid > div:first-child { clip-path: polygon(50% 0, 50% 0, 100% 100%, 0 100%); background: var(--accent); color: var(--on-accent); padding-top: 30px; }
+.pyramid > div.base { background: var(--lane); }
+.venn { position: relative; }
+.venn .c { position: absolute; border-radius: 50%; display: flex; padding: 40px; font-size: 24px; font-weight: 800; mix-blend-mode: multiply; }
+html[data-theme="dark"] .venn .c { mix-blend-mode: screen; }
+.venn .c.a { background: color-mix(in srgb, var(--accent) 28%, transparent); }
+.venn .c.b { background: color-mix(in srgb, var(--warn) 24%, transparent); }
+.venn .c.c3 { background: color-mix(in srgb, var(--c6) 30%, transparent); }
+.venn .mid { position: absolute; font-size: 24px; font-weight: 900; text-align: center; }
+
+/* 表紙・中扉 */
+section.cover { padding: 110px 120px; }
+.cover .kicker { font-size: 26px; }
+.cover h1 { font-size: 96px; line-height: 1.15; letter-spacing: -0.015em; margin-top: 18px; max-width: 1000px; }
+.cover .lead { max-width: 1000px; font-size: 36px; margin-top: 28px; }
+.cover .toc { position: absolute; left: 120px; right: 120px; bottom: 110px; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 22px; }
+.cover .toc div { border-top: 4px solid var(--accent); padding-top: 16px; font-size: 28px; font-weight: 800; }
+.cover .toc small { display: block; font-size: 19px; color: var(--sub); font-weight: 600; margin-top: 6px; line-height: 1.5; }
+section.chap { padding: 150px 120px; background: var(--accent); color: var(--on-accent); }
+.chap .ck { font-size: 26px; font-weight: 800; letter-spacing: 0.16em; opacity: 0.75; text-transform: uppercase; }
+.chap .cn { margin-top: 10px; font-size: 260px; font-weight: 900; line-height: 0.9; letter-spacing: -0.03em; }
+.chap h1 { margin-top: 26px; font-size: 100px; font-weight: 800; }
+.chap .lead { margin-top: 22px; max-width: 1500px; font-size: 34px; opacity: 0.88; }
+.chap .chaps { position: absolute; left: 120px; right: 120px; bottom: 110px; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 14px; }
+.chap .chaps div { padding-top: 12px; border-top: 6px solid currentColor; font-size: 19px; font-weight: 700; line-height: 1.35; white-space: nowrap; opacity: 0.4; overflow: hidden; text-overflow: ellipsis; }
+.chap .chaps div b { display: block; font-size: 28px; font-weight: 900; }
+.chap .chaps div.done { opacity: 0.65; }
+.chap .chaps div.on { opacity: 1; }
+.chap .pno { background: var(--bg); color: var(--accent); }
+
+/* グラフ（charts.js が描く） */
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; overflow: visible; font-family: var(--font); }
+.chart .ax { stroke: var(--ink); stroke-width: 2; }
+.chart .grid-l { stroke: var(--line); stroke-width: 1; }
+.chart .tk { fill: var(--sub); font-size: var(--chart-fs); font-weight: 600; }
+.chart .lb { fill: var(--ink); font-size: var(--chart-fs); font-weight: 700; }
+.chart .vl { fill: var(--ink); font-size: var(--chart-fs-v); font-weight: 800; font-variant-numeric: tabular-nums; }
+.chart .vl.in { fill: var(--on-accent); }
+.chart .un { fill: var(--sub); font-size: var(--chart-fs); font-weight: 600; }
+.chart .halo { paint-order: stroke; stroke: var(--bg); stroke-width: 6px; stroke-linejoin: round; }
+.chart .refl { stroke-width: 3; stroke-dasharray: 10 7; }
+
+/* 図（diagrams.js が線を描く） */
+.dgm { position: relative; }
+.dgm > svg.dgm-links, .cycle > svg.dgm-links { position: absolute; left: 0; top: 0; z-index: 1; overflow: visible; pointer-events: none; }
+.dgm-links path { fill: none; stroke: var(--sub); stroke-width: 3; }
+.dgm-links path.dash { stroke-dasharray: 9 7; }
+.dgm-links path.key { stroke: var(--accent); } .dgm-links path.money { stroke: var(--warn); }
+.dgm-links text { font-size: 18px; font-weight: 700; fill: var(--ink); paint-order: stroke; stroke: var(--bg); stroke-width: 6px; stroke-linejoin: round; }
+.dgm-links text.key { fill: var(--accent); } .dgm-links text.money { fill: var(--warn); }
+.node { position: relative; z-index: 2; border: 2px solid var(--ink); border-radius: 14px; background: var(--bg); padding: 16px 20px; font-size: 23px; font-weight: 800; line-height: 1.35; text-align: center; }
+.node small { display: block; margin-top: 6px; font-size: 17px; font-weight: 500; color: var(--sub); line-height: 1.4; }
+.node img { width: 120px; height: 120px; object-fit: contain; margin: 0 auto 8px; }
+.node.key { border-color: var(--accent); background: var(--accent-bg); }
+.node.money { border-color: var(--warn); background: var(--warn-bg); }
+.node.solid { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.node.solid small { color: inherit; opacity: 0.8; }
+.node.ghost { border-style: dashed; border-color: var(--sub); }
+.node.round { border-radius: 999px; }
+.cycle { position: relative; }
+.cycle > .node { position: absolute; transform: translate(-50%, -50%); }
+.cycle > .hub { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; font-size: 30px; font-weight: 900; color: var(--accent); }
+.tree { display: grid; justify-items: center; row-gap: 70px; }
+.tree .row { display: flex; gap: 28px; justify-content: center; }
+/* 担当者ごとのフロー図：行＝担当者、列＝段階 */
+.lanes { --cols: 5; --rows: 4; --rowh: 150px; --who: 210px; position: relative; display: grid; grid-template-columns: var(--who) repeat(var(--cols), 1fr); grid-template-rows: 44px repeat(var(--rows), var(--rowh)); border-bottom: 1px solid var(--line); }
+.lanes .phase { font-size: 19px; font-weight: 700; color: var(--sub); text-align: center; align-self: center; }
+.lanes .phase b { color: var(--accent); }
+.lanes .who { display: flex; flex-direction: column; justify-content: center; padding-left: 18px; font-size: 21px; font-weight: 800; background: var(--lane); border-top: 1px solid var(--line); }
+.lanes .who small { font-size: 16px; font-weight: 500; color: var(--sub); margin-top: 4px; }
+.lanes .who.me { background: var(--ink); color: var(--bg); }
+.lanes .who.me small { color: inherit; opacity: 0.7; }
+.lanes .cell { position: relative; display: flex; align-items: center; justify-content: center; padding: 12px 22px; background: var(--lane); border-top: 1px solid var(--line); }
+.lanes .box { position: relative; z-index: 2; width: 100%; background: var(--bg); border: 2px solid var(--ink); border-radius: 12px; padding: 10px 14px; font-size: 19px; font-weight: 700; line-height: 1.35; }
+.lanes .box small { display: block; margin-top: 5px; font-size: 16px; font-weight: 500; color: var(--sub); line-height: 1.4; }
+.lanes .box.key { border-color: var(--accent); background: var(--accent-bg); }
+.lanes .box.money { border-color: var(--warn); background: var(--warn-bg); }
+.lanes .box.cond { border-style: dashed; }
+
+/* 地図（make-map.mjs が SVG を書き込む） */
+.map svg { display: block; max-width: 100%; height: auto; overflow: hidden; font-family: var(--font); }
+.map .sea { fill: var(--map-sea); }
+.map .land { fill: var(--map-land); stroke: var(--map-edge); stroke-width: 0.8; }
+.map .land.hl, .map .land.accent { fill: var(--accent); }
+.map .land.mid { fill: var(--accent-mid); }
+.map .land.warn { fill: var(--warn); }
+.map .land.sub { fill: var(--c6); }
+.map .land.q1 { fill: var(--seq1); } .map .land.q2 { fill: var(--seq2); } .map .land.q3 { fill: var(--seq3); } .map .land.q4 { fill: var(--seq4); } .map .land.q5 { fill: var(--seq5); }
+.map .border { fill: none; stroke: var(--map-edge); stroke-width: 1; }
+.map .grat { fill: none; stroke: var(--line); stroke-width: 0.6; }
+.map .pt { fill: var(--ink); stroke: var(--bg); stroke-width: 3; }
+.map .pt.accent { fill: var(--accent); } .map .pt.warn { fill: var(--warn); }
+.map .pt.ring { fill: var(--bg); stroke: var(--accent); stroke-width: 5; }
+.map .arc { fill: none; stroke: var(--ink); stroke-width: 3.5; }
+.map .arc.accent { stroke: var(--accent); } .map .arc.warn { stroke: var(--warn); }
+.map .arc.dash { stroke-dasharray: 10 7; }
+.map .ml { fill: var(--ink); font-size: 20px; font-weight: 800; paint-order: stroke; stroke: var(--bg); stroke-width: 6px; stroke-linejoin: round; }
+.map .ml.sub { fill: var(--sub); font-weight: 600; font-size: 17px; }
+.map .ml.accent { fill: var(--accent); } .map .ml.warn { fill: var(--warn); }
+.map .ml.on { fill: var(--on-accent); stroke: none; }
+.map-scale { display: flex; align-items: center; gap: 10px; font-size: 17px; color: var(--sub); font-weight: 600; }
+.map-scale i { display: inline-block; width: 44px; height: 14px; }
+
+/* ---------- 映す発表（data-mode="pitch"）：文字はすべて 54px 以上、1 ページ 1 メッセージ・絵が主役 ---------- */
+html[data-mode="pitch"] section { padding: 70px 100px 60px; }
+html[data-mode="pitch"] .kicker { font-size: 54px; letter-spacing: 0.06em; }
+html[data-mode="pitch"] h1 { font-size: 80px; line-height: 1.25; letter-spacing: -0.01em; }
+html[data-mode="pitch"] .rule { height: 6px; margin: 26px 0 40px; width: 160px; }
+html[data-mode="pitch"] .pno { width: 104px; height: 104px; font-size: 54px; }
+html[data-mode="pitch"] .foot { left: 100px; right: 150px; bottom: 30px; font-size: 54px; }
+html[data-mode="pitch"] .sec { font-size: 54px; padding: 0 22px; border-radius: 14px; }
+html[data-mode="pitch"] .tag { font-size: 54px; padding: 4px 26px; }
+html[data-mode="pitch"] .strip { font-size: 60px; padding: 30px 44px; border-radius: 28px; }
+html[data-mode="pitch"] .legend { font-size: 54px; gap: 12px 44px; }
+html[data-mode="pitch"] .legend i { width: 44px; height: 30px; border-radius: 6px; }
+html[data-mode="pitch"] .dgm-links text { font-size: 54px; stroke-width: 10px; }
+html[data-mode="pitch"] .dgm-links path { stroke-width: 6; }
+html[data-mode="pitch"] .node { font-size: 60px; border-width: 5px; border-radius: 28px; padding: 26px 34px; }
+html[data-mode="pitch"] .map .ml { font-size: 54px; stroke-width: 12px; }
+html[data-mode="pitch"] .map .ml.sub { font-size: 54px; }
+html[data-mode="pitch"] .map .pt { stroke-width: 6; }
+html[data-mode="pitch"] .map .arc { stroke-width: 8; }
+html[data-mode="pitch"] section.cover h1 { font-size: 150px; }
+html[data-mode="pitch"] section.cover .lead { font-size: 60px; max-width: 1400px; }
+html[data-mode="pitch"] section.chap .ck, html[data-mode="pitch"] section.chap .lead { font-size: 60px; }
+html[data-mode="pitch"] section.chap .chaps { display: none; }
+/* 発表の部品 */
+.say { font-size: 110px; font-weight: 900; line-height: 1.2; letter-spacing: -0.02em; }
+.say em { font-style: normal; color: var(--accent); }
+.say .w { color: var(--warn); }
+.bignum { font-size: 260px; font-weight: 900; line-height: 1; letter-spacing: -0.04em; color: var(--accent); font-variant-numeric: tabular-nums; }
+.bignum small { font-size: 100px; letter-spacing: 0; margin-left: 10px; }
+.bignum-k { margin-top: 24px; font-size: 64px; font-weight: 800; }
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px; }
+.trio.t2 { grid-template-columns: 1fr 1fr; } .trio.t4 { grid-template-columns: repeat(4, 1fr); gap: 40px; }
+.trio figure { margin: 0; text-align: center; }
+.trio img { width: 100%; height: 480px; object-fit: contain; }
+.trio figcaption { margin-top: 18px; font-size: 60px; font-weight: 900; line-height: 1.25; }
+.trio figcaption small { display: block; font-size: 54px; font-weight: 700; color: var(--sub); }
+.band { display: flex; justify-content: center; align-items: center; gap: 24px; padding: 30px 50px; border-radius: 32px; background: var(--lane); font-size: 64px; font-weight: 900; }
+.band b { color: var(--accent); }
+.arrow { flex: none; font-size: 110px; font-weight: 900; color: var(--accent); line-height: 1; }
+.chain { display: flex; align-items: center; justify-content: center; gap: 36px; }
+.chain figure { margin: 0; text-align: center; }
+.chain img { width: 360px; height: 360px; object-fit: contain; margin: 0 auto; }
+.chain figcaption { margin-top: 12px; font-size: 60px; font-weight: 900; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; height: 100%; }
+.split img { width: 100%; height: 820px; object-fit: contain; }
+section.dark, html[data-mode="pitch"] section.dark { background: var(--ink); color: var(--bg); }
+html[data-theme="dark"] section.dark { background: #020617; color: var(--ink); }
+section.full-img { padding: 0; }
+section.full-img > img { width: 100%; height: 100%; object-fit: cover; }
+section.full-img .over { position: absolute; left: 100px; bottom: 110px; right: 100px; font-size: 96px; font-weight: 900; color: #fff; text-shadow: 0 4px 30px rgba(0, 0, 0, 0.55); line-height: 1.2; }
+
+/* 発表者メモ（N で重ねる。?presenter で発表者用の窓） */
+.np { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; max-height: 40vh; overflow: auto; padding: 16px 24px; background: rgba(12, 16, 24, 0.92); color: #fff; font: 600 22px/1.6 var(--font); }
+.np.show { display: block; }
+.np .meta { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 8px; font-size: 16px; color: #c3c8d2; font-variant-numeric: tabular-nums; }
+.np .meta b { color: #fff; } .np .meta b.late { color: #fb923c; }
+.np .next { margin-top: 10px; font-size: 16px; color: #c3c8d2; }
+body.presenter { overflow: auto; background: #0c1018; }
+body.presenter section, body.presenter .nav { display: none !important; }
+body.presenter .np { display: block; position: static; max-height: none; min-height: 100vh; font-size: 30px; padding: 30px 40px; }
+body.presenter .np .meta { font-size: 24px; }
+body.presenter .np .next { font-size: 22px; margin-top: 26px; }
+
+/* ?check のときだけ：はみ出し・小さすぎる文字・数字の抜けに赤枠 */
+.ovf { outline: 3px solid #e11d48 !important; outline-offset: -2px; }
+.ovf-gap { position: absolute; z-index: 39; pointer-events: none; outline: 3px dashed #e11d48; outline-offset: -3px; background: repeating-linear-gradient(45deg, rgba(225, 29, 72, 0.13) 0 16px, transparent 16px 32px); }
+.ovf-badge { position: absolute; left: 0; top: 0; z-index: 40; padding: 6px 14px; background: #e11d48; color: #fff; font-size: 22px; font-weight: 800; }
+.f-missing { background: #ffe4e6; color: #be123c; }
+
+/*END LIB:CSS*/</style>
+<style>
+  /* 図1（表紙の見本）に合わせた配色：セージと生成り、濃い緑を強調、注意は赤茶 */
+  html[data-theme] {
+    --bg: #fbf8f1; --page: #e7e2d4; --ink: #28302c; --sub: #5b635d; --line: #ddd6c4; --lane: #f3eee1;
+    --accent: #3d6a52; --accent-bg: #e6eee4; --accent-mid: #9fbaa6; --on-accent: #fbf8f1;
+    --warn: #b0694e; --warn-bg: #f8ebe4;
+    --c1: #3d6a52; --c2: #79a086; --c3: #b8ceb9; --c4: #c9846a; --c5: #e6bda9; --c6: #b3ad9f;
+    --seq1: #eef3ec; --seq2: #c9dcc9; --seq3: #9fbaa6; --seq4: #5f8a70; --seq5: #2f5642;
+    --sage: #c9cea9; --pill: #8fb49a; --cream: #f2ecdc;
+  }
+  /* 表紙・締め（図1の再現） */
+  section.fig1 { padding: 0; background: var(--cream); }
+  .fig1 .panel { position: absolute; left: 0; top: 0; bottom: 0; width: 640px; background: var(--sage); padding: 76px 64px 60px; overflow: hidden; }
+  .fig1 .leafbg { position: absolute; left: 0; bottom: 0; width: 380px; height: 640px; object-fit: contain; object-position: left bottom; opacity: 0.32; }
+  .fig1 .pillmark { display: block; width: 210px; height: 210px; margin-left: 130px; }
+  .fig1 .tagline { margin: 26px 0 28px; padding-bottom: 28px; border-bottom: 2px solid rgba(40, 48, 44, 0.35); font-size: 38px; font-weight: 700; line-height: 1.6; text-align: center; letter-spacing: 0.06em; }
+  .fig1 .feat { position: relative; display: flex; align-items: center; gap: 24px; margin-bottom: 30px; font-size: 25px; font-weight: 600; line-height: 1.5; }
+  .fig1 .feat svg { width: 70px; height: 70px; flex: none; }
+  .fig1 .by { position: absolute; left: 64px; right: 64px; bottom: 64px; padding-top: 26px; border-top: 2px solid rgba(40, 48, 44, 0.35); text-align: center; font-size: 36px; font-weight: 700; letter-spacing: 0.2em; }
+  .fig1 .by small { display: block; margin-top: 8px; font-size: 19px; font-weight: 600; letter-spacing: 0.04em; color: var(--sub); }
+  .fig1 .tab { position: absolute; left: 730px; top: 70px; width: 640px; height: 922px; border: 22px solid #23262e; border-radius: 52px; overflow: hidden; transform: rotate(5deg); box-shadow: 18px 30px 60px rgba(40, 48, 44, 0.35); background: #fff; }
+  .fig1 .tab img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  section.fig1 h1.vtitle { position: absolute; right: 130px; top: 60px; margin: 0; max-width: none; writing-mode: vertical-rl; font-size: 66px; font-weight: 500; line-height: 1.6; letter-spacing: 0.12em; color: #3f4a41; }
+  .fig1 .qr { position: absolute; right: 60px; bottom: 96px; width: 350px; text-align: center; }
+  .fig1 .qr img { width: 200px; height: 200px; display: block; margin: 0 auto 10px; }
+  .fig1 .qr b { display: block; font-size: 22px; letter-spacing: 0.02em; }
+  .fig1 .qr small { display: block; margin-top: 6px; font-size: 17px; line-height: 1.45; color: var(--sub); font-weight: 600; }
+  .fig1 .thanks { position: absolute; right: 90px; bottom: 90px; width: 420px; text-align: right; font-size: 30px; font-weight: 700; line-height: 1.6; }
+  .fig1 .thanks small { display: block; margin-top: 10px; font-size: 20px; color: var(--sub); font-weight: 600; }
+  .fig1 .foot { left: 700px; right: 460px; }
+  /* 画面の写真（タブレットの縦長） */
+  .phones.tab { grid-template-columns: repeat(3, 1fr); }
+  .phones.tab img { width: 430px; height: 619px; object-position: top; border-width: 12px; border-radius: 30px; }
+  .phones.tab img.crop { height: 500px; }
+  .phones.tab figcaption small { display: block; margin-top: 6px; font-size: 19px; font-weight: 600; color: var(--sub); line-height: 1.45; }
+</style>
+</head>
+<body>
+
+<!-- 表紙：図1の再現 -->
+<section id="cover" class="cover fig1" data-nopno>
+  <div class="panel">
+    <img class="leafbg" src="illust/leaf.webp" alt="">
+    <svg class="pillmark" viewBox="0 0 220 220" aria-hidden="true"><path d="M110 14a90 90 0 1 0 52 164l40 16-16-38A90 90 0 0 0 110 14z" fill="var(--pill)"/><g transform="rotate(-42 110 104)"><rect x="40" y="74" width="140" height="60" rx="30" fill="none" stroke="#1d2420" stroke-width="12"/><path d="M110 74v60" stroke="#1d2420" stroke-width="10"/><path d="M62 104h30" stroke="#fbf8f1" stroke-width="9" stroke-linecap="round"/></g></svg>
+    <div class="tagline">症状に合った医薬品を<br>チャットでやさしくご案内</div>
+    <div class="feat"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M19 22h26a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H31l-7 6v-6h-5a3 3 0 0 1-3-3V25a3 3 0 0 1 3-3z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="25" cy="31" r="1.9" fill="currentColor"/><circle cx="32" cy="31" r="1.9" fill="currentColor"/><circle cx="39" cy="31" r="1.9" fill="currentColor"/></svg><span>チャットで気軽に相談<br>症状を入力するだけでOK</span></div>
+    <div class="feat"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M21 43c0-13 9-22 23-22 0 14-9 23-22 23z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M20 45l16-16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>あなたに合った市販薬を提案<br>根拠やポイントも分かりやすく</span></div>
+    <div class="feat"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M32 15l14 5v10c0 9-6 16-14 20-8-4-14-11-14-20V20z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M26 32l5 5 8-9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>安心・安全を第一に<br>注意点や副作用も丁寧にご案内</span></div>
+    <div class="by">川嶋 宥翔<small>2026年9月30日時点・非営利のβ版</small></div>
+  </div>
+  <div class="tab"><img src="screens/chat-top.webp" alt="相談の画面（候補と成分の重複の注意）"></div>
+  <h1 class="vtitle">チャット型<br>医薬品相談ツール</h1>
+  <div class="qr"><img src="illust/qr-aws.svg" alt="検証環境のQRコード"><b>aws.medicine.yutok.dev</b><small>検証環境。開くと起動し、数分かかります<br>利用はテスターに限ります（利用規約 第4条）</small></div>
+  <div class="foot"><span>イラストは生成AIで作成したイメージ</span></div>
+</section>
+
+<!-- 要約 -->
+<section id="summary">
+  <div class="kicker"><span class="sec">00</span>SUMMARY</div>
+  <h1>会話で市販薬選びを支える非営利β。次は実証と専門家の確認</h1>
+  <div class="rule"></div>
+  <div class="kpis">
+    <div class="kpi"><div class="v"><span data-f="db.products"></span><small>件</small></div><div class="k">収録した市販薬</div><div class="d">メーカー <span data-f="db.makers"></span> 社。分類・成分・用法を整理</div></div>
+    <div class="kpi"><div class="v"><span data-f="db.inter"></span><small>組</small></div><div class="k">飲み合わせの規則</div><div class="d">危険度「高」<span data-f="db.inter_hi"></span> 組を含む</div></div>
+    <div class="kpi key"><div class="v"><span data-f="eval.total"></span><small>件</small></div><div class="k">安全性のオフライン点検</div><div class="d">年齢・妊娠・併用薬・緊急など 6 つの群</div></div>
+    <div class="kpi"><div class="v"><span data-f="dev.commits"></span><small>回</small></div><div class="k">1年間の改良</div><div class="d">2025年10月〜2026年9月のコミット</div></div>
+  </div>
+  <div class="cols c64" style="margin-top:34px">
+    <div>
+      <h3>いまの状態</h3>
+      <table class="tbl tight">
+        <tr><th>段階</th><th>内容</th></tr>
+        <tr><td>動いている</td><td class="s">本番（GCP）と検証環境（AWS）。日本語・英語・韓国語・中国語、読み上げと文字の拡大</td></tr>
+        <tr><td>確かめた</td><td class="s">規則の部分を 600 件で自動点検。止まる不具合を 1 件見つけて修正</td></tr>
+        <tr><td>これから</td><td class="s">利用者での実証<span class="tag">これから実証</span>、外部の薬剤師・医師による確認</td></tr>
+        <tr><td>決めていない</td><td class="s">商用化の形<span class="tag">未定</span></td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>お願いしたいこと</h3>
+      <ul class="check">
+        <li>試験導入（薬局・自治体・大学）</li>
+        <li>医療の専門家による確認</li>
+        <li>運営資金の支援</li>
+        <li>提携（データ・販路）</li>
+        <li>開発の仲間</li>
+      </ul>
+    </div>
+  </div>
+  <div class="strip">薬の名前は<b>規則で選び</b>、AIは症状の読み取りと説明だけ。危ないときは<span class="w">薬を出さずに受診をすすめる</span>。</div>
+  <div class="foot"><span>数字は 2026-09-30 時点のリポジトリ（data/・log/・git の履歴）から計算。詳細は <a class="ref" href="#ask">お願いしたいこと</a></span></div>
+</section>
+
+<section id="ch01" class="chap" data-n="01" data-t="課題と解決">
+  <div class="ck">Chapter 01</div>
+  <div class="cn">01</div>
+  <h1>課題と解決</h1>
+  <div class="lead">説明が義務でない市販薬を、会話で安全に選べるようにする</div>
+</section>
+
+<section id="problem">
+  <div class="kicker"><span class="sec">01</span>PROBLEM</div>
+  <h1>収録した市販薬の<span data-f="db.self_share" data-d="1" data-u="%"></span>は、薬剤師の説明が義務でない</h1>
+  <div class="rule"></div>
+  <div class="cols c46">
+    <div>
+      <h3>収録した市販薬の分類<small>件数</small></h3>
+      <div class="chart" style="height:430px" data-chart='{"type":"donut","items":[{"label":"第1類（説明が義務）","v":"@db.cls_values.0","color":"warn"},{"label":"指定第2類","v":"@db.cls_values.1","color":"c1"},{"label":"第2類","v":"@db.cls_values.2","color":"c2"},{"label":"第3類","v":"@db.cls_values.3","color":"c3"}],"center":{"k":"件"}}'></div>
+      <p style="font-size:20px;color:var(--sub);margin-top:14px;line-height:1.5">第2類・指定第2類は説明が努力義務、第3類は定めなし（薬機法 第36条の10）</p>
+    </div>
+    <div>
+      <h3>困りごとの仮説<span class="tag">これから実証</span></h3>
+      <div class="grid">
+        <div class="card"><img class="ill" src="illust/night.webp" alt=""><h2>夜・休日</h2><p>聞ける人がいない時間に選ぶ</p></div>
+        <div class="card"><img class="ill" src="illust/elder.webp" alt=""><h2>読みにくさ</h2><p>小さな字や専門の言葉が分かりにくい</p></div>
+        <div class="card"><img class="ill" src="illust/traveler.webp" alt=""><h2>言葉の壁</h2><p>日本語での相談に不安がある</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="strip">多くの市販薬は、買う人が<b>自分で選ぶ</b>前提で売られている。その場面を会話で支える。</div>
+  <div class="foot"><span>分類：data/otc_medicine_data.csv（分類が空欄の 1 件を除く）。仮説は開発者の店頭での経験から</span><span>イラストは生成AIで作成したイメージ</span></div>
+</section>
+
+<section id="market">
+  <div class="kicker"><span class="sec">01</span>MARKET</div>
+  <h1>市販薬の国内生産は年<span data-f="market.otc_oku" data-u="億円"></span>。選ぶ場面は毎日ある</h1>
+  <div class="rule"></div>
+  <div class="kpis k3">
+    <div class="kpi key"><div class="v"><span data-f="market.otc_oku"></span><small>億円</small></div><div class="k">一般用医薬品の生産金額</div><div class="d"><span data-f="market.year"></span>年。前年より <span data-f="market.growth" data-d="1"></span>% 増</div></div>
+    <div class="kpi"><div class="v"><span data-f="market.aging" data-d="1"></span><small>%</small></div><div class="k">65歳以上の人の割合</div><div class="d">2024年10月1日。読みやすさ・聞きやすさが要る</div></div>
+    <div class="kpi"><div class="v"><span data-f="market.visitors"></span><small>万人</small></div><div class="k">訪日外国人</div><div class="d">2024年。日本語以外での相談が要る</div></div>
+  </div>
+  <h3 style="margin-top:40px">使われる場面の想定<span class="tag">これから実証</span></h3>
+  <table class="tbl">
+    <tr><th>場面</th><th>いまの困りごと</th><th>このツールでできること</th></tr>
+    <tr><td>買う前に自宅で</td><td class="s">どれを選べばよいか分からない</td><td>症状を書くと候補と注意が返る</td></tr>
+    <tr><td>店頭で・夜に</td><td class="s">店員に聞きにくい、聞ける人がいない</td><td>受診の目安と相談先を示す</td></tr>
+    <tr class="em"><td>旅行・在住の外国人</td><td class="s">日本語の説明が読めない</td><td>4つの言葉で相談できる</td></tr>
+  </table>
+  <div class="strip">市場の大きさより、<b>一人で選ぶ場面の多さ</b>に注目する。利用の数は<span class="w">これから実証</span>する。</div>
+  <div class="foot"><span>市場の数字は定義で変わる（ここでは厚生労働省の生産金額を使う）</span></div>
+</section>
+
+<section id="solution">
+  <div class="kicker"><span class="sec">01</span>SOLUTION</div>
+  <h1>話して、規則で選び、危ないときは止める。3つで支える</h1>
+  <div class="rule"></div>
+  <div class="grid">
+    <div class="card"><img class="ill" src="illust/elder.webp" alt=""><div class="when">話す</div><h2>症状を言葉で伝えるだけ</h2><p>文字でも声でも入力できる。読み上げと文字の拡大、4つの言葉に対応</p></div>
+    <div class="card key"><img class="ill" src="illust/choose.webp" alt=""><div class="when">選ぶ</div><h2>候補は規則で決める</h2><p>症状・年齢・持病・飲んでいる薬から点数を付け、禁忌は外す。AIは薬の名前を決めない</p></div>
+    <div class="card"><img class="ill" src="illust/shield.webp" alt=""><div class="when">守る</div><h2>危ないサインで止める</h2><p>胸の痛みや息苦しさなどは、薬を出さずに119番や受診を案内する</p></div>
+  </div>
+  <div class="strip">診断・処方はしない。<b>登録販売者・薬剤師に相談する前の下調べ</b>という位置づけ。</div>
+  <div class="foot"><span>詳細は <a class="ref" href="#a-flow">付録：全体の流れ</a></span><span>イラストは生成AIで作成したイメージ</span></div>
+</section>
+
+<section id="screens1">
+  <div class="kicker"><span class="sec">01</span>SCREENS</div>
+  <h1>候補・注意・受診の目安までを、1回の相談で返す</h1>
+  <div class="rule"></div>
+  <div class="phones tab">
+    <figure><img src="screens/chat-top.webp" alt=""><figcaption>候補と成分の重複<small>「30歳の女性。喉が痛くて熱」→ 候補2件と、同じ成分を重ねない注意</small></figcaption></figure>
+    <figure><img src="screens/chat-view.webp" alt=""><figcaption>受診の目安と追加の質問<small>候補の下に、医師に相談する目安・聞き足す質問・読み上げ</small></figcaption></figure>
+    <figure><img src="screens/emergency.webp" alt=""><figcaption>緊急のサイン<small>「胸が締め付けられ冷や汗」→ 薬を出さず119番を案内</small></figcaption></figure>
+  </div>
+  <div class="foot"><span>ローカル環境で撮影（2026-09-30）。候補は検証環境と同じ規則</span></div>
+</section>
+
+<section id="screens2">
+  <div class="kicker"><span class="sec">01</span>SCREENS</div>
+  <h1>飲んでいる薬との重なりを注意し、4つの言葉で答える</h1>
+  <div class="rule"></div>
+  <div class="phones tab">
+    <figure><img class="crop" src="screens/safety-crop.webp" alt=""><figcaption>飲んでいる薬と同じ系統<small>「パブロンゴールドAを飲んでいる」→ 解熱鎮痛薬の重ね飲みを止める</small></figcaption></figure>
+    <figure><img src="screens/english-top.webp" alt=""><figcaption>English<small>質問も答えも英語。薬は日本の商品名のまま示す</small></figcaption></figure>
+    <figure><img src="screens/chinese-top.webp" alt=""><figcaption>中文<small>中国語。韓国語にも対応</small></figcaption></figure>
+  </div>
+  <div class="foot"><span>ローカル環境で撮影（2026-09-30）。ほかの画面は <a class="ref" href="#a-scr-a11y">付録：読み上げと文字の大きさ</a></span></div>
+</section>
+
+<section id="ch02" class="chap" data-n="02" data-t="しくみ">
+  <div class="ck">Chapter 02</div>
+  <div class="cn">02</div>
+  <h1>しくみ</h1>
+  <div class="lead">AIは言葉の読み取りと説明に使い、薬の選択は規則で行う</div>
+</section>
+
+<section id="pipeline">
+  <div class="kicker"><span class="sec">02</span>PIPELINE</div>
+  <h1>相談は5つに振り分け、緊急かどうかを最初に判定する</h1>
+  <div class="rule"></div>
+  <div class="cols c64">
+    <div class="dgm" style="height:560px; display:grid; grid-template-columns:repeat(3, 270px); justify-content:space-between; align-content:center; row-gap:150px"
+         data-links='[["pp-in","pp-gate","相談文"],["pp-gate","pp-tri","通過"],["pp-tri","pp-route","体の症状"],["pp-route","pp-agent","推薦"],["pp-agent","pp-out","候補と注意",{"tone":"key"}]]'>
+      <div class="node" id="pp-in">利用者<small>文字・声・4言語</small></div>
+      <div class="node solid" id="pp-gate">安全の門<small>緊急・危険な言葉</small></div>
+      <div class="node" id="pp-tri">振り分け<small>5つの分類</small></div>
+      <div class="node key" id="pp-out">返答<small>理由・注意・受診の目安</small></div>
+      <div class="node" id="pp-agent">推薦<small>規則で点数を付ける</small></div>
+      <div class="node" id="pp-route">意図の判定<small>推薦・比較・質問</small></div>
+    </div>
+    <div>
+      <h3>振り分けの5分類</h3>
+      <table class="tbl tight">
+        <tr><th>分類</th><th>行き先</th></tr>
+        <tr class="em"><td>緊急</td><td class="s">薬を出さず 119番・受診</td></tr>
+        <tr><td>体の症状</td><td class="s">推薦へ進む</td></tr>
+        <tr><td>気持ち</td><td class="s">話を聞き、相談先を示す</td></tr>
+        <tr><td>質問</td><td class="s">薬・使い方の説明</td></tr>
+        <tr><td>その他</td><td class="s">使い方の案内</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="strip">推薦に進むのは体の症状のときだけ。<b>緊急の判定は推薦より前</b>に置く。</div>
+  <div class="foot"><span>src/agents（safety_gate・triage_agent ほか 16 の部品）。詳細は <a class="ref" href="#a-pipe">付録：処理の順番</a></span></div>
+</section>
+
+<section id="scoring">
+  <div class="kicker"><span class="sec">02</span>SCORING</div>
+  <h1>候補は7項目の重みで並べ、禁忌は点数に関係なく外す</h1>
+  <div class="rule"></div>
+  <div class="cols c64">
+    <div>
+      <h3>点数の重み<small>合計 0.88。禁忌は −1.0 で除外</small></h3>
+      <div class="chart" style="height:560px" data-chart='{"type":"bar","horizontal":true,"labels":"@weights.labels","series":[{"values":"@weights.values"}],"highlight":0,"fmt":{"d":2}}'></div>
+    </div>
+    <div class="stack">
+      <h3>選ぶ順番</h3>
+      <ol class="steps">
+        <li>症状に合う効能で候補を集める</li>
+        <li>年齢・妊娠・持病・飲んでいる薬で禁忌を外す</li>
+        <li>7項目の点数で並べる</li>
+        <li>上位を理由と注意つきで返す</li>
+      </ol>
+      <div class="card open"><h2>同点が多い<span class="tag">課題</span></h2><p>1位と2位が同点になる例が多い（<a class="ref" href="#eval2">次に直す点</a>）</p></div>
+    </div>
+  </div>
+  <div class="strip">重みはコードの定数で、AIの判断は入らない。<b>同じ入力なら同じ順位</b>になる（同点はデータの並び順）。</div>
+  <div class="foot"><span>重み：src/security/enhanced_safety_checker.py の ENHANCED_SCORING_WEIGHTS。詳細は <a class="ref" href="#a-weights">付録：重みの意味</a></span></div>
+</section>
+
+<section id="data">
+  <div class="kicker"><span class="sec">02</span>DATA</div>
+  <h1>市販薬<span data-f="db.products" data-u="件"></span>と飲み合わせ<span data-f="db.inter" data-u="組"></span>を、規則で使える形に整えた</h1>
+  <div class="rule"></div>
+  <div class="kpis">
+    <div class="kpi key"><div class="v"><span data-f="db.products"></span><small>件</small></div><div class="k">市販薬</div><div class="d">重複を除くと <span data-f="db.unique"></span> 件</div></div>
+    <div class="kpi"><div class="v"><span data-f="db.eff"></span><small>行</small></div><div class="k">効能の記述</div><div class="d">症状と薬をつなぐ</div></div>
+    <div class="kpi"><div class="v"><span data-f="db.ingredients"></span><small>語</small></div><div class="k">成分の辞書</div><div class="d">系統・別名をまとめる</div></div>
+    <div class="kpi"><div class="v"><span data-f="db.symptoms"></span><small>症状</small></div><div class="k">症状の辞書</div><div class="d">言い換え <span data-f="db.synonyms"></span> 語</div></div>
+  </div>
+  <div class="cols c46" style="margin-top:34px">
+    <div>
+      <h3>飲み合わせの規則<small>危険度別の組数</small></h3>
+      <div class="chart" style="height:300px" data-chart='{"type":"bar","horizontal":true,"labels":["高","中","低"],"series":[{"values":["@db.inter_hi","@db.inter_mid","@db.inter_lo"]}],"highlight":0}'></div>
+    </div>
+    <div>
+      <h3>ほかに持っている情報</h3>
+      <ul class="pts">
+        <li>副作用の規則 <span data-f="db.side"></span> 件</li>
+        <li>ドーピングの禁止物質を含む薬 <span data-f="db.doping"></span> 件に印</li>
+        <li>商品の画像 <span data-f="db.images"></span> 件（Cloudflare R2 から配信）</li>
+      </ul>
+    </div>
+  </div>
+  <div class="strip">データの誤りは推薦の誤りになる。<span class="w">飲み合わせの表には見直しが要る行</span>がある。</div>
+  <div class="foot"><span>data/ の CSV・JSON から計算。詳細は <a class="ref" href="#a-db">付録：データの中身</a></span></div>
+</section>
+
+<section id="arch-gcp">
+  <div class="kicker"><span class="sec">02</span>ARCHITECTURE</div>
+  <h1>本番はCloud Runの1つのコンテナに、外部サービスをつなぐ</h1>
+  <div class="rule"></div>
+  <div class="cols c64">
+    <div class="dgm" style="height:620px; display:grid; grid-template-columns:260px 280px 280px; grid-template-rows:repeat(3, 1fr); justify-content:space-between; align-items:center"
+         data-links='[["g-user","g-run","相談"],["g-run:top","g-ai:left","読み取り・説明",{"mode":"vh"}],["g-run","g-tr","翻訳・音声"],["g-run:bottom","g-db:left","保存",{"mode":"vh"}],["g-user","g-img","画像"]]'>
+      <div class="node" id="g-user" style="grid-column:1; grid-row:2">利用者<small>ブラウザ・LINE</small></div>
+      <div class="node solid" id="g-run" style="grid-column:2; grid-row:2">Cloud Run<small>FastAPI・1コンテナ</small></div>
+      <div class="node" id="g-ai" style="grid-column:3; grid-row:1">OpenAI<small>症状の読み取り・説明文</small></div>
+      <div class="node" id="g-tr" style="grid-column:3; grid-row:2">DeepL・Google TTS<small>翻訳・読み上げ</small></div>
+      <div class="node" id="g-db" style="grid-column:3; grid-row:3">Neon・Upstash<small>会話・キャッシュ</small></div>
+      <div class="node" id="g-img" style="grid-column:1; grid-row:3">Cloudflare R2<small>商品の画像</small></div>
+    </div>
+    <div>
+      <h3>本番の入口</h3>
+      <table class="tbl tight">
+        <tr><th>名前</th><th>中身</th></tr>
+        <tr class="em"><td>medicine.yutok.dev</td><td class="s">本番（GCP）</td></tr>
+        <tr><td>images.yutok.dev</td><td class="s">商品の画像（R2）</td></tr>
+        <tr><td>LINE</td><td class="s">本番だけで受け付け</td></tr>
+      </table>
+      <div class="card key" style="margin-top:28px"><h2>AIが止まっても動く</h2><p>OpenAI が使えないときは、規則だけで候補と緊急の案内を返す</p></div>
+    </div>
+  </div>
+  <div class="strip">本番と検証は<b>同じDockerイメージ</b>。環境変数だけで切り替える。</div>
+  <div class="foot"><span>詳細は <a class="ref" href="#a-gcp">付録：本番の構成</a></span></div>
+</section>
+
+<section id="arch-aws">
+  <div class="kicker"><span class="sec">02</span>ARCHITECTURE</div>
+  <h1>検証環境は使う時だけ起動し、月の費用を数ドルに抑える</h1>
+  <div class="rule"></div>
+  <div class="cols c64">
+    <div class="dgm" style="height:560px; display:grid; grid-template-columns:repeat(3, 270px); justify-content:space-between; align-content:center; row-gap:150px"
+         data-links='[["w-user","w-worker","アクセス"],["w-worker","w-tun","中継"],["w-tun","w-ecs","転送"],["w-worker","w-lambda","止まっていれば"],["w-lambda","w-ecs","起動・停止",{"tone":"key"}],["w-eb","w-lambda","10分ごと"]]'>
+      <div class="node" id="w-user">利用者<small>aws.medicine.yutok.dev</small></div>
+      <div class="node solid" id="w-worker">Cloudflare Worker<small>起動待ちの画面</small></div>
+      <div class="node" id="w-tun">Cloudflare Tunnel<small>入口（ALBなし）</small></div>
+      <div class="node" id="w-eb">EventBridge<small>30分使われなければ</small></div>
+      <div class="node" id="w-lambda">Lambda<small>起動と停止</small></div>
+      <div class="node key" id="w-ecs">ECS Fargate<small>本番と同じイメージ</small></div>
+    </div>
+    <div>
+      <h3>検証環境の費用<small>ドル</small></h3>
+      <table class="tbl tight">
+        <tr><th>使い方</th><th class="r">費用</th></tr>
+        <tr class="em"><td>止めておく（既定）</td><td class="r">$<span data-f="aws.stopped_lo"></span>〜<span data-f="aws.stopped_hi"></span>/月</td></tr>
+        <tr><td>ずっと動かす</td><td class="r">$<span data-f="aws.always_lo"></span>〜<span data-f="aws.always_hi"></span>/月</td></tr>
+        <tr><td>動いている間</td><td class="r">$<span data-f="aws.per_hour" data-d="3"></span>/時</td></tr>
+        <tr><td>実績（新しいアカウント・8月1〜7日）</td><td class="r">$<span data-f="aws.actual_week" data-d="2"></span></td></tr>
+        <tr class="sum"><td>予算の上限</td><td class="r">$<span data-f="aws.budget"></span>/月</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="strip">起動に<span class="w"><span data-f="aws.wake_lo"></span>〜<span data-f="aws.wake_hi"></span>分</span>かかる代わりに、<b>使わない時間の費用をほぼ0</b>にした。</div>
+  <div class="foot"><span>費用の見積もりと実績：docs/ops/AWS_COST_PLAN.md。詳細は <a class="ref" href="#a-aws">付録：検証環境の構成</a></span></div>
+</section>
+
+<section id="ch03" class="chap" data-n="03" data-t="安全性と検証">
+  <div class="ck">Chapter 03</div>
+  <div class="cn">03</div>
+  <h1>安全性と検証</h1>
+  <div class="lead">できていないことも数字で示し、直す順番を決める</div>
+</section>
+
+<section id="safety">
+  <div class="kicker"><span class="sec">03</span>SAFETY</div>
+  <h1>危ないサインは推薦の前に止め、候補には注意を必ず添える</h1>
+  <div class="rule"></div>
+  <div class="flow">
+    <div class="step key"><span class="n">1</span>緊急の判定<small>胸の痛み・息苦しさなど → 119番・受診</small></div>
+    <div class="gap">→</div>
+    <div class="step"><span class="n">2</span>対象外の判定<small>幼児・妊娠中は薬を出さず相談をすすめる</small></div>
+    <div class="gap">→</div>
+    <div class="step"><span class="n">3</span>禁忌で除外<small>年齢・持病・飲んでいる薬</small></div>
+    <div class="gap">→</div>
+    <div class="step"><span class="n">4</span>重なりの注意<small>同じ成分・同じ系統・飲み合わせ</small></div>
+    <div class="gap">→</div>
+    <div class="step"><span class="n">5</span>受診の目安<small>続く日数・悪化・副作用</small></div>
+  </div>
+  <div class="grid g2" style="margin-top:36px">
+    <div class="card open"><div class="when">しないこと</div><h2>医療の代わりにならない</h2><ul class="pts"><li>病名の断定（診断）</li><li>処方・用量の変更</li><li>購入へのさそい</li></ul></div>
+    <div class="card key"><div class="when">必ずすること</div><h2>相談先へつなぐ</h2><ul class="pts"><li>候補ごとの注意書き</li><li>受診の目安と相談先</li><li>緊急なら119番</li></ul></div>
+  </div>
+  <div class="strip">利用規約の第3条に<b>診断・処方・治療を行わない</b>と書いている。</div>
+  <div class="foot"><span>利用規約：src/content/about_modal_html.json。詳細は <a class="ref" href="#a-gate">付録：安全の門</a></span></div>
+</section>
+
+<section id="eval">
+  <div class="kicker"><span class="sec">03</span>EVALUATION</div>
+  <h1>規則の部分を<span data-f="eval.total" data-u="件"></span>で自動点検し、見つけた停止は直した</h1>
+  <div class="rule"></div>
+  <div class="kpis">
+    <div class="kpi key"><div class="v"><span data-f="eval.errors"></span><small>件</small></div><div class="k">処理が止まった件数</div><div class="d">直す前は <span data-f="eval.before.errors"></span> 件。成分名の括弧が原因</div></div>
+    <div class="kpi"><div class="v"><span data-f="eval.preg_ref" data-d="0"></span><small>%</small></div><div class="k">妊娠中で相談をすすめた</div><div class="d">薬を出した割合は <span data-f="eval.preg_reco" data-d="0"></span>%</div></div>
+    <div class="kpi"><div class="v"><span data-f="eval.emer_rule" data-d="0"></span><small>%</small></div><div class="k">緊急の文を規則で検知</div><div class="d">本番はこの後にAIの振り分けも入る</div></div>
+    <div class="kpi"><div class="v"><span data-f="eval.age_any" data-d="1"></span><small>%</small></div><div class="k">年齢に合わない薬が上位3件に</div><div class="d">候補が出た <span data-f="eval.age_any_n"></span> 件中 <span data-f="eval.age_any_k"></span> 件。7歳・12歳に集中</div></div>
+  </div>
+  <h3 style="margin-top:38px">点検した群<small>AIを使わず、規則だけで実行</small></h3>
+  <table class="tbl tight">
+    <tr><th>群</th><th class="r">件数</th><th>見たこと</th></tr>
+    <tr><td>年齢 × 症状</td><td class="r"><span data-f="eval.groups.age"></span></td><td class="s">年齢に合うか・候補が出るか・同点か</td></tr>
+    <tr><td>妊娠中</td><td class="r"><span data-f="eval.groups.pregnant"></span></td><td class="s">薬を出さず相談をすすめるか</td></tr>
+    <tr><td>飲んでいる薬</td><td class="r"><span data-f="eval.groups.medication"></span></td><td class="s">飲み合わせの悪い薬が上位に来ないか</td></tr>
+    <tr><td>続く日数</td><td class="r"><span data-f="eval.groups.duration"></span></td><td class="s">10日続く症状に受診を案内するか</td></tr>
+    <tr><td>症状の組み合わせ</td><td class="r"><span data-f="eval.groups.combo"></span></td><td class="s">効能が症状に合うか</td></tr>
+    <tr class="em"><td>緊急</td><td class="r"><span data-f="eval.groups.emergency"></span></td><td class="s">緊急と判定するか（誤って止めた割合は年齢の群で測る）</td></tr>
+  </table>
+  <div class="strip">これは正解率ではなく<b>安全と適合の点検</b>。本番ではAIの読み取りが加わる。</div>
+  <div class="foot"><span>log/analysis/2026-09-30_reco_offline_eval.md。詳細は <a class="ref" href="#a-eval-method">付録：点検の方法</a></span></div>
+</section>
+
+<section id="eval2">
+  <div class="kicker"><span class="sec">03</span>EVALUATION</div>
+  <h1>子どもへの年齢違反と同点の多さを、次に直す</h1>
+  <div class="rule"></div>
+  <div class="cols c46">
+    <div>
+      <h3>年齢に合わない薬が上位3件に入った割合<small>%</small></h3>
+      <div class="chart" style="height:560px" data-chart='{"type":"bar","labels":"@eval.age_labels","series":[{"values":"@eval.age_values"}],"highlight":[0,1],"max":100,"fmt":{"d":1}}'></div>
+    </div>
+    <div>
+      <h3>次に直すこと</h3>
+      <table class="tbl tight">
+        <tr><th>課題</th><th class="r">いま</th><th>直し方</th></tr>
+        <tr class="em"><td>年齢違反（7歳・12歳）</td><td class="r"><span data-f="eval.age_values.0" data-d="1"></span>%</td><td class="s">年齢の制限を添付文書から取り直す</td></tr>
+        <tr><td>1位と2位が同点</td><td class="r"><span data-f="eval.tie2" data-d="1"></span>%</td><td class="s">同点を分ける項目を足す</td></tr>
+        <tr><td>ワルファリンと解熱鎮痛薬</td><td class="r"><span data-f="eval.nsaid_any" data-d="1"></span>%</td><td class="s">成分の系統で飲み合わせを引く</td></tr>
+        <tr><td>緊急の見落とし（規則）</td><td class="r"><span data-f="eval.emer_missed"></span>件</td><td class="s">言い換えの辞書を増やす</td></tr>
+        <tr><td>候補が出ない症状</td><td class="r"><span data-f="eval.no_reco_symptoms"></span>種</td><td class="s">症状と薬の種類の対応を直す</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="strip">数字は<span class="w">そのまま公開</span>し、直したら同じ<span data-f="eval.total"></span>件で測り直す。</div>
+  <div class="foot"><span>割合は上位3件のどれかが当てはまる件数 ÷ 候補が出た件数。詳細は <a class="ref" href="#a-eval-all">付録：すべての指標</a></span></div>
+</section>
+
+<section id="jev">
+  <div class="kicker"><span class="sec">03</span>EXPERIMENT</div>
+  <h1>軽い判定モデルで<span data-f="jev.speedup" data-d="1" data-u="倍"></span>速くなったが、本番入りは見送った</h1>
+  <div class="rule"></div>
+  <div class="kpis">
+    <div class="kpi"><div class="v"><span data-f="jev.cur_avg" data-d="0"></span><small>ms</small></div><div class="k">いまの意図判定</div><div class="d">平均の応答時間</div></div>
+    <div class="kpi key"><div class="v"><span data-f="jev.jev_avg" data-d="0"></span><small>ms</small></div><div class="k">軽い判定モデル</div><div class="d">平均の応答時間</div></div>
+    <div class="kpi"><div class="v"><span data-f="jev.p95_cut" data-d="0"></span><small>%</small></div><div class="k">遅い側（P95）の短縮</div><div class="d"><span data-f="jev.cur_p95" data-d="0"></span> → <span data-f="jev.jev_p95" data-d="0"></span> ms</div></div>
+    <div class="kpi"><div class="v"><span data-f="jev.acc_jev"></span><small>/<span data-f="jev.n"></span></small></div><div class="k">判定が合った件数</div><div class="d">いまの方式も同じ件数</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:36px">
+    <div class="card"><div class="when">分かったこと</div><h2>速さは十分に出る</h2><p>意図の判定を外部の軽いモデル（Jev）に替えると、平均も遅い側も短くなった</p></div>
+    <div class="card open"><div class="when">見送った理由</div><h2>本番の条件を満たさない<span class="tag">見送り</span></h2><p>30件では少なく、本番の裏で試す段階の判定が「まだ」、関門Bは「進めない」</p></div>
+  </div>
+  <div class="strip">速さより<b>安全の確認を先</b>にする。条件がそろうまで本番の判定は替えない。</div>
+  <div class="foot"><span>docs/planning/codex-parallel-jev-20260921/（2026-09-21〜24）。詳細は <a class="ref" href="#a-jev-what">付録：Jev の試験</a></span></div>
+</section>
+
+<section id="risk">
+  <div class="kicker"><span class="sec">03</span>RISK</div>
+  <h1>残る6つのリスクには、いまの対策と次の手を決めてある</h1>
+  <div class="rule"></div>
+  <table class="tbl">
+    <tr><th>リスク</th><th>重さ</th><th>いまの対策</th><th>次の手</th></tr>
+    <tr class="em"><td>子どもに年齢の合わない薬</td><td><span class="mk x">×</span></td><td class="s">年齢の入力を促し、注意を出す</td><td>年齢の制限を取り直す</td></tr>
+    <tr><td>同点が多く、順位が並び順で決まる</td><td><span class="mk t">△</span></td><td class="s">複数の候補を並べて見せる</td><td>同点を分ける項目を足す</td></tr>
+    <tr><td>規則の層での緊急の見落とし</td><td><span class="mk x">×</span></td><td class="s">AIの振り分けを後ろに重ねる（AIの層の検出率は未測定）</td><td>言い換えの辞書を増やし、AIの層も測る</td></tr>
+    <tr><td>飲み合わせの表の誤り</td><td><span class="mk t">△</span></td><td class="s">解熱鎮痛薬の系統を別に点検</td><td>薬剤師に表を確認してもらう</td></tr>
+    <tr><td>AIの停止・残高切れ</td><td><span class="mk x">×</span></td><td class="s">規則だけで候補と緊急案内を返す（緊急の見落としは増える）</td><td>残高と失敗の監視</td></tr>
+    <tr><td>外部の専門家の確認がない</td><td><span class="mk x">×</span></td><td class="s">利用をテスターに限る</td><td>医療の専門家のレビュー</td></tr>
+  </table>
+  <div class="strip">2026年9月30日の撮影中に AI の残高が切れたが、<b>候補と緊急の案内は規則だけで返った</b>。</div>
+  <div class="foot"><span>重さ：× 利用者に害が出うる／△ 質が下がる。飲み合わせの表には塩類が「高」になった行がある（<a class="ref" href="#a-inter">付録：飲み合わせの表</a>）</span></div>
+</section>
+
+<section id="ch04" class="chap" data-n="04" data-t="これから">
+  <div class="ck">Chapter 04</div>
+  <div class="cn">04</div>
+  <h1>これから</h1>
+  <div class="lead">非営利のβのまま実証を進め、形は使う人と一緒に決める</div>
+</section>
+
+<section id="business">
+  <div class="kicker"><span class="sec">04</span>BUSINESS</div>
+  <h1>いまは非営利β。商用化の形は、実証の結果を見て決める</h1>
+  <div class="rule"></div>
+  <div class="grid g4">
+    <div class="card open"><div class="when">案 1</div><h2>薬局向け SaaS・API<span class="tag">未定</span></h2><p>店頭や自社アプリに相談機能を組み込む</p></div>
+    <div class="card open"><div class="when">案 2</div><h2>EC との連携<span class="tag">未定</span></h2><p>ネットで買う前の相談に使う。購入へはさそわない</p></div>
+    <div class="card open"><div class="when">案 3</div><h2>LINE<span class="tag">未定</span></h2><p>本番で受け付け中の窓口を広げる</p></div>
+    <div class="card open"><div class="when">案 4</div><h2>店頭のタブレット<span class="tag">未定</span></h2><p>登録販売者の説明を補う</p></div>
+  </div>
+  <div class="kpis k3" style="margin-top:34px">
+    <div class="kpi"><div class="v">約<span data-f="cost.monthly_yen"></span><small>円/月</small></div><div class="k">いまの運用費</div><div class="d">本番・検証・AIの合計（開発者の申告）</div></div>
+    <div class="kpi"><div class="v" style="font-size:44px">これから実証</div><div class="k">利用者の数</div><div class="d">テスター限定のため、まだ数えていない</div></div>
+    <div class="kpi"><div class="v" style="font-size:44px">非商用</div><div class="k">ライセンス</div><div class="d">PolyForm Noncommercial 1.0.0</div></div>
+  </div>
+  <div class="strip">商用の利用には<span class="w">書面での許可</span>が要る。形が決まるまで料金はとらない。</div>
+  <div class="foot"><span>運用費は開発者の申告（<a class="ref" href="#a-cost">付録：費用</a>）</span></div>
+</section>
+
+<section id="track">
+  <div class="kicker"><span class="sec">04</span>TRACK RECORD</div>
+  <h1>1年で<span data-f="dev.commits" data-u="回"></span>の改良を重ね、4つの賞と1つの本戦出場を得た</h1>
+  <div class="rule"></div>
+  <div class="cols c64">
+    <div>
+      <h3>月ごとのコミット数<small>2025年10月〜2026年9月</small></h3>
+      <div class="chart" style="height:560px" data-chart='{"type":"bar","labels":"@dev.month_labels","series":[{"values":"@dev.month_values"}],"unit":"回"}'></div>
+    </div>
+    <div>
+      <h3>受賞・出場</h3>
+      <ul class="pts">
+        <li>学生生成AIコンテスト（ユメカタリ）最優秀賞</li>
+        <li>椙山女学園大学 第13回ビジネスコンペティション 優秀賞</li>
+        <li>doda キャリアゲートウェイ2025 アイデアコンペティション 審査員特別賞</li>
+        <li>第9回和歌山県データ利活用コンペティション クオリティソフト賞</li>
+        <li>AWS デジタル社会実現ツアー2025 名古屋 本戦出場</li>
+      </ul>
+    </div>
+  </div>
+  <div class="strip">主な節目は<a class="ref" href="#a-hist">付録：開発の歩み</a>にまとめた。</div>
+  <div class="foot"><span>コミット数：git log（2025-10-01 以降）。受賞：docs/archive/mitou/docs/phase1_answers.md</span></div>
+</section>
+
+<section id="ask">
+  <div class="kicker"><span class="sec">04</span>ASK</div>
+  <h1>実証・確認・資金・提携・仲間の5つで力を貸してほしい</h1>
+  <div class="rule"></div>
+  <div class="grid g5">
+    <div class="card key"><div class="when">1</div><h2>試験導入</h2><p>薬局・自治体・大学で使ってもらい、使われ方を測る</p></div>
+    <div class="card"><div class="when">2</div><h2>医療の確認</h2><p>薬剤師・医師に規則と表を見てもらう</p></div>
+    <div class="card"><div class="when">3</div><h2>資金</h2><p>運用費と、専門家の確認・実証の費用</p></div>
+    <div class="card"><div class="when">4</div><h2>提携</h2><p>薬のデータ・画像の提供、販路</p></div>
+    <div class="card"><div class="when">5</div><h2>仲間</h2><p>開発・デザイン・評価を一緒に進める人</p></div>
+  </div>
+  <div class="cols c37 mid" style="margin-top:30px">
+    <img src="illust/partner.webp" alt="" style="width:100%;height:300px;object-fit:contain">
+    <div class="strip" style="margin-top:0">まずは<b>テスターとして使ってみる</b>ことから。連絡はサイトの「運営者情報」から受け付ける（運営者 川嶋 宥翔）。</div>
+  </div>
+  <div class="foot"><span>資金の額は決めていない（使いみちだけを示す）</span><span>イラストは生成AIで作成したイメージ</span></div>
+</section>
+
+<!-- 締め：図1の再現（QRなし） -->
+<section id="close" class="cover fig1" data-nopno>
+  <div class="panel">
+    <img class="leafbg" src="illust/leaf.webp" alt="">
+    <svg class="pillmark" viewBox="0 0 220 220" aria-hidden="true"><path d="M110 14a90 90 0 1 0 52 164l40 16-16-38A90 90 0 0 0 110 14z" fill="var(--pill)"/><g transform="rotate(-42 110 104)"><rect x="40" y="74" width="140" height="60" rx="30" fill="none" stroke="#1d2420" stroke-width="12"/><path d="M110 74v60" stroke="#1d2420" stroke-width="10"/><path d="M62 104h30" stroke="#fbf8f1" stroke-width="9" stroke-linecap="round"/></g></svg>
+    <div class="tagline">症状に合った医薬品を<br>チャットでやさしくご案内</div>
+    <div class="feat"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M19 22h26a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H31l-7 6v-6h-5a3 3 0 0 1-3-3V25a3 3 0 0 1 3-3z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="25" cy="31" r="1.9" fill="currentColor"/><circle cx="32" cy="31" r="1.9" fill="currentColor"/><circle cx="39" cy="31" r="1.9" fill="currentColor"/></svg><span>試験導入・医療の確認</span></div>
+    <div class="feat"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M21 43c0-13 9-22 23-22 0 14-9 23-22 23z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M20 45l16-16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>資金・提携</span></div>
+    <div class="feat"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M32 15l14 5v10c0 9-6 16-14 20-8-4-14-11-14-20V20z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M26 32l5 5 8-9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>一緒に作る仲間</span></div>
+    <div class="by">川嶋 宥翔<small>連絡はサイトの「運営者情報」から</small></div>
+  </div>
+  <div class="tab"><img src="screens/chat-view.webp" alt="受診の目安の画面"></div>
+  <h1 class="vtitle">ありがとう<br>ございました</h1>
+  <div class="thanks">付録に、構成・点検・法令・<br>用語の説明を続けます<small><a class="ref" href="#a-toc">付録の目次</a>から読みたい所へ</small></div>
+  <div class="foot"><span>イラストは生成AIで作成したイメージ</span></div>
+</section>
+
+<section id="a-ch" class="chap" data-n="A" data-t="付録">
+  <div class="ck">Appendix</div>
+  <div class="cn">A</div>
+  <h1>付録</h1>
+  <div class="lead">構成・点検・法令・画面・用語の詳しい説明。本編の注記からたどれる</div>
+</section>
+
+<section id="a-toc">
+  <div class="kicker"><span class="sec">A</span>CONTENTS</div>
+  <h1>付録は12のまとまり。知りたいところから読める</h1>
+  <div class="rule"></div>
+  <div class="grid g4">
+    <div class="card"><div class="when">構成</div><ul class="pts"><li><a class="ref" href="#a-flow">全体の流れ</a></li><li><a class="ref" href="#a-gcp">本番</a></li><li><a class="ref" href="#a-aws">検証環境</a></li><li><a class="ref" href="#a-env">2つの違い</a></li></ul></div>
+    <div class="card"><div class="when">処理</div><ul class="pts"><li><a class="ref" href="#a-pipe">処理の順番</a></li><li><a class="ref" href="#a-agents">16の部品</a></li><li><a class="ref" href="#a-llm">AIの役割</a></li><li><a class="ref" href="#a-gate">安全の門</a></li></ul></div>
+    <div class="card"><div class="when">点数とデータ</div><ul class="pts"><li><a class="ref" href="#a-weights">重み</a></li><li><a class="ref" href="#a-exclude">除外</a></li><li><a class="ref" href="#a-tie">同点</a></li><li><a class="ref" href="#a-db">データ</a></li><li><a class="ref" href="#a-inter">飲み合わせ</a></li><li><a class="ref" href="#a-dict">辞書</a></li><li><a class="ref" href="#a-import">取り込み</a></li></ul></div>
+    <div class="card"><div class="when">点検</div><ul class="pts"><li><a class="ref" href="#a-eval-method">方法</a></li><li><a class="ref" href="#a-eval-metrics">指標の定義</a></li><li><a class="ref" href="#a-eval-all">すべての指標</a></li><li><a class="ref" href="#a-eval-emer">緊急</a></li><li><a class="ref" href="#a-eval-limits">限界</a></li></ul></div>
+    <div class="card"><div class="when">試験</div><ul class="pts"><li><a class="ref" href="#a-jev-what">Jev の試験</a></li><li><a class="ref" href="#a-jev-lat">速さ</a></li><li><a class="ref" href="#a-jev-gate">見送りの判定</a></li></ul></div>
+    <div class="card"><div class="when">法令と位置づけ</div><ul class="pts"><li><a class="ref" href="#a-law">薬機法</a></li><li><a class="ref" href="#a-privacy">個人情報</a></li><li><a class="ref" href="#a-license">規約とライセンス</a></li><li><a class="ref" href="#a-comp">似たサービス</a></li><li><a class="ref" href="#a-pos">位置づけ</a></li></ul></div>
+    <div class="card"><div class="when">画面</div><ul class="pts"><li><a class="ref" href="#a-scr-safety">安全の画面</a></li><li><a class="ref" href="#a-scr-admin">管理画面</a></li><li><a class="ref" href="#a-scr-line">LINE</a></li><li><a class="ref" href="#a-scr-a11y">読み上げ</a></li></ul></div>
+    <div class="card"><div class="when">その他</div><ul class="pts"><li><a class="ref" href="#a-hist">開発の歩み</a></li><li><a class="ref" href="#a-faq1">よくある質問</a></li><li><a class="ref" href="#a-cost">費用</a></li></ul></div>
+  </div>
+  <div class="foot"><span>出典・前提の一覧・用語集は付録の最後</span></div>
+</section>
+
+<!-- 構成 -->
+<section id="a-flow">
+  <div class="kicker"><span class="sec">A</span>ARCHITECTURE</div>
+  <h1>1回の相談は、入力から返答まで6つの段で処理する</h1>
+  <div class="rule"></div>
+  <div class="flow">
+    <div class="step"><span class="n">1</span>受け付け<small>ブラウザ・LINE。文字・声・4言語</small></div>
+    <div class="gap">→</div>
+    <div class="step key"><span class="n">2</span>安全の門<small>緊急・不適切な入力を先に判定</small></div>
+    <div class="gap">→</div>
+    <div class="step"><span class="n">3</span>振り分け<small>5分類と意図</small></div>
+    <div class="gap">→</div>
+    <div class="step"><span class="n">4</span>読み取り<small>症状・年齢・日数などをAIで抜き出す</small></div>
+    <div class="gap">→</div>
+    <div class="step key"><span class="n">5</span>規則で推薦<small>除外と7項目の点数</small></div>
+    <div class="gap">→</div>
+    <div class="step"><span class="n">6</span>説明と注意<small>説明文はAI、注意は規則</small></div>
+  </div>
+  <div class="grid g2" style="margin-top:40px">
+    <div class="card"><div class="when">AIを使う段</div><h2>読み取りと説明</h2><p>段4の症状の読み取り、段6の説明文、段3の振り分けの一部。止まったら規則の読み取りに切り替える</p></div>
+    <div class="card key"><div class="when">AIを使わない段</div><h2>選ぶ・止める</h2><p>段2の緊急の判定の規則、段5の除外と点数、段6の注意と受診の目安</p></div>
+  </div>
+  <div class="strip">段5はAIを使わない。<b>AIが読み取った症状・年齢を、規則が使って薬を決める</b>。</div>
+  <div class="foot"><span>src/agents・src/core。<a class="ref" href="#a-pipe">処理の順番</a>は受け付けを除き、段2・段3をそれぞれ2つに分けた7段。本編 <a class="ref" href="#solution">3つで支える</a></span></div>
+</section>
+
+<section id="a-gcp">
+  <div class="kicker"><span class="sec">A</span>ARCHITECTURE</div>
+  <h1>本番はCloud Run上の1つのアプリから、7つの外部サービスをつなぐ</h1>
+  <div class="rule"></div>
+  <table class="tbl">
+    <tr><th>サービス</th><th>役割</th><th>置いているもの</th></tr>
+    <tr class="em"><td>Google Cloud Run</td><td>本番のアプリ（FastAPI）</td><td class="s">コンテナ1つ。medicine.yutok.dev</td></tr>
+    <tr><td>Neon（Postgres）</td><td>データベース</td><td class="s">会話・任意のプロフィール・管理の記録</td></tr>
+    <tr><td>Upstash（Redis）</td><td>一時的な保存</td><td class="s">会話の状態・キャッシュ</td></tr>
+    <tr><td>Cloudflare R2</td><td>画像の配信</td><td class="s">商品の画像（images.yutok.dev）</td></tr>
+    <tr><td>OpenAI</td><td>症状の読み取り・説明文</td><td class="s">保存はしない（送るのは相談文）</td></tr>
+    <tr><td>DeepL</td><td>翻訳</td><td class="s">英語・韓国語・中国語</td></tr>
+    <tr><td>Google TTS</td><td>読み上げ</td><td class="s">返答の音声</td></tr>
+    <tr><td>LINE Messaging API</td><td>LINE の窓口</td><td class="s">本番だけで受け付け</td></tr>
+  </table>
+  <div class="strip">相談の数に比例して増えるのは<b>AIの利用料</b>。残高が切れても規則だけで候補を返す。</div>
+  <div class="foot"><span>本編 <a class="ref" href="#arch-gcp">本番の構成</a></span></div>
+</section>
+
+<section id="a-aws">
+  <div class="kicker"><span class="sec">A</span>ARCHITECTURE</div>
+  <h1>検証環境はアクセスで起き、30分使われなければ自分で止まる</h1>
+  <div class="rule"></div>
+  <div class="cols">
+    <div>
+      <h3>起きるとき</h3>
+      <ol class="steps">
+        <li>利用者が aws.medicine.yutok.dev を開く</li>
+        <li>Cloudflare Worker が起動待ちの画面を出す</li>
+        <li>Lambda が ECS のタスク数を 0 → 1 にする</li>
+        <li><span data-f="aws.wake_lo"></span>〜<span data-f="aws.wake_hi"></span>分でコンテナが起き、Tunnel がつながる</li>
+      </ol>
+    </div>
+    <div>
+      <h3>止まるとき</h3>
+      <ol class="steps">
+        <li>EventBridge が 10 分ごとに Lambda を呼ぶ</li>
+        <li><span data-f="aws.idle_min"></span>分アクセスがなければタスク数を 0 にする</li>
+        <li>月の予算 $<span data-f="aws.budget"></span> に近づくと段階的に止める</li>
+      </ol>
+    </div>
+  </div>
+  <div class="kpis" style="margin-top:34px">
+    <div class="kpi"><div class="v"><span data-f="aws.wake_lo"></span>〜<span data-f="aws.wake_hi"></span><small>分</small></div><div class="k">起きるまで</div><div class="d">止まった状態から開くまで</div></div>
+    <div class="kpi"><div class="v"><span data-f="aws.idle_min"></span><small>分</small></div><div class="k">止まるまで</div><div class="d">アクセスがない時間</div></div>
+    <div class="kpi"><div class="v">$<span data-f="aws.per_hour" data-d="3"></span></div><div class="k">1時間あたり</div><div class="d">動いている間の費用</div></div>
+    <div class="kpi key"><div class="v">$<span data-f="aws.budget"></span></div><div class="k">月の予算の上限</div><div class="d">近づくと段階的に止める</div></div>
+  </div>
+  <div class="strip">2026年8月7日にロードバランサー（ALB）をやめ、<b>固定費を月 $19〜25 減らした</b>。</div>
+  <div class="foot"><span>docs/ops/AWS_COST_PLAN.md・AWS_WAKE_ON_ACCESS.md。本編 <a class="ref" href="#arch-aws">検証環境</a></span></div>
+</section>
+
+<section id="a-env">
+  <div class="kicker"><span class="sec">A</span>ARCHITECTURE</div>
+  <h1>本番と検証は同じイメージで、違うのは入口・起き方・LINEの有無</h1>
+  <div class="rule"></div>
+  <table class="tbl">
+    <tr><th>項目</th><th>本番（GCP）</th><th>検証（AWS）</th></tr>
+    <tr><td>入口</td><td>medicine.yutok.dev</td><td>aws.medicine.yutok.dev</td></tr>
+    <tr><td>動かす場所</td><td>Cloud Run</td><td>ECS Fargate（Cloudflare Tunnel 経由）</td></tr>
+    <tr><td>起き方</td><td>リクエストで自動</td><td>Worker が起こす（<span data-f="aws.wake_lo"></span>〜<span data-f="aws.wake_hi"></span>分）</td></tr>
+    <tr><td>LINE</td><td>受け付ける</td><td class="s">受け付けない</td></tr>
+    <tr class="em"><td>アプリ</td><td colspan="2">同じ Docker イメージ・同じ規則・同じデータ</td></tr>
+    <tr><td>使う人</td><td colspan="2">どちらもテスター限定（利用規約 第4条）</td></tr>
+  </table>
+  <div class="strip">検証で確かめたものが<b>そのまま本番で動く</b>。QRコードは検証環境を指す。</div>
+  <div class="foot"><span>2026年7月に AWS と Cloudflare の検証環境を追加</span></div>
+</section>
+
+<!-- 処理 -->
+<section id="a-pipe">
+  <div class="kicker"><span class="sec">A</span>PIPELINE</div>
+  <h1>処理の順番は固定で、前の段が止めたら後ろには進まない</h1>
+  <div class="rule"></div>
+  <table class="tbl">
+    <tr><th>順</th><th>段</th><th>部品</th><th>止めるとき</th></tr>
+    <tr class="em"><td>1</td><td>安全の門</td><td class="s">safety_gate・emergency_classifier</td><td>緊急なら 119番・受診の案内で終わる</td></tr>
+    <tr><td>2</td><td>不適切な入力</td><td class="s">moderation_agent</td><td>相談と関係ない・有害な入力</td></tr>
+    <tr><td>3</td><td>振り分け</td><td class="s">triage_agent</td><td>体の症状以外は別の窓口へ</td></tr>
+    <tr><td>4</td><td>意図の判定</td><td class="s">routing/router.py</td><td>推薦・比較・質問に分ける</td></tr>
+    <tr><td>5</td><td>読み取り</td><td class="s">nlu_agent</td><td>症状が読めなければ聞き返す</td></tr>
+    <tr><td>6</td><td>推薦</td><td class="s">physical_orchestrator</td><td>候補がなければ相談をすすめる</td></tr>
+    <tr><td>7</td><td>説明</td><td class="s">explanation_agent</td><td>説明文が作れなければ定型文</td></tr>
+  </table>
+  <div class="strip">どの段で止まっても、<b>相談先を示して終わる</b>。</div>
+  <div class="foot"><span>Chat Pipeline v2（2026年6月）。意図の判定だけ src/dialogue にあり、ほかは src/agents。本編 <a class="ref" href="#pipeline">処理の流れ</a></span></div>
+</section>
+
+<section id="a-agents">
+  <div class="kicker"><span class="sec">A</span>PIPELINE</div>
+  <h1>処理は役割ごとに16の部品に分けてある</h1>
+  <div class="rule"></div>
+  <div class="grid g2">
+    <table class="tbl tight">
+      <tr><th>部品</th><th>役割</th></tr>
+      <tr class="em"><td>safety_gate</td><td class="s">安全の門</td></tr>
+      <tr><td>emergency_classifier</td><td class="s">緊急の分類</td></tr>
+      <tr><td>moderation_agent</td><td class="s">不適切な入力</td></tr>
+      <tr><td>triage_agent</td><td class="s">5分類の振り分け</td></tr>
+      <tr><td>nlu_agent</td><td class="s">症状の読み取り</td></tr>
+      <tr><td>physical_orchestrator</td><td class="s">体の症状の推薦</td></tr>
+      <tr><td>explanation_agent</td><td class="s">説明文</td></tr>
+      <tr><td>ask_agent</td><td class="s">薬についての質問</td></tr>
+    </table>
+    <table class="tbl tight">
+      <tr><th>部品</th><th>役割</th></tr>
+      <tr><td>counseling_manager</td><td class="s">気持ちの相談</td></tr>
+      <tr><td>concierge_agent</td><td class="s">サイトの案内</td></tr>
+      <tr><td>store_inquiry_agent</td><td class="s">店舗への問い合わせ</td></tr>
+      <tr><td>session_agent</td><td class="s">会話の状態</td></tr>
+      <tr><td>profile_memory_agent</td><td class="s">任意のプロフィール</td></tr>
+      <tr><td>memory_delete_agent</td><td class="s">記憶の削除</td></tr>
+      <tr><td>episode_summary_agent</td><td class="s">会話の要約</td></tr>
+      <tr><td>protocols</td><td class="s">部品の共通の形</td></tr>
+    </table>
+  </div>
+  <div class="strip">部品ごとに試験を書いている（テストの関数 <span data-f="dev.test_funcs"></span> 個）。<b>安全の部品は推薦の部品と分けて</b>直せる。</div>
+  <div class="foot"><span>src/agents の 16 モジュール（役割は名前と中身からの要約）</span></div>
+</section>
+
+<section id="a-llm">
+  <div class="kicker"><span class="sec">A</span>AI</div>
+  <h1>AIに任せるのは言葉の仕事だけ。薬の選択は任せない</h1>
+  <div class="rule"></div>
+  <div class="grid g2">
+    <div class="card"><div class="when">AIに任せる</div><h2>言葉の仕事</h2><ul class="pts"><li>症状・年齢・日数の読み取り</li><li>説明文をやさしく書く</li><li>振り分けと意図の判定の一部</li></ul></div>
+    <div class="card key"><div class="when">AIに任せない</div><h2>選ぶ・止める</h2><ul class="pts"><li>薬の名前と順位</li><li>禁忌による除外</li><li>緊急の規則・受診の目安</li></ul></div>
+  </div>
+  <h3 style="margin-top:36px">AIが止まったとき</h3>
+  <table class="tbl tight">
+    <tr><th>場面</th><th>動き</th></tr>
+    <tr><td>読み取り</td><td class="s">規則の読み取りに切り替える（日数の「週」は未対応）</td></tr>
+    <tr><td>説明文</td><td class="s">「詳しいAIのご案内を一時停止」と出し、定型の説明を返す</td></tr>
+  </table>
+  <div class="strip">AIが読み取った症状と条件が同じなら、<b>候補は同じになる</b>。読み取りの誤りは候補に響くので、点検で測る。</div>
+  <div class="foot"><span>2026-09-30 の撮影中に確認（AIの残高切れ）</span></div>
+</section>
+
+<section id="a-gate">
+  <div class="kicker"><span class="sec">A</span>SAFETY</div>
+  <h1>緊急の判定は2つの規則を重ね、どちらかで止める</h1>
+  <div class="rule"></div>
+  <div class="kpis k3">
+    <div class="kpi key"><div class="v"><span data-f="eval.emer_rule" data-d="0"></span><small>%</small></div><div class="k">2つの規則のどちらかで検知</div><div class="d">緊急の文 <span data-f="eval.groups.emergency"></span> 件のうち</div></div>
+    <div class="kpi"><div class="v"><span data-f="eval.emer_cand" data-d="0"></span><small>%</small></div><div class="k">緊急の候補の規則だけ</div><div class="d">言葉の一覧との一致</div></div>
+    <div class="kpi"><div class="v"><span data-f="eval.fp" data-d="0"></span><small>%</small></div><div class="k">普通の文を誤って止めた</div><div class="d">年齢 × 症状の文で測定</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:36px">
+    <div class="card"><div class="when">規則 1</div><h2>緊急の候補</h2><p>胸の痛み・呼吸困難・意識の異常など、決まった言葉と組み合わせ</p></div>
+    <div class="card"><div class="when">規則 2</div><h2>受診の手がかり</h2><p>振り分けの前に見る医療の緊急語の一覧</p></div>
+  </div>
+  <div class="strip">規則だけでは<span class="w">約半分を見落とす</span>。本番では後に<b>AIの振り分け</b>が入るが、AIの層の検出率はまだ測っていない。</div>
+  <div class="foot"><span>src/dialogue/routing/medical_emergency_hints.py ほか。本編 <a class="ref" href="#safety">安全の考え方</a></span></div>
+</section>
+
+<!-- 点数 -->
+<section id="a-weights">
+  <div class="kicker"><span class="sec">A</span>SCORING</div>
+  <h1>重みの合計0.88のうち、症状との合い方が0.50、年齢と安全の項目が0.35</h1>
+  <div class="rule"></div>
+  <table class="tbl">
+    <tr><th>項目</th><th class="r">重み</th><th>見ること</th></tr>
+    <tr class="em"><td>症状適合度</td><td class="r"><span data-f="weights.values.0" data-d="2"></span></td><td class="s">効能が症状にどれだけ合うか</td></tr>
+    <tr><td>効能特異性</td><td class="r"><span data-f="weights.values.1" data-d="2"></span></td><td class="s">その症状に絞った薬か（総合薬より専用薬）</td></tr>
+    <tr><td>年齢適合性</td><td class="r"><span data-f="weights.values.2" data-d="2"></span></td><td class="s">年齢の範囲に入るか</td></tr>
+    <tr><td>副作用リスク</td><td class="r"><span data-f="weights.values.3" data-d="2"></span></td><td class="s">副作用の規則に当たる成分の少なさ</td></tr>
+    <tr><td>安全性スコア</td><td class="r"><span data-f="weights.values.4" data-d="2"></span></td><td class="s">分類・注意の多さ</td></tr>
+    <tr><td>相互作用リスク</td><td class="r"><span data-f="weights.values.5" data-d="2"></span></td><td class="s">飲んでいる薬との飲み合わせ</td></tr>
+    <tr><td>用法簡便性</td><td class="r"><span data-f="weights.values.6" data-d="2"></span></td><td class="s">飲む回数の少なさ</td></tr>
+    <tr class="sum"><td>禁忌</td><td class="r">−1.00</td><td class="s">点数に関係なく候補から外す</td></tr>
+  </table>
+  <div class="foot"><span>src/security/enhanced_safety_checker.py。本編 <a class="ref" href="#scoring">点数の付け方</a></span></div>
+</section>
+
+<section id="a-exclude">
+  <div class="kicker"><span class="sec">A</span>SCORING</div>
+  <h1>年齢・持病は点数より先に外す。飲んでいる薬との重なりは注意にとどまる</h1>
+  <div class="rule"></div>
+  <div class="grid">
+    <div class="card"><div class="when">利用者の情報</div><h2>年齢・妊娠</h2><p>年齢の範囲外の薬は外す。妊娠中は薬を出さず、受診をすすめる</p></div>
+    <div class="card"><div class="when">体の状態</div><h2>持病・アレルギー</h2><p>登録された持病・アレルギーに当たる成分</p></div>
+    <div class="card key"><div class="when">飲んでいる薬</div><h2>重なり・飲み合わせ</h2><p>外さずに点数を下げ、注意を出す。そのため上位に残ることがある</p></div>
+  </div>
+  <div class="grid g2" style="margin-top:30px">
+    <div class="card open"><div class="when">課題</div><h2>情報がないと外せない<span class="tag">注意</span></h2><p>年齢を書かない人には「未入力 −15%」を示すが、子ども向けでない薬が残ることがある</p></div>
+    <div class="card"><div class="when">対策</div><h2>聞き足す</h2><p>候補の下で、年齢・アレルギー・飲んでいる薬・持病を尋ねる</p></div>
+  </div>
+  <div class="strip">任意のプロフィールを登録すると、<b>除外が効く範囲が広がる</b>。</div>
+  <div class="foot"><span>画面の「未入力 −15%」は <a class="ref" href="#screens1">相談の画面</a></span></div>
+</section>
+
+<section id="a-tie">
+  <div class="kicker"><span class="sec">A</span>SCORING</div>
+  <h1>1位と2位の<span data-f="eval.tie2" data-d="0" data-u="%"></span>が同点。順位がデータの並び順で決まっている</h1>
+  <div class="rule"></div>
+  <div class="kpis k2">
+    <div class="kpi key"><div class="v"><span data-f="eval.tie2" data-d="1"></span><small>%</small></div><div class="k">1位と2位が同点</div><div class="d">候補が出た件数のうち</div></div>
+    <div class="kpi"><div class="v"><span data-f="eval.tie3" data-d="1"></span><small>%</small></div><div class="k">上位3件がすべて同点</div><div class="d">同上</div></div>
+  </div>
+  <h3 style="margin-top:36px">なぜ同点になるか・どう直すか</h3>
+  <ul class="pts">
+    <li>同じ効能の書き方の薬が多く、症状適合度が同じ値にそろう</li>
+    <li>点数の上限で止まり、差がつかない</li>
+    <li>直し方：効能の近さ・成分の数・剤形などを小さな重みで足す</li>
+  </ul>
+  <div class="strip">同点でも安全の除外は効いている。<span class="w">「一番よい薬」とは言えない</span>ので、複数の候補を並べて見せる。</div>
+  <div class="foot"><span>log/analysis/2026-09-30_reco_offline_eval.md</span></div>
+</section>
+
+<!-- データ -->
+<section id="a-db">
+  <div class="kicker"><span class="sec">A</span>DATA</div>
+  <h1>データは7つのファイル。どれも規則が直接読む形にしてある</h1>
+  <div class="rule"></div>
+  <table class="tbl">
+    <tr><th>ファイル</th><th class="r">件数</th><th>中身</th></tr>
+    <tr class="em"><td>otc_medicine_data.csv</td><td class="r"><span data-f="db.products"></span></td><td class="s">商品名・メーカー・分類・成分・用法・年齢</td></tr>
+    <tr><td>summarized_efficacy_data.csv</td><td class="r"><span data-f="db.eff"></span></td><td class="s">効能の要約</td></tr>
+    <tr><td>medicine_interactions.csv</td><td class="r"><span data-f="db.inter"></span></td><td class="s">飲み合わせと危険度</td></tr>
+    <tr><td>medicine_side_effects.csv</td><td class="r"><span data-f="db.side"></span></td><td class="s">副作用の規則</td></tr>
+    <tr><td>symptom_dictionary.json</td><td class="r"><span data-f="db.symptoms"></span></td><td class="s">症状と言い換え</td></tr>
+    <tr><td>ingredient_dictionary.json</td><td class="r"><span data-f="db.ingredients"></span></td><td class="s">成分の系統・別名</td></tr>
+    <tr><td>otc_image_versions.json</td><td class="r"><span data-f="db.images"></span></td><td class="s">商品の画像</td></tr>
+  </table>
+  <div class="strip">メーカーは<span data-f="db.makers"></span>社。ドーピングの禁止物質を含む薬<span data-f="db.doping"></span>件に<b>印</b>を付けている。</div>
+  <div class="foot"><span>data/ から計算（docs/slides/…/data/calc.py）。本編 <a class="ref" href="#data">データ</a></span></div>
+</section>
+
+<section id="a-inter">
+  <div class="kicker"><span class="sec">A</span>DATA</div>
+  <h1>飲み合わせの表は、危険度「高」の中身を見直す必要がある</h1>
+  <div class="rule"></div>
+  <div class="cols c46">
+    <div>
+      <h3>危険度別の組数</h3>
+      <div class="chart" style="height:420px" data-chart='{"type":"donut","items":[{"label":"高","v":"@db.inter_hi","color":"warn"},{"label":"中","v":"@db.inter_mid","color":"c2"},{"label":"低","v":"@db.inter_lo","color":"c3"}],"center":{"k":"組"}}'></div>
+    </div>
+    <div>
+      <h3>点検で分かったこと</h3>
+      <table class="tbl tight">
+        <tr><th>指標（ワルファリンを飲む人）</th><th class="r">割合</th></tr>
+        <tr><td>表の「高」の成分が上位3件に</td><td class="r"><span data-f="eval.datahigh_any" data-d="1"></span>%</td></tr>
+        <tr class="em"><td>解熱鎮痛薬（NSAIDs）が上位3件に</td><td class="r"><span data-f="eval.nsaid_any" data-d="1"></span>%</td></tr>
+        <tr><td>解熱鎮痛薬（NSAIDs）が1位に</td><td class="r"><span data-f="eval.nsaid_top1" data-d="1"></span>%</td></tr>
+      </table>
+      <div class="card open" style="margin-top:24px"><h2>「高」に塩類が入っている<span class="tag">要確認</span></h2><p>カリウム・マグネシウム・アルミニウム・ハッカなどが「高」になった行がある</p></div>
+    </div>
+  </div>
+  <div class="strip">表の誤りは推薦の誤りになる。<b>薬剤師による表の確認</b>を最初にお願いしたい。</div>
+  <div class="foot"><span>data/medicine_interactions.csv・log/analysis/2026-09-30_reco_offline_eval.md</span></div>
+</section>
+
+<section id="a-dict">
+  <div class="kicker"><span class="sec">A</span>DATA</div>
+  <h1>症状は辞書で言い換えをまとめる。辞書にあっても候補が出ない症状がある</h1>
+  <div class="rule"></div>
+  <div class="kpis k3">
+    <div class="kpi key"><div class="v"><span data-f="db.symptoms"></span><small>症状</small></div><div class="k">症状の辞書</div><div class="d">頭痛・発熱・のどの痛みなど</div></div>
+    <div class="kpi"><div class="v"><span data-f="db.synonyms"></span><small>語</small></div><div class="k">言い換え</div><div class="d">「喉が痛い」→ のどの痛み</div></div>
+    <div class="kpi"><div class="v"><span data-f="eval.no_reco_symptoms"></span><small>症状</small></div><div class="k">7歳以上のどの年齢でも候補なし</div><div class="d">点検で使った症状のうち</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:34px">
+    <div>
+      <h3>言い換えの例</h3>
+      <table class="tbl tight">
+        <tr><th>症状</th><th>まとめる言い方</th></tr>
+        <tr><td>頭痛</td><td class="s">頭が痛い・ズキズキする・頭が重い</td></tr>
+        <tr><td>発熱</td><td class="s">熱がある・熱っぽい・微熱</td></tr>
+        <tr><td>のどの痛み</td><td class="s">喉が痛い・咽頭痛・喉の腫れ</td></tr>
+        <tr><td>腹痛</td><td class="s">お腹が痛い・おなかが痛い</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>候補が出なかった症状</h3>
+      <p style="font-size:24px;line-height:1.7;font-weight:600">かゆみ・めまい・イライラ・ストレス・不安・口渇・打ち身・打撲・捻挫・水虫・湿疹・炎症・疲労感・発疹・頻尿</p>
+      <p style="font-size:20px;line-height:1.5;color:var(--sub);margin-top:10px">辞書にはあるが、症状と薬の種類の対応がない・絞り込みで0件になる</p>
+    </div>
+  </div>
+  <div class="strip">症状と薬の種類の対応を直せば出るものが多い。<span class="w">出ないときは相談をすすめる</span>ので、害は出にくい。</div>
+  <div class="foot"><span>data/symptom_dictionary.json・log/analysis/2026-09-30_reco_offline_eval.md（7歳以上のどの年齢でも出なかった症状）</span></div>
+</section>
+
+<section id="a-import">
+  <div class="kicker"><span class="sec">A</span>DATA</div>
+  <h1>薬のデータは公開の添付文書から取り込み、画像は別に配る</h1>
+  <div class="rule"></div>
+  <div class="kpis" style="margin-bottom:30px">
+    <div class="kpi key"><div class="v"><span data-f="db.products"></span><small>件</small></div><div class="k">取り込んだ市販薬</div><div class="d">メーカー <span data-f="db.makers"></span> 社</div></div>
+    <div class="kpi"><div class="v"><span data-f="db.eff"></span><small>行</small></div><div class="k">効能の要約</div><div class="d">症状の辞書と結ぶ</div></div>
+    <div class="kpi"><div class="v"><span data-f="db.ingredients"></span><small>語</small></div><div class="k">成分の辞書</div><div class="d">系統と別名</div></div>
+    <div class="kpi"><div class="v"><span data-f="db.images"></span><small>件</small></div><div class="k">商品の画像</div><div class="d">Cloudflare R2</div></div>
+  </div>
+  <ol class="steps">
+    <li>PMDA が公開する一般用医薬品の添付文書の情報を取り込む（2026年7月）</li>
+    <li>商品名・分類・成分・用法・年齢の範囲を列に分ける</li>
+    <li>効能の文を要約し、症状の辞書と結び付ける</li>
+    <li>成分の辞書で系統と別名をまとめ、飲み合わせの表と照らす</li>
+    <li>商品の画像は Cloudflare R2 に置き、版を記録する（<span data-f="db.images"></span>件）</li>
+  </ol>
+  <div class="grid g2" style="margin-top:30px">
+    <div class="card open"><div class="when">課題</div><h2>年齢の抜き出し<span class="tag">直す</span></h2><p>添付文書の書き方が揃わず、年齢の範囲の抜き出しに誤りがある</p></div>
+    <div class="card"><div class="when">権利</div><h2>商用なら整理が要る</h2><p>データと画像の使い方は、商用化するときに権利を確かめ直す</p></div>
+  </div>
+  <div class="foot"><span>git の履歴（2026-07-24 PMDA の取り込み）</span></div>
+</section>
+
+<!-- 点検 -->
+<section id="a-eval-method">
+  <div class="kicker"><span class="sec">A</span>EVALUATION</div>
+  <h1>点検は<span data-f="eval.total" data-u="件"></span>の文を機械で作り、AIを使わずに流した</h1>
+  <div class="rule"></div>
+  <div class="cols c3">
+    <div>
+      <h3>群ごとの件数</h3>
+      <div class="chart" style="height:520px" data-chart='{"type":"donut","legend":true,"items":[{"label":"年齢×症状","v":"@eval.groups.age","color":"c1"},{"label":"組み合わせ","v":"@eval.groups.combo","color":"c2"},{"label":"妊娠","v":"@eval.groups.pregnant","color":"c3"},{"label":"飲んでいる薬","v":"@eval.groups.medication","color":"c6"},{"label":"続く日数","v":"@eval.groups.duration","color":"c5"},{"label":"緊急","v":"@eval.groups.emergency","color":"warn"}],"center":{"k":"件"},"legendValue":"value"}'></div>
+    </div>
+    <div>
+      <h3>文の作り方</h3>
+      <ul class="pts">
+        <li>年齢（3・7・12・30・50・75歳）× 50 の症状</li>
+        <li>妊娠中・ワルファリンなどを飲んでいる人</li>
+        <li>「◯◯が10日間続いています」</li>
+        <li>症状の組み合わせと、緊急の文 <span data-f="eval.groups.emergency"></span> 件</li>
+      </ul>
+    </div>
+    <div>
+      <h3>流し方</h3>
+      <ul class="pts">
+        <li>規則の読み取り → 除外 → 点数 → 上位3件</li>
+        <li>AIは使わない（同じ結果が再現できる）</li>
+        <li>1件の処理時間：中央値 <span data-f="eval.lat_p50" data-d="2"></span> 秒、遅い側 <span data-f="eval.lat_p95" data-d="2"></span> 秒</li>
+      </ul>
+    </div>
+  </div>
+  <div class="strip">スクリプトは <b>scripts/eval_reco_offline_safety.py</b>。直したら同じ条件で測り直せる。</div>
+  <div class="foot"><span>2026-09-30 実行。本編 <a class="ref" href="#eval">点検の結果</a></span></div>
+</section>
+
+<section id="a-eval-metrics">
+  <div class="kicker"><span class="sec">A</span>EVALUATION</div>
+  <h1>指標はすべて「安全か」「合っているか」を数える形にした</h1>
+  <div class="rule"></div>
+  <table class="tbl">
+    <tr><th>指標</th><th>数え方</th><th>よい向き</th></tr>
+    <tr class="em"><td>年齢違反</td><td class="s">上位3件に、その年齢で使えない薬が入った割合</td><td>低いほど</td></tr>
+    <tr><td>効能の一致（1位）</td><td class="s">1位の効能の文に、症状の言葉が入っている割合</td><td>高いほど</td></tr>
+    <tr><td>同点</td><td class="s">1位と2位（または上位3件）の点数が同じ割合</td><td>低いほど</td></tr>
+    <tr><td>飲み合わせ</td><td class="s">ワルファリンを飲む人に、解熱鎮痛薬などが上位に来た割合</td><td>低いほど</td></tr>
+    <tr><td>妊娠</td><td class="s">薬を出した割合と、相談をすすめた割合</td><td>出さず・すすめる</td></tr>
+    <tr><td>続く日数</td><td class="s">10日間続く症状に、受診の案内を出した割合</td><td>高いほど</td></tr>
+    <tr><td>緊急</td><td class="s">緊急の文を検知した割合と、普通の文を誤って止めた割合</td><td>検知は高く・誤りは低く</td></tr>
+  </table>
+  <div class="strip">薬剤師の正解のラベルは使っていない。<b>守るべき規則を満たすか</b>だけを数える。</div>
+  <div class="foot"><span>scripts/eval_reco_offline_safety.py</span></div>
+</section>
+
+<section id="a-eval-all">
+  <div class="kicker"><span class="sec">A</span>EVALUATION</div>
+  <h1>全指標の一覧。止まる不具合を直し、測れる件数が増えた</h1>
+  <div class="rule"></div>
+  <div class="grid g2">
+    <table class="tbl">
+      <tr><th>指標</th><th class="r">値</th></tr>
+      <tr><td>処理が止まった件数</td><td class="r"><span data-f="eval.errors"></span> 件</td></tr>
+      <tr><td>候補なし（7歳以上・350件中）</td><td class="r"><span data-f="eval.no_reco_4plus" data-d="1"></span>%</td></tr>
+      <tr><td>候補なし（3歳・50件中）</td><td class="r"><span data-f="eval.no_reco_age3" data-d="0"></span>%</td></tr>
+      <tr class="em"><td>年齢違反（上位3件）</td><td class="r"><span data-f="eval.age_any" data-d="1"></span>%</td></tr>
+      <tr><td>年齢違反（1位）</td><td class="r"><span data-f="eval.age_top1" data-d="1"></span>%</td></tr>
+      <tr><td>効能の一致（1位）</td><td class="r"><span data-f="eval.eff_top1" data-d="1"></span>%</td></tr>
+      <tr><td>薬の種類の一致（1位）</td><td class="r"><span data-f="eval.type_top1" data-d="1"></span>%</td></tr>
+    </table>
+    <table class="tbl">
+      <tr><th>指標</th><th class="r">値</th></tr>
+      <tr><td>1位と2位が同点</td><td class="r"><span data-f="eval.tie2" data-d="1"></span>%</td></tr>
+      <tr><td>解熱鎮痛薬（ワルファリン併用）</td><td class="r"><span data-f="eval.nsaid_any" data-d="1"></span>%</td></tr>
+      <tr><td>妊娠中に薬を出した</td><td class="r"><span data-f="eval.preg_reco" data-d="0"></span>%</td></tr>
+      <tr><td>妊娠中に相談をすすめた</td><td class="r"><span data-f="eval.preg_ref" data-d="0"></span>%</td></tr>
+      <tr class="em"><td>10日続く症状に受診案内</td><td class="r"><span data-f="eval.dur_ref" data-d="0"></span>%</td></tr>
+      <tr><td>緊急の検知（規則）</td><td class="r"><span data-f="eval.emer_rule" data-d="0"></span>%</td></tr>
+      <tr><td>普通の文を誤って止めた</td><td class="r"><span data-f="eval.fp" data-d="0"></span>%</td></tr>
+    </table>
+  </div>
+  <div class="strip">直す前：止まった <span data-f="eval.before.errors"></span> 件・候補なし <span data-f="eval.before.no_reco_4plus" data-d="1"></span>%・年齢違反 <span data-f="eval.before.age_any" data-d="1"></span>%・同点 <span data-f="eval.before.tie2" data-d="1"></span>%</div>
+  <div class="foot"><span>log/analysis/2026-09-30_reco_offline_eval.json・…_before_fix.json</span></div>
+</section>
+
+<section id="a-eval-emer">
+  <div class="kicker"><span class="sec">A</span>EVALUATION</div>
+  <h1>緊急の文<span data-f="eval.groups.emergency" data-u="件"></span>のうち<span data-f="eval.emer_missed" data-u="件"></span>を規則の層が見落とした</h1>
+  <div class="rule"></div>
+  <div class="cols c46">
+    <div class="chart" style="height:460px" data-chart='{"type":"donut","items":[{"label":"規則で検知","v":"@eval.emer_hit","color":"c1"},{"label":"見落とし","v":"@eval.emer_missed","color":"warn"}],"center":{"k":"件"}}'></div>
+    <div>
+      <h3>見落とした文の例</h3>
+      <ul class="pts">
+        <li>出血：「血を吐いた」「黒い便が出て立ちくらみ」</li>
+        <li>誤飲・飲みすぎ：「子どもが洗剤を飲んでしまった」</li>
+        <li>息苦しさ：「ハチに刺されて息苦しい」</li>
+        <li>急な変化：「突然目が見えなくなった」</li>
+      </ul>
+      <div class="card key" style="margin-top:24px"><h2>本番では二重</h2><p>規則の層の後に、AIの振り分けが「緊急」を判定する。AIが止まると規則だけになり、AIの層の検出率は未測定</p></div>
+    </div>
+  </div>
+  <div class="strip">AIが止まったときは規則の層だけになる。<span class="w">言い換えの辞書を増やす</span>のが先。</div>
+  <div class="foot"><span>log/analysis/2026-09-30_reco_offline_eval_cases.jsonl</span></div>
+</section>
+
+<section id="a-eval-limits">
+  <div class="kicker"><span class="sec">A</span>EVALUATION</div>
+  <h1>この点検で言えないこと。本番の品質の証明ではない</h1>
+  <div class="rule"></div>
+  <div class="grid g2">
+    <div class="card open"><div class="when">限界</div><h2>言えないこと</h2><ul class="pts"><li>本番の読み取り（AI）の精度</li><li>利用者の満足・役に立ったか</li><li>医療として正しいか（専門家の確認なし）</li><li>機械で作った文と、実際の書き方の差</li></ul></div>
+    <div class="card key"><div class="when">言えること</div><h2>規則の安全の形</h2><ul class="pts"><li>止まる不具合がないか</li><li>年齢・妊娠・飲み合わせの除外が効くか</li><li>緊急の規則がどこまで拾うか</li><li>直す前と後の比べ</li></ul></div>
+  </div>
+  <h3 style="margin-top:34px">次に測ること</h3>
+  <div class="flow">
+    <div class="step"><span class="n">1</span>規則を直す<small>年齢・同点・緊急の辞書</small></div>
+    <div class="gap">→</div>
+    <div class="step"><span class="n">2</span>同じ<span data-f="eval.total"></span>件で測り直す<small>直す前と比べる</small></div>
+    <div class="gap">→</div>
+    <div class="step key"><span class="n">3</span>専門家が判定<small>薬剤師・医師のラベル</small></div>
+    <div class="gap">→</div>
+    <div class="step"><span class="n">4</span>実際の相談文<small>テスターの同意のうえで</small></div>
+  </div>
+  <div class="strip">次は<b>実際の相談文</b>と<b>専門家の判定</b>で測る。</div>
+  <div class="foot"><span>本編 <a class="ref" href="#eval2">次に直す点</a></span></div>
+</section>
+
+<!-- JEV -->
+<section id="a-jev-what">
+  <div class="kicker"><span class="sec">A</span>EXPERIMENT</div>
+  <h1>Jev は意図の判定だけを外部の軽いモデルに替える試験</h1>
+  <div class="rule"></div>
+  <div class="grid">
+    <div class="card"><div class="when">替えた所</div><h2>意図の判定</h2><p>推薦・比較・質問のどれかを決める段だけ</p></div>
+    <div class="card"><div class="when">替えない所</div><h2>安全と推薦</h2><p>安全の門・除外・点数はそのまま</p></div>
+    <div class="card key"><div class="when">狙い</div><h2>速さと費用</h2><p>待ち時間を短くし、AIの利用料を減らす</p></div>
+  </div>
+  <h3 style="margin-top:36px">試験の進め方</h3>
+  <div class="flow">
+    <div class="step"><span class="n">1</span>手元で比べる<small>10 の場面 × 3 回 = <span data-f="jev.n"></span> 件ずつ。キャッシュなし</small></div>
+    <div class="gap">→</div>
+    <div class="step"><span class="n">2</span>速さと正しさ<small>平均・遅い側・判定の一致</small></div>
+    <div class="gap">→</div>
+    <div class="step"><span class="n">3</span>本番の裏で試す<small>利用者には元の判定を返す</small></div>
+    <div class="gap">→</div>
+    <div class="step key"><span class="n">4</span>安全の関門<small>通れば切り替えを検討</small></div>
+  </div>
+  <div class="strip">1・2 は合格、3・4 で止まった（<a class="ref" href="#a-jev-gate">判定</a>）。</div>
+  <div class="foot"><span>docs/planning/codex-parallel-jev-20260921/jev_intent_router_eval_cost_latency_20260921.md</span></div>
+</section>
+
+<section id="a-jev-lat">
+  <div class="kicker"><span class="sec">A</span>EXPERIMENT</div>
+  <h1>遅い側（P95）の短縮が大きく、待ちのばらつきが減った</h1>
+  <div class="rule"></div>
+  <div class="cols c64">
+    <div class="chart" style="height:600px" data-chart='{"type":"bar","labels":["平均","遅い側（P95）"],"series":[{"name":"いまの方式","values":["@jev.cur_avg","@jev.cur_p95"]},{"name":"Jev","values":["@jev.jev_avg","@jev.jev_p95"]}],"unit":"ミリ秒","fmt":{"d":0}}'></div>
+    <div class="stack">
+      <h3>読み取り</h3>
+      <ul class="pts">
+        <li>平均は <span data-f="jev.speedup" data-d="2"></span> 倍速い</li>
+        <li>遅い側は <span data-f="jev.p95_cut" data-d="1"></span>% 短い</li>
+        <li>判定の正しさは両方 <span data-f="jev.acc_jev"></span>/<span data-f="jev.n"></span></li>
+      </ul>
+      <div class="strip">速さの面では<b>採用の条件を満たした</b>。</div>
+    </div>
+  </div>
+  <div class="foot"><span>同上（2026-09-21）</span></div>
+</section>
+
+<section id="a-jev-gate">
+  <div class="kicker"><span class="sec">A</span>EXPERIMENT</div>
+  <h1>安全の関門を通らなかったため、本番には入れていない</h1>
+  <div class="rule"></div>
+  <table class="tbl">
+    <tr><th>判定</th><th>結果</th><th>意味</th></tr>
+    <tr><td>速さ</td><td><span class="mk o">○</span> 合格</td><td class="s">平均・遅い側とも目標を超えた</td></tr>
+    <tr><td>本番の裏で試す段階</td><td><span class="mk x">×</span> まだ</td><td class="s">Production Shadow Not Ready</td></tr>
+    <tr class="em"><td>関門B（安全の確認）</td><td><span class="mk x">×</span> 進めない</td><td class="s">Hard No-Go。条件付きの項目が残る</td></tr>
+    <tr><td>本番への切り替え</td><td>していない</td><td class="s">本番の判定は元のまま</td></tr>
+  </table>
+  <div class="grid g2" style="margin-top:30px">
+    <div class="card"><div class="when">再開の条件</div><h2>件数と関門</h2><p>試す件数を増やし、関門Bの条件付きの項目をすべて閉じる</p></div>
+    <div class="card"><div class="when">替えないもの</div><h2>安全と推薦</h2><p>切り替えても、安全の門と規則の推薦はそのまま</p></div>
+  </div>
+  <div class="strip">速くても<span class="w">安全の確認が終わるまで替えない</span>。この判断も記録に残した。</div>
+  <div class="foot"><span>JEV_R22_FINAL_SUPERVISOR_REPORT_20260924.md。本編 <a class="ref" href="#jev">Jev の試験</a></span></div>
+</section>
+
+<!-- 法令と位置づけ -->
+<section id="a-law">
+  <div class="kicker"><span class="sec">A</span>LAW</div>
+  <h1>市販薬の説明の義務は分類で違い、このツールは参考の情報にとどまる</h1>
+  <div class="rule"></div>
+  <table class="tbl tight">
+    <tr><th>分類</th><th>売る人</th><th>説明</th></tr>
+    <tr><td>第1類</td><td class="s">薬剤師</td><td>書面での説明が義務</td></tr>
+    <tr><td>第2類・指定第2類</td><td class="s">薬剤師・登録販売者</td><td>努力義務</td></tr>
+    <tr><td>第3類</td><td class="s">薬剤師・登録販売者</td><td>定めなし</td></tr>
+  </table>
+  <div class="grid g2" style="margin-top:30px">
+    <div class="card"><div class="when">行政への相談</div><h2>販売に伴う相談の参考</h2><p>名古屋市・愛知県の窓口に相談し、診断を目的としない参考の情報という整理を聞いた。承認や許可ではない</p></div>
+    <div class="card open"><div class="when">気を付けること</div><h2>誤解されない見せ方</h2><p>責任の所在・広告に当たるか・AIへの頼りすぎ。遠隔の服薬指導と誤解される顔のある画面は作らない</p></div>
+  </div>
+  <div class="strip">2026年5月の改正薬機法で、濫用のおそれのある薬の確認が厳しくなった。<b>販売の判断は店と薬剤師・登録販売者</b>が行う。</div>
+  <div class="foot"><span>薬機法 第36条の10。行政への相談：docs/planning/aws-contest/slides/appendix-admin-legal/README.md</span></div>
+</section>
+
+<section id="a-privacy">
+  <div class="kicker"><span class="sec">A</span>PRIVACY</div>
+  <h1>名前や連絡先は集めず、相談の内容も任意の範囲で扱う</h1>
+  <div class="rule"></div>
+  <div class="grid">
+    <div class="card key"><div class="when">集めない</div><h2>直接の個人情報</h2><p>名前・住所・電話番号などは聞かない</p></div>
+    <div class="card"><div class="when">任意</div><h2>年齢・持病・飲んでいる薬</h2><p>候補を安全にするための情報。入れなくても使える</p></div>
+    <div class="card"><div class="when">外部に送る</div><h2>相談文</h2><p>読み取り・翻訳・読み上げのため AI・翻訳のサービスに送る</p></div>
+  </div>
+  <table class="tbl tight" style="margin-top:34px">
+    <tr><th>項目</th><th>内容</th></tr>
+    <tr><td>運営者</td><td class="s">川嶋 宥翔</td></tr>
+    <tr><td>制定・改定</td><td class="s">2025年10月29日 制定、2026年6月22日 改定</td></tr>
+    <tr><td>記憶の削除</td><td class="s">会話の中で、覚えた内容の削除を頼める</td></tr>
+  </table>
+  <div class="strip">任意の情報は、<b>入れなくても相談できる</b>。入れると除外と注意が効く。</div>
+  <div class="foot"><span>プライバシーポリシー（サイト内）</span></div>
+</section>
+
+<section id="a-license">
+  <div class="kicker"><span class="sec">A</span>TERMS</div>
+  <h1>利用はテスター限定で、商用の利用には書面の許可が要る</h1>
+  <div class="rule"></div>
+  <table class="tbl">
+    <tr><th>決まり</th><th>内容</th></tr>
+    <tr class="em"><td>利用規約 第3条</td><td class="s">診断・処方・治療は行わない。候補は規則で選び、説明文はAIが作る</td></tr>
+    <tr><td>利用規約 第4条</td><td class="s">URLを許可のない第三者に渡さない（QRコードも同じ）</td></tr>
+    <tr><td>ライセンス</td><td class="s">PolyForm Noncommercial 1.0.0（2026年6月に MIT から変更）</td></tr>
+    <tr><td>商用の利用</td><td class="s">運営者の書面での許可が要る</td></tr>
+  </table>
+  <div class="grid g2" style="margin-top:30px">
+    <div class="card key"><div class="when">自由にできる</div><h2>非商用の利用</h2><p>学習・研究・個人の試用。コードを読み、手元で動かす</p></div>
+    <div class="card open"><div class="when">許可が要る</div><h2>商用の利用</h2><p>店舗・企業のサービスへの組み込み、有料の提供</p></div>
+  </div>
+  <div class="strip">表紙のQRコードは<span class="w">テスターのための入口</span>。広く配らない。</div>
+  <div class="foot"><span>src/content/about_modal_html.json・LICENSE</span></div>
+</section>
+
+<section id="a-comp">
+  <div class="kicker"><span class="sec">A</span>COMPETITORS</div>
+  <h1>似たサービスは人が答えるか調剤向けが多く、市販薬を規則で選ぶ例は少ない</h1>
+  <div class="rule"></div>
+  <table class="tbl">
+    <tr><th>相手</th><th>答える人・しくみ</th><th>主な対象</th><th>違い</th></tr>
+    <tr><td>店頭のスタッフ</td><td class="s">薬剤師・登録販売者</td><td>市販薬</td><td class="s">夜・言葉の壁で聞けないことがある</td></tr>
+    <tr><td>アイン「安心お薬サポート」</td><td class="s">薬剤師（人）</td><td>薬の相談</td><td class="s">人が答える。時間の制約</td></tr>
+    <tr><td>キュアベル お薬相談チャットボット</td><td class="s">AI</td><td>市販薬</td><td class="s">いちばん近い。選び方の公開が少ない</td></tr>
+    <tr><td>つながる薬局</td><td class="s">LINE</td><td>調剤</td><td class="s">処方薬の受け取りが中心</td></tr>
+    <tr class="em"><td>汎用のAI（ChatGPT など）</td><td class="s">AI</td><td>何でも</td><td class="s">薬の名前をAIが決める。根拠が見えにくい</td></tr>
+  </table>
+  <div class="grid" style="margin-top:28px">
+    <div class="card key"><h2>規則で決める</h2><p>同じ入力なら同じ候補</p></div>
+    <div class="card"><h2>根拠と注意</h2><p>候補ごとに理由と注意書き</p></div>
+    <div class="card"><h2>夜・4言語・読み上げ</h2><p>聞けない場面でも使える</p></div>
+  </div>
+  <div class="strip">このツールの違いは、<b>薬の名前を規則で決め、根拠と注意を必ず示す</b>こと。</div>
+  <div class="foot"><span>docs/planning/ux-pdca-20260922/02_MARKET_AND_COMPETITIVE.md（2026年9月時点の整理）</span></div>
+</section>
+
+<section id="a-pos">
+  <div class="kicker"><span class="sec">A</span>POSITION</div>
+  <h1>市販薬を、AIの読み取りと規則の選択で案内する位置をねらう</h1>
+  <div class="rule"></div>
+  <div class="cols c64">
+    <div class="matrix" style="height:640px">
+      <div class="q"><h4>人が答える・処方薬</h4>薬局の相談窓口・調剤のLINE</div>
+      <div class="q"><h4>人が答える・市販薬</h4>店頭のスタッフ・電話相談</div>
+      <div class="q"><h4>AIが決める・何でも</h4>汎用のAI</div>
+      <div class="q key"><h4>規則で決める・市販薬</h4>このツール</div>
+      <div class="ax-x"><span>処方薬・一般</span><span>市販薬</span></div>
+      <div class="ax-y"><span>AI・規則</span><span>人</span></div>
+    </div>
+    <div class="stack">
+      <h3>この位置の良さと弱さ</h3>
+      <ul class="pts">
+        <li>夜でも・4つの言葉でも答えられる</li>
+        <li>同じ入力なら同じ候補。根拠を示せる</li>
+        <li>弱さ：データと規則の質がそのまま出る</li>
+      </ul>
+      <div class="strip">人の相談を<b>置き換えず、前につなぐ</b>。</div>
+    </div>
+  </div>
+  <div class="foot"><span>位置づけは開発者の整理</span></div>
+</section>
+
+<!-- 画面 -->
+<section id="a-scr-safety">
+  <div class="kicker"><span class="sec">A</span>SCREENS</div>
+  <h1>危ないときは赤い枠で止め、重なりは薬ごとに理由を書く</h1>
+  <div class="rule"></div>
+  <div class="phones tab">
+    <figure><img src="screens/emergency.webp" alt=""><figcaption>緊急<small>薬を出さず、119番と受診を案内</small></figcaption></figure>
+    <figure><img src="screens/safety-top.webp" alt=""><figcaption>飲んでいる薬との重なり<small>同じ系統の解熱鎮痛薬を重ねない理由</small></figcaption></figure>
+    <figure><img src="screens/chat-top.webp" alt=""><figcaption>成分の重複<small>カフェイン・ジヒドロコデインの重複を表示</small></figcaption></figure>
+  </div>
+  <div class="foot"><span>ローカル環境で撮影（2026-09-30）。中央の画面の下に、書式の記号（**）がそのまま出る不具合がある</span></div>
+</section>
+
+<section id="a-scr-admin">
+  <div class="kicker"><span class="sec">A</span>SCREENS</div>
+  <h1>管理画面で、会話の記録と評価を運営者が確かめる</h1>
+  <div class="rule"></div>
+  <div class="cols c64">
+    <div class="ph" style="height:700px">管理画面（テスト用データで撮影予定）</div>
+    <div>
+      <h3>できること</h3>
+      <ul class="pts">
+        <li>会話の記録と「役に立ったか」の評価を見る</li>
+        <li>問い合わせへの返信</li>
+      </ul>
+      <div class="strip">運営者だけが入れる。<b>画面はテスト用のデータ</b>で撮る。</div>
+    </div>
+  </div>
+  <div class="foot"><span>ローカル環境・テスト用データ</span></div>
+</section>
+
+<section id="a-scr-line">
+  <div class="kicker"><span class="sec">A</span>SCREENS</div>
+  <h1>LINEからも同じ規則で相談でき、本番だけで受け付ける</h1>
+  <div class="rule"></div>
+  <div class="cols c46">
+    <div class="ph" style="height:700px">LINEの画面（スマートフォンで撮影）</div>
+    <div>
+      <h3>LINEでの動き</h3>
+      <ul class="pts">
+        <li>トークに症状を書くと、候補と注意が返る</li>
+        <li>緊急のときは 119番・受診を案内</li>
+        <li>詳しい画面はブラウザで開く</li>
+      </ul>
+      <div class="strip">窓口が違っても<b>安全の規則は同じ</b>。</div>
+    </div>
+  </div>
+  <div class="foot"><span>本番（GCP）の LINE 公式アカウント</span></div>
+</section>
+
+<section id="a-scr-a11y">
+  <div class="kicker"><span class="sec">A</span>SCREENS</div>
+  <h1>読み上げと文字の拡大で、読むのがつらい人にも届ける</h1>
+  <div class="rule"></div>
+  <div class="cols c46">
+    <div class="phones tab" style="grid-template-columns:1fr">
+      <figure><img src="screens/chat-view.webp" alt=""><figcaption>「音声で聞く」ボタン<small>返答を読み上げる（Google TTS）</small></figcaption></figure>
+    </div>
+    <div>
+      <h3>見やすさの工夫</h3>
+      <ul class="pts">
+        <li>返答の読み上げ（2026年1月から）</li>
+        <li>文字の大きさの切り替え</li>
+        <li>声での入力（マイクのボタン）</li>
+        <li>日本語・英語・韓国語・中国語</li>
+      </ul>
+      <div class="strip">高齢の人・外国の人の<b>「読めない」を減らす</b>。</div>
+    </div>
+  </div>
+  <div class="foot"><span>ローカル環境で撮影（2026-09-30）</span></div>
+</section>
+
+<!-- その他 -->
+<section id="a-hist">
+  <div class="kicker"><span class="sec">A</span>HISTORY</div>
+  <h1>1年で、多言語・読み上げ・新しい処理・検証環境を積み上げた</h1>
+  <div class="rule"></div>
+  <div class="kpis" style="margin-bottom:28px">
+    <div class="kpi key"><div class="v"><span data-f="dev.commits"></span><small>回</small></div><div class="k">コミット</div><div class="d">2025年10月〜2026年9月</div></div>
+    <div class="kpi"><div class="v"><span data-f="dev.src_files"></span><small>本</small></div><div class="k">Python のファイル</div><div class="d">src/ の中、約 <span data-f="dev.src_klines" data-d="0"></span> 千行</div></div>
+    <div class="kpi"><div class="v"><span data-f="dev.test_funcs"></span><small>個</small></div><div class="k">テストの関数</div><div class="d">tests/ の中</div></div>
+    <div class="kpi"><div class="v"><span data-f="dev.docs_md"></span><small>本</small></div><div class="k">設計・運用の文書</div><div class="d">docs/ の Markdown</div></div>
+  </div>
+  <table class="tbl tight">
+    <tr><th>時期</th><th>できたこと</th></tr>
+    <tr><td>2025年10月</td><td class="s">開発を始める。月末に多言語に対応</td></tr>
+    <tr><td>2026年1月</td><td class="s">読み上げと文字の大きさ</td></tr>
+    <tr><td>2026年2月</td><td class="s">Cloud Run で動かす準備</td></tr>
+    <tr><td>2026年5月</td><td class="s">FastAPI に移る</td></tr>
+    <tr class="em"><td>2026年6月</td><td class="s">処理の流れを作り直す（Chat Pipeline v2）</td></tr>
+    <tr><td>2026年7月</td><td class="s">AWS・Cloudflare の検証環境、PMDA のデータの取り込み</td></tr>
+    <tr><td>2026年8月</td><td class="s">Fargate と Tunnel に移り、ALB をやめる</td></tr>
+    <tr><td>2026年9月</td><td class="s">Jev の試験（見送り）、600件の点検と修正</td></tr>
+  </table>
+  <div class="foot"><span>git の履歴。本編 <a class="ref" href="#track">これまで</a></span></div>
+</section>
+
+<section id="a-faq1">
+  <div class="kicker"><span class="sec">A</span>FAQ</div>
+  <h1>よくある質問。安全・責任・使い方・お金</h1>
+  <div class="rule"></div>
+  <div class="grid g4">
+    <div class="card"><div class="when">安全</div><h2>AIが薬を間違えない？</h2><p>薬の名前はAIでなく規則で決める。禁忌は点数に関係なく外す</p></div>
+    <div class="card"><div class="when">責任</div><h2>診断をするの？</h2><p>しない。利用規約の第3条に書いている。受診の目安と相談先を示す</p></div>
+    <div class="card"><div class="when">安全</div><h2>緊急のときは？</h2><p>薬を出さず 119番・受診を案内する。本番は規則とAIの二重（AIが止まると規則だけ）</p></div>
+    <div class="card open"><div class="when">確認</div><h2>専門家は確かめた？</h2><p>まだ。外部の薬剤師・医師による確認をお願いしたい</p></div>
+    <div class="card"><div class="when">使い方</div><h2>誰でも使える？</h2><p>いまはテスター限定。URLを広く配らない決まり</p></div>
+    <div class="card"><div class="when">使い方</div><h2>薬を買える？</h2><p>買えない。販売や購入へのさそいはしない</p></div>
+    <div class="card"><div class="when">お金</div><h2>お金はかかる？</h2><p>かからない。非営利のβで、商用化の形は未定</p></div>
+    <div class="card"><div class="when">情報</div><h2>個人情報は？</h2><p>名前や連絡先は集めない。年齢などは任意</p></div>
+  </div>
+  <div class="strip">ほかの疑問は<b>リスクの表</b>（<a class="ref" href="#risk">リスク</a>）と<a class="ref" href="#business">これからの形</a>にまとめた。</div>
+  <div class="foot"><span>利用規約・プライバシーポリシー（サイト内）</span></div>
+</section>
+
+<section id="a-cost">
+  <div class="kicker"><span class="sec">A</span>COST</div>
+  <h1>運用費は月3,000円ほど。検証環境は止めておけば数ドル</h1>
+  <div class="rule"></div>
+  <div class="kpis k3">
+    <div class="kpi key"><div class="v">約<span data-f="cost.monthly_yen"></span><small>円/月</small></div><div class="k">いまの運用費の合計</div><div class="d">本番・検証・AI（開発者の申告）</div></div>
+    <div class="kpi"><div class="v">$<span data-f="aws.stopped_lo"></span>〜<span data-f="aws.stopped_hi"></span><small>/月</small></div><div class="k">検証環境（止めておく）</div><div class="d">動く間は $<span data-f="aws.per_hour" data-d="3"></span>/時</div></div>
+    <div class="kpi"><div class="v">$<span data-f="aws.budget"></span><small>/月</small></div><div class="k">検証環境の予算の上限</div><div class="d">近づくと段階的に止める</div></div>
+  </div>
+  <div class="cols c64" style="margin-top:34px">
+    <div>
+      <h3>検証環境の月額<small>ドル・見込みの上側</small></h3>
+      <div class="chart" style="height:300px" data-chart='{"type":"bar","horizontal":true,"labels":["止めておく","予算の上限","ずっと動かす"],"series":[{"values":["@aws.stopped_hi","@aws.budget","@aws.always_hi"]}],"highlight":0}'></div>
+    </div>
+    <div>
+      <h3>費用が増えるとき</h3>
+      <ul class="pts">
+        <li>相談の数が増える（AIの利用料は相談の数に比例）</li>
+        <li>検証環境を動かしっぱなしにする（月 $<span data-f="aws.always_lo"></span>〜<span data-f="aws.always_hi"></span> で予算の上限を超えるため、段階的に止まる）</li>
+      </ul>
+    </div>
+  </div>
+  <div class="strip">実証で相談が増えたときの費用は、<span class="w">相談1件あたりの額を測ってから</span>見積もる。</div>
+  <div class="foot"><span>運用費：開発者の申告（<a class="ref" href="#assump">前提の一覧</a>）。AWS：docs/ops/AWS_COST_PLAN.md</span></div>
+</section>
+
+<!-- SOURCES:BEGIN -->
+<section id="src-prim" data-gen="sources" data-sparse-ok>
+  <div class="kicker">SOURCES · 1/2</div>
+  <h1>一次調査：自分たちで集めた7件の記録</h1>
+  <div class="rule"></div>
+  <table class="src prim">
+<colgroup><col style="width:60px"><col style="width:290px"><col style="width:320px"><col style="width:150px"><col><col style="width:250px"><col style="width:170px"></colgroup>
+<tr><th>№</th><th>調査</th><th>だれ・何人</th><th>いつ</th><th>方法</th><th>記録</th><th>使うページ</th></tr>
+<tr id="srow-P1"><td class="no">P1</td><td><span class="pub">収録データ（市販薬・飲み合わせ・副作用・効能・辞書・画像）</span></td><td>このリポジトリ</td><td class="dt">2026-09</td><td>data/ の CSV・JSON を calc.py で集計</td><td class="nt">data/otc_medicine_data.csv ほか</td><td class="pg"><a class="pgl" href="#summary">summary</a><a class="pgl" href="#problem">problem</a><a class="pgl" href="#data">data</a><a class="pgl" href="#a-db">a-db</a><a class="pgl" href="#a-inter">a-inter</a><a class="pgl" href="#a-dict">a-dict</a><a class="pgl" href="#a-import">a-import</a></td></tr>
+<tr id="srow-P2"><td class="no">P2</td><td><span class="pub">推薦のオフライン点検（600件）</span></td><td>開発者</td><td class="dt">2026-09-30</td><td>規則だけで実行（AIなし）。scripts/eval_reco_offline_safety.py</td><td class="nt">log/analysis/2026-09-30_reco_offline_eval.md・.json・_before_fix.*</td><td class="pg"><a class="pgl" href="#summary">summary</a><a class="pgl" href="#eval">eval</a><a class="pgl" href="#eval2">eval2</a><a class="pgl" href="#risk">risk</a><a class="pgl" href="#a-gate">a-gate</a><a class="pgl" href="#a-tie">a-tie</a><a class="pgl" href="#a-inter">a-inter</a><a class="pgl" href="#a-dict">a-dict</a><a class="pgl" href="#a-eval-method">a-eval-method</a><a class="pgl" href="#a-eval-metrics">a-eval-metrics</a><a class="pgl" href="#a-eval-all">a-eval-all</a><a class="pgl" href="#a-eval-emer">a-eval-emer</a><a class="pgl" href="#a-eval-limits">a-eval-limits</a></td></tr>
+<tr id="srow-P3"><td class="no">P3</td><td><span class="pub">開発の履歴</span></td><td>このリポジトリ</td><td class="dt">2025-10〜2026-09</td><td>git log・ファイル数の集計</td><td class="nt">git の履歴（calc.py の dev_stats）</td><td class="pg"><a class="pgl" href="#summary">summary</a><a class="pgl" href="#track">track</a><a class="pgl" href="#a-agents">a-agents</a><a class="pgl" href="#a-hist">a-hist</a></td></tr>
+<tr id="srow-P4"><td class="no">P4</td><td><span class="pub">Jev による意図の判定の試験</span></td><td>開発者</td><td class="dt">2026-09-21〜24</td><td>10 の場面 × 3 回の比較と、安全の関門の判定</td><td class="nt">docs/planning/codex-parallel-jev-20260921/</td><td class="pg"><a class="pgl" href="#jev">jev</a><a class="pgl" href="#a-jev-what">a-jev-what</a><a class="pgl" href="#a-jev-lat">a-jev-lat</a><a class="pgl" href="#a-jev-gate">a-jev-gate</a></td></tr>
+<tr id="srow-P5"><td class="no">P5</td><td><span class="pub">AWS 検証環境の費用計画と実績</span></td><td>開発者</td><td class="dt">2026-08-07 更新</td><td>見積もりと請求の実績</td><td class="nt">docs/ops/AWS_COST_PLAN.md</td><td class="pg"><a class="pgl" href="#arch-aws">arch-aws</a><a class="pgl" href="#a-aws">a-aws</a><a class="pgl" href="#a-env">a-env</a><a class="pgl" href="#a-cost">a-cost</a></td></tr>
+<tr id="srow-P6"><td class="no">P6</td><td><span class="pub">画面の撮影</span></td><td>開発者</td><td class="dt">2026-09-30</td><td>ローカル環境をブラウザで操作して撮影</td><td class="nt">docs/slides/medicine-recommend-overview/screens/</td><td class="pg"><a class="pgl" href="#cover">cover</a><a class="pgl" href="#screens1">screens1</a><a class="pgl" href="#screens2">screens2</a><a class="pgl" href="#risk">risk</a><a class="pgl" href="#a-llm">a-llm</a><a class="pgl" href="#a-scr-safety">a-scr-safety</a><a class="pgl" href="#a-scr-a11y">a-scr-a11y</a></td></tr>
+<tr id="srow-P7"><td class="no">P7</td><td><span class="pub">コードと利用規約</span></td><td>このリポジトリ</td><td class="dt">2026-09</td><td>重み・部品・規約の原文</td><td class="nt">src/security/enhanced_safety_checker.py・src/agents・src/content/about_modal_html.json</td><td class="pg"><a class="pgl" href="#pipeline">pipeline</a><a class="pgl" href="#scoring">scoring</a><a class="pgl" href="#safety">safety</a><a class="pgl" href="#a-flow">a-flow</a><a class="pgl" href="#a-pipe">a-pipe</a><a class="pgl" href="#a-agents">a-agents</a><a class="pgl" href="#a-weights">a-weights</a><a class="pgl" href="#a-exclude">a-exclude</a><a class="pgl" href="#a-privacy">a-privacy</a><a class="pgl" href="#a-license">a-license</a></td></tr>
+  </table>
+  <div class="foot"><span></span><span>出典 1/2</span></div>
+</section>
+<section id="src-1" data-gen="sources" data-sparse-ok>
+  <div class="kicker">SOURCES · 2/2</div>
+  <h1>外部の資料 1〜6：01・02・04の章</h1>
+  <div class="rule"></div>
+  <table class="src">
+<colgroup><col style="width:60px"><col><col style="width:140px"><col style="width:400px"><col style="width:230px"></colgroup>
+<tr><th>№</th><th>発行者「資料名」</th><th>日付</th><th>リンク</th><th>使うページ</th></tr>
+<tr class="grp"><td colspan="5">01 課題と解決</td></tr>
+<tr id="srow-1"><td class="no">1</td><td><span class="pub">e-Gov 法令検索</span>「医薬品、医療機器等の品質、有効性及び安全性の確保等に関する法律 第36条の10」</td><td class="dt">2026</td><td class="u"><a href="https://laws.e-gov.go.jp/law/335AC0000000145" target="_blank" rel="noopener">laws.e-gov.go.jp/law/335AC0000000145</a></td><td class="pg"><a class="pgl" href="#problem">problem</a><a class="pgl" href="#a-law">a-law</a></td></tr>
+<tr id="srow-2"><td class="no">2</td><td><span class="pub">厚生労働省</span>「薬事工業生産動態統計調査 令和6年 年報（一般用医薬品の生産金額）」</td><td class="dt">2025</td><td class="u"><a href="https://www.mhlw.go.jp/toukei/list/105-1.html" target="_blank" rel="noopener">mhlw.go.jp/toukei/list/105-1.html</a></td><td class="pg"><a class="pgl" href="#market">market</a></td></tr>
+<tr id="srow-3"><td class="no">3</td><td><span class="pub">総務省統計局</span>「人口推計（2024年10月1日現在）」</td><td class="dt">2025-04</td><td class="u"><a href="https://www.stat.go.jp/data/jinsui/2024np/index.html" target="_blank" rel="noopener">stat.go.jp/data/jinsui/2024np/index.html</a></td><td class="pg"><a class="pgl" href="#market">market</a></td></tr>
+<tr id="srow-4"><td class="no">4</td><td><span class="pub">日本政府観光局（JNTO）</span>「訪日外客統計（2024年）」</td><td class="dt">2025-01</td><td class="u"><a href="https://statistics.jnto.go.jp/" target="_blank" rel="noopener">statistics.jnto.go.jp</a></td><td class="pg"><a class="pgl" href="#market">market</a></td></tr>
+<tr class="grp"><td colspan="5">02 しくみ</td></tr>
+<tr id="srow-5"><td class="no">5</td><td><span class="pub">医薬品医療機器総合機構（PMDA）</span>「一般用医薬品・要指導医薬品 情報検索」</td><td class="dt">2026</td><td class="u"><a href="https://www.pmda.go.jp/PmdaSearch/otcSearch/" target="_blank" rel="noopener">pmda.go.jp/PmdaSearch/otcSearch</a></td><td class="pg"><a class="pgl" href="#data">data</a><a class="pgl" href="#a-import">a-import</a></td></tr>
+<tr class="grp"><td colspan="5">04 これから</td></tr>
+<tr id="srow-6"><td class="no">6</td><td><span class="pub">PolyForm Project</span>「PolyForm Noncommercial License 1.0.0」</td><td class="dt">2019</td><td class="u"><a href="https://polyformproject.org/licenses/noncommercial/1.0.0/" target="_blank" rel="noopener">polyformproject.org/licenses/noncommercial/…</a></td><td class="pg"><a class="pgl" href="#business">business</a><a class="pgl" href="#a-license">a-license</a></td></tr>
+  </table>
+  <div class="foot"><span>2026-09-30 にリンクを確認。規約・料金・法令は変わるので、使う前に最新版を確かめ直す</span><span>出典 2/2</span></div>
+</section>
+<section id="assump" data-gen="sources" data-sparse-ok>
+  <div class="kicker">ASSUMPTIONS</div>
+  <h1>前提の一覧：出典のない数字を、計画・推計・仮置きに分ける</h1>
+  <div class="rule"></div>
+  <table class="src asmt">
+<colgroup><col style="width:300px"><col style="width:250px"><col style="width:120px"><col><col style="width:260px"><col style="width:170px"></colgroup>
+<tr><th>数字</th><th>置いた値</th><th>状態</th><th>置き方・理由</th><th>計算の場所</th><th>使うページ</th></tr>
+<tr id="srow-A1"><td><span class="pub">いまの運用費</span></td><td>約3,000円/月</td><td><span class="st tbd">仮置き</span></td><td>開発者の申告（2026-09-30）。本番・検証・AIの合計で、内訳は未集計</td><td class="nt">calc.py の COST_MONTHLY_YEN</td><td class="pg"><a class="pgl" href="#business">business</a><a class="pgl" href="#a-cost">a-cost</a></td></tr>
+<tr id="srow-A2"><td><span class="pub">検証環境の月額</span></td><td>止めておくと $6〜7、ずっと動かすと $31〜32</td><td><span class="st est">推計</span></td><td>AWS の費用計画の見積もり（一次調査 P5）。実績は 2026-08-01〜07 の $1.28</td><td class="nt">calc.py の AWS</td><td class="pg"><a class="pgl" href="#arch-aws">arch-aws</a><a class="pgl" href="#a-aws">a-aws</a><a class="pgl" href="#a-cost">a-cost</a></td></tr>
+<tr id="srow-A3"><td><span class="pub">困りごと・使われる場面</span></td><td>夜・読みにくさ・言葉の壁</td><td><span class="st tbd">仮置き</span></td><td>開発者の店頭での経験から置いた仮説。利用者での実証はこれから</td><td class="nt">本文</td><td class="pg"><a class="pgl" href="#problem">problem</a><a class="pgl" href="#market">market</a></td></tr>
+<tr id="srow-A4"><td><span class="pub">似たサービスの整理</span></td><td>5つの相手</td><td><span class="st est">推計</span></td><td>2026年9月時点の内部の整理（docs/planning/ux-pdca-20260922/02_MARKET_AND_COMPETITIVE.md）</td><td class="nt">本文</td><td class="pg"><a class="pgl" href="#a-comp">a-comp</a><a class="pgl" href="#a-pos">a-pos</a></td></tr>
+  </table>
+  <div class="foot"><span>計画＝自分たちで決めた値。推計＝調べた数字からの計算。仮置き＝実績で置き直す値</span><span>前提の一覧</span></div>
+</section>
+<!-- SOURCES:END -->
+
+<!-- GLOSSARY:BEGIN -->
+<section id="gl1" data-gen="glossary" data-sparse-ok>
+  <div class="kicker">GLOSSARY · 1/1</div>
+  <h1>用語集：薬と法令の言葉・しくみの言葉</h1>
+  <div class="rule"></div>
+  <div class="gls"><div class="gc">
+<div class="gh">薬と法令の言葉</div>
+<div class="ge" id="srow-gl-otc"><b>市販薬<small>OTC医薬品・一般用医薬品</small></b><p>処方箋なしで薬局・ドラッグストアで買える薬 <a class="ref" href="#problem">詳しく</a></p></div>
+<div class="ge" id="srow-gl-cls"><b>第1類・第2類・第3類<small>リスク区分</small></b><p>市販薬の分類。第1類は薬剤師の書面での説明が義務、第2類は努力義務、第3類は定めなし <a class="ref" href="#a-law">詳しく</a></p></div>
+<div class="ge" id="srow-gl-seller"><b>登録販売者</b><p>第2類・第3類の市販薬を売れる資格を持つ人 <a class="ref" href="#a-law">詳しく</a></p></div>
+<div class="ge" id="srow-gl-contra"><b>禁忌</b><p>その人には使ってはいけない条件（年齢・妊娠・持病・飲んでいる薬など） <a class="ref" href="#a-exclude">詳しく</a></p></div>
+<div class="ge" id="srow-gl-nsaids"><b>解熱鎮痛薬（NSAIDs）<small>エヌセイズ</small></b><p>イブプロフェン・ロキソプロフェンなど。血を固まりにくくする薬と重ねると出血の危険が増える <a class="ref" href="#a-inter">詳しく</a></p></div>
+<div class="ge" id="srow-gl-warf"><b>ワルファリン</b><p>血を固まりにくくする処方薬。飲み合わせに特に注意が要る <a class="ref" href="#a-inter">詳しく</a></p></div>
+<div class="ge" id="srow-gl-insert"><b>添付文書</b><p>薬の効能・用法・注意を書いた公式の文書 <a class="ref" href="#a-import">詳しく</a></p></div>
+<div class="ge" id="srow-gl-pmda"><b>PMDA<small>医薬品医療機器総合機構</small></b><p>薬の審査・安全の情報を扱う公的な機関。添付文書を公開している <a class="ref" href="#a-import">詳しく</a></p></div>
+<div class="ge" id="srow-gl-yakki"><b>薬機法<small>医薬品医療機器等法</small></b><p>薬の製造・販売・広告などを定める法律 <a class="ref" href="#a-law">詳しく</a></p></div>
+<div class="gh">しくみの言葉</div>
+<div class="ge" id="srow-gl-ai"><b>AI（大規模言語モデル）<small>LLM</small></b><p>文を読み書きするモデル。ここでは症状の読み取りと説明文にだけ使う <a class="ref" href="#a-llm">詳しく</a></p></div>
+</div><div class="gc">
+<div class="gh">しくみの言葉</div>
+<div class="ge" id="srow-gl-triage"><b>振り分け<small>トリアージ</small></b><p>相談を緊急・体の症状・気持ち・質問・その他の5つに分けること <a class="ref" href="#pipeline">詳しく</a></p></div>
+<div class="ge" id="srow-gl-intent"><b>意図の判定<small>IntentRouter</small></b><p>推薦・比較・質問のどれを求めているかを決める段 <a class="ref" href="#a-pipe">詳しく</a></p></div>
+<div class="ge" id="srow-gl-jev"><b>Jev</b><p>意図の判定を外部の軽いモデルに替える試験で使ったモデル。本番には入れていない <a class="ref" href="#a-jev-what">詳しく</a></p></div>
+<div class="ge" id="srow-gl-p95"><b>P95（遅い側）</b><p>100回のうち遅い方から5回目の応答時間。待たされる人の体感に近い <a class="ref" href="#a-jev-lat">詳しく</a></p></div>
+<div class="ge" id="srow-gl-cr"><b>Cloud Run</b><p>Google Cloud のコンテナを動かすサービス。本番で使う <a class="ref" href="#a-gcp">詳しく</a></p></div>
+<div class="ge" id="srow-gl-fargate"><b>ECS Fargate</b><p>AWS のコンテナを動かすサービス。検証環境で使う <a class="ref" href="#a-aws">詳しく</a></p></div>
+<div class="ge" id="srow-gl-tunnel"><b>Cloudflare Tunnel</b><p>外から直接つながずに、サーバーを公開する仕組み <a class="ref" href="#a-aws">詳しく</a></p></div>
+<div class="ge" id="srow-gl-lambda"><b>Lambda・EventBridge</b><p>AWS の小さな処理と定期実行。検証環境の起動と停止に使う <a class="ref" href="#a-aws">詳しく</a></p></div>
+<div class="ge" id="srow-gl-saas"><b>SaaS・API</b><p>ネット越しに機能を貸す形。商用化の案の1つ（未定） <a class="ref" href="#business">詳しく</a></p></div>
+<div class="ge" id="srow-gl-polyform"><b>PolyForm Noncommercial</b><p>非商用の利用だけを認めるライセンス。商用には別の許可が要る <a class="ref" href="#a-license">詳しく</a></p></div>
+</div></div>
+  <div class="foot"><span>本文の点線の言葉にマウスを乗せると意味が出て、クリックするとここへ飛ぶ</span></div>
+</section>
+<!-- GLOSSARY:END -->
+
+<script>/*DATA*/window.DATA = {"db":{"self_share":99.9,"products":7495,"unique":7221,"makers":341,"cls_labels":["第1類","指定第2類","第2類","第3類"],"cls_values":[8,2112,3765,1609],"doping":1844,"inter":185,"inter_hi":69,"inter_mid":99,"inter_lo":17,"side":275,"eff":11938,"symptoms":50,"synonyms":230,"ingredients":536,"images":259},"dev":{"commits":1135,"first":"2025-10-02","last":"2026-09-26","month_labels":["10月","11月","12月","1月","2月","3月","4月","5月","6月","7月","8月","9月"],"month_values":[257,102,228,38,90,32,4,87,94,130,36,37],"src_files":400,"src_klines":118,"test_funcs":2677,"docs_md":342},"eval":{"total":600,"groups":{"age":300,"pregnant":50,"medication":50,"duration":50,"combo":100,"emergency":50},"errors":0,"error_symptoms":"","no_reco_age3":100,"no_reco_4plus":25.7,"no_reco_symptoms":15,"age_any":14.6,"age_any_k":38,"age_any_n":260,"age_top1":6.5,"age_labels":["7歳","12歳","30歳","50歳","75歳"],"age_values":[55.9,55.9,0,0,0],"nsaid_any":14.3,"nsaid_top1":5.7,"datahigh_any":40,"eff_top1":88.5,"type_top1":92.3,"tie2":46.8,"tie3":25.8,"preg_reco":0,"preg_ref":100,"dur_ref":98,"dur_parsed":100,"emer_rule":56,"emer_cand":50,"emer_missed":22,"emer_hit":28,"fp":2,"lat_p50":0.49,"lat_p95":5.05,"before":{"errors":57,"no_reco_4plus":29.2,"age_any":17.4,"tie2":43.6}},"jev":{"cur_avg":1456.28,"jev_avg":536.78,"cur_p95":3216.91,"jev_p95":594.15,"n":30,"acc_cur":30,"acc_jev":30,"speedup":2.71,"p95_cut":81.5},"aws":{"budget":30,"actual_week":1.28,"stopped_lo":6,"stopped_hi":7,"always_lo":31,"always_hi":32,"per_hour":0.036,"idle_min":30,"wake_lo":3,"wake_hi":6},"market":{"otc_oku":9331,"year":"2024","growth":6,"aging":29.3,"visitors":3687},"weights":{"labels":["症状適合度","効能特異性","年齢適合性","副作用リスク","安全性スコア","相互作用リスク","用法簡便性"],"values":[0.3,0.2,0.12,0.1,0.08,0.05,0.03]},"cost":{"monthly_yen":3000}};/*END DATA*/</script>
+<script>/*GLOSS*/window.GLOSS = [{"id":"gl-polyform","sec":"gl1","t":"PolyForm Noncommercial","d":"非商用の利用だけを認めるライセンス。商用には別の許可が要る","re":"(?<![A-Za-z0-9])PolyForm Noncommercial(?![A-Za-z0-9])|(?<![A-Za-z0-9])PolyForm(?![A-Za-z0-9])"},{"id":"gl-lambda","sec":"gl1","t":"Lambda・EventBridge","d":"AWS の小さな処理と定期実行。検証環境の起動と停止に使う","re":"(?<![A-Za-z0-9])Lambda・EventBridge(?![A-Za-z0-9])|(?<![A-Za-z0-9])EventBridge(?![A-Za-z0-9])|(?<![A-Za-z0-9])Lambda(?![A-Za-z0-9])"},{"id":"gl-tunnel","sec":"gl1","t":"Cloudflare Tunnel","d":"外から直接つながずに、サーバーを公開する仕組み","re":"(?<![A-Za-z0-9])Cloudflare Tunnel(?![A-Za-z0-9])|(?<![A-Za-z0-9])Tunnel(?![A-Za-z0-9])"},{"id":"gl-nsaids","sec":"gl1","t":"解熱鎮痛薬（NSAIDs）","d":"イブプロフェン・ロキソプロフェンなど。血を固まりにくくする薬と重ねると出血の危険が増える","re":"解熱鎮痛薬（NSAIDs）|(?<![A-Za-z0-9])NSAIDs(?![A-Za-z0-9])|解熱鎮痛薬"},{"id":"gl-ai","sec":"gl1","t":"AI（大規模言語モデル）","d":"文を読み書きするモデル。ここでは症状の読み取りと説明文にだけ使う","re":"(?<![A-Za-z0-9])AI（大規模言語モデル）|(?<![A-Za-z0-9])LLM(?![A-Za-z0-9])|(?<![A-Za-z0-9])AI(?![A-Za-z0-9])"},{"id":"gl-intent","sec":"gl1","t":"意図の判定","d":"推薦・比較・質問のどれを求めているかを決める段","re":"(?<![A-Za-z0-9])IntentRouter(?![A-Za-z0-9])|意図の判定"},{"id":"gl-cls","sec":"gl1","t":"第1類・第2類・第3類","d":"市販薬の分類。第1類は薬剤師の書面での説明が義務、第2類は努力義務、第3類は定めなし","re":"第1類・第2類・第3類|指定第2類|第1類|第3類"},{"id":"gl-fargate","sec":"gl1","t":"ECS Fargate","d":"AWS のコンテナを動かすサービス。検証環境で使う","re":"(?<![A-Za-z0-9])ECS Fargate(?![A-Za-z0-9])|(?<![A-Za-z0-9])Fargate(?![A-Za-z0-9])"},{"id":"gl-cr","sec":"gl1","t":"Cloud Run","d":"Google Cloud のコンテナを動かすサービス。本番で使う","re":"(?<![A-Za-z0-9])Cloud Run(?![A-Za-z0-9])"},{"id":"gl-p95","sec":"gl1","t":"P95（遅い側）","d":"100回のうち遅い方から5回目の応答時間。待たされる人の体感に近い","re":"(?<![A-Za-z0-9])P95（遅い側）|(?<![A-Za-z0-9])P95(?![A-Za-z0-9])"},{"id":"gl-saas","sec":"gl1","t":"SaaS・API","d":"ネット越しに機能を貸す形。商用化の案の1つ（未定）","re":"(?<![A-Za-z0-9])SaaS・API(?![A-Za-z0-9])|(?<![A-Za-z0-9])SaaS(?![A-Za-z0-9])"},{"id":"gl-warf","sec":"gl1","t":"ワルファリン","d":"血を固まりにくくする処方薬。飲み合わせに特に注意が要る","re":"ワルファリン"},{"id":"gl-assump","k":"link","sec":"assump","t":"開発者の申告","d":"外部の出典がない数字","re":"開発者の申告","fl":"srow-A1"},{"id":"gl-seller","sec":"gl1","t":"登録販売者","d":"第2類・第3類の市販薬を売れる資格を持つ人","re":"登録販売者"},{"id":"gl-insert","sec":"gl1","t":"添付文書","d":"薬の効能・用法・注意を書いた公式の文書","re":"添付文書"},{"id":"gl-pmda","sec":"gl1","t":"PMDA","d":"薬の審査・安全の情報を扱う公的な機関。添付文書を公開している","re":"(?<![A-Za-z0-9])PMDA(?![A-Za-z0-9])"},{"id":"gl-triage","sec":"gl1","t":"振り分け","d":"相談を緊急・体の症状・気持ち・質問・その他の5つに分けること","re":"振り分け"},{"id":"gl-otc","sec":"gl1","t":"市販薬","d":"処方箋なしで薬局・ドラッグストアで買える薬","re":"市販薬"},{"id":"gl-yakki","sec":"gl1","t":"薬機法","d":"薬の製造・販売・広告などを定める法律","re":"薬機法"},{"id":"gl-jev","sec":"gl1","t":"Jev","d":"意図の判定を外部の軽いモデルに替える試験で使ったモデル。本番には入れていない","re":"(?<![A-Za-z0-9])Jev(?![A-Za-z0-9])"},{"id":"gl-contra","sec":"gl1","t":"禁忌","d":"その人には使ってはいけない条件（年齢・妊娠・持病・飲んでいる薬など）","re":"禁忌"}];/*END GLOSS*/</script>
+<script>/*CITES*/window.CITES = {"src":{"1":{"p":"src-1","t":"e-Gov 法令検索「医薬品、医療機器等の品質、有効性及び安全性の確保等に関する法律 第36条の10」2026"},"2":{"p":"src-1","t":"厚生労働省「薬事工業生産動態統計調査 令和6年 年報（一般用医薬品の生産金額）」2025"},"3":{"p":"src-1","t":"総務省統計局「人口推計（2024年10月1日現在）」2025-04"},"4":{"p":"src-1","t":"日本政府観光局（JNTO）「訪日外客統計（2024年）」2025-01"},"5":{"p":"src-1","t":"医薬品医療機器総合機構（PMDA）「一般用医薬品・要指導医薬品 情報検索」2026"},"6":{"p":"src-1","t":"PolyForm Project「PolyForm Noncommercial License 1.0.0」2019"},"P1":{"p":"src-prim","t":"収録データ（市販薬・飲み合わせ・副作用・効能・辞書・画像）"},"P2":{"p":"src-prim","t":"推薦のオフライン点検（600件）"},"P3":{"p":"src-prim","t":"開発の履歴"},"P4":{"p":"src-prim","t":"Jev による意図の判定の試験"},"P5":{"p":"src-prim","t":"AWS 検証環境の費用計画と実績"},"P6":{"p":"src-prim","t":"画面の撮影"},"P7":{"p":"src-prim","t":"コードと利用規約"},"A1":{"p":"assump","t":"いまの運用費：約3,000円/月（仮置き）"},"A2":{"p":"assump","t":"検証環境の月額：止めておくと $6〜7、ずっと動かすと $31〜32（推計）"},"A3":{"p":"assump","t":"困りごと・使われる場面：夜・読みにくさ・言葉の壁（仮置き）"},"A4":{"p":"assump","t":"似たサービスの整理：5つの相手（推計）"}},"pages":{"summary":["P1","P2","P3"],"problem":["P1","1","A3"],"data":["P1","5"],"a-db":["P1"],"a-inter":["P1","P2"],"a-dict":["P1","P2"],"a-import":["P1","5"],"eval":["P2"],"eval2":["P2"],"risk":["P2","P6"],"a-gate":["P2"],"a-tie":["P2"],"a-eval-method":["P2"],"a-eval-metrics":["P2"],"a-eval-all":["P2"],"a-eval-emer":["P2"],"a-eval-limits":["P2"],"track":["P3"],"a-hist":["P3"],"a-agents":["P3","P7"],"jev":["P4"],"a-jev-what":["P4"],"a-jev-lat":["P4"],"a-jev-gate":["P4"],"arch-aws":["P5","A2"],"a-aws":["P5","A2"],"a-env":["P5"],"a-cost":["P5","A1","A2"],"cover":["P6"],"screens1":["P6"],"screens2":["P6"],"a-llm":["P6"],"a-scr-safety":["P6"],"a-scr-a11y":["P6"],"pipeline":["P7"],"scoring":["P7"],"safety":["P7"],"a-flow":["P7"],"a-pipe":["P7"],"a-weights":["P7"],"a-exclude":["P7"],"a-privacy":["P7"],"a-license":["P7","6"],"a-law":["1"],"market":["2","3","4","A3"],"business":["6","A1"],"a-comp":["A4"],"a-pos":["A4"]}};/*END CITES*/</script>
+<script id="html-slides-lib-js">/*LIB:JS*/
+/* html-slides runtime：画面合わせ・ページ送り・番号・章の並び・data-f の数字・?check・発表者メモ・
+   出典の番号と用語の下線（window.CITES・window.GLOSS）・リンクの p.番号・戻るリンク・飛び先を光らせる。
+   デッキ側の <script> は window.DATA と Slides.onShow(fn) を使える（DOMContentLoaded で初期化するので、デッキ側の定義が先に済む）。 */
+(() => {
+  const H = document.documentElement;
+  const Q0 = new URLSearchParams(location.search);
+  if (Q0.get("theme")) H.dataset.theme = Q0.get("theme");
+  const MODE = H.dataset.mode || "doc";
+  const EN = (H.lang || "ja").toLowerCase().startsWith("en");
+  const MIN_FS = MODE === "pitch" ? 54 : 16;
+  const Q = new URLSearchParams(location.search);
+  const CHECK = Q.has("check"), PRESENTER = Q.has("presenter");
+  const T = EN
+    ? { prev: "Previous", next: "Next", fs: "Fullscreen", ovf: "Issues", elapsed: "Elapsed", until: "End this page by", reset: "T: reset timer", nx: "Next: " }
+    : { prev: "前へ", next: "次へ", fs: "全画面", ovf: "問題", elapsed: "経過", until: "このページは", reset: "T で時計を0に", nx: "次：" };
+  const hooks = [];
+
+  const get = path => path.split(".").reduce((o, k) => (o == null ? undefined : o[k]), window.DATA);
+  /** 数字の書式。d 小数の桁、x 掛ける数、r この単位で丸める、u 単位、sign 正の数に＋ */
+  function fmt(v, o = {}) {
+    if (v == null || Number.isNaN(+v)) return "—";
+    v = +v * (o.x ?? 1);
+    if (o.r) v = Math.round(v / o.r) * o.r;
+    const d = o.d ?? 0;
+    let s = Math.abs(v).toLocaleString(EN ? "en-US" : "ja-JP", { minimumFractionDigits: d, maximumFractionDigits: d });
+    if (v < 0 && s.replace(/[0.,]/g, "")) s = "−" + s;
+    else if (o.sign && v > 0) s = "+" + s;
+    return s + (o.u ?? "");
+  }
+  function fillData(root) {
+    root.querySelectorAll("[data-f]").forEach(el => {
+      const v = get(el.dataset.f);
+      const ds = el.dataset;
+      el.textContent = fmt(v, { d: +(ds.d || 0), x: ds.x ? +ds.x : 1, r: ds.r ? +ds.r : 0, u: ds.u || "", sign: "sign" in ds });
+      el.classList.toggle("f-missing", v === undefined);
+    });
+  }
+
+  const Slides = (window.Slides = { mode: MODE, lang: EN ? "en" : "ja", get, fmt, fillData, onShow: fn => hooks.push(fn), ids: [] });
+
+  /* ---------- ?check：表示中のページの問題を赤枠にし、#check-out に JSON で書く（export.mjs が読む） ---------- */
+  function describe(el) {
+    const cls = [...el.classList].filter(c => c !== "ovf").slice(0, 2).map(c => "." + c).join("");
+    const txt = (el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 28);
+    return `${el.tagName.toLowerCase()}${el.id ? "#" + el.id : ""}${cls}${txt ? ` "${txt}"` : ""}`;
+  }
+  /* 本文（見出しの線から下の注記まで）で実際に塗られている範囲：文字・画像・SVG・背景や枠のある箱 */
+  function painted(sec) {
+    const boxes = [], skip = ".kicker, h1, .rule, .foot, .pno, .ovf-badge, .ovf-gap, aside.notes, [data-nocheck], .nav";
+    const visible = c => c && c !== "transparent" && !/rgba\([^)]*,\s*0\)$/.test(c);
+    sec.querySelectorAll("*").forEach(el => {
+      if (el.closest(skip) || el.parentElement.closest("svg")) return;
+      const cs = getComputedStyle(el);
+      if (cs.visibility === "hidden" || +cs.opacity === 0) return;
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      const boxy = ["IMG", "svg", "CANVAS", "VIDEO"].includes(el.tagName) || visible(cs.backgroundColor) || cs.backgroundImage !== "none"
+        || (parseFloat(cs.borderTopWidth) + parseFloat(cs.borderLeftWidth) > 0 && visible(cs.borderTopColor)) || cs.boxShadow !== "none";
+      if (boxy) boxes.push(r);
+      if (el.tagName === "svg") return;
+      for (const n of el.childNodes) if (n.nodeType === 3 && n.textContent.trim()) {
+        const rg = document.createRange(); rg.selectNodeContents(n);
+        const t = rg.getBoundingClientRect(); if (t.width && t.height) boxes.push(t);
+      }
+    });
+    return boxes;
+  }
+  /* 空き・偏り：左右の空きの差が 15% 以上、または下の空きが上より 35% 以上多い（中央に寄せたページは差が出ないので通る） */
+  const SPARSE_X = 15, SPARSE_Y = 35;
+  function sparse(sec, S, k, foot) {
+    if (sec.matches(".cover, .chap, .dark, .full-img, [data-sparse-ok]")) return null;
+    const cs = getComputedStyle(sec), px = v => parseFloat(v) * k;
+    const head = sec.querySelector(":scope > .rule") || sec.querySelector(":scope > h1");
+    const A = { l: S.left + px(cs.paddingLeft), r: S.right - px(cs.paddingRight),
+      t: head ? head.getBoundingClientRect().bottom : S.top + px(cs.paddingTop), b: foot ? foot.top : S.bottom - px(cs.paddingBottom) };
+    const bx = painted(sec);
+    if (!bx.length || A.r <= A.l || A.b <= A.t) return null;
+    const U = { l: Math.min(...bx.map(r => r.left)), r: Math.max(...bx.map(r => r.right)), t: Math.min(...bx.map(r => r.top)), b: Math.max(...bx.map(r => r.bottom)) };
+    const W = A.r - A.l, H = A.b - A.t, pct = v => Math.round(Math.max(0, v) * 100);
+    const e = { l: pct((U.l - A.l) / W), r: pct((A.r - U.r) / W), t: pct((U.t - A.t) / H), b: pct((A.b - U.b) / H) };
+    const said = [], gaps = [];
+    if (e.r - e.l >= SPARSE_X) { said.push(`右が${e.r}%`); gaps.push({ l: U.r, r: A.r, t: A.t, b: A.b }); }
+    if (e.l - e.r >= SPARSE_X) { said.push(`左が${e.l}%`); gaps.push({ l: A.l, r: U.l, t: A.t, b: A.b }); }
+    if (e.b - e.t >= SPARSE_Y) { said.push(`下が${e.b}%`); gaps.push({ l: A.l, r: A.r, t: U.b, b: A.b }); }
+    if (!said.length) return null;
+    return { why: `sparse ${said.join("・")}空いている（中身を広げる・大きくする・ページをまとめる。わざと空けるなら data-sparse-ok）`,
+      gaps: gaps.map(g => ({ left: (g.l - S.left) / k, top: (g.t - S.top) / k, width: (g.r - g.l) / k, height: (g.b - g.t) / k })) };
+  }
+  function check(sec) {
+    sec.querySelectorAll(".ovf").forEach(e => e.classList.remove("ovf"));
+    sec.querySelectorAll(".ovf-badge, .ovf-gap").forEach(e => e.remove());
+    const S = sec.getBoundingClientRect(), k = S.width / 1920;
+    const foot = sec.querySelector(":scope > .foot")?.getBoundingClientRect();
+    const hits = [];
+    const add = (el, why) => { if (!hits.some(h => h.el === el)) hits.push({ el, why }); };
+    sec.querySelectorAll("*").forEach(el => {
+      if (el.closest(".pno, .ovf-badge, aside.notes, [data-nocheck]")) return;
+      if (el.classList.contains("map") && !el.querySelector("svg")) add(el, "map-empty（make-map.mjs --into で書き込む）");
+      if (el.id && !el.closest("svg") && document.querySelectorAll(`[id="${CSS.escape(el.id)}"]`).length > 1) add(el, `dup-id #${el.id}（デッキ全体で一意にする）`);
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      const cs = getComputedStyle(el);
+      if (r.left < S.left - k || r.right > S.right + k || r.top < S.top - k || r.bottom > S.bottom + k) add(el, "outside");
+      const inSvg = el.closest("svg");
+      if (!inSvg && el.clientHeight > 0 && cs.display !== "inline" && !["svg", "IMG", "SECTION"].includes(el.tagName)
+        && cs.textOverflow !== "ellipsis"
+        && (el.scrollHeight > el.clientHeight + (cs.overflowY === "visible" ? Math.max(12, parseFloat(cs.fontSize) * 0.35) : 2)
+          || el.scrollWidth > el.clientWidth + (cs.overflowX === "visible" ? 6 : 2))) add(el, "clipped");
+      if (foot && !inSvg && !el.closest(".foot, .pno") && cs.position !== "absolute" && r.bottom > foot.top - 4 * k && r.top < foot.bottom) add(el, "on-foot");
+      const hasText = [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim());
+      if (hasText && parseFloat(cs.fontSize) < MIN_FS) add(el, `font ${parseFloat(cs.fontSize)}px < ${MIN_FS}px`);
+      if (el.tagName === "IMG" && el.complete && !el.naturalWidth) add(el, "image-missing");
+      const href = el.tagName === "A" ? el.getAttribute("href") || "" : "";
+      if (href.length > 1 && href[0] === "#" && !document.getElementById(decodeURIComponent(href.slice(1)))) add(el, `link-missing ${href}（飛び先の id がない）`);
+      if (el.classList.contains("f-missing")) add(el, `data-missing ${el.dataset.f || el.dataset.chart?.slice(0, 40) || ""}`);
+    });
+    hits.forEach(h => h.el.classList.add("ovf"));
+    const sp = sparse(sec, S, k, foot);
+    if (sp) {
+      hits.push({ el: sec, why: sp.why });
+      sp.gaps.forEach(g => {
+        const d = document.createElement("div");
+        d.className = "ovf-gap";
+        Object.assign(d.style, Object.fromEntries(Object.entries(g).map(([p, v]) => [p, v + "px"])));
+        sec.appendChild(d);
+      });
+    }
+    let out = document.getElementById("check-out");
+    if (!out) { out = document.createElement("script"); out.type = "application/json"; out.id = "check-out"; document.body.appendChild(out); }
+    out.textContent = JSON.stringify({ id: sec.id, issues: hits.map(h => ({ why: h.why, el: describe(h.el) })) });
+    if (hits.length) {
+      const b = document.createElement("div");
+      b.className = "ovf-badge";
+      b.textContent = `${T.ovf} ${hits.length}：${[...new Set(hits.map(h => h.why.split(" ")[0]))].slice(0, 4).join(" / ")}`;
+      sec.appendChild(b);
+      console.warn(sec.id, hits);
+    }
+  }
+
+  /* ---------- 出典・用語：build-sources.mjs / build-glossary.mjs が書く window.CITES・window.GLOSS から ---------- */
+  const citesRow = sec => {
+    let c = sec.querySelector(":scope > .cites");
+    if (!c) { c = document.createElement("div"); c.className = "cites"; sec.appendChild(c); }
+    return c;
+  };
+  const attr = s => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  /** 各ページの下に出典の番号（3つ以上続く番号は 4–7 にまとめる）。マウスを乗せると資料名、クリックで出典のページへ */
+  function renderCites(ids) {
+    const C = window.CITES;
+    if (!C || !C.pages || MODE === "pitch") return;
+    for (const [id, list] of Object.entries(C.pages)) {
+      const sec = document.getElementById(id);
+      if (!sec || sec.tagName !== "SECTION" || !list.length) continue;
+      const num = n => /^\d+$/.test(n), runs = [];
+      list.forEach(n => {
+        const r = runs[runs.length - 1];
+        if (r && num(n) && num(r[r.length - 1]) && +n === +r[r.length - 1] + 1) r.push(n); else runs.push([n]);
+      });
+      const tip = ns => attr(ns.map(n => `${n}. ${C.src[n]?.t || ""}`).join("\n"));
+      const chips = runs.flatMap(r => (r.length > 2 ? [r] : r.map(x => [x]))).map(g => {
+        const s = C.src[g[0]] || {};
+        return `<a class="cite${num(g[0]) ? "" : " p"}" href="#${s.p || ""}" data-n="${g[0]}" title="${tip(g)}">${g.length > 1 ? `${g[0]}–${g[g.length - 1]}` : g[0]}</a>`;
+      }).join("");
+      citesRow(sec).insertAdjacentHTML("beforeend", `<span class="cw">${EN ? "Sources" : "出典"} ${chips}</span>`);
+    }
+  }
+  /** 各ページで、用語集にある言葉の最初の1回に点線の下線（マウスで意味、クリックで用語集へ）。ページの下に用語集のページ番号 */
+  function renderGloss(secs, ids) {
+    const G = window.GLOSS;
+    if (!G || !G.length) return;
+    const res = G.map(g => { try { return new RegExp(g.re); } catch { return null; } });
+    const SKIP = "h1, .kicker, .foot, .cites, a, svg, script, style, .chaps, .pno, .back, .toc, .nav, aside.notes, [data-nogloss]";
+    secs.forEach(sec => {
+      if (sec.matches(".cover, .chap, [data-gen], [data-nogloss]")) return;
+      const texts = [];
+      const w = document.createTreeWalker(sec, NodeFilter.SHOW_TEXT);
+      for (let n; (n = w.nextNode());) if (n.data.trim() && !n.parentElement.closest(SKIP)) texts.push(n);
+      const used = new Set();
+      G.forEach((g, i) => {
+        if (!res[i]) return;
+        for (let k = 0; k < texts.length; k++) {
+          const m = res[i].exec(texts[k].data);
+          if (!m || !m[0]) continue;
+          const hit = texts[k].splitText(m.index), after = hit.splitText(m[0].length);
+          const a = document.createElement("a");
+          a.className = "gl";
+          a.href = `#${g.sec}`;
+          if (g.fl) a.dataset.fl = g.fl; else a.dataset.n = g.id;
+          a.title = `${g.t}：${g.d}`;
+          hit.replaceWith(a);
+          a.appendChild(hit);
+          texts.splice(k, 1, texts[k], after);
+          used.add(g.sec);
+          break;
+        }
+      });
+      if (!used.size || MODE === "pitch") return;
+      const links = [...used].filter(s => ids.includes(s)).sort((x, y) => ids.indexOf(x) - ids.indexOf(y))
+        .map(s => `<a class="glc" href="#${s}">p.${ids.indexOf(s) + 1}</a>`).join("");
+      if (links) citesRow(sec).insertAdjacentHTML("afterbegin", `<span class="cw">${EN ? "Terms" : "用語"} ${links}</span>`);
+    });
+  }
+
+  function init() {
+    const secs = [...document.querySelectorAll("section")];
+    const ids = (Slides.ids = secs.map(s => s.id));
+    fillData(document);
+    Slides.tables?.(document);
+    renderGloss(secs, ids);
+    renderCites(ids);
+
+    /* ページ番号（data-nopno で消す） */
+    secs.forEach((s, i) => {
+      if (s.hasAttribute("data-nopno") || H.hasAttribute("data-nopno")) return;
+      const n = document.createElement("div");
+      n.className = "pno";
+      n.textContent = i + 1;
+      s.appendChild(n);
+    });
+    /* 中扉の下に章の並び（section.chap の data-n・data-t） */
+    const chaps = secs.filter(s => s.classList.contains("chap"));
+    if (chaps.length > 1) chaps.forEach((s, i) => {
+      const row = document.createElement("div");
+      row.className = "chaps";
+      row.innerHTML = chaps.map((c, j) => `<div class="${j === i ? "on" : j < i ? "done" : ""}"><b>${c.dataset.n || j + 1}</b>${c.dataset.t || ""}</div>`).join("");
+      s.appendChild(row);
+    });
+    /* ページへのリンクに番号（PNG・PDF でもたどれる） */
+    document.querySelectorAll("a.ref").forEach(a => {
+      const n = ids.indexOf(a.hash.slice(1)) + 1;
+      if (n) a.insertAdjacentHTML("beforeend", `<span class="pg">p.${n}</span>`);
+    });
+    document.querySelectorAll("a.pgl").forEach(a => { const n = ids.indexOf(a.hash.slice(1)) + 1; if (n) a.textContent = `p.${n}`; });
+
+    /* リンクで飛んだら：飛び先の行（data-fl の id、出典・用語は srow-番号）を光らせ、飛び先のページに「← 元のページへ」 */
+    let flashId = null, backFrom = null, backTo = null;
+    document.addEventListener("click", e => {
+      const a = e.target.closest?.("a[href^='#']");
+      if (!a || a.closest(".nav")) return;
+      if (a.classList.contains("back")) { e.preventDefault(); const f = backFrom; backFrom = backTo = null; if (f) location.hash = f; return; }
+      const to = decodeURIComponent(a.hash.slice(1));
+      if (!ids.includes(to)) return;
+      backFrom = current(); backTo = to;
+      flashId = a.dataset.fl || (a.dataset.n ? `srow-${a.dataset.n}` : null);
+    });
+    Slides.afterShow = sec => {
+      let b = sec.querySelector(":scope > a.back");
+      if (backTo === sec.id && backFrom && backFrom !== sec.id) {
+        if (!b) { b = document.createElement("a"); b.className = "back"; b.href = "#"; b.textContent = EN ? "← Back" : "← 元のページへ"; sec.appendChild(b); }
+        b.classList.add("show");
+      } else b?.classList.remove("show");
+      if (flashId) {
+        const r = document.getElementById(flashId);
+        if (r) { r.classList.add("flash"); setTimeout(() => r.classList.remove("flash"), 2500); }
+        flashId = null;
+      }
+    };
+
+    const nav = document.createElement("div");
+    nav.className = "nav";
+    nav.innerHTML = `<button data-go="-1" aria-label="${T.prev}">‹</button><span></span><button data-go="1" aria-label="${T.next}">›</button><button data-fs aria-label="${T.fs}">⛶</button>`;
+    document.body.appendChild(nav);
+
+    /* 発表者メモ：N で重ねる、P で発表者用の窓（ページ送りが連動）、T で時計を0に */
+    const np = document.createElement("div");
+    np.className = "np";
+    np.innerHTML = `<div class="meta"></div><div class="txt"></div><div class="next"></div>`;
+    document.body.appendChild(np);
+    const bc = "BroadcastChannel" in window ? new BroadcastChannel("html-slides:" + location.pathname) : null;
+    let t0 = null;
+    const toSec = s => { const [m, x] = s.split(":").map(Number); return m * 60 + x; };
+    const mmss = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
+    const current = () => (ids.includes(location.hash.slice(1)) ? location.hash.slice(1) : ids[0]);
+    function paintNotes() {
+      const id = current(), i = ids.indexOf(id), sec = secs[i];
+      const el = t0 === null ? 0 : (performance.now() - t0) / 1000;
+      const end = sec.dataset.end ? toSec(sec.dataset.end) : null;
+      np.querySelector(".meta").innerHTML = `<span>${i + 1} / ${ids.length}</span><span>${T.elapsed} <b class="${end !== null && el > end ? "late" : ""}">${mmss(el)}</b></span>`
+        + (sec.dataset.end ? `<span>${T.until} <b>${sec.dataset.end}</b>${EN ? "" : " まで"}</span>` : "") + `<span>${T.reset}</span>`;
+      np.querySelector(".txt").textContent = sec.querySelector("aside.notes")?.textContent.trim() || "";
+      const nx = secs[i + 1];
+      np.querySelector(".next").textContent = nx ? T.nx + (nx.querySelector("h1")?.textContent.trim() || nx.id) : "";
+    }
+    setInterval(() => { if (np.classList.contains("show") || PRESENTER) paintNotes(); }, 500);
+
+    function fit() {
+      const k = Math.min(innerWidth / 1920, innerHeight / 1080);
+      const st = document.body.style;
+      st.setProperty("--k", k);
+      st.setProperty("--x", (innerWidth - 1920 * k) / 2 + "px");
+      st.setProperty("--y", (innerHeight - 1080 * k) / 2 + "px");
+    }
+    function show() {
+      const id = current();
+      document.querySelectorAll("section.on").forEach(s => s.classList.remove("on"));
+      const sec = secs[ids.indexOf(id)];
+      sec.classList.add("on");
+      if (t0 === null && id !== ids[0]) t0 = performance.now();
+      nav.querySelector("span").textContent = `${ids.indexOf(id) + 1} / ${ids.length}`;
+      hooks.forEach(fn => { try { fn(sec); } catch (e) { console.error(e); } });
+      Slides.afterShow?.(sec);
+      paintNotes();
+      if (CHECK) setTimeout(() => check(sec), 80);
+    }
+    function go(d) {
+      const cur = Math.max(0, ids.indexOf(location.hash.slice(1)));
+      const next = Math.min(ids.length - 1, Math.max(0, cur + d));
+      if (next !== cur || !location.hash) location.hash = ids[next];
+    }
+    Slides.go = go;
+    Slides.show = show;
+    if (bc) bc.onmessage = e => {
+      if (e.data.id && e.data.id !== current()) location.hash = e.data.id;
+      if (e.data.reset) t0 = performance.now();
+    };
+
+    let hideTimer;
+    const reveal = () => { nav.classList.add("show"); clearTimeout(hideTimer); hideTimer = setTimeout(() => nav.classList.remove("show"), 2500); };
+    nav.addEventListener("click", e => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      if (b.dataset.fs !== undefined) document.fullscreenElement ? document.exitFullscreen() : H.requestFullscreen?.();
+      else go(Number(b.dataset.go));
+    });
+    addEventListener("keydown", e => {
+      if (e.target.closest?.("input, textarea")) return;
+      if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); go(1); }
+      else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); go(-1); }
+      else if (e.key === "Home") location.hash = ids[0];
+      else if (e.key === "End") location.hash = ids[ids.length - 1];
+      else if (e.key === "f") H.requestFullscreen?.();
+      else if (e.key === "n") { np.classList.toggle("show"); paintNotes(); }
+      else if (e.key === "p") window.open(location.pathname + "?presenter" + location.hash, "html-slides-presenter", "width=1100,height=700");
+      else if (e.key === "t") { t0 = performance.now(); bc?.postMessage({ reset: true }); paintNotes(); }
+    });
+    let touchX = null;
+    addEventListener("touchstart", e => { touchX = e.touches[0].clientX; reveal(); }, { passive: true });
+    addEventListener("touchend", e => {
+      if (touchX === null) return;
+      const dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+      touchX = null;
+    });
+    addEventListener("mousemove", reveal);
+    addEventListener("resize", fit);
+    addEventListener("hashchange", () => { show(); bc?.postMessage({ id: current() }); });
+    if (PRESENTER) document.body.classList.add("presenter");
+    fit();
+    /* 文字の幅を測ってから図を描くので、フォントの読み込みを待つ */
+    const fontsReady = document.fonts
+      ? Promise.all(['"Noto Sans JP"', "Inter"].flatMap(f => [400, 800].map(w => document.fonts.load(`${w} 20px ${f}`, "あ漢Aa1").catch(() => {})))).then(() => document.fonts.ready)
+      : Promise.resolve();
+    fontsReady.then(show);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else setTimeout(init);
+})();
+
+/* html-slides 財務の表：<div class="fin" data-fin='{…}'> を、DATA の数字から損益計算書・資金繰りなどの表にする。
+   列は四半期と年など（groups で上に見出し、各まとまりの頭に縦線）。行は小計（sum）・強調（key）・率（pct）・見出し（head）・字下げ（indent）。
+   マイナスは「−」で赤く、数字がないセルは「—」にして ?check の data-missing に出す。 */
+(() => {
+  const S = window.Slides;
+  const at = v => (typeof v === "string" && v.startsWith("@") ? S.get(v.slice(1)) : v);
+  const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  function one(host) {
+    let o;
+    try { o = JSON.parse(host.dataset.fin); } catch (e) { host.textContent = "data-fin の JSON が読めない"; host.classList.add("f-missing"); return; }
+    const cols = at(o.cols) || [], groups = at(o.groups) || [], em = new Set(at(o.em) || []);
+    const starts = new Set();
+    let c = 0;
+    groups.forEach(g => { if (c) starts.add(c); c += g.span || 1; });
+    const cls = i => [starts.has(i) ? "gs" : "", em.has(i) ? "em" : ""].filter(Boolean).join(" ");
+    const missing = [];
+    let h = "<table class=\"fin\">";
+    if (groups.length) h += `<tr class="grp"><th class="lb"></th>${groups.map((g, gi) => `<th colspan="${g.span || 1}" class="${gi ? "gs" : ""}">${esc(g.label)}</th>`).join("")}</tr>`;
+    h += `<tr><th class="lb">${esc(o.unit ? (S.lang === "en" ? `Unit: ${o.unit}` : `単位：${o.unit}`) : "")}</th>${cols.map((x, i) => `<th class="${cls(i)}">${esc(x)}</th>`).join("")}</tr>`;
+    (o.rows || []).forEach(r => {
+      if (r.head) { h += `<tr class="head"><td class="lb" colspan="${cols.length + 1}">${esc(r.head)}</td></tr>`; return; }
+      const vals = at(r.v);
+      const f = Object.assign({}, r.kind === "pct" ? { d: 1, x: 100, u: "%" } : o.fmt || {}, r.fmt || {});
+      if (!Array.isArray(vals)) missing.push(typeof r.v === "string" ? r.v.replace(/^@/, "") : r.label);
+      const tr = [r.kind || "", r.indent ? `i${r.indent}` : ""].filter(Boolean).join(" ");
+      h += `<tr class="${tr}"><td class="lb">${esc(r.label)}</td>${cols.map((_, i) => {
+        const v = Array.isArray(vals) ? vals[i] : undefined;
+        const neg = typeof v === "number" && v * (f.x ?? 1) < 0 && S.fmt(v, f).startsWith("−");
+        return `<td class="${[cls(i), neg ? "neg" : ""].filter(Boolean).join(" ")}">${S.fmt(v, f)}</td>`;
+      }).join("")}</tr>`;
+    });
+    host.innerHTML = h + "</table>";
+    host.classList.toggle("f-missing", missing.length > 0);
+    if (missing.length) host.dataset.f = missing.join(",");
+  }
+  S.tables = root => root.querySelectorAll("[data-fin]").forEach(one);
+})();
+
+/* html-slides charts：<div class="chart" style="height:…px" data-chart='{"type":"bar",…}'> を SVG で描く。
+   種類：bar（縦・横・積み上げ・100%・折れ線の重ね）／line／donut（pie）／scatter（bubble）／waterfall／sankey／gantt。
+   色は "accent" "warn" "mid" "sub" "ink" "c1"〜"c6" か色コード。数字は fmt {d,x,r,u,sign}（Slides.fmt）。"@a.b" は window.DATA の値。 */
+(() => {
+  const PITCH = () => Slides.mode === "pitch";
+  const NAMED = { accent: "var(--accent)", warn: "var(--warn)", mid: "var(--accent-mid)", sub: "var(--c6)", ink: "var(--ink)", line: "var(--line)", lane: "var(--lane)" };
+  const col = (c, i = 0) => (c ? NAMED[c] || (/^c[1-6]$/.test(c) ? `var(--${c})` : c) : `var(--c${(i % 6) + 1})`);
+  const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  let ctx;
+  function tw(text, size, weight = 700) {
+    ctx ??= document.createElement("canvas").getContext("2d");
+    ctx.font = `${weight} ${size}px ${getComputedStyle(document.body).fontFamily}`;
+    return Math.max(...String(text).split("\n").map(l => ctx.measureText(l).width));
+  }
+  function niceStep(range, n) {
+    const raw = range / n, p = 10 ** Math.floor(Math.log10(raw)), m = raw / p;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+  }
+  function scale(min, max, n, o = {}) {
+    if (o.min !== undefined) min = o.min;
+    if (o.max !== undefined) max = o.max;
+    if (max === min) max = min + 1;
+    const st = o.step || niceStep(max - min, n);
+    return { lo: o.min ?? Math.floor(min / st + 1e-9) * st, hi: o.max ?? Math.ceil(max / st - 1e-9) * st, st };
+  }
+  const ticks = sc => { const a = []; for (let v = sc.lo; v <= sc.hi + sc.st * 1e-6; v += sc.st) a.push(+v.toFixed(10)); return a; };
+  function resolve(x) {
+    if (typeof x === "string" && x.startsWith("@")) return Slides.get(x.slice(1));
+    if (Array.isArray(x)) return x.map(resolve);
+    if (x && typeof x === "object") return Object.fromEntries(Object.entries(x).map(([k, v]) => [k, resolve(v)]));
+    return x;
+  }
+  /** 複数行の文字（\n で改行） */
+  function text(x, y, s, cls, o = {}) {
+    const lines = String(s ?? "").split("\n"), lh = o.lh || 1.2, fs = o.fs || 20;
+    const dy0 = o.vcenter ? -((lines.length - 1) * fs * lh) / 2 : o.bottom ? -(lines.length - 1) * fs * lh : 0;
+    const attrs = `class="${cls}${o.halo ? " halo" : ""}"${o.anchor ? ` text-anchor="${o.anchor}"` : ""}${o.fill ? ` style="fill:${o.fill}"` : ""}${o.base ? ` dominant-baseline="${o.base}"` : ""}`;
+    if (lines.length === 1) return `<text x="${x}" y="${y + dy0}" ${attrs}>${esc(s)}</text>`;
+    return `<text x="${x}" y="${y + dy0}" ${attrs}>${lines.map((l, i) => `<tspan x="${x}" dy="${i ? fs * lh : 0}">${esc(l)}</tspan>`).join("")}</text>`;
+  }
+  function legendRow(items, x, y, fs, maxW) {
+    let s = "", cx = x, cy = y;
+    items.forEach(it => {
+      const w = fs * 1.2 + 10 + tw(it.name, fs, 600) + fs * 1.4;
+      if (cx + w > x + maxW && cx > x) { cx = x; cy += fs * 1.6; }
+      s += it.line
+        ? `<line x1="${cx}" x2="${cx + fs * 1.2}" y1="${cy - fs * 0.35}" y2="${cy - fs * 0.35}" style="stroke:${it.color}; stroke-width:${Math.max(3, fs / 6)}"/>`
+        : `<rect x="${cx}" y="${cy - fs * 0.8}" width="${fs * 1.2}" height="${fs * 0.8}" rx="3" style="fill:${it.color}"/>`;
+      s += text(cx + fs * 1.2 + 10, cy, it.name, "tk", { fs });
+      cx += w;
+    });
+    return { svg: s, h: cy - y + fs * 1.6 };
+  }
+  const isHl = (s, i, label) => {
+    const h = s.highlight;
+    if (h === undefined) return false;
+    return (Array.isArray(h) ? h : [h]).some(v => v === i || v === label);
+  };
+  const sizes = el => {
+    const cs = getComputedStyle(el);
+    return { fs: parseFloat(cs.getPropertyValue("--chart-fs")) || 19, fv: parseFloat(cs.getPropertyValue("--chart-fs-v")) || 24 };
+  };
+
+  /* ---------- 棒（縦・横、グループ・積み上げ・100%、折れ線の重ね） ---------- */
+  function bar(s, W, H, { fs, fv }) {
+    const L = s.labels || [], all = s.series || [{ values: s.values, name: s.name || "" }];
+    const S = all.filter(x => x.type !== "line"), LN = all.filter(x => x.type === "line");
+    const pct = s.stacked === "100%", stacked = !!s.stacked;
+    const vals = S.map(se => se.values.map((v, i) => (pct ? (v / S.reduce((t, x) => t + (x.values[i] || 0), 0)) * 100 : v)));
+    const f = v => Slides.fmt(v, pct ? { d: 0, u: "%" } : s.fmt || {});
+    const tot = L.map((_, i) => vals.reduce((t, a) => t + Math.max(0, a[i] || 0), 0));
+    const neg = L.map((_, i) => vals.reduce((t, a) => t + Math.min(0, a[i] || 0), 0));
+    const maxV = stacked ? Math.max(...tot) : Math.max(0, ...vals.flat());
+    const minV = stacked ? Math.min(0, ...neg) : Math.min(0, ...vals.flat());
+    const sc = scale(minV, maxV, PITCH() ? 3 : 5, { min: s.min, max: pct ? 100 : s.max, step: s.step });
+    const axis = s.axis ?? !PITCH();
+    const vlab = s.valueLabels ?? true;
+    const legendItems = (S.length > 1 || LN.length) && s.legend !== false
+      ? [...S.map((se, i) => ({ name: se.name, color: col(se.color, i) })), ...LN.map((se, i) => ({ name: se.name, color: col(se.color || "warn", i + 3), line: true }))] : [];
+    let out = "", top = 0;
+    if (legendItems.length) { const lg = legendRow(legendItems, 0, fs, fs, W); out += lg.svg; top += lg.h + 6; }
+    if (s.unit) { out += text(0, top + fs, s.unit, "un", { fs }); top += fs * 1.5; }
+    const fmtTick = v => Slides.fmt(v, pct ? { d: 0, u: "%" } : { ...(s.fmt || {}), ...(Number.isInteger(sc.st) ? { d: 0 } : {}), u: s.tickUnit ?? "" });
+
+    if (s.horizontal) {
+      const labW = s.labelWidth || Math.min(W * 0.4, Math.max(...L.map(l => tw(l, fs * 1.1, 800))) + 20);
+      const valW = vlab ? Math.max(...(stacked ? tot : vals.flat()).map(v => tw(f(v), fv, 800))) + 18 : 10;
+      const x0 = labW, x1 = W - valW, y0 = top + (axis ? fs * 1.6 : 4), y1 = H - 4;
+      const X = v => x0 + ((v - sc.lo) / (sc.hi - sc.lo)) * (x1 - x0);
+      const row = (y1 - y0) / L.length, bh = Math.min(row * (1 - (s.gap ?? 0.3)), s.barMax || 999);
+      if (axis) ticks(sc).forEach(v => { out += `<line class="grid-l" x1="${X(v)}" x2="${X(v)}" y1="${y0 - 6}" y2="${y1}"/>` + text(X(v), y0 - 12, fmtTick(v), "tk", { fs, anchor: "middle" }); });
+      L.forEach((l, i) => {
+        const cy = y0 + row * i + row / 2;
+        out += text(labW - 16, cy, l, "lb", { fs: fs * 1.1, anchor: "end", vcenter: true, base: "central" });
+        if (stacked) {
+          let acc = 0;
+          S.forEach((se, j) => {
+            const v = vals[j][i] || 0, c = col(se.colors?.[i] || se.color, j);
+            out += `<rect x="${X(acc)}" y="${cy - bh / 2}" width="${Math.max(0, X(acc + v) - X(acc))}" height="${bh}" style="fill:${c}"/>`;
+            if (s.segLabels && X(acc + v) - X(acc) > tw(f(v), fs, 800) + 12) out += text((X(acc) + X(acc + v)) / 2, cy, f(v), "vl in", { fs, anchor: "middle", base: "central" });
+            acc += v;
+          });
+          if (vlab) out += text(X(tot[i]) + 12, cy, f(tot[i]), "vl", { fs: fv, base: "central" });
+        } else {
+          const bw = bh / S.length;
+          S.forEach((se, j) => {
+            const v = vals[j][i], hl = isHl(s, i, l);
+            const c = se.colors?.[i] ? col(se.colors[i]) : s.highlight !== undefined && S.length === 1 ? (hl ? col("accent") : col(s.muted || "mid")) : col(se.color, j);
+            const y = cy - bh / 2 + bw * j;
+            out += `<rect x="${Math.min(X(0), X(v))}" y="${y}" width="${Math.abs(X(v) - X(0))}" height="${bw - (S.length > 1 ? 3 : 0)}" rx="${Math.min(8, bw / 4)}" style="fill:${c}"/>`;
+            if (vlab) out += text(Math.max(X(0), X(v)) + 12, y + bw / 2, f(v), "vl", { fs: fv, base: "central", fill: hl ? "var(--accent)" : "" });
+          });
+        }
+      });
+      if (sc.lo < 0 || axis) out += `<line class="ax" x1="${X(0)}" x2="${X(0)}" y1="${y0}" y2="${y1}"/>`;
+      (s.ref || []).forEach(r => { out += `<line class="refl" x1="${X(r.v)}" x2="${X(r.v)}" y1="${y0}" y2="${y1}" style="stroke:${col(r.color || "warn")}"/>` + text(X(r.v) + 8, y0 + fs, r.label || "", "lb", { fs, fill: col(r.color || "warn"), halo: true }); });
+      return out;
+    }
+
+    const lnSc = LN.some(x => x.axis === "right") ? scale(Math.min(0, ...LN.flatMap(x => x.values)), Math.max(...LN.flatMap(x => x.values)), PITCH() ? 3 : 5, s.right || {}) : sc;
+    const fR = v => Slides.fmt(v, s.fmtRight || s.fmt || {});
+    const lines = Math.max(...L.map(l => String(l).split("\n").length));
+    const leftW = axis ? Math.max(...ticks(sc).map(v => tw(fmtTick(v), fs, 600))) + 14 : 0;
+    const rightW = lnSc !== sc && axis ? Math.max(...ticks(lnSc).map(v => tw(fR(v), fs, 600))) + 14 : 0;
+    const x0 = leftW, x1 = W - rightW, y0 = top + (vlab ? fv * 1.5 : 10), y1 = H - lines * fs * 1.2 - 14;
+    const Y = v => y1 - ((v - sc.lo) / (sc.hi - sc.lo)) * (y1 - y0);
+    const YR = v => y1 - ((v - lnSc.lo) / (lnSc.hi - lnSc.lo)) * (y1 - y0);
+    const band = (x1 - x0) / L.length, bw = Math.min(band * (1 - (s.gap ?? 0.35)), s.barMax || 999);
+    if (axis) {
+      ticks(sc).forEach(v => { out += `<line class="grid-l" x1="${x0}" x2="${x1}" y1="${Y(v)}" y2="${Y(v)}"/>` + text(x0 - 12, Y(v), fmtTick(v), "tk", { fs, anchor: "end", base: "central" }); });
+      if (lnSc !== sc) ticks(lnSc).forEach(v => { out += text(x1 + 12, YR(v), fR(v), "tk", { fs, base: "central" }); });
+    }
+    L.forEach((l, i) => {
+      const cx = x0 + band * i + band / 2, hl = isHl(s, i, l);
+      if (!s.xEvery || i % s.xEvery === 0) out += text(cx, y1 + fs + 10, l, hl ? "lb" : "tk", { fs, anchor: "middle", fill: hl ? "var(--accent)" : "" });
+      if (stacked) {
+        let pos = 0, ng = 0;
+        S.forEach((se, j) => {
+          const v = vals[j][i] || 0, c = col(se.colors?.[i] || se.color, j);
+          const a = v >= 0 ? pos : ng, b = a + v;
+          out += `<rect x="${cx - bw / 2}" y="${Math.min(Y(a), Y(b))}" width="${bw}" height="${Math.abs(Y(a) - Y(b))}" style="fill:${c}"/>`;
+          if (s.segLabels && Math.abs(Y(a) - Y(b)) > fs * 1.3 && tw(f(v), fs, 800) < bw - 8) out += text(cx, (Y(a) + Y(b)) / 2, f(v), "vl in", { fs, anchor: "middle", base: "central" });
+          if (v >= 0) pos = b; else ng = b;
+        });
+        if (vlab && !pct) out += text(cx, Y(tot[i]) - 12, f(tot[i]), "vl", { fs: fv, anchor: "middle", fill: hl ? "var(--accent)" : "" });
+      } else {
+        const w = bw / S.length;
+        S.forEach((se, j) => {
+          const v = vals[j][i];
+          if (v == null) return;
+          const c = se.colors?.[i] ? col(se.colors[i]) : s.highlight !== undefined && S.length === 1 ? (hl ? col("accent") : col(s.muted || "mid")) : col(se.color, j);
+          const x = cx - bw / 2 + w * j;
+          out += `<rect x="${x + (S.length > 1 ? 2 : 0)}" y="${Math.min(Y(0), Y(v))}" width="${w - (S.length > 1 ? 4 : 0)}" height="${Math.abs(Y(v) - Y(0))}" rx="${Math.min(8, w / 5)}" style="fill:${c}"/>`;
+          if (vlab && (S.length === 1 || tw(f(v), fs, 800) <= w + 6)) out += text(x + w / 2, v >= 0 ? Y(v) - 12 : Y(v) + fv + 6, f(v), "vl", { fs: S.length > 1 ? fs : fv, anchor: "middle", fill: hl ? "var(--accent)" : "" });
+        });
+      }
+    });
+    out += `<line class="ax" x1="${x0}" x2="${x1}" y1="${Y(Math.max(0, sc.lo))}" y2="${Y(Math.max(0, sc.lo))}"/>`;
+    LN.forEach((se, j) => {
+      const YY = se.axis === "right" ? YR : Y, c = col(se.color || "warn", j + 3);
+      const pts = se.values.map((v, i) => [x0 + band * i + band / 2, YY(v)]);
+      out += `<path d="${pts.map((p, i) => (i ? "L" : "M") + p.join(",")).join("")}" style="fill:none; stroke:${c}; stroke-width:${Math.max(3, fs / 6)}"/>`;
+      pts.forEach(([x, y], i) => {
+        out += `<circle cx="${x}" cy="${y}" r="${Math.max(5, fs / 4)}" style="fill:var(--bg); stroke:${c}; stroke-width:3"/>`;
+        if (se.valueLabels) out += text(x, se.values[i] < 0 ? y + fs * 1.5 : y - fs * 0.8, se.axis === "right" ? fR(se.values[i]) : f(se.values[i]), "lb", { fs, anchor: "middle", fill: c, halo: true });
+      });
+    });
+    (s.ref || []).forEach(r => {
+      const c = col(r.color || "warn");
+      out += `<line class="refl" x1="${x0}" x2="${x1}" y1="${Y(r.v)}" y2="${Y(r.v)}" style="stroke:${c}"/>` + text(x1, Y(r.v) - 10, r.label || "", "lb", { fs, anchor: "end", fill: c, halo: true });
+    });
+    return out;
+  }
+
+  /* ---------- 折れ線 ---------- */
+  function line(s, W, H, { fs, fv }) {
+    const L = s.labels || [], S = s.series || [];
+    const f = v => Slides.fmt(v, s.fmt || {});
+    const all = S.flatMap(x => x.values).filter(v => v != null);
+    const sc = scale(Math.min(s.zero === false ? Math.min(...all) : 0, ...all), Math.max(...all), PITCH() ? 3 : 5, { min: s.min, max: s.max, step: s.step });
+    const fmtTick = v => Slides.fmt(v, { ...(s.fmt || {}), ...(Number.isInteger(sc.st) ? { d: 0 } : {}), u: s.tickUnit ?? "" });
+    const axis = s.axis ?? !PITCH();
+    let out = "", top = 0;
+    const endLabels = s.endLabels ?? true;
+    if (!endLabels && S.length > 1) { const lg = legendRow(S.map((x, i) => ({ name: x.name, color: col(x.color, i), line: true })), 0, fs, fs, W); out += lg.svg; top += lg.h; }
+    if (s.unit) { out += text(0, top + fs, s.unit, "un", { fs }); top += fs * 1.5; }
+    const last = se => { for (let i = se.values.length - 1; i >= 0; i--) if (se.values[i] != null) return i; return -1; };
+    const endTxt = se => (S.length > 1 ? `${se.name} ` : "") + f(se.values[last(se)]);
+    const leftW = axis ? Math.max(...ticks(sc).map(v => tw(fmtTick(v), fs, 600))) + 14 : 0;
+    const rightW = endLabels ? Math.max(...S.map(se => tw(endTxt(se), fv * 0.9, 800))) + 22 : 16;
+    const x0 = leftW, x1 = W - rightW, y0 = top + fv, y1 = H - fs * 1.2 - 14;
+    const X = i => x0 + (L.length > 1 ? (i / (L.length - 1)) * (x1 - x0) : (x1 - x0) / 2);
+    const Y = v => y1 - ((v - sc.lo) / (sc.hi - sc.lo)) * (y1 - y0);
+    if (axis) ticks(sc).forEach(v => { out += `<line class="grid-l" x1="${x0}" x2="${x1}" y1="${Y(v)}" y2="${Y(v)}"/>` + text(x0 - 12, Y(v), fmtTick(v), "tk", { fs, anchor: "end", base: "central" }); });
+    out += `<line class="ax" x1="${x0}" x2="${x1}" y1="${y1}" y2="${y1}"/>`;
+    const maxLab = Math.max(...L.map(l => tw(l, fs, 600)));
+    const every = s.xEvery || Math.max(1, Math.ceil((maxLab + fs) / ((x1 - x0) / Math.max(1, L.length - 1))));
+    L.forEach((l, i) => { if (i % every === 0 || i === L.length - 1 && s.xLast !== false) out += text(X(i), y1 + fs + 10, l, "tk", { fs, anchor: i === 0 && every > 1 ? "start" : i === L.length - 1 && every > 1 ? "end" : "middle" }); });
+    let markEnd = -Infinity, markRow = 0;
+    (s.marks || []).forEach(m => {
+      const c = col(m.color || "sub"), x = X(m.i);
+      markRow = x + 8 < markEnd ? markRow + 1 : 0;
+      markEnd = Math.max(markRow ? markEnd : -Infinity, x + 8 + tw(m.label || "", fs, 600));
+      out += `<line class="refl" x1="${x}" x2="${x}" y1="${y0 - 6}" y2="${y1}" style="stroke:${c}; stroke-width:2"/>` + text(x + 8, y0 + fs * 0.4 + markRow * fs * 1.3, m.label || "", "tk", { fs, fill: c, halo: true });
+    });
+    const ends = [];
+    S.forEach((se, j) => {
+      const c = col(se.color, j), sw = se.width || (j === 0 || se.key ? Math.max(4, fs / 4.5) : Math.max(3, fs / 7));
+      const pts = se.values.map((v, i) => (v == null ? null : [X(i), Y(v)]));
+      const segs = []; let cur = [];
+      pts.forEach(p => { if (p) cur.push(p); else if (cur.length) { segs.push(cur); cur = []; } });
+      if (cur.length) segs.push(cur);
+      segs.forEach(sg => {
+        const d = sg.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + "," + p[1].toFixed(1)).join("");
+        if (s.area || se.area) out += `<path d="${d}L${sg[sg.length - 1][0]},${Y(Math.max(0, sc.lo))}L${sg[0][0]},${Y(Math.max(0, sc.lo))}Z" style="fill:${c}; opacity:0.14"/>`;
+        out += `<path d="${d}" style="fill:none; stroke:${c}; stroke-width:${sw}; stroke-linejoin:round; stroke-linecap:round${se.dash ? "; stroke-dasharray:10 8" : ""}"/>`;
+      });
+      if (s.dots || se.dots) pts.forEach(p => { if (p) out += `<circle cx="${p[0]}" cy="${p[1]}" r="${sw * 1.2}" style="fill:${c}"/>`; });
+      const li = last(se);
+      if (li >= 0) {
+        out += `<circle cx="${X(li)}" cy="${Y(se.values[li])}" r="${sw * 1.6}" style="fill:var(--bg); stroke:${c}; stroke-width:${sw}"/>`;
+        if (endLabels) ends.push({ y: Y(se.values[li]), x: X(li), t: endTxt(se), c });
+      }
+    });
+    ends.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < fv) ends[i].y = ends[i - 1].y + fv;
+    ends.forEach(e => { out += text(e.x + 16, e.y, e.t, "vl", { fs: fv * 0.9, base: "central", fill: e.c, halo: true }); });
+    (s.ref || []).forEach(r => {
+      const c = col(r.color || "warn");
+      out += `<line class="refl" x1="${x0}" x2="${x1}" y1="${Y(r.v)}" y2="${Y(r.v)}" style="stroke:${c}"/>` + text(x0 + 8, Y(r.v) - 10, r.label || "", "lb", { fs, fill: c, halo: true });
+    });
+    return out;
+  }
+
+  /* ---------- 円・ドーナツ（凡例は右に値と割合） ---------- */
+  function donut(s, W, H, { fs, fv }) {
+    const items = s.items || [], total = items.reduce((t, x) => t + x.v, 0);
+    const f = v => Slides.fmt(v, s.fmt || {});
+    const legend = s.legend !== false;
+    const D = Math.min(H, legend ? W * 0.5 : W), R = D / 2, r = R * (s.inner ?? (s.type === "pie" ? 0 : 0.58));
+    const cx = R, cy = H / 2;
+    let out = "", a = -Math.PI / 2;
+    items.forEach((it, i) => {
+      const da = (it.v / total) * Math.PI * 2, b = a + da, lg = da > Math.PI ? 1 : 0, c = col(it.color, i);
+      const p = (ang, rad) => [cx + rad * Math.cos(ang), cy + rad * Math.sin(ang)];
+      const [ax, ay] = p(a, R), [bx, by] = p(b, R), [cx2, cy2] = p(b, r), [dx, dy] = p(a, r);
+      out += items.length === 1
+        ? `<circle cx="${cx}" cy="${cy}" r="${(R + r) / 2}" style="fill:none; stroke:${c}; stroke-width:${R - r}"/>`
+        : `<path d="M${ax},${ay}A${R},${R} 0 ${lg} 1 ${bx},${by}L${cx2},${cy2}${r ? `A${r},${r} 0 ${lg} 0 ${dx},${dy}` : ""}Z" style="fill:${c}; stroke:var(--bg); stroke-width:3"/>`;
+      if (s.sliceLabels !== false && da > 0.35) {
+        const [lx, ly] = p(a + da / 2, r ? (R + r) / 2 : R * 0.62);
+        out += text(lx, ly, `${Math.round((it.v / total) * 100)}%`, "vl in", { fs, anchor: "middle", base: "central" });
+      }
+      a = b;
+    });
+    if (r && s.center) {
+      out += text(cx, cy - fs * 0.2, s.center.v ?? f(total), "vl", { fs: fv * 1.5, anchor: "middle" });
+      if (s.center.k) out += text(cx, cy + fv * 0.9, s.center.k, "tk", { fs, anchor: "middle" });
+    }
+    if (legend) {
+      const x = D + 50, rowH = Math.min((H - 10) / items.length, fs * 3.2);
+      const y0 = cy - (rowH * items.length) / 2 + rowH / 2;
+      items.forEach((it, i) => {
+        const y = y0 + rowH * i;
+        out += `<rect x="${x}" y="${y - fs * 0.5}" width="${fs}" height="${fs}" rx="3" style="fill:${col(it.color, i)}"/>`;
+        out += text(x + fs + 14, y, it.label, "lb", { fs: fs * 1.1, base: "central" });
+        const pc = `${Math.round((it.v / total) * 100)}%`, lv = s.legendValue || "both";
+        out += text(W, y, lv === "pct" ? pc : lv === "value" ? f(it.v) : `${f(it.v)}  ${pc}`, "vl", { fs: fs * 1.1, anchor: "end", base: "central" });
+      });
+    }
+    return out;
+  }
+
+  /* ---------- 散布図・バブル ---------- */
+  function scatter(s, W, H, { fs }) {
+    const P = s.points || [], ax = s.x || {}, ay = s.y || {};
+    const scx = scale(Math.min(...P.map(p => p.x)), Math.max(...P.map(p => p.x)), PITCH() ? 3 : 5, ax);
+    const scy = scale(Math.min(...P.map(p => p.y)), Math.max(...P.map(p => p.y)), PITCH() ? 3 : 5, ay);
+    const fx = v => Slides.fmt(v, ax.fmt || {}), fy = v => Slides.fmt(v, ay.fmt || {});
+    const rMax = s.rMax || (PITCH() ? 70 : 44), vMax = Math.max(...P.map(p => p.r || 0), 1);
+    const leftW = Math.max(...ticks(scy).map(v => tw(fy(v), fs, 600))) + 14 + (ay.label ? fs * 1.6 : 0);
+    const x0 = leftW, x1 = W - 20, y0 = 20, y1 = H - fs * 1.3 - 14 - (ax.label ? fs * 1.5 : 0);
+    const X = v => x0 + ((v - scx.lo) / (scx.hi - scx.lo)) * (x1 - x0), Y = v => y1 - ((v - scy.lo) / (scy.hi - scy.lo)) * (y1 - y0);
+    let out = "";
+    ticks(scy).forEach(v => { out += `<line class="grid-l" x1="${x0}" x2="${x1}" y1="${Y(v)}" y2="${Y(v)}"/>` + text(x0 - 12, Y(v), fy(v), "tk", { fs, anchor: "end", base: "central" }); });
+    ticks(scx).forEach(v => { out += text(X(v), y1 + fs + 10, fx(v), "tk", { fs, anchor: "middle" }); });
+    out += `<line class="ax" x1="${x0}" x2="${x1}" y1="${y1}" y2="${y1}"/><line class="ax" x1="${x0}" x2="${x0}" y1="${y0}" y2="${y1}"/>`;
+    if (ax.label) out += text((x0 + x1) / 2, H - 4, ax.label, "lb", { fs, anchor: "middle" });
+    if (ay.label) out += `<text class="lb" transform="translate(${fs},${(y0 + y1) / 2}) rotate(-90)" text-anchor="middle">${esc(ay.label)}</text>`;
+    if (s.quad) {
+      const qx = X(s.quad.x ?? (scx.lo + scx.hi) / 2), qy = Y(s.quad.y ?? (scy.lo + scy.hi) / 2);
+      out += `<line class="refl" x1="${qx}" x2="${qx}" y1="${y0}" y2="${y1}" style="stroke:var(--sub); stroke-width:2"/><line class="refl" x1="${x0}" x2="${x1}" y1="${qy}" y2="${qy}" style="stroke:var(--sub); stroke-width:2"/>`;
+      const ql = s.quad.labels || [];
+      [[x0 + 12, y0 + fs, "start"], [x1 - 12, y0 + fs, "end"], [x0 + 12, y1 - 12, "start"], [x1 - 12, y1 - 12, "end"]].forEach(([x, y, an], i) => { if (ql[i]) out += text(x, y, ql[i], "tk", { fs, anchor: an }); });
+    }
+    P.forEach((p, i) => {
+      const r = p.r ? Math.sqrt(p.r / vMax) * rMax : PITCH() ? 16 : 10, c = col(p.color || (p.key ? "accent" : "mid"), i);
+      out += `<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="${r}" style="fill:${c}; opacity:${p.r ? 0.85 : 1}; stroke:var(--bg); stroke-width:2"/>`;
+      if (p.label) out += text(X(p.x) + r + 8, Y(p.y), p.label, p.key ? "vl" : "lb", { fs, base: "central", halo: true, fill: p.key ? "var(--accent)" : "" });
+    });
+    return out;
+  }
+
+  /* ---------- ウォーターフォール（total:true は合計の棒） ---------- */
+  function waterfall(s, W, H, { fs, fv }) {
+    const It = s.items || [];
+    const f = v => Slides.fmt(v, s.fmt || {}), fs2 = v => Slides.fmt(v, { ...(s.fmt || {}), sign: true });
+    let run = 0;
+    const bars = It.map(it => { if (it.total) { const b = { a: 0, b: it.v ?? run, it }; run = b.b; return b; } const b = { a: run, b: run + it.v, it }; run += it.v; return b; });
+    const sc = scale(Math.min(0, ...bars.flatMap(b => [b.a, b.b])), Math.max(...bars.flatMap(b => [b.a, b.b])), PITCH() ? 3 : 5, { min: s.min, max: s.max });
+    const lines = Math.max(...It.map(it => String(it.label).split("\n").length));
+    const x0 = 0, x1 = W, y0 = fv * 1.5 + (s.unit ? fs * 1.5 : 0), y1 = H - lines * fs * 1.2 - 14;
+    const Y = v => y1 - ((v - sc.lo) / (sc.hi - sc.lo)) * (y1 - y0);
+    const band = (x1 - x0) / It.length, bw = band * (1 - (s.gap ?? 0.3));
+    let out = s.unit ? text(0, fs, s.unit, "un", { fs }) : "";
+    bars.forEach((b, i) => {
+      const cx = x0 + band * i + band / 2, up = b.b >= b.a;
+      const c = col(b.it.color || (b.it.total ? "accent" : up ? "mid" : "warn"));
+      out += `<rect x="${cx - bw / 2}" y="${Math.min(Y(b.a), Y(b.b))}" width="${bw}" height="${Math.max(2, Math.abs(Y(b.a) - Y(b.b)))}" rx="6" style="fill:${c}"/>`;
+      out += text(cx, Math.min(Y(b.a), Y(b.b)) - 12, b.it.total ? f(b.b) : fs2(b.b - b.a), "vl", { fs: b.it.total ? fv : fv * 0.85, anchor: "middle", fill: b.it.total ? "" : up ? "" : "var(--warn)" });
+      out += text(cx, y1 + fs + 10, b.it.label, b.it.total ? "lb" : "tk", { fs, anchor: "middle" });
+      if (i < bars.length - 1) out += `<line x1="${cx + bw / 2}" x2="${cx + band - bw / 2}" y1="${Y(b.b)}" y2="${Y(b.b)}" style="stroke:var(--sub); stroke-width:2; stroke-dasharray:5 5"/>`;
+    });
+    out += `<line class="ax" x1="${x0}" x2="${x1}" y1="${Y(Math.max(0, sc.lo))}" y2="${Y(Math.max(0, sc.lo))}"/>`;
+    return out;
+  }
+
+  /* ---------- サンキー（links: [{from,to,v}]、nodes で名前・色） ---------- */
+  function sankey(s, W, H, { fs }) {
+    const links = s.links || [], meta = Object.fromEntries((s.nodes || []).map(n => [n.id, n]));
+    const f = v => Slides.fmt(v, s.fmt || {});
+    const ids = [...new Set(links.flatMap(l => [l.from, l.to]))];
+    const N = Object.fromEntries(ids.map(id => [id, { id, label: meta[id]?.label ?? id, color: meta[id]?.color, in: [], out: [], col: 0 }]));
+    links.forEach(l => { N[l.from].out.push(l); N[l.to].in.push(l); });
+    for (let k = 0; k < ids.length; k++) links.forEach(l => { N[l.to].col = Math.max(N[l.to].col, N[l.from].col + 1); });
+    ids.forEach(id => { if (meta[id]?.col !== undefined) N[id].col = meta[id].col; });
+    const ncol = Math.max(...ids.map(id => N[id].col)) + 1;
+    ids.forEach(id => { const n = N[id]; n.v = Math.max(n.in.reduce((t, l) => t + l.v, 0), n.out.reduce((t, l) => t + l.v, 0)); });
+    const cols = [...Array(ncol)].map((_, c) => ids.filter(id => N[id].col === c).map(id => N[id]));
+    const nw = s.nodeWidth || (PITCH() ? 40 : 26), pad = s.pad ?? fs * 1.6;
+    const lab = n => `${n.label}\n${f(n.v)}`;
+    const leftW = Math.max(...cols[0].map(n => tw(n.label, fs, 800))) + 16;
+    const rightW = Math.max(...cols[ncol - 1].map(n => tw(n.label, fs, 800))) + 16;
+    const x0 = leftW, x1 = W - rightW - nw;
+    const k = Math.min(...cols.map(c => (H - pad * (c.length - 1)) / c.reduce((t, n) => t + n.v, 0)));
+    cols.forEach((c, ci) => {
+      const tot = c.reduce((t, n) => t + n.v * k, 0) + pad * (c.length - 1);
+      let y = (H - tot) / 2;
+      c.forEach(n => { n.x = x0 + (ncol > 1 ? (ci / (ncol - 1)) * (x1 - x0) : 0); n.y = y; n.h = n.v * k; n.oy = y; n.iy = y; y += n.h + pad; });
+    });
+    let out = "";
+    const ci0 = {};
+    ids.forEach((id, i) => { ci0[id] = col(N[id].color, i); });
+    [...links].sort((a, b) => N[a.to].y - N[b.to].y).forEach(l => {
+      const a = N[l.from], b = N[l.to], h = l.v * k;
+      const sx = a.x + nw, tx = b.x, sy = a.oy, ty = b.iy, xm = (sx + tx) / 2;
+      a.oy += h; b.iy += h;
+      out += `<path d="M${sx},${sy}C${xm},${sy} ${xm},${ty} ${tx},${ty}L${tx},${ty + h}C${xm},${ty + h} ${xm},${sy + h} ${sx},${sy + h}Z" style="fill:${l.color ? col(l.color) : ci0[l.from]}; opacity:0.28"/>`;
+    });
+    ids.forEach(id => {
+      const n = N[id], c = ci0[id];
+      out += `<rect x="${n.x}" y="${n.y}" width="${nw}" height="${Math.max(2, n.h)}" rx="3" style="fill:${c}"/>`;
+      const cy = n.y + n.h / 2;
+      if (n.col === 0) out += text(n.x - 12, cy, lab(n), "lb", { fs, anchor: "end", vcenter: true, base: "central" });
+      else if (n.col === ncol - 1) out += text(n.x + nw + 12, cy, lab(n), "lb", { fs, vcenter: true, base: "central" });
+      else out += text(n.x + nw + 10, cy, lab(n), "lb", { fs, vcenter: true, base: "central", halo: true });
+    });
+    return out;
+  }
+
+  /* ---------- ガント（rows: [{group,label,a,b,color,text}]、ticks・marks） ---------- */
+  function gantt(s, W, H, { fs }) {
+    const R = s.rows || [], min = s.min ?? Math.min(...R.map(r => r.a)), max = s.max ?? Math.max(...R.map(r => r.b));
+    const grpW = R.some(r => r.group) ? Math.max(...R.map(r => tw(r.group || "", fs, 800))) + 24 : 0;
+    const labW = s.labelWidth || Math.max(...R.map(r => tw(r.label || "", fs * 0.95, 600))) + 20;
+    const marks = s.marks || [];
+    const x0 = grpW + labW, x1 = W - 8, y0 = fs * 1.6, y1 = H - (marks.length ? fs * 1.8 : 4);
+    const X = v => x0 + ((v - min) / (max - min)) * (x1 - x0);
+    const rh = (y1 - y0) / R.length, bh = Math.min(rh * 0.68, PITCH() ? 70 : 34);
+    let out = "";
+    (s.ticks || []).forEach(t => { out += `<line class="grid-l" x1="${X(t.v)}" x2="${X(t.v)}" y1="${y0 - 4}" y2="${y1}"/>` + text(X(t.v) + (t.mid ? 0 : 6), y0 - 10, t.label, "tk", { fs, anchor: t.mid ? "middle" : "start" }); });
+    R.forEach((r, i) => {
+      const y = y0 + rh * i, cy = y + rh / 2;
+      if (r.group) { out += text(0, cy, r.group, "lb", { fs, base: "central" }); if (i) out += `<line class="grid-l" x1="0" x2="${x1}" y1="${y}" y2="${y}"/>`; }
+      out += text(x0 - 14, cy, r.label || "", "tk", { fs: fs * 0.95, anchor: "end", base: "central", fill: "var(--ink)" });
+      const c = col(r.color || "accent"), w = Math.max(4, X(r.b) - X(r.a));
+      out += `<rect x="${X(r.a)}" y="${cy - bh / 2}" width="${w}" height="${bh}" rx="${Math.min(8, bh / 3)}" style="fill:${c}${r.dash ? "; opacity:0.45" : ""}"/>`;
+      if (r.text && tw(r.text, fs * 0.9, 700) < w - 16) out += text(X(r.a) + 10, cy, r.text, r.dash ? "tk" : "vl in", { fs: fs * 0.9, base: "central", fill: r.dash ? "var(--ink)" : "" });
+      else if (r.text) out += text(X(r.b) + 10, cy, r.text, "tk", { fs: fs * 0.9, base: "central" });
+    });
+    marks.forEach((m, i) => {
+      const c = col(m.color || "warn"), x = X(m.v);
+      out += `<line class="refl" x1="${x}" x2="${x}" y1="${y0 - 6}" y2="${y1 + 6}" style="stroke:${c}"/>`;
+      out += text(m.anchor === "end" ? x - 8 : x + 8, H - 6, m.label, "lb", { fs, fill: c, anchor: m.anchor || "start" });
+    });
+    return out;
+  }
+
+  const TYPES = { bar, line, donut, pie: donut, scatter, bubble: scatter, waterfall, sankey, gantt };
+  function render(el, force) {
+    if (el.dataset.drawn && !force) return;
+    const src = el.dataset.chart || el.querySelector('script[type="application/json"]')?.textContent;
+    if (!src) return;
+    el.dataset.chart = src;
+    let s;
+    try { s = resolve(JSON.parse(src)); } catch (e) { el.textContent = "chart JSON error: " + e.message; el.classList.add("f-missing"); return; }
+    const W = el.clientWidth, H = el.clientHeight || s.height || 520;
+    const fn = TYPES[s.type || "bar"];
+    if (!fn) { el.textContent = "unknown chart type: " + s.type; return; }
+    el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(s.title || s.type)}">${fn(s, W, H, sizes(el))}</svg>`;
+    el.dataset.drawn = "1";
+  }
+  Slides.chart = render;
+  Slides.chartTypes = TYPES;
+  Slides.onShow(sec => sec.querySelectorAll(".chart[data-chart], .chart > script[type='application/json']").forEach(x => render(x.classList.contains("chart") ? x : x.parentElement)));
+})();
+
+/* html-slides diagrams：
+   .dgm[data-links] … 中の id 付きの箱どうしを矢印でつなぐ（関係図・流れ図・担当者ごとのフロー図・ツリー）。
+     data-links='[["a","b","ラベル",{"mode":"elbow","tone":"key"}], {"from":"b","to":"c","dash":true}]'
+     from/to は "id" か "id:right" "id:bottom:0.3"（辺と辺の上の位置 0〜1）。mode: auto（揃えば直線、ずれればカギ形）/ s / hv / vh / curve
+     tone: key（強調色）/ money（注意色）、dash: 破線、both: 両向き、label の位置は dx・dy・anchor・at:[x,y] で調整
+   .cycle … 中の .node を円周に並べ、次の .node へ弧の矢印を描く（data-r で半径、data-start で最初の角度） */
+(() => {
+  const NS = "http://www.w3.org/2000/svg";
+  function frame(root) {
+    const R = root.getBoundingClientRect();
+    return { R, k: R.width / root.offsetWidth || 1 };
+  }
+  function rect(root, F, id) {
+    const el = root.querySelector("#" + CSS.escape(id)) || document.getElementById(id);
+    if (!el) throw new Error("diagram: no element #" + id);
+    const b = el.getBoundingClientRect();
+    return { x: (b.left - F.R.left) / F.k, y: (b.top - F.R.top) / F.k, w: b.width / F.k, h: b.height / F.k };
+  }
+  function at(b, side, t = 0.5) {
+    if (side === "top") return [b.x + b.w * t, b.y];
+    if (side === "bottom") return [b.x + b.w * t, b.y + b.h];
+    if (side === "left") return [b.x, b.y + b.h * t];
+    return [b.x + b.w, b.y + b.h * t];
+  }
+  function sides(a, b) {
+    const dx = b.x + b.w / 2 - (a.x + a.w / 2), dy = b.y + b.h / 2 - (a.y + a.h / 2);
+    const gx = Math.abs(dx) - (a.w + b.w) / 2, gy = Math.abs(dy) - (a.h + b.h) / 2;
+    if (gx >= gy) return dx > 0 ? ["right", "left"] : ["left", "right"];
+    return dy > 0 ? ["bottom", "top"] : ["top", "bottom"];
+  }
+  function geometry(p1, p2, s1, mode, bend = 0.25) {
+    const [x1, y1] = p1, [x2, y2] = p2, hz = s1 === "left" || s1 === "right";
+    const straight = [`M${x1},${y1}L${x2},${y2}`, [(x1 + x2) / 2, (y1 + y2) / 2]];
+    if (mode === "s") return straight;
+    if (mode === "hv") return [`M${x1},${y1}H${x2}V${y2}`, [x2, (y1 + y2) / 2]];
+    if (mode === "vh") return [`M${x1},${y1}V${y2}H${x2}`, [(x1 + x2) / 2, y2]];
+    if (mode === "curve") {
+      const c = hz ? `C${(x1 + x2) / 2},${y1} ${(x1 + x2) / 2},${y2} ${x2},${y2}` : `C${x1},${(y1 + y2) / 2} ${x2},${(y1 + y2) / 2} ${x2},${y2}`;
+      return [`M${x1},${y1}${c}`, [(x1 + x2) / 2, (y1 + y2) / 2]];
+    }
+    if (mode === "arc") {
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, nx = -(y2 - y1) * bend, ny = (x2 - x1) * bend;
+      return [`M${x1},${y1}Q${mx + nx},${my + ny} ${x2},${y2}`, [mx + nx / 2, my + ny / 2]];
+    }
+    if (Math.abs(x1 - x2) < 3 || Math.abs(y1 - y2) < 3) return straight;
+    if (hz) { const xm = (x1 + x2) / 2; return [`M${x1},${y1}H${xm}V${y2}H${x2}`, [xm, (y1 + y2) / 2]]; }
+    const ym = (y1 + y2) / 2;
+    return [`M${x1},${y1}V${ym}H${x2}V${y2}`, [(x1 + x2) / 2, ym]];
+  }
+  function svgFor(root) {
+    let svg = root.querySelector(":scope > svg.dgm-links");
+    if (!svg) { svg = document.createElementNS(NS, "svg"); svg.setAttribute("class", "dgm-links"); root.prepend(svg); }
+    const W = root.offsetWidth, H = root.offsetHeight;
+    svg.setAttribute("width", W); svg.setAttribute("height", H); svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+    const uid = "d" + Math.random().toString(36).slice(2, 8);
+    svg.innerHTML = `<defs>${["", "key", "money"].map(t => `<marker id="${uid}${t}" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" style="fill:var(--${t === "key" ? "accent" : t === "money" ? "warn" : "sub"})"/></marker>`).join("")}</defs>`;
+    return { svg, uid };
+  }
+  const parseEnd = s => { const [id, side, t] = String(s).split(":"); return { id, side, t: t === undefined ? 0.5 : +t }; };
+  function draw(root, links) {
+    const F = frame(root), { svg, uid } = svgFor(root);
+    let html = "";
+    links.forEach(L => {
+      const o = Array.isArray(L) ? { from: L[0], to: L[1], label: typeof L[2] === "string" ? L[2] : "", ...(typeof L[2] === "object" ? L[2] : L[3] || {}) } : L;
+      const A = parseEnd(o.from), B = parseEnd(o.to);
+      const a = rect(root, F, A.id), b = rect(root, F, B.id);
+      const [sa, sb] = sides(a, b);
+      const s1 = A.side || sa, s2 = B.side || sb;
+      const p1 = at(a, s1, A.t), p2 = at(b, s2, B.t);
+      const gap = o.gap ?? 4;
+      const shift = (p, s, d) => (s === "top" ? [p[0], p[1] - d] : s === "bottom" ? [p[0], p[1] + d] : s === "left" ? [p[0] - d, p[1]] : [p[0] + d, p[1]]);
+      const [d, mid] = geometry(o.both ? shift(p1, s1, gap) : p1, shift(p2, s2, gap), s1, o.mode || "auto", o.bend);
+      const tone = o.tone || (o.dash ? "money" : "");
+      const cls = [o.dash ? "dash" : "", tone].filter(Boolean).join(" ");
+      html += `<path d="${d}" class="${cls}" marker-end="url(#${uid}${tone})"${o.both ? ` marker-start="url(#${uid}${tone})"` : ""}/>`;
+      if (o.label) {
+        const [lx, ly] = o.at || mid;
+        const flat = !o.at && d.split(/[LHVCQ]/).length === 2 && Math.abs(p1[1] - p2[1]) < 3;
+        const [dx, dy, an] = flat ? [0, -12, "middle"] : [10, 6, "start"];
+        html += `<text x="${lx + (o.dx ?? dx)}" y="${ly + (o.dy ?? dy)}" class="${tone}" text-anchor="${o.anchor || an}">${String(o.label).replace(/&/g, "&amp;").replace(/</g, "&lt;")}</text>`;
+      }
+    });
+    svg.insertAdjacentHTML("beforeend", html);
+  }
+  function cycle(root) {
+    const nodes = [...root.querySelectorAll(":scope > .node")], n = nodes.length;
+    if (!n) return;
+    const W = root.offsetWidth, H = root.offsetHeight, cx = W / 2, cy = H / 2;
+    const maxN = Math.max(...nodes.map(e => Math.max(e.offsetWidth, e.offsetHeight)));
+    const R = +root.dataset.r || Math.min(W, H) / 2 - maxN / 2 - 6;
+    const a0 = ((+root.dataset.start || -90) * Math.PI) / 180;
+    const ang = i => a0 + (i / n) * Math.PI * 2;
+    nodes.forEach((e, i) => { e.style.left = cx + R * Math.cos(ang(i)) + "px"; e.style.top = cy + R * Math.sin(ang(i)) + "px"; });
+    const { svg, uid } = svgFor(root);
+    let html = "";
+    nodes.forEach((e, i) => {
+      if (i === n - 1 && root.dataset.open !== undefined) return;
+      const e2 = nodes[(i + 1) % n];
+      const g1 = (Math.hypot(e.offsetWidth, e.offsetHeight) / 2 + 14) / R, g2 = (Math.hypot(e2.offsetWidth, e2.offsetHeight) / 2 + 18) / R;
+      const a = ang(i) + g1, b = ang(i + 1) - g2;
+      if (b <= a) return;
+      const p = t => [cx + R * Math.cos(t), cy + R * Math.sin(t)];
+      const [x1, y1] = p(a), [x2, y2] = p(b);
+      html += `<path d="M${x1},${y1}A${R},${R} 0 ${b - a > Math.PI ? 1 : 0} 1 ${x2},${y2}" class="key" marker-end="url(#${uid}key)"/>`;
+    });
+    svg.insertAdjacentHTML("beforeend", html);
+  }
+  function render(sec) {
+    sec.querySelectorAll(".cycle").forEach(el => { if (!el.dataset.drawn) { cycle(el); el.dataset.drawn = "1"; } });
+    sec.querySelectorAll(".dgm[data-links]").forEach(el => {
+      if (el.dataset.drawn) return;
+      try { draw(el, JSON.parse(el.dataset.links)); } catch (e) { console.error(e); el.classList.add("f-missing"); }
+      el.dataset.drawn = "1";
+    });
+  }
+  Slides.drawLinks = draw;
+  Slides.onShow(render);
+})();
+
+/*END LIB:JS*/</script>
+<script>
+  /* このデッキだけのスクリプト。表示のたびに動かすものは Slides.onShow(sec => { … }) */
+</script>
+</body>
+</html>
