@@ -834,7 +834,7 @@ def calculate_side_effect_risk_score(candidate: Dict, user_info: Dict) -> float:
     for ingredient in ingredient_list:
         # 副作用データから該当成分を検索
         matching_rows = side_effects_df[
-            side_effects_df['成分名'].str.contains(ingredient, na=False, case=False)
+            side_effects_df['成分名'].str.contains(ingredient, na=False, case=False, regex=False)
         ]
         
         for _, row in matching_rows.iterrows():
@@ -905,10 +905,10 @@ def calculate_interaction_risk_score(candidate: Dict, user_info: Dict) -> float:
         for candidate_ingredient in candidate_ingredients:
             # 相互作用データから該当する組み合わせを検索
             matching_rows = interactions_df[
-                (interactions_df['成分A'].str.contains(candidate_ingredient, na=False, case=False) |
-                 interactions_df['成分B'].str.contains(candidate_ingredient, na=False, case=False)) &
-                (interactions_df['成分A'].str.contains(medication, na=False, case=False) |
-                 interactions_df['成分B'].str.contains(medication, na=False, case=False))
+                (interactions_df['成分A'].str.contains(candidate_ingredient, na=False, case=False, regex=False) |
+                 interactions_df['成分B'].str.contains(candidate_ingredient, na=False, case=False, regex=False)) &
+                (interactions_df['成分A'].str.contains(medication, na=False, case=False, regex=False) |
+                 interactions_df['成分B'].str.contains(medication, na=False, case=False, regex=False))
             ]
             
             for _, row in matching_rows.iterrows():
@@ -1090,10 +1090,10 @@ def check_drug_interactions(candidate: Dict, user_info: Dict) -> Tuple[bool, Lis
             candidate_normalized = normalize_ingredient_name(candidate_ingredient)
             
             matching_rows = interactions_df[
-                (interactions_df['成分A'].str.contains(candidate_normalized, na=False, case=False) |
-                 interactions_df['成分B'].str.contains(candidate_normalized, na=False, case=False)) &
-                (interactions_df['成分A'].str.contains(medication_normalized, na=False, case=False) |
-                 interactions_df['成分B'].str.contains(medication_normalized, na=False, case=False))
+                (interactions_df['成分A'].str.contains(candidate_normalized, na=False, case=False, regex=False) |
+                 interactions_df['成分B'].str.contains(candidate_normalized, na=False, case=False, regex=False)) &
+                (interactions_df['成分A'].str.contains(medication_normalized, na=False, case=False, regex=False) |
+                 interactions_df['成分B'].str.contains(medication_normalized, na=False, case=False, regex=False))
             ]
             
             for _, row in matching_rows.iterrows():
