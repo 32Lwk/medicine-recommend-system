@@ -514,6 +514,11 @@ body.presenter .np .next { font-size: 22px; margin-top: 26px; }
   .phones.tab img { width: 430px; height: 619px; object-position: top; border-width: 12px; border-radius: 30px; }
   .phones.tab img.crop { height: 500px; }
   .phones.tab figcaption small { display: block; margin-top: 6px; font-size: 19px; font-weight: 600; color: var(--sub); line-height: 1.45; }
+  .adm { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+  .adm figure { margin: 0; }
+  .adm img { display: block; width: 100%; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14); }
+  .adm figcaption { margin-top: 14px; font-size: 22px; font-weight: 800; }
+  .adm figcaption small { display: block; margin-top: 4px; font-size: 19px; font-weight: 600; color: var(--sub); }
 </style>
 </head>
 <body>
@@ -1666,20 +1671,14 @@ body.presenter .np .next { font-size: 22px; margin-top: 26px; }
 
 <section id="a-scr-admin">
   <div class="kicker"><span class="sec">A</span>SCREENS</div>
-  <h1>管理画面で、会話の記録と評価を運営者が確かめる</h1>
+  <h1>管理画面で、運営者が会話を確かめ、必要なら自分で返信する</h1>
   <div class="rule"></div>
-  <div class="cols c64">
-    <div class="ph" style="height:700px">管理画面（テスト用データで撮影予定）</div>
-    <div>
-      <h3>できること</h3>
-      <ul class="pts">
-        <li>会話の記録と「役に立ったか」の評価を見る</li>
-        <li>問い合わせへの返信</li>
-      </ul>
-      <div class="strip">運営者だけが入れる。<b>画面はテスト用のデータ</b>で撮る。</div>
-    </div>
+  <div class="adm">
+    <figure><img src="screens/admin-list.webp" alt=""><figcaption>会話の一覧<small>名前・本文で探し、Web・LINE・試験で絞る</small></figcaption></figure>
+    <figure><img src="screens/admin-chat.webp" alt=""><figcaption>会話の中身<small>AIの返答を確かめ、必要なら運営者が返信する</small></figcaption></figure>
   </div>
-  <div class="foot"><span>ローカル環境・テスト用データ</span></div>
+  <div class="strip">運営者だけがログインして入れる。「役に立ったか」の評価と不具合の報告も、ここで見る。</div>
+  <div class="foot"><span>ローカル環境で撮影（2026-09-30）。表示はテスト用のデータ</span></div>
 </section>
 
 <section id="a-scr-line">
