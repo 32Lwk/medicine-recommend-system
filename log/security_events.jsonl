@@ -17922,3 +17922,35 @@
 {"timestamp": "2026-09-24T10:22:26.043069", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 26, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "処方してください。市販の風邪薬の相談ではありません。"}}
 {"timestamp": "2026-09-24T10:23:12.252242", "original_length": 26, "sanitized_length": 26, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
 {"timestamp": "2026-09-24T10:23:12.252242", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 26, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "処方してください。市販の風邪薬の相談ではありません。"}}
+{"timestamp": "2026-09-30T21:35:18.808297", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:35:18.808297", "event_type": "input_validation", "user_id": "ユーザー1", "input_length": 12, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "喉が痛くて、熱があります"}}
+{"timestamp": "2026-09-30T21:35:23.863411", "original_length": 12, "sanitized_length": 12, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:37:14.043206", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:37:14.044206", "event_type": "input_validation", "user_id": "ユーザー2", "input_length": 21, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "30歳の女性です。喉が痛くて、熱があります"}}
+{"timestamp": "2026-09-30T21:37:14.248107", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:37:49.204483", "original_length": 33, "sanitized_length": 33, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:37:49.205483", "event_type": "input_validation", "user_id": "ユーザー3", "input_length": 33, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "40歳男性です。頭痛がします。いまパブロンゴールドAを飲んでいます"}}
+{"timestamp": "2026-09-30T21:38:05.067364", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:38:05.068363", "event_type": "input_validation", "user_id": "ユーザー4", "input_length": 23, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "胸が締め付けられるように痛くて、冷や汗が出ます"}}
+{"timestamp": "2026-09-30T21:38:07.031404", "event_type": "emergency_detection", "user_id": "ユーザー4", "session_id": "1790771883617925102637", "input_text": "胸が締め付けられるように痛くて、冷や汗が出ます", "emergency_type": "medical_self", "emergency_types": ["medical_self"], "detected_keywords": ["胸が締"], "location": null, "staff_notified": false, "police_notified": false, "severity": "critical", "action_taken": "emergency_response_provided", "is_safe": false, "risk_score": 100}
+{"timestamp": "2026-09-30T21:38:14.400152", "original_length": 51, "sanitized_length": 51, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:38:14.401151", "event_type": "input_validation", "user_id": "ユーザー5", "input_length": 51, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "I'm 28 years old. I have a sore throat and a fever."}}
+{"timestamp": "2026-09-30T21:38:28.033244", "original_length": 14, "sanitized_length": 14, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:38:28.033244", "event_type": "input_validation", "user_id": "ユーザー6", "input_length": 14, "risk_score": 0, "is_safe": true, "action": "allowed", "warnings": [], "details": {"sanitized_text": "我30岁，头疼，还有点发烧。"}}
+{"timestamp": "2026-09-30T21:55:03.430072", "original_length": 16, "sanitized_length": 16, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:55:12.087859", "original_length": 28, "sanitized_length": 28, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:55:19.152729", "original_length": 30, "sanitized_length": 30, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:55:26.116160", "original_length": 32, "sanitized_length": 32, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:55:32.604812", "original_length": 27, "sanitized_length": 27, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:55:39.228236", "original_length": 21, "sanitized_length": 21, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:55:45.485002", "original_length": 28, "sanitized_length": 28, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:55:51.956322", "original_length": 8, "sanitized_length": 8, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:56:22.819252", "original_length": 30, "sanitized_length": 30, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:56:29.981861", "original_length": 23, "sanitized_length": 23, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:56:39.890643", "original_length": 4, "sanitized_length": 4, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:56:47.823099", "original_length": 37, "sanitized_length": 37, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:56:54.374058", "original_length": 35, "sanitized_length": 35, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:57:00.851343", "original_length": 40, "sanitized_length": 40, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:57:12.266239", "original_length": 7, "sanitized_length": 7, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:57:18.767564", "original_length": 19, "sanitized_length": 19, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
+{"timestamp": "2026-09-30T21:57:40.368899", "original_length": 36, "sanitized_length": 36, "risk_score": 0, "is_safe": true, "warnings": [], "action": "allowed"}
