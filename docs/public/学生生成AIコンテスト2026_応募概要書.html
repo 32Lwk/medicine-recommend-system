@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>学生生成AIコンテスト2026 応募概要書 — チャット型医薬品相談ツール</title>
+<style>
+  @page { size: A4; margin: 12mm 12mm 10mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+    font-size: 8.6pt; line-height: 1.47; color: #16202b; margin: 0;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+
+  header.cover { border-bottom: 2.5px solid #0b6b5e; padding-bottom: 6px; margin-bottom: 9px; }
+  .eyebrow { font-size: 8.2pt; letter-spacing: .14em; color: #0b6b5e; font-weight: 700; }
+  h1 { font-size: 15.5pt; margin: 4px 0 3px; line-height: 1.3; letter-spacing: -.01em; }
+  .sub { font-size: 9.3pt; color: #47586a; margin: 0 0 6px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 2px 18px; font-size: 7.9pt; color: #47586a; }
+  .meta b { color: #16202b; font-weight: 600; }
+
+  h2 {
+    font-size: 10.3pt; margin: 9px 0 4px; padding: 2.5px 0 2.5px 8px;
+    border-left: 4px solid #0b6b5e; background: #f2f7f6; page-break-after: avoid;
+  }
+  h3 { font-size: 9pt; margin: 7px 0 3px; color: #0b6b5e; page-break-after: avoid; }
+  p { margin: 0 0 4.5px; }
+  ul { margin: 0 0 4px; padding-left: 1.1em; }
+  li { margin-bottom: 1.8px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 4px 0 6px; font-size: 8pt; page-break-inside: avoid; }
+  th, td { border: 1px solid #ccd7de; padding: 2.8px 5px; text-align: left; vertical-align: top; }
+  th { background: #eef3f5; font-weight: 600; white-space: nowrap; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .cols { display: flex; gap: 10px; }
+  .cols > * { flex: 1; min-width: 0; }
+
+  .callout { border: 1px solid #0b6b5e; background: #f2f7f6; padding: 6px 9px; margin: 6px 0; border-radius: 3px; page-break-inside: avoid; }
+  .callout .lead { font-weight: 700; color: #0b6b5e; display: block; margin-bottom: 2px; font-size: 8.8pt; }
+
+  .flow { font-family: "SF Mono", Menlo, monospace; font-size: 7.1pt; line-height: 1.4;
+          background: #f7f9fa; border: 1px solid #dde5ea; padding: 6px 8px; white-space: pre;
+          overflow: hidden; border-radius: 3px; page-break-inside: avoid; }
+
+  .kpi { display: flex; gap: 6px; margin: 6px 0; }
+  .kpi div { flex: 1; border: 1px solid #ccd7de; border-top: 2.5px solid #0b6b5e; padding: 4px 6px; text-align: center; }
+  .kpi .v { font-size: 12.5pt; font-weight: 700; color: #0b6b5e; display: block; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .kpi .l { font-size: 7.1pt; color: #47586a; }
+
+  footer { margin-top: 9px; padding-top: 5px; border-top: 1px solid #ccd7de; font-size: 7pt; color: #6b7d8c; }
+  .tag { display: inline-block; background: #0b6b5e; color: #fff; font-size: 7.6pt; padding: 1px 7px; border-radius: 9px; margin-right: 4px; }
+
+  figure.fig {
+    margin: 5px 0 7px; border: 1px solid #ccd7de; border-radius: 3px;
+    background: #fff; text-align: center;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  figure.fig img {
+    display: block; margin: 0 auto;
+    width: 100%;
+    max-width: 100%;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+    object-position: center;
+  }
+  figure.fig figcaption {
+    font-size: 7.2pt; color: #47586a; padding: 3px 6px; border-top: 1px solid #dde5ea;
+    background: #f7f9fa; line-height: 1.35; text-align: left;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="page">
+<header class="cover">
+  <div class="eyebrow">学生生成AIコンテスト2026 ／ 開発部門 応募概要書</div>
+  <h1>チャット型医薬品相談ツール<br>― 登録販売者の思考プロセスを再現するハイブリッド推奨システム</h1>
+  <p class="sub">生成AIに「薬を選ばせない」ことで、安全性と自然言語理解を両立したハイブリッド推奨システム</p>
+  <div class="meta">
+    <span><b>応募者</b> 川嶋 宥翔</span>
+    <span><b>保有資格</b> 登録販売者</span>
+    <span><b>稼働状況</b> β版・限定公開（本番稼働中）</span>
+    <span><b>本番環境</b> GCP Cloud Run（asia-northeast1）</span>
+  </div>
+</header>
+
+<div class="kpi" style="margin:0 0 4px">
+  <div><span class="v">7,495</span><span class="l">収録OTC医薬品<br>（PMDA公開データ・15カテゴリ）</span></div>
+  <div><span class="v">4言語</span><span class="l">日・英・中・韓<br>多言語入力から推奨まで対応</span></div>
+  <div><span class="v">15</span><span class="l">エージェント<br>マルチエージェント構成</span></div>
+  <div><span class="v">1-3秒</span><span class="l">平均応答時間<br>本番環境（Cloud Run）実績</span></div>
+</div>
+
+<h2>1. 解決する課題 ― 現場で見た4つの断絶</h2>
+<p>
+本システムは、開発者自身のドラッグストア勤務経験を出発点としています。登録販売者として店頭に立つ中で、
+「薬を必要としている人に、適切な薬の情報が届いていない」場面を繰り返し目にしました。
+その断絶は、次の4つに整理できます。
+</p>
+<table>
+  <tr><th style="width:22%">断絶</th><th style="width:40%">現場で起きていること</th><th>本システムの応答</th></tr>
+  <tr>
+    <td><b>理解の壁</b></td>
+    <td>高齢者は聴力・理解力の個人差が大きく、口頭説明を十分に受け取れないまま購入に至る。</td>
+    <td>チャットで自分のペースで読み返せる。音声読み上げ・文字サイズ調整・WCAG AA準拠コントラストを実装。</td>
+  </tr>
+  <tr>
+    <td><b>言語の壁</b></td>
+    <td>訪日外国人が症状を伝えられず、成分も読めないまま棚から薬を選ぶ。</td>
+    <td>日本語・英語・中国語・韓国語の4言語対応。多言語入力から日本語canonical症状へ正規化して推奨。</td>
+  </tr>
+  <tr>
+    <td><b>人手の壁</b></td>
+    <td>薬局の人手不足で、全ての来店客に十分な相談時間を割けない。</td>
+    <td>初期ヒアリングと情報整理をAIが担い、専門職が高度な判断に専念できる状態をつくる。</td>
+  </tr>
+  <tr>
+    <td><b>EC化の壁</b></td>
+    <td>ネット購入の拡大により、対面相談の機会そのものが消失している。</td>
+    <td>購入前の相談チャネルとして24時間機能し、受診が必要な場合は購入させずに医療機関へ誘導する。</td>
+  </tr>
+</table>
+
+<div class="callout">
+  <span class="lead">この課題設定に、生成AIをそのまま当てると失敗する</span>
+  汎用LLMに「頭痛の薬を教えて」と聞けば、それらしい商品名が返ってきます。しかしそれは
+  <b>実在しない商品名かもしれず、年齢制限も、併用薬との相互作用も、アレルギー成分も考慮されていません。</b>
+  医薬品領域におけるハルシネーションは、利用者の健康被害に直結します。
+  本システムの設計思想は、この一点から出発しています。
+</div>
+
+<h2>2. ソリューション概要</h2>
+<p>
+利用者はチャットで症状を自然文のまま入力します。システムは症状・年齢・妊娠授乳・アレルギー・服用中の薬を対話で収集し、
+安全性チェックを通過した市販薬<b>上位3件</b>を、推奨理由・使用上の注意・受診の目安とともに提示します。
+</p>
+<div class="flow">利用者入力  「頭痛が3日続いていて、38度の熱もあります」
+    │
+    ├─ ① 入力安全性検証 ────── 攻撃的入力・危機兆候を検出したら推奨を停止
+    ├─ ② 症状解析（LLM/NLU） ─ 表現ゆれを50種の canonical 症状へ正規化
+    ├─ ③ 属性確認 ──────────── 年齢・妊娠授乳・アレルギー・併用薬
+    ├─ ④ 禁忌・除外判定 ────── 該当薬を候補集合から完全に除外
+    ├─ ⑤ スコアリング（ルール） 6要素の重み付け評価でランキング
+    └─ ⑥ 説明生成（LLM） ───── 確定済みの薬について理由を日本語化
+
+           ↓  合計 約1〜3秒
+    推奨3件 ＋ 使用上の注意 ＋ 個別アドバイス ＋ 受診の目安</div>
+<p style="font-size:7.9pt;color:#47586a;margin-top:-2px">
+※ ②と⑥のみが生成AIの担当範囲です。<b>④⑤の「どの薬を選ぶか」は一貫してルールベースが決定します。</b>
+</p>
+
+<h3>2-1. 想定利用者と提供価値</h3>
+<table>
+  <tr><th style="width:19%">利用者層</th><th style="width:36%">抱えている課題</th><th>本システムが提供するもの</th></tr>
+  <tr><td>一般消費者</td><td>棚の前でどれを選べばよいか判断できない</td><td>症状と属性に基づく根拠付きの推奨3件</td></tr>
+  <tr><td>多忙な方</td><td>薬局の営業時間内に行けない</td><td>24時間いつでも相談可能</td></tr>
+  <tr><td>訪日外国人</td><td>日本語の成分表示・効能書きが読めない</td><td>4言語対応。母語入力から母語での回答まで完結</td></tr>
+  <tr><td>高齢者</td><td>口頭説明の聞き取り・理解に個人差がある</td><td>読み返せるチャット、音声読み上げ、文字サイズ調整</td></tr>
+  <tr><td>EC購入検討者</td><td>購入前に相談できる相手がいない</td><td>購入前の安全性チェックと、必要時の受診勧奨</td></tr>
+  <tr><td>薬局・店舗側</td><td>人手不足で全員に十分な時間を割けない</td><td>初期ヒアリングの代行によるスタッフ負担の軽減</td></tr>
+</table>
+
+<footer>チャット型医薬品相談ツール｜学生生成AIコンテスト2026 開発部門 応募概要書｜1 / 5</footer>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page">
+<h2>3. 技術的独自性 ― 生成AIに「薬を選ばせない」アーキテクチャ</h2>
+<p>
+発表資料（宮城_柳葉魚）のノートで強調している核心は、<b>役割分担</b>です。
+薬の選定はルールベースとスコアリングでのみ行い、会話はLLM、知識はRAGが担います。
+汎用LLMに薬名を直接生成させないことで、ハルシネーションによる健康被害リスクを構造的に排除します。
+</p>
+
+<h3>3-1. 三柱の責務分離（薬選定 / 会話 / 知識）</h3>
+<figure class="fig">
+  <img src="contest2026_assets/arch_tech_uniqueness.png" width="1600" height="900" alt="技術的独自性：薬選定・会話・知識の三柱">
+  <figcaption>図1. 技術的独自性 — 薬選定（ルール＋スコアリングのみ決定）／会話（LLMは選定しない）／知識（Bedrock KBによるRAG）。多言語はAmazon Translate、音声はAmazon Polly。</figcaption>
+</figure>
+<table>
+  <tr><th style="width:18%">柱</th><th style="width:28%">担当技術</th><th>独自性（やること / やらないこと）</th></tr>
+  <tr>
+    <td><b>薬選定</b></td>
+    <td>ルールベース＋スコアリング<br>（身体症状エージェント）</td>
+    <td><b>薬はここでのみ決定。</b> 禁忌除外後に6要素でランキング。同一入力には同一推奨（再現可能・説明可能）。</td>
+  </tr>
+  <tr>
+    <td><b>会話</b></td>
+    <td>LLM（NLU・振り分け・説明）</td>
+    <td>表現ゆれの理解と推奨理由の文章化。<b>薬選定はしない</b>ため、存在しない薬名を生成する余地がない。</td>
+  </tr>
+  <tr>
+    <td><b>知識</b></td>
+    <td>RAG / Amazon Bedrock KB</td>
+    <td>医薬品FAQ・技術FAQから根拠付き回答。<b>正確な知識</b>で問い合わせに応答し、幻覚を抑制。</td>
+  </tr>
+</table>
+<p style="font-size:7.9pt;color:#47586a;margin-top:-2px">
+発表ノート（Slide 10）：「技術の核心は役割分担。薬の選定はルールベースとスコアリングで行い、薬はここだけで決定。会話ではLLM、知識面はBedrock KBのRAG。」
+</p>
+
+<h3>3-2. 6要素スコアリング ― 登録販売者の判断を数式化</h3>
+<p>店頭判断を重み付き評価（0.0〜1.0）として明示化。推奨理由を数値に分解できるためブラックボックスになりません。</p>
+<table>
+  <tr><th>評価要素</th><th style="width:14%">重み</th><th>内容</th></tr>
+  <tr><td>症状適合度</td><td class="num">+35%</td><td>症状と効能効果の一致度</td></tr>
+  <tr><td>効能特異性</td><td class="num">+25%</td><td>その症状への特化性</td></tr>
+  <tr><td>年齢適合性</td><td class="num">+20%</td><td>年齢制限との適合</td></tr>
+  <tr><td>用法簡便性</td><td class="num">+5%</td><td>服用回数の少なさ</td></tr>
+  <tr><td>副作用リスク</td><td class="num">−20%</td><td>副作用レベルによる減点</td></tr>
+  <tr><td>相互作用リスク</td><td class="num">−10%</td><td>併用薬との相互作用による減点</td></tr>
+</table>
+
+<footer>チャット型医薬品相談ツール｜学生生成AIコンテスト2026 開発部門 応募概要書｜2 / 5</footer>
+</section>
+
+<!-- ============ PAGE 2b ============ -->
+<section class="page">
+<h3>3-3. 会話振り分け ― SafetyGate × Triage × 専門エージェント</h3>
+<p>
+市販薬推奨・メンタル・緊急・案内・その他が同一入力欄から届くため、まず安全確認し、意図を5分類して専門エージェントへ渡します。
+緊急時は安全性ロジックとエスカレーションにより、<b>119・受診案内で先へ進めません</b>（発表ノート Slide 9）。
+</p>
+<figure class="fig">
+  <img src="contest2026_assets/arch_agent_routing.png" width="1600" height="900" alt="図2. 会話振り分け">
+  <figcaption>図2. 会話振り分け — 前処理 → SafetyGate（緊急性・禁忌・安全性）と TriageAgent（キーワード＋LLM判定＋キャッシュ）→ ChatOrchestrator → 5専門エージェント。</figcaption>
+</figure>
+<table>
+  <tr><th style="width:22%">層</th><th>独自性</th></tr>
+  <tr><td><b>SafetyGate</b></td><td>緊急性・禁忌・安全性を振り分け前に判定。危険な相談を推奨フローに入れない。</td></tr>
+  <tr><td><b>TriageAgent</b></td><td>キーワード＋LLM判定＋キャッシュのハイブリッド。速度と精度を両立して5分類。</td></tr>
+  <tr><td><b>ChatOrchestrator</b></td><td>コンテキスト管理・エージェント選定・ハンドオフ制御。セッション状態を維持した専門エージェント接続。</td></tr>
+  <tr><td><b>専門エージェント</b></td><td>身体症状／メンタルケア／緊急サポート／ナビゲート／その他。責務を分離し誤誘導を抑制。</td></tr>
+</table>
+
+<h3>3-4. AWSステージング構成 ― 根拠データと二重入口</h3>
+<figure class="fig">
+  <img src="contest2026_assets/arch_aws_infra.png" width="1600" height="900" alt="図3. AWSステージング構成">
+  <figcaption>図3. AWSステージング構成 — Browser/LINE → WAF→ALB→ECS。静的配信はCloudFront+S3。AIはBedrock KB・Translate・Polly＋OpenAI。医薬品根拠はPMDA。</figcaption>
+</figure>
+<table>
+  <tr><th style="width:22%">観点</th><th>独自性（発表ノート Slide 11）</th></tr>
+  <tr><td><b>入口</b></td><td>WebとLINEの両方で、高齢者・外国人にも馴染みやすい導線。同じアプリ・同じロジック。</td></tr>
+  <tr><td><b>ランタイム</b></td><td>東京リージョン。WAF → ALB → ECS Fargate。JS/CSSはCloudFront＋S3で安定配信。</td></tr>
+  <tr><td><b>根拠データ</b></td><td>医薬品データは国の機関PMDAに基づく。<b>候補選定はこのDBをルールベースで参照し、LLMは医薬品選定に関与しない。</b></td></tr>
+  <tr><td><b>AI/知識</b></td><td>Bedrock KB＋OpenSearch（RAG）、Translate／Pollyで多言語・音声。OpenAIは会話・説明に限定。</td></tr>
+  <tr><td><b>運用</b></td><td>CloudWatch・Budgets・Secrets Manager・IAMで監視・コスト・秘匿情報を分離管理。</td></tr>
+</table>
+<p style="font-size:7.9pt;color:#47586a">
+※コンテスト応募概要の本番環境は GCP Cloud Run（asia-northeast1）。AWSはステージング／発表デモ（aws.medicine.yutok.dev）側の構成です。
+詳細スライド解説は <code>学生生成AIコンテスト2026_スライド解説.html</code> を参照。
+</p>
+
+<footer>チャット型医薬品相談ツール｜学生生成AIコンテスト2026 開発部門 応募概要書｜3 / 5</footer>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page">
+<h2>4. 安全性設計 ― 5層防御と、AIが答えない選択</h2>
+<p>
+医薬品を扱う以上、<b>「推奨しない」判断の精度が、推奨の精度と同じだけ重要</b>です。
+本システムは入力から出力までの各段階に防御層を配置しています。
+</p>
+<table>
+  <tr><th style="width:8%">層</th><th style="width:24%">機能</th><th>停止・介入条件</th></tr>
+  <tr><td><b>1</b></td><td>セキュリティ検証</td><td>プロンプトインジェクション・攻撃的入力・危機兆候ワードを検出しブロック</td></tr>
+  <tr><td><b>2</b></td><td>症状分析</td><td>入力から症状を抽出できない場合は推奨せず、再入力を促す</td></tr>
+  <tr><td><b>3</b></td><td>禁忌チェック</td><td>乳児（0-3歳）は絶対禁忌／幼児（3-7歳）・妊娠中・授乳中は医師受診を即時推奨</td></tr>
+  <tr><td><b>4</b></td><td>医薬品評価</td><td>アレルギー該当成分を含む薬を候補集合から完全除外</td></tr>
+  <tr><td><b>5</b></td><td>最終判定</td><td>Red Flag症状（呼吸困難・38.5度以上・胸痛・意識障害等）検出時は推奨を停止し受診勧奨のみ返す</td></tr>
+</table>
+
+<h3>4-1. 実装規模（ソースコードから実測）</h3>
+<div class="kpi">
+  <div><span class="v">約870</span><span class="l">攻撃検出パターン<br>（正規表現・実測値）</span></div>
+  <div><span class="v">87</span><span class="l">危機検知キーワード<br>（多言語対応）</span></div>
+  <div><span class="v">536</span><span class="l">成分辞書エントリ<br>（表記ゆれ正規化）</span></div>
+  <div><span class="v">15</span><span class="l">エージェント<br>（責務分離済み）</span></div>
+</div>
+
+<h3>4-2. 人間へのエスカレーション経路</h3>
+<p>
+AIが答えるべきでない相談を、確実に人間へ渡す導線を実装しています。これは本システムが
+「専門職を代替しない」という立場を、機能として担保するものです。
+</p>
+<ul>
+  <li><b>薬剤師要請ボタン</b> — 利用者が押すとそのセッションのAI自動応答が停止し、管理者・薬剤師の手動返信キューへ優先度付きで登録される。返信は「👤 薬剤師 ○○ 返信」とラベル表示され、AI発話と明確に区別される。</li>
+  <li><b>危機検知時の自動介入</b> — 自傷・自殺の兆候を検出したセッションは、市販薬の案内を即時停止し、いのちの電話等の相談窓口を4言語で案内。同時に管理者ダッシュボードの優先キューへ送られ、AI応答は停止したまま人間の対応を待つ。</li>
+  <li><b>監査ログ</b> — 危機対応の全履歴を記録し、手順の検証と再発防止に用いる。</li>
+</ul>
+
+<h2>5. 規模と実装状況</h2>
+<h3>5-1. 医薬品データベース（PMDA公開データより構築・リポジトリ実測値）</h3>
+<table>
+  <tr><th>データセット</th><th style="width:18%">規模</th><th>用途</th></tr>
+  <tr><td>OTC医薬品マスタ（<code>otc_medicine_data.csv</code>）</td><td class="num">7,495件<br><span style="font-size:7.8pt;color:#6b7d8c">（製品名ユニーク 7,221件／15カテゴリ）</span></td><td>推奨候補の抽出と表示。効能効果・用法用量・年齢制限・成分・ドーピング区分を保持</td></tr>
+  <tr><td>効能要約データ（<code>summarized_efficacy_data.csv</code>）</td><td class="num">11,938件</td><td>症状と効能のマッチングスコア算出</td></tr>
+  <tr><td>成分辞書（<code>ingredient_dictionary.json</code>）</td><td class="num">536成分</td><td>成分名の表記ゆれ正規化、アレルギー照合</td></tr>
+  <tr><td>症状辞書（<code>symptom_dictionary.json</code>）</td><td class="num">50症状／同義語230語</td><td>症状の canonical 化、重症度タグ付け、重み付け</td></tr>
+  <tr><td>副作用マスタ（<code>medicine_side_effects.csv</code>）</td><td class="num">275成分</td><td>副作用レベル評価・禁忌条件の判定</td></tr>
+  <tr><td>相互作用マスタ（<code>medicine_interactions.csv</code>）</td><td class="num">185成分ペア</td><td>併用リスク評価と減点処理</td></tr>
+</table>
+<p style="font-size:7.9pt;color:#47586a">
+出典：独立行政法人 医薬品医療機器総合機構（PMDA）一般用医薬品検索、日本医薬情報センター（JAPIC）、日本製薬団体連合会。
+月次で公開データの差分を確認し、開発者と医療有資格者の二重チェックを経て本番反映する運用としています。
+</p>
+
+<footer>チャット型医薬品相談ツール｜学生生成AIコンテスト2026 開発部門 応募概要書｜4 / 5</footer>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page">
+<h2>6. 技術スタックと開発体制</h2>
+<div class="cols">
+  <div>
+    <h3>プロダクト構成</h3>
+    <table>
+      <tr><th style="width:34%">層</th><th>採用技術</th></tr>
+      <tr><td>バックエンド</td><td>Python 3.9+ / FastAPI（ASGI）/ Gunicorn + Uvicorn Worker</td></tr>
+      <tr><td>生成AI</td><td>OpenAI GPT-4o-mini（NLU・説明生成）／Bedrock KB（RAG）</td></tr>
+      <tr><td>翻訳・音声</td><td>DeepL／Amazon Translate・Amazon Polly（AWS側）</td></tr>
+      <tr><td>DB</td><td>Neon PostgreSQL（サーバーレス）</td></tr>
+      <tr><td>フロント</td><td>HTML5 / CSS3 / バニラJS（フレームワーク不使用）、SSEストリーミング</td></tr>
+      <tr><td>基盤</td><td>本番 GCP Cloud Run／ステージング AWS ECS（図3）</td></tr>
+      <tr><td>CI/CD</td><td>GitHub 連携 / GCP Cloud Build / GitLab CI</td></tr>
+      <tr><td>監視</td><td>JSONL構造化ログ、CloudWatch、アクセス・性能・セキュリティ監視</td></tr>
+    </table>
+  </div>
+  <div>
+    <h3>実装規模</h3>
+    <div class="kpi" style="flex-direction:column;gap:6px">
+      <div><span class="v">約113,000</span><span class="l">Python 実装行数（src/ + main.py）</span></div>
+      <div><span class="v">29</span><span class="l">テストスイート</span></div>
+      <div><span class="v">4言語</span><span class="l">日本語・英語・中国語・韓国語</span></div>
+    </div>
+    <h3>性能実績</h3>
+    <table>
+      <tr><th>指標</th><th style="width:26%">目標</th><th style="width:26%">実績</th></tr>
+      <tr><td>平均応答時間</td><td class="num">2-5秒</td><td class="num">1-3秒</td></tr>
+      <tr><td>最大応答時間</td><td class="num">10秒以下</td><td class="num">5-8秒</td></tr>
+      <tr><td>メモリ使用量</td><td class="num">512MB以下</td><td class="num">180-265MB</td></tr>
+    </table>
+  </div>
+</div>
+
+<h3>6-1. 生成AIの活用範囲 ― 「作品の中」と「開発の過程」</h3>
+<table>
+  <tr><th style="width:20%">区分</th><th style="width:28%">ツール</th><th>具体的な用途</th></tr>
+  <tr>
+    <td><b>プロダクト内蔵</b></td>
+    <td>ChatGPT（OpenAI GPT-4o-mini API）</td>
+    <td>症状の自然言語理解（多言語入力の canonical 化）、属性抽出、推奨理由の文章生成、医薬品Q&amp;A応答。<b>薬の選定には一切関与させない設計。</b></td>
+  </tr>
+  <tr>
+    <td rowspan="2"><b>開発支援</b></td>
+    <td>Cursor</td>
+    <td>実装・リファクタリングの主軸。プロジェクト固有のスキル定義（<code>.cursor/skills</code>）を整備し、ログ解析・E2Eテスト・UI改修の手順を再利用可能な形で運用。コミット履歴上116件の共同作業記録。</td>
+  </tr>
+  <tr>
+    <td>Claude Code</td>
+    <td>アーキテクチャ監査、ドキュメント整合性の検証、実装値とドキュメント記載値の突合。</td>
+  </tr>
+</table>
+<p>
+生成AIを「コードを書く道具」としてだけでなく、<b>プロジェクト固有の運用知識をスキルとして蓄積する基盤</b>として使っている点が、
+本開発における生成AI活用の特徴です。個人開発で11万行規模・15エージェント構成のシステムを保守可能な状態に保てているのは、
+この体制によるものです。
+</p>
+
+<h2>7. 位置づけと今後の展望</h2>
+<div class="callout">
+  <span class="lead">本システムは医療行為ではなく、専門職を代替しません</span>
+  提供するのは情報提供に限られ、最終判断は医師・薬剤師によるべきことを全画面で明示しています。
+  目的は専門性の補完と現場負担の軽減であり、医療従事者の役割を奪うことではありません。
+  仕様変更時には登録販売者・薬剤師・医療系研究者によるレビューを経て運用へ反映する体制を設けています。
+</div>
+<ul>
+  <li><b>短期</b> — 専門家テスターからのフィードバックを反映し、推奨アルゴリズムの妥当性検証を継続。iOSネイティブアプリ（SwiftUI）の開発。</li>
+  <li><b>中期</b> — 薬局・ドラッグストアでの店頭導入実証。LINE連携による相談チャネルの拡張（プロフィール記憶・相談履歴要約のエージェントは実装済み）。</li>
+  <li><b>長期</b> — 自治体・地域医療のデジタル支援基盤としての活用、ECサイト連携による購入前相談の標準化。</li>
+</ul>
+<p style="margin-top:10px">
+<span class="tag">目指す状態</span><b>誰もが、どこにいても、安心して薬を選べる。</b>
+言語や年齢や時間帯を理由に、適切な情報から遠ざけられる人をなくすことが本システムの目的です。
+</p>
+
+<footer>
+チャット型医薬品相談ツール｜学生生成AIコンテスト2026 開発部門 応募概要書｜5 / 5<br>
+本システムはβ版（試験運用版）であり、専門関係者を対象とした非営利・学術目的の限定運用です。
+ソースコードは PolyForm Noncommercial License 1.0.0（非商用）の下で提供されています。
+医薬品データはPMDA等の公開情報に基づき、使用画像の著作権は各権利者に帰属します。
+</footer>
+</section>
+
+</body>
+</html>

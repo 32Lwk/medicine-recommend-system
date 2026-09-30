@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>スライド解説 — チャット型医薬品相談ツール（くすりナビ）</title>
+<style>
+  :root {
+    --ink: #16202b;
+    --muted: #47586a;
+    --line: #ccd7de;
+    --teal: #0b6b5e;
+    --teal-soft: #e8f3f0;
+    --cream: #f7f4ef;
+    --bg: #faf9f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.65;
+    font-size: 15px;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 28px 20px 64px; }
+  header.hero {
+    border-bottom: 3px solid var(--teal);
+    padding-bottom: 16px;
+    margin-bottom: 28px;
+  }
+  .eyebrow {
+    color: var(--teal);
+    font-weight: 700;
+    letter-spacing: .12em;
+    font-size: 12px;
+  }
+  h1 { font-size: 1.65rem; margin: 8px 0 6px; line-height: 1.35; }
+  .lead { color: var(--muted); margin: 0 0 10px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); }
+  .meta b { color: var(--ink); }
+
+  nav.toc {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 32px;
+  }
+  nav.toc h2 { font-size: 14px; margin: 0 0 8px; color: var(--teal); }
+  nav.toc ol { margin: 0; padding-left: 1.3em; columns: 2; gap: 24px; }
+  nav.toc li { margin-bottom: 4px; font-size: 13px; break-inside: avoid; }
+  nav.toc a { color: var(--ink); text-decoration: none; border-bottom: 1px solid transparent; }
+  nav.toc a:hover { border-bottom-color: var(--teal); color: var(--teal); }
+
+  section.block {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px 20px 22px;
+    margin-bottom: 22px;
+  }
+  section.block h2 {
+    font-size: 1.15rem;
+    margin: 0 0 6px;
+    padding-left: 10px;
+    border-left: 4px solid var(--teal);
+  }
+  .slide-label {
+    display: inline-block;
+    background: var(--teal);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+  figure.slide {
+    margin: 0 0 14px;
+    background: var(--cream);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  figure.slide img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  figure.slide figcaption {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 8px 12px;
+    border-top: 1px solid var(--line);
+  }
+  .note {
+    background: var(--teal-soft);
+    border-left: 3px solid var(--teal);
+    padding: 10px 12px;
+    margin: 10px 0 0;
+    font-size: 14px;
+  }
+  .note strong { color: var(--teal); }
+  ul.points { margin: 10px 0 0; padding-left: 1.2em; }
+  ul.points li { margin-bottom: 4px; }
+
+  .arch-grid {
+    display: grid;
+    gap: 18px;
+  }
+  @media (min-width: 720px) {
+    .arch-grid.two { grid-template-columns: 1fr; }
+  }
+  figure.arch {
+    margin: 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+  }
+  figure.arch img {
+    display: block; margin: 0 auto;
+    width: auto; max-width: 100%; height: auto;
+    object-fit: contain;
+  }
+  figure.arch figcaption {
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+  }
+  .callout {
+    border: 1px solid var(--teal);
+    background: var(--teal-soft);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin: 12px 0;
+  }
+  .callout .t { font-weight: 700; color: var(--teal); display: block; margin-bottom: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 10px 0; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #eef3f5; }
+
+  footer {
+    margin-top: 28px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .src { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  @media print {
+    body { background: #fff; }
+    section.block { break-inside: avoid; box-shadow: none; }
+    nav.toc { break-after: page; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">宮城・東北 / AWS 学生生成AI発表資料にもとづく解説</div>
+  <h1>チャット型医薬品相談ツール<br>スライド解説＋アーキテクチャ図</h1>
+  <p class="lead">
+    発表資料「宮城_柳葉魚.pptx」の各スライドを順に追いながら、課題設定・プロダクト・技術の核心・インフラを解説します。
+    アーキテクチャ図は発表スライドを参照して再描画したものです。
+  </p>
+  <div class="meta">
+    <span><b>発表</b> 柳葉魚 / 川嶋 宥翔</span>
+    <span><b>デモ</b> aws.medicine.yutok.dev</span>
+    <span><b>関連</b> <a href="./学生生成AIコンテスト2026_応募概要書.html">応募概要書（HTML）</a></span>
+  </div>
+</header>
+
+<nav class="toc">
+  <h2>目次</h2>
+  <ol>
+    <li><a href="#s1">タイトル・製品紹介</a></li>
+    <li><a href="#s3">現場での課題</a></li>
+    <li><a href="#s4">地域課題とセルフメディケーション</a></li>
+    <li><a href="#s7">アプリ概要</a></li>
+    <li><a href="#s9">会話の振り分け</a></li>
+    <li><a href="#s10">技術的特徴（責務分離）</a></li>
+    <li><a href="#arch">技術的独自性（図1〜3）</a></li>
+    <li><a href="#s11">AWS構成</a></li>
+    <li><a href="#s12">ビジョンと附記</a></li>
+  </ol>
+</nav>
+
+<!-- ===== SLIDE 1 ===== -->
+<section class="block" id="s1">
+  <span class="slide-label">Slide 1–2</span>
+  <h2>タイトル・体験入口</h2>
+  <figure class="slide">
+    <img src="contest2026_assets/slide01_title.png" alt="タイトルスライド：チャット型医薬品相談ツール">
+    <figcaption>タイトルスライド — タブレットUI上で症状入力→推奨カード提示までの体験を一枚で示す</figcaption>
+  </figure>
+  <p>
+    製品の第一印象は「チャットで症状を伝えるだけで、合った市販薬と注意点が返ってくる」こと。
+    画面には適合度スコア・禁忌注意・重複成分の警告が同居しており、<b>推奨と安全ガードが同じ体験の中にある</b>ことが伝わる構成です。
+  </p>
+  <div class="note">
+    <strong>発表メモ：</strong> 冒頭で QR / URL を案内し、聴衆が手元で触れながら聞く設計（Slide 2）。
+  </div>
+</section>
+
+<!-- ===== SLIDE 3 ===== -->
+<section class="block" id="s3">
+  <span class="slide-label">Slide 3</span>
+  <h2>現場での課題 — なぜこのプロダクトか</h2>
+  <figure class="slide">
+    <img src="contest2026_assets/slide03_challenges.png" alt="現場での課題スライド">
+    <figcaption>登録販売者として店頭で見た3つの断絶</figcaption>
+  </figure>
+  <ul class="points">
+    <li><b>理解の壁</b> — 聴力・理解力に個人差のある高齢者への口頭説明だけでは届きにくい</li>
+    <li><b>言語の壁</b> — 訪日外国人は症状も成分表示も伝え・読めない</li>
+    <li><b>人手の壁</b> — 慢性的人手不足で、一人ひとりに十分な説明時間が取れない</li>
+  </ul>
+  <p class="src">応募概要書ではここに「EC化の壁」を加え、4断絶として整理しています。</p>
+</section>
+
+<!-- ===== SLIDES 4-6 ===== -->
+<section class="block" id="s4">
+  <span class="slide-label">Slide 4–6</span>
+  <h2>地域課題 → セルフメディケーション → 店舗不足</h2>
+  <figure class="slide">
+    <img src="contest2026_assets/slide04_aging.png" alt="北海道・東北の高齢化">
+    <figcaption>北海道・東北：高齢化率35%超の自治体が過半数 — 医療機関負担軽減が急務</figcaption>
+  </figure>
+  <figure class="slide">
+    <img src="contest2026_assets/slide05_selfmed.png" alt="セルフメディケーションの定義">
+    <figcaption>WHO定義に沿ったセルフメディケーション — 軽度不調を自分で手当てする文化の推進</figcaption>
+  </figure>
+  <figure class="slide">
+    <img src="contest2026_assets/slide06_shortage.png" alt="ドラッグストア不足">
+    <figcaption>店舗不足が人手不足・混雑と結びつき、相談機会そのものが減る</figcaption>
+  </figure>
+  <div class="callout">
+    <span class="t">論理の流れ</span>
+    高齢化・過疎 → 医療リソース逼迫 → セルフメディケーションが鍵 → しかし相談できる場（店舗・人手）が不足 →
+    <b>スマホ上の安全な相談チャネル</b>が必要、という物語です。
+  </div>
+</section>
+
+<!-- ===== SLIDE 7-8 ===== -->
+<section class="block" id="s7">
+  <span class="slide-label">Slide 7–8</span>
+  <h2>ソリューション：手元のスマホで安心して選ぶ</h2>
+  <figure class="slide">
+    <img src="contest2026_assets/slide07_app_overview.png" alt="アプリ概要">
+    <figcaption>アプリ概要 — Web / モバイルUIとデモURL。人手不足を「直接解決」せず、相談の入口を増やす</figcaption>
+  </figure>
+  <ul class="points">
+    <li>ユーザーに合ったOTCを推奨 → ドラッグストアやECで購入</li>
+    <li>危機時は推奨せず、いのちの電話等へ誘導する導線を持つ</li>
+    <li>Slide 8 はデモ動画・実画面（発表本番で操作）</li>
+  </ul>
+</section>
+
+<!-- ===== SLIDE 9 ===== -->
+<section class="block" id="s9">
+  <span class="slide-label">Slide 9</span>
+  <h2>会話の振り分け — マルチエージェント</h2>
+  <figure class="slide">
+    <img src="contest2026_assets/slide09_routing.png" alt="会話の振り分けアーキテクチャ">
+    <figcaption>発表スライド原本：SafetyGate × TriageAgent → ChatOrchestrator → 専門エージェント</figcaption>
+  </figure>
+  <p>
+    市販薬相談・メンタル・緊急・店舗案内・その他が同じ入力欄から来るため、
+    <b>まず安全確認と意図分類を行い、専門エージェントへハンドオフ</b>します。
+    緊急時は推奨フローへ進めず、119・受診案内で止めます。
+  </p>
+</section>
+
+<!-- ===== SLIDE 10 ===== -->
+<section class="block" id="s10">
+  <span class="slide-label">Slide 10</span>
+  <h2>技術的特徴 — 生成AIに「薬を選ばせない」</h2>
+  <figure class="slide">
+    <img src="contest2026_assets/slide10_tech.png" alt="技術的特徴：薬選定 / 会話 / 知識">
+    <figcaption>三層の責務分離。薬選定はルール＋スコアリングのみ。LLMは会話と説明。知識はRAG（Bedrock KB）</figcaption>
+  </figure>
+  <table>
+    <tr><th style="width:22%">柱</th><th style="width:28%">担当</th><th>やること / やらないこと</th></tr>
+    <tr>
+      <td><b>薬選定</b></td>
+      <td>ルールベース＋スコアリング</td>
+      <td><b>ここでだけ薬を決める。</b> 禁忌除外後に6要素でランキング。</td>
+    </tr>
+    <tr>
+      <td><b>会話</b></td>
+      <td>LLM（NLU・振り分け・説明）</td>
+      <td>柔軟な対話と理由の文章化。<b>薬選定はしない。</b></td>
+    </tr>
+    <tr>
+      <td><b>知識</b></td>
+      <td>RAG / Bedrock KB</td>
+      <td>医薬品FAQ・技術FAQから根拠付き回答。ハルシネーション抑制。</td>
+    </tr>
+  </table>
+  <p>横断機能として Amazon Translate（多言語）・Amazon Polly（音声読み上げ）を利用。</p>
+</section>
+
+<!-- ===== ARCH (attached figures) ===== -->
+<section class="block" id="arch">
+  <span class="slide-label">技術的独自性（添付図）</span>
+  <h2>図1〜3 ― 技術的独自性の整理</h2>
+  <p>
+    発表ノート（Slide 9–11）と添付の3図に対応。画像は提出用に差し替え済みです。
+  </p>
+
+  <div class="arch-grid">
+    <figure class="arch">
+      <img src="contest2026_assets/arch_tech_uniqueness.png" alt="図1. 技術的独自性（三柱）">
+      <figcaption>
+        <b>図1. 技術的独自性（役割分担）</b> —
+        薬選定＝ルール＋スコアリングのみ決定／会話＝LLMは選定しない／知識＝Bedrock KBのRAG。
+        Translate・Pollyで多言語・音声。発表ノート：「薬はここだけで決定」。
+      </figcaption>
+    </figure>
+
+    <figure class="arch">
+      <img src="contest2026_assets/arch_agent_routing.png" alt="図2. 会話振り分け">
+      <figcaption>
+        <b>図2. 会話振り分け</b> —
+        SafetyGateで安全確認 → TriageAgentが5分類（キーワード＋LLM＋キャッシュ）→
+        Orchestratorが専門エージェントへ。緊急時は119・受診案内で停止（Slide 9ノート）。
+      </figcaption>
+    </figure>
+
+    <figure class="arch">
+      <img src="contest2026_assets/arch_aws_infra.png" alt="図3. AWSステージング構成">
+      <figcaption>
+        <b>図3. AWSステージング構成</b> —
+        WebとLINEの二重入口、WAF→ALB→ECS、CloudFront+S3。
+        PMDA根拠DBをルール参照し、LLMは薬選定に関与しない（Slide 11ノート）。
+      </figcaption>
+    </figure>
+  </div>
+
+  <div class="callout">
+    <span class="t">独自性の一文要約</span>
+    生成AIは「理解・振り分け・説明・知識検索」に限定し、医薬品の決定はPMDA根拠のルールベースに閉じる。
+    安全ゲート付きマルチエージェントで緊急相談を推奨フローから排除する。
+  </div>
+</section>
+
+<!-- ===== SLIDE 11 ===== -->
+<section class="block" id="s11">
+  <span class="slide-label">Slide 11</span>
+  <h2>AWS構成（発表スライド原本）</h2>
+  <figure class="slide">
+    <img src="contest2026_assets/slide11_aws.png" alt="AWS構成スライド">
+    <figcaption>発表用AWS構成図 — WebとLINEの二重入口、PMDA根拠データ、監視・シークレット管理まで一枚</figcaption>
+  </figure>
+  <div class="callout">
+    <span class="t">発表で強調するポイント</span>
+    医薬品データは国の機関（PMDA）公開情報に基づく。候補選定はこのDBをルールベースで参照し、
+    <b>LLMは医薬品の選定に関与しない</b>。BrowserデモとLINEは同じアプリ・同じロジック。
+  </div>
+  <p class="src">
+    本番（GCP Cloud Run）とAWSステージングの関係は
+    <code>docs/ops/AWS_ARCHITECTURE_DIAGRAMS.md</code> に整理されています。
+    コンテスト応募概要書の本番記載は Cloud Run 側が正です。
+  </p>
+</section>
+
+<!-- ===== SLIDE 12+ ===== -->
+<section class="block" id="s12">
+  <span class="slide-label">Slide 12–18</span>
+  <h2>ビジョンと附記データ</h2>
+  <figure class="slide">
+    <img src="contest2026_assets/slide12_vision.png" alt="だれもがどこでも安心して医薬品を選べる社会">
+    <figcaption>クロージングビジョン</figcaption>
+  </figure>
+  <figure class="slide">
+    <img src="contest2026_assets/slide15.png" alt="附記：医薬品件数">
+    <figcaption>附記 — 収録約7,500件・15種類（PMDAより作成）</figcaption>
+  </figure>
+  <figure class="slide">
+    <img src="contest2026_assets/slide16.png" alt="医薬品データベース詳細">
+    <figcaption>カテゴリ別件数と、推奨・安全判定に使うカラム定義</figcaption>
+  </figure>
+  <ul class="points">
+    <li>効能効果・用法用量・年齢制限・成分・ドーピング区分などを保持</li>
+    <li>推奨理由生成とアレルギー／相互作用チェックの根拠テーブルになる</li>
+    <li>Slide 17–18 は追加附記・補足（発表の質疑応答用）</li>
+  </ul>
+</section>
+
+<section class="block">
+  <h2>この発表が言っていること（要約）</h2>
+  <ol>
+    <li><b>課題</b> — 高齢化・人手不足・言語/理解の壁で、薬選びの相談が届かない。</li>
+    <li><b>解</b> — スマホのチャットで初期相談を担い、セルフメディケーションを安全に支える。</li>
+    <li><b>技術の芯</b> — LLMは理解と説明だけ。薬の決定はルール＋スコアリング。安全ゲートを多段配置。</li>
+    <li><b>根拠</b> — PMDA公開データに基づく数千件マスタ。RAGでFAQを補強。</li>
+    <li><b>入口</b> — WebとLINE。多言語・音声で高齢者・外国人にも届ける。</li>
+  </ol>
+</section>
+
+<footer>
+  画像出典：発表資料「宮城_柳葉魚.pptx」より抽出（<code>docs/public/contest2026_assets/</code>）。
+  再描画アーキテクチャ図は同スライドを参照して生成。
+  本システムはβ版の試験運用であり、医療行為・専門職の代替を目的としません。<br>
+  関連：<a href="./学生生成AIコンテスト2026_応募概要書.html">応募概要書</a>
+</footer>
+
+</div>
+</body>
+</html>
