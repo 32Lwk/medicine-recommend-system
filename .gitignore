@@ -73,6 +73,12 @@ Makefile
 
 # 診断・手動テストで生成する一時ファイル（認証情報を含む可能性あり）
 .tmp_*
+/tmp_*
+
+# ローカル専用の生成物・作業レポート
+/local_outputs/
+/..bfg-report/
+static/img/about/generated/archive/
 
 # テスト実行で生成されるスナップショット
 test_snapshots/

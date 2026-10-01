@@ -1,0 +1,12 @@
+node_modules/
+**/png/check/
+**/png-*/check/
+**/sheet.html
+.DS_Store
+Thumbs.db
+docs/figures/png/
+docs/figures/fonts/
+docs/figures/illust/
+examples/usecases/fonts/
+examples/usecases/illust/
+__pycache__/
