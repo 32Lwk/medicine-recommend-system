@@ -6,6 +6,7 @@ from typing import Any
 from src.dialogue.routing.gate import run_deterministic_gate
 from src.dialogue.routing.guards import apply_post_route_guards
 from src.dialogue.routing.intent_router import run_intent_router_llm
+from src.dialogue.routing.jev_primary import try_jev_primary_route
 from src.dialogue.routing.types import RouteDecision
 
 
@@ -26,14 +27,22 @@ def resolve_legacy_route(
     if gate is not None and gate.confidence >= 0.85:
         decision = gate
     else:
-        llm = run_intent_router_llm(
+        llm = try_jev_primary_route(
             user_text,
             session,
             sid,
             triage_result=triage_result,
-            client=client,
             gate_decision=gate,
         )
+        if llm is None:
+            llm = run_intent_router_llm(
+                user_text,
+                session,
+                sid,
+                triage_result=triage_result,
+                client=client,
+                gate_decision=gate,
+            )
         decision = llm or RouteDecision(
             primary_route="Unknown",
             sub_route=None,

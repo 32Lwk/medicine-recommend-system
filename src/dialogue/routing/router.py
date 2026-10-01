@@ -127,9 +127,13 @@ def _maybe_schedule_jev_shadow(
         except Exception:
             pass
 
-        from config.llm_flags import is_jev_intent_router_shadow_enabled
+        from config.llm_flags import (
+            is_jev_intent_router_primary_enabled,
+            is_jev_intent_router_shadow_enabled,
+        )
 
-        if not is_jev_intent_router_shadow_enabled():
+        # PRIMARY 時は Stage B で Jev を同期呼び出し済み（jev_primary）。shadow で二重に呼ばない。
+        if not is_jev_intent_router_shadow_enabled() or is_jev_intent_router_primary_enabled():
             if session is not None and hasattr(session, "pop"):
                 try:
                     session.pop("_jev_shadow_correlation_id", None)
@@ -181,8 +185,9 @@ def resolve_route(
 ) -> RouteDecision:
     """Unified pipeline（flag ON）または legacy 2 段 gate → LLM/legacy + post guards。
 
-    Phase 1 Jev: legacy 確定後に shadow を schedule し、常に同一 legacy を返す。
-    ``JEV_INTENT_ROUTER_PRIMARY`` は Phase 1 では実行 decision に影響させない。
+    ``JEV_INTENT_ROUTER_PRIMARY`` ON 時は Stage B（OpenAI）を Jev 判定で置き換え、
+    採用できないときだけ OpenAI へフォールバックする（``jev_primary``）。
+    gate / post guards は常に適用。PRIMARY OFF 時は shadow のみで実行 decision は不変。
     """
     legacy = resolve_route_unified_or_legacy(
         user_text,
@@ -209,7 +214,6 @@ def resolve_route(
         except Exception:
             logger.debug("jev correlation_id stash skipped", exc_info=True)
 
-    # Phase 1 invariant: never return a Jev decision (PRIMARY flag ignored).
     return legacy
 
 

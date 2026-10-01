@@ -213,8 +213,9 @@ def emit_shadow_cloudwatch_metrics(event: Mapping[str, Any]) -> None:
 def emit_flag_anomaly_metrics() -> None:
     """Emit PRIMARY / D2 anomaly gauges only when unexpectedly ON.
 
-    ``D2_flag_anomaly`` fires when D2 is ON and ``JEV_D2_ALLOW`` is not truthy
-    (canary allow-list). Failures never raise.
+    ``primary_flag_anomaly`` / ``D2_flag_anomaly`` fire when the flag is ON and
+    ``JEV_PRIMARY_ALLOW`` / ``JEV_D2_ALLOW`` is not truthy (canary allow-list).
+    Failures never raise.
     """
     try:
         if not _env_flag_true("JEV_CW_METRICS", "1"):
@@ -225,7 +226,9 @@ def emit_flag_anomaly_metrics() -> None:
         )
 
         metrics: dict[str, float] = {}
-        if is_jev_intent_router_primary_enabled():
+        if is_jev_intent_router_primary_enabled() and not _env_flag_true(
+            "JEV_PRIMARY_ALLOW", "0"
+        ):
             metrics[METRIC_PRIMARY_FLAG_ANOMALY] = 1.0
         d2_on = is_policy_enforcement_d2_enabled()
         d2_allowed = _env_flag_true("JEV_D2_ALLOW", "0")

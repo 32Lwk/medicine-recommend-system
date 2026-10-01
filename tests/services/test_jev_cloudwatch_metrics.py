@@ -59,6 +59,7 @@ def test_emit_flag_anomaly_only_when_on(monkeypatch):
 
     monkeypatch.setenv("JEV_CW_METRICS", "1")
     monkeypatch.setenv("JEV_D2_ALLOW", "0")
+    monkeypatch.setenv("JEV_PRIMARY_ALLOW", "0")
     with patch.object(jcw, "_emit_emf", side_effect=_capture), patch.object(
         jcw, "_emit_put_metric_data"
     ):
@@ -85,6 +86,19 @@ def test_d2_allow_suppresses_anomaly(monkeypatch):
         jcw, "_emit_put_metric_data"
     ), patch("config.llm_flags.is_jev_intent_router_primary_enabled", return_value=False), patch(
         "config.llm_flags.is_policy_enforcement_d2_enabled", return_value=True
+    ):
+        jcw.emit_flag_anomaly_metrics()
+    assert emitted == []
+
+
+def test_primary_allow_suppresses_anomaly(monkeypatch):
+    emitted: list[dict] = []
+    monkeypatch.setenv("JEV_CW_METRICS", "1")
+    monkeypatch.setenv("JEV_PRIMARY_ALLOW", "1")
+    with patch.object(jcw, "_emit_emf", side_effect=lambda m, environment=None: emitted.append(dict(m))), patch.object(
+        jcw, "_emit_put_metric_data"
+    ), patch("config.llm_flags.is_jev_intent_router_primary_enabled", return_value=True), patch(
+        "config.llm_flags.is_policy_enforcement_d2_enabled", return_value=False
     ):
         jcw.emit_flag_anomaly_metrics()
     assert emitted == []

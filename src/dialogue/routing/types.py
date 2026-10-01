@@ -14,7 +14,7 @@ PrimaryRoute = Literal[
     "Counseling",
     "Unknown",
 ]
-ResolvedBy = Literal["gate", "llm", "legacy", "guard"]
+ResolvedBy = Literal["gate", "llm", "legacy", "guard", "jev"]
 
 
 @dataclass(frozen=True)

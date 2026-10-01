@@ -20,7 +20,7 @@ def _load_key() -> str | None:
         s = line.strip()
         if not s or s.startswith("#"):
             continue
-        if s.startswith("JEV_API_KEY="):
+        if s.upper().startswith("JEV_API_KEY="):
             found = s.split("=", 1)[1].strip().strip('"').strip("'")
             break
         if s.startswith("TYPESAFE_API_KEY=") and not found:
