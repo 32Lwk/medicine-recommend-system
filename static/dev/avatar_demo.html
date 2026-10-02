@@ -45,7 +45,7 @@
   .stage { background: radial-gradient(circle at 50% 35%, #ffffff 0%, #eef2f6 55%, #dfe6ef 100%); }
   .stage-status {
     display: grid;
-    grid-template-columns: repeat(4, auto);
+    grid-template-columns: repeat(5, auto);
     justify-content: space-between;
     gap: 8px;
     padding: 10px 14px;
@@ -115,6 +115,7 @@
     <div class="stage-status">
       <span>感情: <strong id="statusEmotion">通常</strong></span>
       <span>動き: <strong id="statusMotion">—</strong></span>
+      <span>手: <strong id="statusGesture">—</strong></span>
       <span>口: <strong id="statusMouth">—</strong></span>
       <span id="statusSpeak">待機中</span>
     </div>
@@ -123,7 +124,7 @@
 
   <section class="panel app-scrollbar" aria-label="操作">
     <h1>Sage アバター デモ（2.5D スプライト版）</h1>
-    <p class="lead">Live2D モデル完成までの代替表示です。頭・顔・耳・髪・体を別々に動かしています。まばたき・呼吸・首のゆらぎは自動です。</p>
+    <p class="lead">Live2D モデル完成までの代替表示です。頭・顔・耳・髪・体・手を別々に動かしています。まばたき・呼吸・首のゆらぎは自動です。</p>
 
     <fieldset>
       <legend>台本を読み上げる</legend>
@@ -141,9 +142,10 @@
         </select>
       </div>
       <p class="hint">
-        文中に <code>[心配]</code> <code>[お辞儀]</code> のようなタグを書くと、その文から感情・動きが切り替わります。タグがない文は、言葉（「申し訳」「受診」「お大事に」など）から推定します。<br>
+        文中に <code>[心配]</code> <code>[お辞儀]</code> <code>[手を振る]</code> のようなタグを書くと、その文から感情・動き・手が切り替わります。タグがない文は、言葉（「申し訳」「受診」「こんにちは」など）から推定します。<br>
         感情タグ: 通常・微笑み・思案・共感・驚き・安心・心配・申し訳なさ・真剣・励まし・照れ・困惑<br>
-        動きタグ: うなずき・深くうなずき・首かしげ・首振り・左を見る・右を見る・前のめり・お辞儀・弾む
+        動きタグ: うなずき・深くうなずき・首かしげ・首振り・左を見る・右を見る・前のめり・お辞儀・弾む<br>
+        手のタグ: 手を振る・手のひら・人差し指・胸に手・あごに手・こぶし・両手を合わせる・OK
       </p>
     </fieldset>
 
@@ -155,6 +157,15 @@
     <fieldset>
       <legend>動き</legend>
       <div class="row" id="motionButtons"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>手・腕</legend>
+      <div class="row" id="gestureButtons"></div>
+      <div class="row" style="margin-top:10px">
+        <label class="inline"><input type="checkbox" id="autoGesture" checked> 感情に合わせて手を動かす</label>
+        <button type="button" id="btnGestureStop">手を下ろす</button>
+      </div>
     </fieldset>
 
     <fieldset>
@@ -189,6 +200,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var SAMPLES = [
     { label: '相談の流れ', text: 'こんにちは。今日はどうされましたか？\n[共感]なるほど、頭痛が続いているんですね。それはおつらいですね。\n[思案]少し確認させてください。\n[真剣]ただし、急に激しい痛みが出た場合は、すぐに医療機関を受診してください。\n[安心]今の症状なら、市販薬で様子を見ても大丈夫そうです。\nお大事にしてください。' },
+    { label: '手の動き', text: '[手を振る]こんにちは、薬剤師のセージです。\n[人差し指]ポイントは、用法と用量を守ることです。\n[胸に手]わからないことは、私にお任せください。\n[あごに手][思案]うーん、少し考えてみますね。\n[手のひら][共感]例えば、こちらのお薬はいかがでしょう？\n[OK][安心]これで大丈夫です。\n[こぶし][励まし]一緒に頑張りましょう！\n[両手を合わせる]よろしくお願いします。' },
     { label: 'おわび', text: '申し訳ありません、うまく聞き取れませんでした。\nもう一度教えていただけますか？' },
     { label: '驚き・照れ・困惑', text: 'えっ、私ですか？\n[照れ]そう言っていただけると、少し照れますね。\n[困惑]うーん、その質問はどういう意味でしょう？' },
     { label: '励まし', text: '毎日よく頑張っていますね。\nきっと良くなりますよ。\nこれからもよろしくお願いします。' },
@@ -260,6 +272,33 @@
       b.textContent = SageAvatar.MOTIONS[key].label;
       b.addEventListener('click', function () { avatar.playMotion(key); });
       $('motionButtons').appendChild(b);
+    });
+
+    var origGesture = avatar.playGesture.bind(avatar);
+    var gestureTimer = null;
+    avatar.playGesture = function (name, opts) {
+      origGesture(name, opts);
+      var def = SageAvatar.GESTURES[name];
+      if (!def) return;
+      $('statusGesture').textContent = def.label;
+      clearTimeout(gestureTimer);
+      var hold = opts && opts.hold != null ? opts.hold : def.hold;
+      if (isFinite(hold)) {
+        gestureTimer = setTimeout(function () { $('statusGesture').textContent = '—'; }, (hold + 0.8) * 1000);
+      }
+    };
+    renderer.gestures().forEach(function (g) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = (SageAvatar.GESTURES[g.key] || g).label;
+      b.addEventListener('click', function () { avatar.playGesture(g.key); });
+      $('gestureButtons').appendChild(b);
+    });
+    $('autoGesture').addEventListener('change', function () { avatar.autoGesture = this.checked; });
+    $('btnGestureStop').addEventListener('click', function () {
+      avatar.stopGesture();
+      clearTimeout(gestureTimer);
+      $('statusGesture').textContent = '—';
     });
 
     $('mouthButtons').addEventListener('click', function (ev) {

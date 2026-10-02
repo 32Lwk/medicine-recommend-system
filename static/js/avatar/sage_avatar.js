@@ -7,6 +7,7 @@
  *   var avatar = new SageAvatar(renderer);
  *   avatar.setEmotion('worry');
  *   avatar.playMotion('nod');
+ *   avatar.playGesture('wave');
  *   avatar.speak('[心配]それはおつらいですね。お大事にしてください。', { autoEmotion: true });
  */
 (function (global) {
@@ -14,20 +15,39 @@
 
     /* ---------- 感情: 表情 + 姿勢のかたより + 入りのモーション ---------- */
 
+    // gesture: 感情が切り替わったときに自動で出す手の動き（autoGesture 時）
     var EMOTIONS = {
         neutral: { label: '通常', expr: 'neutral', bias: {} },
         smile: { label: '微笑み', expr: 'smile', bias: { angleZ: 2, angleY: 1 }, enter: 'nod' },
-        thinking: { label: '思案', expr: 'thinking', bias: { angleZ: 7, angleX: 8, angleY: 6 } },
-        empathy: { label: '共感', expr: 'empathy', bias: { angleZ: 4, angleY: -3, lean: 0.15 }, enter: 'nodSlow' },
+        thinking: { label: '思案', expr: 'thinking', bias: { angleZ: 7, angleX: 8, angleY: 6 }, gesture: 'chin' },
+        empathy: {
+            label: '共感', expr: 'empathy', bias: { angleZ: 4, angleY: -3, lean: 0.15 }, enter: 'nodSlow', gesture: 'explain',
+        },
         surprise: { label: '軽い驚き', expr: 'surprise', bias: { angleY: 5, lean: -0.1 }, enter: 'flinch' },
-        relief: { label: '安心', expr: 'relief', bias: { angleY: 1, angleZ: -2 }, enter: 'nod' },
-        worry: { label: '心配', expr: 'worry', bias: { angleZ: 5, angleY: -3, lean: 0.25 } },
-        sorry: { label: '申し訳なさ', expr: 'sorry', bias: { angleY: -5, angleZ: -3 }, enter: 'bow' },
-        serious: { label: '真剣', expr: 'serious', bias: { angleY: -2, lean: 0.3 } },
-        cheer: { label: '励まし', expr: 'cheer', bias: { angleY: 3 }, enter: 'hop' },
+        relief: { label: '安心', expr: 'relief', bias: { angleY: 1, angleZ: -2 }, enter: 'nod', gesture: 'ok' },
+        worry: { label: '心配', expr: 'worry', bias: { angleZ: 5, angleY: -3, lean: 0.25 }, gesture: 'chest' },
+        sorry: { label: '申し訳なさ', expr: 'sorry', bias: { angleY: -5, angleZ: -3 }, enter: 'bow', gesture: 'bow_hands' },
+        serious: { label: '真剣', expr: 'serious', bias: { angleY: -2, lean: 0.3 }, gesture: 'point' },
+        cheer: { label: '励まし', expr: 'cheer', bias: { angleY: 3 }, enter: 'hop', gesture: 'fist' },
         shy: { label: '照れ', expr: 'shy', bias: { angleX: -12, angleY: -5, angleZ: 6 } },
         confused: { label: '困惑', expr: 'confused', bias: { angleZ: -9, angleY: 3 } },
     };
+
+    /* ---------- 手・腕: 下からせり上がり、hold 秒とどまって下がる ---------- */
+
+    // sway: 肘を支点にした揺れ [振幅(度), 周波数(Hz)]、lift: 入り切った後の上下 [秒, px] キーフレーム
+    var GESTURES = {
+        wave: { label: '手を振る', hold: 1.8, sway: [9, 1.6] },
+        explain: { label: '手のひら差し出し', hold: 2.4, sway: [1.5, 0.5], lift: [[0, 0], [0.35, 10], [0.8, 0]] },
+        point: { label: '人差し指', hold: 2.2, sway: [1.2, 0.6], lift: [[0, 0], [0.18, 14], [0.4, 0], [0.6, 8], [0.8, 0]] },
+        chest: { label: '胸に手', hold: 2.6, sway: [0.6, 0.4] },
+        chin: { label: 'あごに手', hold: 3.0, sway: [0.4, 0.35] },
+        fist: { label: 'こぶし', hold: 1.8, sway: [1, 0.8], lift: [[0, 0], [0.14, 26], [0.3, 0], [0.46, 18], [0.62, 0]] },
+        bow_hands: { label: '両手を合わせる', hold: 2.2, sway: [0.5, 0.4], lift: [[0, 0], [0.3, 8], [0.7, 0]] },
+        ok: { label: 'OK サイン', hold: 2.0, sway: [3, 0.9], lift: [[0, 0], [0.2, 10], [0.45, 0]] },
+    };
+    var GESTURE_IN = 0.42; // 秒
+    var GESTURE_OUT = 0.38;
 
     /* ---------- モーション: [秒, 値] のキーフレーム（待機の揺れに加算） ---------- */
 
@@ -80,6 +100,12 @@
         うなずき: 'nod', 深くうなずき: 'nodDeep', 首かしげ: 'tilt', 首振り: 'shake', 左を見る: 'lookLeft',
         右を見る: 'lookRight', 前のめり: 'lean', お辞儀: 'bow', 弾む: 'hop',
     };
+    var GESTURE_TAGS = {
+        手を振る: 'wave', 手振り: 'wave', 説明: 'explain', 手のひら: 'explain', 差し出し: 'explain',
+        人差し指: 'point', ポイント: 'point', 胸に手: 'chest', あごに手: 'chin', 顎に手: 'chin',
+        こぶし: 'fist', ガッツポーズ: 'fist', 両手を合わせる: 'bow_hands', 合掌: 'bow_hands',
+        OK: 'ok', ＯＫ: 'ok', オーケー: 'ok', OKサイン: 'ok',
+    };
     // 上から順に評価し、最初に当たった感情を採用
     var EMOTION_KEYWORDS = [
         [/申し訳|すみません|すいません|ごめん|失礼いたしました/, 'sorry'],
@@ -99,6 +125,17 @@
         [/おすすめできません|お控えください|やめて/, 'shake'],
         [/^(はい|ええ|そうですね)/, 'nod'],
         [/[？?]\s*$/, 'tilt'],
+    ];
+    // 感情からの自動割り当てより優先される
+    var GESTURE_KEYWORDS = [
+        [/こんにちは|こんばんは|おはよう|はじめまして|いらっしゃいませ|またお越し|さようなら/, 'wave'],
+        [/申し訳|ごめんなさい|お願いいたします|お願いします/, 'bow_hands'],
+        [/ポイント|大切なのは|注意(点|して)|ひとつ(目|め)|まず(は)?/, 'point'],
+        [/お任せ|私が|ご案内します|サポートします/, 'chest'],
+        [/問題ありません|大丈夫です|OK|オーケー|ばっちり/, 'ok'],
+        [/がんば|頑張|応援して|ファイト/, 'fist'],
+        [/例えば|こちらの|おすすめ|ご紹介|いかがでしょう/, 'explain'],
+        [/うーん|考えて|確認します|お調べ/, 'chin'],
     ];
 
     /* ---------- 口形 ---------- */
@@ -179,7 +216,7 @@
 
     /**
      * 台本を文ごとに分け、各文の感情・モーションを決める。
-     * タグ（[心配] [お辞儀] など）が優先、なければキーワードから推定（autoEmotion 時）。
+     * タグ（[心配] [お辞儀] [手を振る] など）が優先、なければキーワードから推定（autoEmotion 時）。
      */
     function parseScript(text, autoEmotion) {
         var sentences = String(text || '').match(/[^。！？!?\n]+[。！？!?\n]*/g) || [];
@@ -188,10 +225,12 @@
             var raw = sentences[i];
             var emotion = null;
             var motions = [];
+            var gesture = null;
             var body = raw.replace(/[\[［]([^\]］]+)[\]］]/g, function (_, name) {
                 name = name.trim();
                 if (EMOTION_TAGS[name] || EMOTIONS[name]) emotion = EMOTION_TAGS[name] || name;
                 else if (MOTION_TAGS[name] || MOTIONS[name]) motions.push(MOTION_TAGS[name] || name);
+                else if (GESTURE_TAGS[name] || GESTURES[name]) gesture = GESTURE_TAGS[name] || name;
                 return '';
             }).trim();
             if (autoEmotion && body) {
@@ -205,9 +244,14 @@
                         if (MOTION_KEYWORDS[j][0].test(body)) { motions.push(MOTION_KEYWORDS[j][1]); break; }
                     }
                 }
+                if (!gesture) {
+                    for (var q = 0; q < GESTURE_KEYWORDS.length; q++) {
+                        if (GESTURE_KEYWORDS[q][0].test(body)) { gesture = GESTURE_KEYWORDS[q][1]; break; }
+                    }
+                }
             }
-            if (!body && !emotion && !motions.length) continue;
-            segs.push({ text: body, emotion: emotion, motions: motions });
+            if (!body && !emotion && !motions.length && !gesture) continue;
+            segs.push({ text: body, emotion: emotion, motions: motions, gesture: gesture });
         }
         return segs;
     }
@@ -224,6 +268,7 @@
         this.onEmotionChange = opts.onEmotionChange || null;
         this.onSegment = opts.onSegment || null;
         this.idleAmount = opts.idleAmount == null ? 1 : opts.idleAmount;
+        this.autoGesture = opts.autoGesture !== false; // 感情の切り替えで手を動かす
 
         this.emotion = 'neutral';
         this.speaking = false;
@@ -239,6 +284,7 @@
         this._bias = {};
         this._biasTarget = {};
         this._motions = [];
+        this._gestures = [];
         this._mouthLevel = 0;
         this._mouthLevelSmooth = 0;
         this._lastTick = 0;
@@ -251,6 +297,7 @@
 
     SageAvatar.EMOTIONS = EMOTIONS;
     SageAvatar.MOTIONS = MOTIONS;
+    SageAvatar.GESTURES = GESTURES;
     SageAvatar.parseScript = parseScript;
     SageAvatar.textToVisemes = textToVisemes;
 
@@ -299,6 +346,7 @@
         this._mouthLevelSmooth += (this._mouthLevel - this._mouthLevelSmooth) * (1 - Math.exp(-dt * 12));
         pose.angleY += this._mouthLevelSmooth * 2.2;
 
+        pose.gestures = this._gesturePose(now);
         this.renderer.applyPose(pose);
         this._raf = requestAnimationFrame(this._tick);
     };
@@ -315,6 +363,9 @@
         if (changed && def.enter && !(opts && opts.motion === false)) {
             this.playMotion(def.enter);
         }
+        if (changed && def.gesture && this.autoGesture && !(opts && opts.gesture === false)) {
+            this.playGesture(def.gesture);
+        }
         if (typeof this.onEmotionChange === 'function') this.onEmotionChange(this.emotion);
     };
 
@@ -326,6 +377,79 @@
         this._motions.push({
             name: name, def: def, scale: scale, start: performance.now(), duration: motionDuration(def),
         });
+    };
+
+    function gestureAmount(g, now) {
+        if (g.outStart != null) {
+            var u = Math.min((now - g.outStart) / 1000 / GESTURE_OUT, 1);
+            return g.outFrom * (1 - u * u * (3 - 2 * u));
+        }
+        var el = (now - g.start) / 1000;
+        if (el < GESTURE_IN) {
+            var v = el / GESTURE_IN;
+            return 1 - Math.pow(1 - v, 3);
+        }
+        return 1;
+    }
+
+    SageAvatar.prototype._gesturePose = function (now) {
+        var out = [];
+        var alive = [];
+        for (var i = 0; i < this._gestures.length; i++) {
+            var g = this._gestures[i];
+            var el = (now - g.start) / 1000;
+            if (g.outStart == null && el >= GESTURE_IN + g.hold) {
+                g.outStart = g.start + (GESTURE_IN + g.hold) * 1000;
+                g.outFrom = 1;
+            }
+            if (g.outStart != null && now - g.outStart >= GESTURE_OUT * 1000) continue;
+            alive.push(g);
+            var amount = gestureAmount(g, now);
+            var sway = g.def.sway ? g.def.sway[0] * Math.sin(2 * Math.PI * g.def.sway[1] * el) * amount : 0;
+            var lift = g.def.lift && el > GESTURE_IN ? sampleTrack(g.def.lift, el - GESTURE_IN) : 0;
+            out.push({ key: g.name, amount: amount, sway: sway, lift: lift });
+        }
+        this._gestures = alive;
+        return out;
+    };
+
+    /**
+     * 手・腕のジェスチャーを出す。出ている別のジェスチャーは下げる。
+     * opts.hold: とどまる秒数（Infinity なら stopGesture まで）
+     */
+    SageAvatar.prototype.playGesture = function (name, opts) {
+        var def = GESTURES[name];
+        if (!def) return;
+        var now = performance.now();
+        var hold = opts && opts.hold != null ? opts.hold : def.hold;
+        var same = null;
+        for (var i = 0; i < this._gestures.length; i++) {
+            var g = this._gestures[i];
+            if (g.outStart != null) continue;
+            if (g.name === name) {
+                same = g;
+            } else {
+                g.outFrom = gestureAmount(g, now);
+                g.outStart = now;
+            }
+        }
+        if (same) {
+            // 出ている同じ手はそのまま、とどまる時間だけ延ばす
+            same.hold = (now - same.start) / 1000 - GESTURE_IN + hold;
+            return;
+        }
+        this._gestures.push({ name: name, def: def, start: now, hold: hold, outStart: null, outFrom: 1 });
+    };
+
+    SageAvatar.prototype.stopGesture = function () {
+        var now = performance.now();
+        for (var i = 0; i < this._gestures.length; i++) {
+            var g = this._gestures[i];
+            if (g.outStart == null) {
+                g.outFrom = gestureAmount(g, now);
+                g.outStart = now;
+            }
+        }
     };
 
     /** 旧 API 互換（idle / greeting / thinking / empathy / caution / nod） */
@@ -434,9 +558,10 @@
         var run = segs.reduce(function (p, seg, idx) {
             return p.then(function () {
                 if (token !== self._token) return;
-                if (seg.emotion) self.setEmotion(seg.emotion);
+                if (seg.emotion) self.setEmotion(seg.emotion, { gesture: !seg.gesture });
                 for (var i = 0; i < seg.motions.length; i++) self.playMotion(seg.motions[i]);
-                if (!seg.motions.length && !seg.emotion && idx > 0) self.playMotion('nod', { scale: 0.35 });
+                if (seg.gesture) self.playGesture(seg.gesture);
+                if (!seg.motions.length && !seg.emotion && !seg.gesture && idx > 0) self.playMotion('nod', { scale: 0.35 });
                 if (typeof self.onSegment === 'function') self.onSegment(seg, idx);
                 if (!seg.text) return new Promise(function (r) { setTimeout(r, 600); });
                 return self._speakSegment(seg.text, token).then(function (m) {

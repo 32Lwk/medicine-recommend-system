@@ -156,7 +156,7 @@ static/live2d/sage_cast_b/
 
 ### 6.1 先行実装: スプライト版アバター
 
-`.moc3` 完成前の代替として、土台画像をパーツ（体・耳・顔・目鼻口・髪）に分けて視差で動かす 2.5D アバターがある（`static/live2d/sage_cast_b/README.md` 参照）。
+`.moc3` 完成前の代替として、土台画像をパーツ（体・耳・顔・目鼻口・髪）に分けて視差で動かす 2.5D アバターがある（`static/live2d/sage_cast_b/README.md` 参照）。手・腕はジェスチャー 8 種（手を振る・手のひら差し出し・人差し指・胸に手・あごに手・こぶし・両手を合わせる・OK）を重ね絵で出す。
 
 | 層 | ファイル | Cubism 移行時 |
 |----|----------|---------------|
@@ -171,6 +171,7 @@ static/live2d/sage_cast_b/
 | `applyPose({angleX, angleY, angleZ})` | `ParamAngleX` / `ParamAngleY` / `ParamAngleZ`（-30..30） |
 | `applyPose({bodyAngleZ, lean, bow})` | `ParamBodyAngleZ`、前傾・お辞儀は `ParamBodyAngleY` 系の独自パラメータ |
 | `applyPose({hop, breath})` | 位置オフセット / `ParamBreath` |
+| `applyPose({gestures: [{key, amount, sway, lift}]})` | 腕パーツ（`ParamArmL/R` 系の独自パラメータ）またはジェスチャーごとの motion3.json。スプライト版は手の重ね絵を下からせり上げて肘を支点に揺らす |
 | `setExpression(key)` | 表情 exp3（neutral, smile, thinking, empathy, surprise, relief, worry, sorry, serious, cheer, shy, confused） |
 | `setEyes('open'/'half'/'closed')` | `ParamEyeLOpen` / `ParamEyeROpen` = 1 / 0.5 / 0 |
 | `setMouth(null/'a'/'i'/'u'/'e'/'o')` | `diy/mouth_param_keys.csv` の OpenY / Form |

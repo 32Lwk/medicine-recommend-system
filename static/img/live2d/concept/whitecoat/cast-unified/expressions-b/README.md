@@ -26,6 +26,21 @@
 - 口形: Live2D リップシンク用キー（あいうえお＋閉口）
 - 目: まばたき用（開／半／閉）。本番はパラメータ駆動を推奨
 
+## 手・腕（スプライト版アバター用）
+
+`sage-b-mouth-closed.jpg` を参照に、同じ構図のまま手だけを足して生成したもの。`scripts/live2d_build_sprite_b.py` が手と袖を切り抜く。
+
+| ファイル | 手 |
+|----------|----|
+| `sage-b-g-wave.jpg` | 手を振る |
+| `sage-b-g-explain.jpg` | 手のひら差し出し |
+| `sage-b-g-point.jpg` | 人差し指 |
+| `sage-b-g-chest.jpg` | 胸に手 |
+| `sage-b-g-chin.jpg` | あごに手 |
+| `sage-b-g-fist.jpg` | こぶし |
+| `sage-b-g-bow_hands.jpg` | 両手を合わせる |
+| `sage-b-g-ok.jpg` | OK サイン |
+
 ## 共通仕様
 
 - 白衣・中の服: 統一版 B を維持

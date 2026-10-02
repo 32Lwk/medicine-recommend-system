@@ -9,6 +9,9 @@
    and cut into feathered patches: expressions (face interior), mouths, closed eyes.
 3. Half-open eyes are synthesised per expression by sliding the upper lash line down
    (the image model does not close eyes far enough).
+4. Gesture frames (``sage-b-g-*.jpg``: the same pose plus a hand) are aligned the same way;
+   the hand and sleeve are cut out (pixels inside a hand-drawn ROI that differ from the base)
+   and stored as overlays that slide up from below the frame.
 
 Usage:
   python scripts/live2d_build_sprite_b.py [--debug]
@@ -39,14 +42,16 @@ BASE_SRC = "sage-b-mouth-closed.jpg"
 # Base-frame pixel coordinates (1024x1024).
 HEAD_RECT = (220, 150, 840, 830)  # keypoints used for alignment
 JAW_X = (336, 714)  # columns where the jaw line separates face and neck
-JAW_PRIOR = ((336, 612), (520, 806), (714, 652))  # left end, chin, right end
+JAW_PRIOR = ((336, 655), (520, 806), (714, 652))  # left end, chin, right end
 EAR_SPLIT_Y = 640  # outside JAW_X: head above, body below
 # The right ear joins the cheek without an outline; this polyline separates them.
 EAR_BARRIERS = [np.array([(743, 392), (738, 520), (737, 612)], np.int32)]
 NECK_PIVOT = (560, 745)
-# Where the head is cut out of the body, this zone is repainted as neck shadow so that the
-# face sliding sideways never reveals a hole (both jaw corners included).
-NECK_FILL = np.array([(330, 560), (738, 560), (738, 690), (718, 840), (400, 840), (330, 700)], np.int32)
+# The neck column between its two outlines. Where the head is cut out of the body, the
+# column is repainted as neck shadow and the outlines are extended up under the head;
+# outside the column the background shows, as it would behind a real neck.
+NECK_X = ((376, 560), (410, 820), (718, 560), (718, 770))  # left top/bottom, right top/bottom
+NECK_LINE_W = 5
 EYES = {"l": ((398, 460), (84, 46)), "r": ((612, 442), (84, 46))}  # center, (rx, ry)
 MOUTH = ((518, 668), (104, 60))
 MAX_LASH = 16  # px; upper lash line thickness cap for synthesised eyelids
@@ -77,6 +82,49 @@ EXPRESSIONS: list[Frame] = [
     Frame("confused", "sage-b-x-confused.jpg", "困惑"),
 ]
 MOUTHS = {k: f"sage-b-mouth-{k}.jpg" for k in ("a", "i", "u", "e", "o")}
+
+
+@dataclass(frozen=True)
+class Gesture:
+    key: str
+    label: str
+    roi: tuple[tuple[int, int], ...]  # polygon around hand + sleeve, base coords before ``offset``
+    offset: tuple[int, int] = (0, 0)  # move the cut-out so the hand sits inside the visible canvas
+    pivot: tuple[int, int] = (512, 1150)  # sway centre (elbow below the frame), before ``offset``
+    attach: str = "rig"  # "head" follows head turns (hand touching the face)
+    seeds: tuple[tuple[int, int], ...] = ()  # points inside the hand where it barely differs from the base
+    skin_only: bool = False  # keep skin-coloured regions only (drops redrawn clothes) ...
+    sleeve: tuple[tuple[int, int], ...] = ()  # ... except inside this polygon
+
+
+GESTURES: list[Gesture] = [
+    Gesture("wave", "手を振る", ((-200, 470), (270, 470), (270, 1010), (150, 1300), (-200, 1300)),
+            (70, -40), (40, 1250), skin_only=True,
+            sleeve=((-200, 995), (112, 995), (100, 1300), (-200, 1300))),
+    Gesture("explain", "手のひら差し出し", ((645, 1140), (645, 1025), (760, 995), (860, 925), (960, 825),
+                                         (1010, 790), (1115, 790), (1135, 850), (1100, 950), (1060, 1060),
+                                         (1030, 1120), (1015, 1245), (1015, 1300), (715, 1300),
+                                         (715, 1150)),
+            (-20, -170), (900, 1300), skin_only=True,
+            sleeve=((738, 1110), (958, 1100), (1015, 1245), (1015, 1300), (735, 1300))),
+    Gesture("point", "人差し指", ((760, 430), (1224, 430), (1224, 1300), (860, 1300), (760, 900)),
+            (0, 0), (960, 1250)),
+    Gesture("chest", "胸に手", ((288, 1300), (288, 1060), (340, 1035), (645, 1025), (675, 1060), (675, 1300)),
+            (0, -190), (420, 1300), skin_only=True),
+    Gesture("chin", "あごに手", ((330, 700), (470, 700), (605, 775), (625, 830), (595, 905), (565, 1000),
+                                 (530, 1300), (330, 1300)),
+            (0, 0), (420, 1250), "head"),
+    Gesture("fist", "こぶし", ((770, 640), (1224, 640), (1224, 1300), (830, 1300), (770, 900)),
+            (0, 0), (980, 1250), skin_only=True,
+            sleeve=((895, 990), (1224, 990), (1224, 1300), (882, 1300))),
+    Gesture("bow_hands", "両手を合わせる", ((330, 1300), (330, 1000), (378, 878), (472, 878), (522, 918),
+                                        (585, 1100), (590, 1300)),
+            (0, -80), (455, 1300), skin_only=True),
+    Gesture("ok", "OK サイン", ((780, 420), (1224, 420), (1224, 1300), (950, 1300), (780, 800)),
+            (0, 0), (980, 1250)),
+]
+GESTURE_PAD_X = 200  # gesture work canvas extends this far left/right of the base canvas
+GESTURE_H = 1300
 EYES_CLOSED_SRC = "sage-b-eye-closed.jpg"
 
 
@@ -125,7 +173,12 @@ def save_webp(bgra: np.ndarray, path: Path, quality: int = 92) -> None:
     )
 
 
-def crop_save(bgra: np.ndarray, name: str, quality: int = 92) -> dict:
+def crop_save(bgra: np.ndarray, name: str, quality: int = 92, despill: bool = False) -> dict:
+    """despill: cap green at max(r, b) everywhere (only for parts with no legitimately green pixels)."""
+    if despill:
+        bgra = bgra.copy()
+        cap = np.maximum(bgra[..., 0], bgra[..., 2])
+        bgra[..., 1] = np.minimum(bgra[..., 1], cap)
     ys, xs = np.nonzero(bgra[..., 3] > 2)
     x0, x1, y0, y1 = int(xs.min()), int(xs.max()) + 1, int(ys.min()), int(ys.max()) + 1
     save_webp(bgra[y0:y1, x0:x1], OUT / name, quality)
@@ -174,7 +227,8 @@ def head_mask(bgr: np.ndarray, alpha: np.ndarray, hair: np.ndarray) -> tuple[np.
     jaw = jaw_curve(bgr)
     yy = np.arange(h)[:, None]
     head = np.zeros((h, w), bool)
-    head[:EAR_SPLIT_Y, :JAW_X[0]] = True
+    # the left jaw outline curves outside JAW_X down to y≈700; it must turn with the head
+    head[:EAR_SPLIT_Y + 60, :JAW_X[0]] = True
     head[:EAR_SPLIT_Y, JAW_X[1] + 1:] = True
     cols = slice(JAW_X[0], JAW_X[1] + 1)
     head[:, cols] = yy <= (jaw[None, :] + 5)  # the whole outline stays with the face
@@ -245,25 +299,39 @@ def build_parts(base_bgr: np.ndarray, base_bgra: np.ndarray, debug: Path | None)
     # body: everything below the head + neck column filled with the under-chin shadow
     body = base_bgra.copy()
     body[head, 3] = 0
+    (lt, lb, rt, rb) = NECK_X
     neck_zone = np.zeros((h, w), np.uint8)
-    cv2.fillPoly(neck_zone, [NECK_FILL], 1)
+    # the zone reaches well below the chin; only the hidden part of it is painted
+    cv2.fillPoly(neck_zone, [np.array([lt, rt, (rb[0], 860), (lb[0], 860)], np.int32)], 1)
     neck_zone = neck_zone.astype(bool)
     shadow_src = (~head) & ~under_jaw & neck_zone & skin & (alpha == 255)
     shadow = np.median(base_bgr[shadow_src], axis=0) if shadow_src.sum() > 50 else np.array([90, 130, 200])
-    fill = neck_zone & (head | under_jaw)
+    hidden = head | under_jaw
+    fill = neck_zone & hidden
     body[fill, :3] = shadow.astype(np.uint8)
     body[fill, 3] = 255
+    lines = np.zeros((h, w), np.uint8)
+    cv2.line(lines, lt, lb, 1, NECK_LINE_W)
+    cv2.line(lines, rt, rb, 1, NECK_LINE_W)
+    lines = (lines > 0) & hidden
+    outline_src = (~hidden) & (cv2.dilate(lines.astype(np.uint8), np.ones((3, 3), np.uint8), iterations=40) > 0) \
+        & (base_bgr.mean(axis=2) < 70) & (alpha == 255)
+    outline = np.median(base_bgr[outline_src], axis=0) if outline_src.sum() > 20 else np.array([40, 40, 50])
+    body[lines, :3] = outline.astype(np.uint8)
+    body[lines, 3] = 255
     parts["body"] = crop_save(body, "part_body.webp", 90)
+
+    # colours for every visible part come from the despilled frame (no green fringe)
+    clean = np.ascontiguousarray(base_bgra[..., :3])
 
     # ears: drawn under the face and hair, extended under both so head turns never open a gap
     k3 = np.ones((3, 3), np.uint8)
     for side, m in (("l", ear_l), ("r", ear_r)):
         ext = (cv2.dilate(m.astype(np.uint8), k3, iterations=12) > 0) & (face | hair) & ~m
-        src = base_bgr.copy()
-        rgb = cv2.inpaint(src, ext.astype(np.uint8) * 255, 5, cv2.INPAINT_TELEA)
+        rgb = cv2.inpaint(clean, ext.astype(np.uint8) * 255, 5, cv2.INPAINT_TELEA)
         a = m.astype(np.float32) * (alpha / 255.0)
         a[ext] = 1.0
-        parts[f"ear_{side}"] = crop_save(with_alpha(rgb, a), f"part_ear_{side}.webp")
+        parts[f"ear_{side}"] = crop_save(with_alpha(rgb, a), f"part_ear_{side}.webp", despill=True)
 
     # face: skin + outline with the whole interior repainted as plain skin (features layer
     # covers it); skin also continues a little under the hair so the hairline can slide
@@ -272,18 +340,18 @@ def build_parts(base_bgr: np.ndarray, base_bgra: np.ndarray, debug: Path | None)
     hole_core[:300] = False
     under_hair = hair & (alpha == 255) & (cv2.dilate(face.astype(np.uint8), k3, iterations=14) > 0)
     hole = (hole_core | under_hair).astype(np.uint8) * 255
-    face_rgb = cv2.inpaint(base_bgr, hole, 9, cv2.INPAINT_TELEA)
+    face_rgb = cv2.inpaint(clean, hole, 9, cv2.INPAINT_TELEA)
     face_a = face.astype(np.float32) * (alpha / 255.0)
     face_a[under_hair] = 1.0
-    parts["face"] = crop_save(with_alpha(face_rgb, face_a), "part_face.webp")
+    parts["face"] = crop_save(with_alpha(face_rgb, face_a), "part_face.webp", despill=True)
 
     # features: the face interior of the base frame (slides over the face for head turns)
     interior_f = feather(interior, FEATHER)
-    parts["features"] = crop_save(with_alpha(base_bgr, interior_f), "part_features.webp")
+    parts["features"] = crop_save(with_alpha(clean, interior_f), "part_features.webp")
 
     # hair
     hair_a = hair.astype(np.float32) * (alpha / 255.0)
-    parts["hair"] = crop_save(with_alpha(base_bgr, hair_a), "part_hair.webp")
+    parts["hair"] = crop_save(with_alpha(clean, hair_a), "part_hair.webp", despill=True)
 
     if debug:
         vis = base_bgr.copy()
@@ -478,6 +546,132 @@ def build_variants(base_bgr: np.ndarray, interior_f: np.ndarray) -> tuple[dict, 
     return layers, meta
 
 
+def build_gestures(base_bgr: np.ndarray, base_alpha: np.ndarray, debug_dir: Path | None) -> tuple[dict, dict]:
+    h, w = base_bgr.shape[:2]
+    pad, gh = GESTURE_PAD_X, GESTURE_H
+    gw = w + 2 * pad
+    base_gray = cv2.cvtColor(base_bgr, cv2.COLOR_BGR2GRAY)
+    sift = cv2.SIFT_create(nfeatures=4000)
+    # base on the work canvas (shifted by pad); nothing is known below the base frame
+    base_w = np.zeros((gh, gw, 3), np.uint8)
+    base_w[:h, pad:pad + w] = base_bgr
+    base_a = np.zeros((gh, gw), np.uint8)
+    base_a[:h, pad:pad + w] = base_alpha
+    known = np.zeros((gh, gw), bool)
+    known[:h, pad:pad + w] = True
+    out: dict = {}
+    meta: dict = {}
+    for g in GESTURES:
+        src = EXPR / f"sage-b-g-{g.key}.jpg"
+        bgr = cv2.imread(str(src), cv2.IMREAD_COLOR)
+        if bgr is None:
+            raise FileNotFoundError(src)
+        m, inliers = align(base_gray, cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY), sift)
+        # the sleeve leaves the frame at the bottom: extend it straight down so a raised
+        # gesture still reaches below the visible canvas
+        ext = cv2.copyMakeBorder(bgr, 0, 400, 0, 0, cv2.BORDER_REPLICATE)
+        keyed = key_green(ext)
+        # enclosed background (e.g. the ring of the OK sign) is not connected to the border
+        b, gr, r = (ext[..., i].astype(np.int16) for i in range(3))
+        hole = ((gr - np.maximum(r, b)) > 20) & (gr > 90)
+        keyed[hole, 3] = 0
+        mw = m.copy()
+        mw[0, 2] += pad
+        warped = cv2.warpAffine(keyed, mw, (gw, gh), flags=cv2.INTER_CUBIC,
+                                borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
+        g_rgb, g_a = warped[..., :3], warped[..., 3]
+
+        roi = np.zeros((gh, gw), np.uint8)
+        cv2.fillPoly(roi, [np.array([(x + pad, y) for x, y in g.roi], np.int32)], 1)
+        roi = roi.astype(bool)
+        diff = np.abs(cv2.GaussianBlur(g_rgb, (5, 5), 0).astype(np.int16)
+                      - cv2.GaussianBlur(base_w, (5, 5), 0).astype(np.int16)).max(axis=2)
+        changed = ~known | (base_a < 128) | (diff > 40)
+        # cel shading: the hand is enclosed by dark outlines, so judge whole outlined regions
+        lum = cv2.cvtColor(g_rgb, cv2.COLOR_BGR2GRAY)
+        # line art is dark and warm/neutral; the navy shirt and cuff are dark too but bluish
+        bluish = g_rgb[..., 0].astype(np.int16) > g_rgb[..., 2].astype(np.int16) + 25
+        dark = (lum < 95) & ~(bluish & (lum > 45))
+        sleeve = np.zeros((gh, gw), np.uint8)
+        if g.sleeve:
+            cv2.fillPoly(sleeve, [np.array([(x + pad, y) for x, y in g.sleeve], np.int32)], 1)
+        sleeve = sleeve.astype(bool)
+        regions = roi & (g_a > 128) & ~dark
+        # label inside / outside the sleeve polygon separately so clothes cannot leak across it
+        n_in, lab_in = cv2.connectedComponents((regions & sleeve).astype(np.uint8), connectivity=4)
+        n_out, lab_out = cv2.connectedComponents((regions & ~sleeve).astype(np.uint8), connectivity=4)
+        lab = np.where(sleeve, lab_in, np.where(lab_out > 0, lab_out + n_in, 0))
+        n = n_in + n_out
+        keep = np.zeros((gh, gw), bool)
+        seed_ids = {int(lab[y, x + pad]) for x, y in g.seeds}
+        sb, sg, sr = (cv2.GaussianBlur(g_rgb, (3, 3), 0)[..., i].astype(np.int16) for i in range(3))
+        skin_px = (sr > 150) & (sr > sg) & (sg > sb) & (sr - sb > 40)
+        for i in range(1, n):
+            comp = lab == i
+            if g.skin_only and i >= n_in:
+                # pixel-level: a gap in the outline can merge the hand with the coat
+                comp &= skin_px
+            if comp.sum() < 40:
+                continue
+            if i in seed_ids or changed[comp].mean() > 0.55:
+                keep |= comp
+        # outline strokes next to the kept regions belong to the hand too
+        ring = cv2.dilate(keep.astype(np.uint8), np.ones((9, 9), np.uint8)) > 0
+        keep |= ring & dark & roi & (g_a > 0) & changed
+        keep = cv2.morphologyEx(keep.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8)) > 0
+        n, lab, st, _ = cv2.connectedComponentsWithStats(keep.astype(np.uint8), connectivity=8)
+        if n > 1:
+            big = st[1:, cv2.CC_STAT_AREA].max()
+            keep = np.isin(lab, [i for i in range(1, n) if st[i, cv2.CC_STAT_AREA] > 0.05 * big])
+        mask = fill_holes(keep) & roi & (g_a > 0)
+        # soft edge only where the cut runs through the picture; along the keyed outline the
+        # mask is grown into the transparent side first so the outline keeps full strength
+        grown = mask | ((g_a == 0) & (cv2.dilate(mask.astype(np.uint8), np.ones((7, 7), np.uint8)) > 0))
+        soft = cv2.GaussianBlur(grown.astype(np.float32), (0, 0), 1.2)
+        near = cv2.dilate(mask.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
+        a = soft * near * (g_a / 255.0)
+        bgra = with_alpha(g_rgb, a)
+        bgra[..., 1] = np.minimum(bgra[..., 1], np.maximum(bgra[..., 0], bgra[..., 2]))
+
+        ys, xs = np.nonzero(bgra[..., 3] > 2)
+        x0, x1, y0, y1 = int(xs.min()), int(xs.max()) + 1, int(ys.min()), int(ys.max()) + 1
+        name = f"gesture_{g.key}.webp"
+        save_webp(bgra[y0:y1, x0:x1], OUT / name, 90)
+        dx, dy = g.offset
+        out[g.key] = {
+            "src": name, "x": x0 - pad + dx, "y": y0 + dy, "w": x1 - x0, "h": y1 - y0,
+            "label": g.label, "attach": g.attach,
+            "pivot": {"x": g.pivot[0] + dx, "y": g.pivot[1] + dy},
+        }
+        meta[f"gesture.{g.key}"] = {"inliers": inliers, "scale": round(float(np.hypot(m[0, 0], m[1, 0])), 4)}
+        print(f"gesture {g.key:9s} inliers={inliers:4d} box=({x0 - pad + dx},{y0 + dy}) {x1 - x0}x{y1 - y0}")
+        if debug_dir:
+            # left: cut-out on magenta, right: the frame with the cut dimmed out
+            poly = np.array([(x + pad, y) for x, y in g.roi], np.int32)
+            rx, ry, rw, rh = cv2.boundingRect(poly)
+            rx, ry = max(rx - 20, 0), max(ry - 20, 0)
+            rw, rh = min(rw + 40, gw - rx), min(rh + 40, gh - ry)
+            vis = (g_rgb * a[..., None] + (1 - a[..., None]) * [255, 0, 255]).astype(np.uint8)
+            rest = (g_rgb * (0.35 + 0.65 * (1 - a[..., None]))).astype(np.uint8)
+            for v in (vis, rest):
+                cv2.polylines(v, [poly], True, (0, 255, 255), 1)
+            pair = np.hstack([vis[ry:ry + rh, rx:rx + rw], rest[ry:ry + rh, rx:rx + rw]])
+            cv2.imwrite(str(debug_dir / f"gesture_cut_{g.key}.png"), pair)
+    return out, meta
+
+
+def build_gestures_only(debug_dir: Path | None) -> None:
+    """Rebuild only the gesture overlays and patch them into the existing manifest."""
+    path = OUT / "manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    base_bgr = cv2.imread(str(EXPR / BASE_SRC), cv2.IMREAD_COLOR)
+    for f in OUT.glob("gesture_*.webp"):
+        f.unlink()
+    manifest["layers"]["gesture"], gmeta = build_gestures(base_bgr, key_green(base_bgr)[..., 3], debug_dir)
+    manifest["alignment"].update(gmeta)
+    path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def build(debug_dir: Path | None) -> None:
     if OUT.exists():
         for f in OUT.glob("*.webp"):
@@ -491,6 +685,8 @@ def build(debug_dir: Path | None) -> None:
 
     parts, interior_f = build_parts(base_bgr, base_bgra, debug_dir)
     layers, meta = build_variants(base_bgr, interior_f)
+    layers["gesture"], gmeta = build_gestures(base_bgr, base_bgra[..., 3], debug_dir)
+    meta.update(gmeta)
 
     manifest = {
         "version": 2,
@@ -512,12 +708,16 @@ def build(debug_dir: Path | None) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--debug", action="store_true", help="write part overlays to a temp dir")
+    ap.add_argument("--gestures-only", action="store_true", help="rebuild gesture overlays only")
     args = ap.parse_args()
     debug_dir = None
     if args.debug:
         debug_dir = Path(tempfile.gettempdir()) / "sage_sprite_debug"
         debug_dir.mkdir(parents=True, exist_ok=True)
-    build(debug_dir)
+    if args.gestures_only:
+        build_gestures_only(debug_dir)
+    else:
+        build(debug_dir)
 
 
 if __name__ == "__main__":

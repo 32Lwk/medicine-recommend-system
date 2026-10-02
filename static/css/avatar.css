@@ -26,10 +26,22 @@
 }
 
 .sage-avatar__part,
-.sage-avatar__layer {
+.sage-avatar__layer,
+.sage-avatar__gesture {
   position: absolute;
   display: block;
   pointer-events: none;
+}
+
+/* 手・腕の重ね絵: 位置・揺れ・不透明度は JS が毎フレーム設定 */
+.sage-avatar__gesture {
+  visibility: hidden;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.sage-avatar__gesture.is-visible {
+  visibility: visible;
 }
 
 .sage-avatar__part {

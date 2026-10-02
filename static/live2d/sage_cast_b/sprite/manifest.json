@@ -15,16 +15,16 @@
     "body": {
       "src": "part_body.webp",
       "x": 83,
-      "y": 560,
+      "y": 557,
       "w": 941,
-      "h": 464
+      "h": 467
     },
     "ear_l": {
       "src": "part_ear_l.webp",
       "x": 249,
       "y": 437,
       "w": 88,
-      "h": 203
+      "h": 205
     },
     "ear_r": {
       "src": "part_ear_r.webp",
@@ -298,6 +298,112 @@
         "w": 241,
         "h": 153
       }
+    },
+    "gesture": {
+      "wave": {
+        "src": "gesture_wave.webp",
+        "x": -53,
+        "y": 455,
+        "w": 371,
+        "h": 805,
+        "label": "手を振る",
+        "attach": "rig",
+        "pivot": {
+          "x": 110,
+          "y": 1210
+        }
+      },
+      "explain": {
+        "src": "gesture_explain.webp",
+        "x": 699,
+        "y": 646,
+        "w": 399,
+        "h": 484,
+        "label": "手のひら差し出し",
+        "attach": "rig",
+        "pivot": {
+          "x": 880,
+          "y": 1130
+        }
+      },
+      "point": {
+        "src": "gesture_point.webp",
+        "x": 781,
+        "y": 463,
+        "w": 303,
+        "h": 837,
+        "label": "人差し指",
+        "attach": "rig",
+        "pivot": {
+          "x": 960,
+          "y": 1250
+        }
+      },
+      "chest": {
+        "src": "gesture_chest.webp",
+        "x": 292,
+        "y": 849,
+        "w": 341,
+        "h": 261,
+        "label": "胸に手",
+        "attach": "rig",
+        "pivot": {
+          "x": 420,
+          "y": 1110
+        }
+      },
+      "chin": {
+        "src": "gesture_chin.webp",
+        "x": 329,
+        "y": 717,
+        "w": 292,
+        "h": 583,
+        "label": "あごに手",
+        "attach": "head",
+        "pivot": {
+          "x": 420,
+          "y": 1250
+        }
+      },
+      "fist": {
+        "src": "gesture_fist.webp",
+        "x": 769,
+        "y": 669,
+        "w": 317,
+        "h": 631,
+        "label": "こぶし",
+        "attach": "rig",
+        "pivot": {
+          "x": 980,
+          "y": 1250
+        }
+      },
+      "bow_hands": {
+        "src": "gesture_bow_hands.webp",
+        "x": 353,
+        "y": 817,
+        "w": 218,
+        "h": 403,
+        "label": "両手を合わせる",
+        "attach": "rig",
+        "pivot": {
+          "x": 455,
+          "y": 1220
+        }
+      },
+      "ok": {
+        "src": "gesture_ok.webp",
+        "x": 779,
+        "y": 447,
+        "w": 334,
+        "h": 853,
+        "label": "OK サイン",
+        "attach": "rig",
+        "pivot": {
+          "x": 980,
+          "y": 1250
+        }
+      }
     }
   },
   "alignment": {
@@ -390,6 +496,38 @@
       "inliers": 51,
       "scale": 1.1054,
       "rotationDeg": 0.64
+    },
+    "gesture.wave": {
+      "inliers": 65,
+      "scale": 1.1532
+    },
+    "gesture.explain": {
+      "inliers": 59,
+      "scale": 1.1761
+    },
+    "gesture.point": {
+      "inliers": 84,
+      "scale": 1.0579
+    },
+    "gesture.chest": {
+      "inliers": 89,
+      "scale": 1.1445
+    },
+    "gesture.chin": {
+      "inliers": 59,
+      "scale": 1.0615
+    },
+    "gesture.fist": {
+      "inliers": 84,
+      "scale": 1.063
+    },
+    "gesture.bow_hands": {
+      "inliers": 104,
+      "scale": 1.078
+    },
+    "gesture.ok": {
+      "inliers": 63,
+      "scale": 1.0883
     }
   }
 }

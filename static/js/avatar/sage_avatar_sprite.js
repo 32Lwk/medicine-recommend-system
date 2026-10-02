@@ -7,6 +7,7 @@
  * SageAvatar（sage_avatar.js）から呼ばれるレンダラー共通インターフェース:
  *   load(): Promise<void>
  *   applyPose(params)  — Live2D 風パラメータ（下記 POSE_DEFAULTS）を毎フレーム反映
+ *                        params.gestures: [{ key, amount 0..1, sway 度, lift px }] — 手・腕の重ね絵
  *   setExpression(key) — 'neutral' | manifest.layers.expression のキー
  *   setEyes(state)     — 'open' | 'half' | 'closed'
  *   setMouth(viseme)   — null | 'a' | 'i' | 'u' | 'e' | 'o'
@@ -48,10 +49,14 @@
         this.root = null;
         this.els = {};
         this.layerEls = { expression: {}, eyes: {}, mouth: {} };
+        this.gestureEls = {};
         this.current = { expression: 'neutral', eyes: 'open', mouth: null };
         this.scale = 1;
         this._ro = null;
     }
+
+    // 手の重ね絵が画面下から入ってくるとき、上端が見えない位置（キャンバス y）
+    var GESTURE_HIDDEN_Y = 1010;
 
     SpriteAvatarRenderer.POSE_DEFAULTS = POSE_DEFAULTS;
 
@@ -74,6 +79,15 @@
         var ex = (this.manifest && this.manifest.layers.expression) || {};
         for (var k in ex) {
             if (Object.prototype.hasOwnProperty.call(ex, k)) out.push({ key: k, label: ex[k].label || k });
+        }
+        return out;
+    };
+
+    SpriteAvatarRenderer.prototype.gestures = function () {
+        var out = [];
+        var gs = (this.manifest && this.manifest.layers.gesture) || {};
+        for (var k in gs) {
+            if (Object.prototype.hasOwnProperty.call(gs, k)) out.push({ key: k, label: gs[k].label || k });
         }
         return out;
     };
@@ -148,6 +162,19 @@
         var hair = img(m.parts.hair, 'sage-avatar__part');
         head.appendChild(hair);
 
+        // 手・腕: 体に付くものは頭より手前、顔に触れるもの（attach: head）は頭と一緒に動く
+        var gestures = m.layers.gesture || {};
+        for (var gk in gestures) {
+            if (!Object.prototype.hasOwnProperty.call(gestures, gk)) continue;
+            var spec = gestures[gk];
+            var gel = img(spec, 'sage-avatar__gesture');
+            var pv = spec.pivot || { x: spec.x + spec.w / 2, y: spec.y + spec.h };
+            gel.style.transformOrigin = ((pv.x - spec.x) / spec.w * 100) + '% ' + ((pv.y - spec.y) / spec.h * 100) + '%';
+            gel.dataset.key = gk;
+            (spec.attach === 'head' ? head : rig).appendChild(gel);
+            this.gestureEls[gk] = { el: gel, spec: spec, shown: false };
+        }
+
         this.els = {
             rig: rig, head: head, face: face, features: features, hair: hair, ear_l: earL, ear_r: earR,
         };
@@ -205,6 +232,37 @@
             var y = -ty * par.y * s;
             this.els[k].style.transform = 'translate3d(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px,0)';
         }
+
+        this._applyGestures(p.gestures || [], s);
+    };
+
+    SpriteAvatarRenderer.prototype._applyGestures = function (list, s) {
+        var active = {};
+        for (var i = 0; i < list.length; i++) {
+            var g = list[i];
+            var entry = this.gestureEls[g.key];
+            if (!entry || !(g.amount > 0)) continue;
+            active[g.key] = true;
+            var a = Math.min(g.amount, 1);
+            // 下からせり上がる（入り始めは画面外）＋ 肘を支点に揺れる
+            var slide = Math.max(GESTURE_HIDDEN_Y - entry.spec.y, 0) * (1 - a);
+            var y = (slide - (g.lift || 0)) * s;
+            entry.el.style.transform =
+                'translate3d(0,' + y.toFixed(2) + 'px,0) rotate(' + (g.sway || 0).toFixed(2) + 'deg)';
+            entry.el.style.opacity = Math.min(1, a * 2.5).toFixed(3);
+            if (!entry.shown) {
+                entry.el.classList.add('is-visible');
+                entry.shown = true;
+            }
+        }
+        for (var k in this.gestureEls) {
+            if (!Object.prototype.hasOwnProperty.call(this.gestureEls, k)) continue;
+            var e = this.gestureEls[k];
+            if (e.shown && !active[k]) {
+                e.el.classList.remove('is-visible');
+                e.shown = false;
+            }
+        }
     };
 
     SpriteAvatarRenderer.prototype._show = function (group, key) {
@@ -248,6 +306,7 @@
         this.root = null;
         this.els = {};
         this.layerEls = { expression: {}, eyes: {}, mouth: {} };
+        this.gestureEls = {};
     };
 
     global.SpriteAvatarRenderer = SpriteAvatarRenderer;
