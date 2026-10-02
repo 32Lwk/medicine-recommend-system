@@ -27,6 +27,7 @@ Concierge 用のお問い合わせ文面: [concierge/お問い合わせ・試験
 | [AGENT_DEDUP_AUDIT.md](dev/AGENT_DEDUP_AUDIT.md) | LLM 呼び出し重複監査 |
 | [ASYNC_IMPLEMENTATION_GUIDE.md](dev/ASYNC_IMPLEMENTATION_GUIDE.md) | 非同期実装 |
 | [SDK_SPIKE.md](dev/SDK_SPIKE.md) | SDK 調査 |
+| [LIVE2D_CUBISM_PSD_SPEC.md](dev/LIVE2D_CUBISM_PSD_SPEC.md) | Live2D Cubism パーツ分け・PSD 仕様 |
 
 ## 運用・QA（`ops/`）
 
