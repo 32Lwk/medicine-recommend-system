@@ -261,6 +261,8 @@ static/live2d/
 
 ## 13. 関連ドキュメント
 
+- **自前 Cubism 作業フロー**: [`LIVE2D_CUBISM_DIY_WORKFLOW.md`](LIVE2D_CUBISM_DIY_WORKFLOW.md)
+- **B 作業フォルダ**: `static/live2d/sage_cast_b/`（`python3 scripts/live2d_prepare_cast_b.py`）
 - `static/img/live2d/concept/whitecoat/cast-unified/EXPRESSIONS_README.md`
 - `static/img/live2d/concept/whitecoat/cast-unified/CUBISM_PSD_CHECKLIST.md`（作業者向け短版）
 - `docs/planning/notebooklm-history/CLAUDE_バーチャルヒューマン導入調査_要約_20260914.md`

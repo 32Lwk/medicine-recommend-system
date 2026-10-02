@@ -28,6 +28,7 @@ Concierge 用のお問い合わせ文面: [concierge/お問い合わせ・試験
 | [ASYNC_IMPLEMENTATION_GUIDE.md](dev/ASYNC_IMPLEMENTATION_GUIDE.md) | 非同期実装 |
 | [SDK_SPIKE.md](dev/SDK_SPIKE.md) | SDK 調査 |
 | [LIVE2D_CUBISM_PSD_SPEC.md](dev/LIVE2D_CUBISM_PSD_SPEC.md) | Live2D Cubism パーツ分け・PSD 仕様 |
+| [LIVE2D_CUBISM_DIY_WORKFLOW.md](dev/LIVE2D_CUBISM_DIY_WORKFLOW.md) | Cubism Editor 自前作業フロー（B） |
 
 ## 運用・QA（`ops/`）
 

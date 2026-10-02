@@ -1,0 +1,7 @@
+viseme,ref_file,ParamMouthOpenY,ParamMouthForm
+closed,reference/mouth-closed.png,0.0,0.0
+a,reference/mouth-a.png,1.0,0.0
+i,reference/mouth-i.png,0.2,1.0
+u,reference/mouth-u.png,0.3,-0.3
+e,reference/mouth-e.png,0.55,0.2
+o,reference/mouth-o.png,0.85,-0.2
