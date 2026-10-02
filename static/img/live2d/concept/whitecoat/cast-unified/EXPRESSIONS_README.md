@@ -14,3 +14,9 @@
 - 個別 JPG
 
 共通仕様: 白衣統一版維持、クロマキー緑、強度中、バストアップ正面やや寄り。
+
+## Cubism 次ステップ
+
+- **正本仕様**: [`docs/dev/LIVE2D_CUBISM_PSD_SPEC.md`](../../../../../docs/dev/LIVE2D_CUBISM_PSD_SPEC.md)
+- **作業チェックリスト**: [`CUBISM_PSD_CHECKLIST.md`](CUBISM_PSD_CHECKLIST.md)
+- 着手順: **B → A/C/D**（パーツツリー・パラメータ ID 共通）

@@ -33,4 +33,4 @@
 
 1. 1〜2 案に絞る（本番用＋予備）
 2. 正面／斜め／表情差分（喜・驚・思案・相槌）を追加生成または外注
-3. Live2D Cubism 用 PSD 切り分け仕様へ落とし込む
+3. Live2D Cubism 用 PSD 切り分け — [`docs/dev/LIVE2D_CUBISM_PSD_SPEC.md`](../../../../docs/dev/LIVE2D_CUBISM_PSD_SPEC.md)
