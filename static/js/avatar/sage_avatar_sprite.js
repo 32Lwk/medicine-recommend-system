@@ -1,13 +1,17 @@
 /**
  * Sage アバター — 2.5D スプライトレンダラー（Cubism モデル完成までの代替）
  *
- * manifest.json（scripts/live2d_build_sprite_b.py が生成, version 2）を読み、
+ * manifest.json（scripts/live2d_build_sprite.py が生成, version 3）を読み、
  * body / ear / face / features / hair のパーツを視差つきで動かして首振り・うなずき・横向きを表現する。
+ *
+ * 手・腕（layers.gesture）は 2 枚組:
+ *   body — 腕の形が変わった体全体。素の体とディゾルブで入れ替える（元の腕が消え、新しい腕が出る）
+ *   hand — 手先（背景・頭・胴の上に出る部分）。pivot を支点に揺れ、入るときは下から振り上がる
  *
  * SageAvatar（sage_avatar.js）から呼ばれるレンダラー共通インターフェース:
  *   load(): Promise<void>
  *   applyPose(params)  — Live2D 風パラメータ（下記 POSE_DEFAULTS）を毎フレーム反映
- *                        params.gestures: [{ key, amount 0..1, sway 度, lift px }] — 手・腕の重ね絵
+ *                        params.gestures: [{ key, amount 0..1, sway 度, lift px }]
  *   setExpression(key) — 'neutral' | manifest.layers.expression のキー
  *   setEyes(state)     — 'open' | 'half' | 'closed'
  *   setMouth(viseme)   — null | 'a' | 'i' | 'u' | 'e' | 'o'
@@ -55,8 +59,9 @@
         this._ro = null;
     }
 
-    // 手の重ね絵が画面下から入ってくるとき、上端が見えない位置（キャンバス y）
-    var GESTURE_HIDDEN_Y = 1010;
+    function clamp01(v) {
+        return v < 0 ? 0 : v > 1 ? 1 : v;
+    }
 
     SpriteAvatarRenderer.POSE_DEFAULTS = POSE_DEFAULTS;
 
@@ -68,7 +73,7 @@
                 return res.json();
             })
             .then(function (manifest) {
-                if (!manifest.parts) throw new Error('manifest version 2 (parts) is required');
+                if (!manifest.parts || (manifest.version || 0) < 3) throw new Error('manifest version 3 is required');
                 self.manifest = manifest;
                 return self._build();
             });
@@ -130,6 +135,14 @@
         root.appendChild(rig);
         var body = img(m.parts.body, 'sage-avatar__part sage-avatar__part--body');
         rig.appendChild(body);
+        var gestures = m.layers.gesture || {};
+        var gk;
+        for (gk in gestures) {
+            if (!Object.prototype.hasOwnProperty.call(gestures, gk)) continue;
+            var gBody = img(gestures[gk].body, 'sage-avatar__gesture');
+            rig.appendChild(gBody);
+            this.gestureEls[gk] = { body: gBody, hand: null, spec: gestures[gk], shown: false };
+        }
 
         var head = group('sage-avatar__head');
         var pivot = (m.pivot && m.pivot.neck) || { x: cw / 2, y: ch * 0.75 };
@@ -162,21 +175,21 @@
         var hair = img(m.parts.hair, 'sage-avatar__part');
         head.appendChild(hair);
 
-        // 手・腕: 体に付くものは頭より手前、顔に触れるもの（attach: head）は頭と一緒に動く
-        var gestures = m.layers.gesture || {};
-        for (var gk in gestures) {
-            if (!Object.prototype.hasOwnProperty.call(gestures, gk)) continue;
-            var spec = gestures[gk];
-            var gel = img(spec, 'sage-avatar__gesture');
-            var pv = spec.pivot || { x: spec.x + spec.w / 2, y: spec.y + spec.h };
-            gel.style.transformOrigin = ((pv.x - spec.x) / spec.w * 100) + '% ' + ((pv.y - spec.y) / spec.h * 100) + '%';
-            gel.dataset.key = gk;
-            (spec.attach === 'head' ? head : rig).appendChild(gel);
-            this.gestureEls[gk] = { el: gel, spec: spec, shown: false };
+        // 手先: 体に付くものは頭より手前、顔に触れるもの（attach: head）は頭と一緒に動く
+        for (gk in this.gestureEls) {
+            if (!Object.prototype.hasOwnProperty.call(this.gestureEls, gk)) continue;
+            var entry = this.gestureEls[gk];
+            var hs = entry.spec.hand;
+            if (!hs) continue;
+            var hel = img(hs, 'sage-avatar__gesture');
+            var pv = hs.pivot || { x: hs.x + hs.w / 2, y: hs.y + hs.h };
+            hel.style.transformOrigin = ((pv.x - hs.x) / hs.w * 100) + '% ' + ((pv.y - hs.y) / hs.h * 100) + '%';
+            (entry.spec.attach === 'head' ? head : rig).appendChild(hel);
+            entry.hand = hel;
         }
 
         this.els = {
-            rig: rig, head: head, face: face, features: features, hair: hair, ear_l: earL, ear_r: earR,
+            rig: rig, body: body, head: head, face: face, features: features, hair: hair, ear_l: earL, ear_r: earR,
         };
 
         this.container.innerHTML = '';
@@ -238,28 +251,37 @@
 
     SpriteAvatarRenderer.prototype._applyGestures = function (list, s) {
         var active = {};
+        var cover = 0;
         for (var i = 0; i < list.length; i++) {
             var g = list[i];
             var entry = this.gestureEls[g.key];
             if (!entry || !(g.amount > 0)) continue;
             active[g.key] = true;
             var a = Math.min(g.amount, 1);
-            // 下からせり上がる（入り始めは画面外）＋ 肘を支点に揺れる
-            var slide = Math.max(GESTURE_HIDDEN_Y - entry.spec.y, 0) * (1 - a);
-            var y = (slide - (g.lift || 0)) * s;
-            entry.el.style.transform =
-                'translate3d(0,' + y.toFixed(2) + 'px,0) rotate(' + (g.sway || 0).toFixed(2) + 'deg)';
-            entry.el.style.opacity = Math.min(1, a * 2.5).toFixed(3);
+            // 新しい腕の体を先に出し切ってから素の体（元の腕）を消す
+            entry.body.style.opacity = clamp01(a / 0.6).toFixed(3);
+            cover = Math.max(cover, clamp01((a - 0.4) / 0.6));
+            if (entry.hand) {
+                var hs = entry.spec.hand;
+                var rot = (hs.enterRot || 0) * (1 - a) + (g.sway || 0);
+                var y = ((hs.enterDrop || 0) * (1 - a) - (g.lift || 0)) * s;
+                entry.hand.style.transform =
+                    'translate3d(0,' + y.toFixed(2) + 'px,0) rotate(' + rot.toFixed(2) + 'deg)';
+                entry.hand.style.opacity = clamp01(a / 0.5).toFixed(3);
+            }
             if (!entry.shown) {
-                entry.el.classList.add('is-visible');
+                entry.body.classList.add('is-visible');
+                if (entry.hand) entry.hand.classList.add('is-visible');
                 entry.shown = true;
             }
         }
+        this.els.body.style.opacity = cover > 0 ? (1 - cover).toFixed(3) : '';
         for (var k in this.gestureEls) {
             if (!Object.prototype.hasOwnProperty.call(this.gestureEls, k)) continue;
             var e = this.gestureEls[k];
             if (e.shown && !active[k]) {
-                e.el.classList.remove('is-visible');
+                e.body.classList.remove('is-visible');
+                if (e.hand) e.hand.classList.remove('is-visible');
                 e.shown = false;
             }
         }

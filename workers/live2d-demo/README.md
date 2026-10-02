@@ -3,7 +3,8 @@
 公開先: https://live2d.medicine.yutok.dev （noindex・チャット本体とは無関係）
 
 - 中身は `static/dev/avatar_demo.html` とアバターの JS / CSS / スプライト素材のコピー
-- 読み上げはブラウザの Web Speech のみ（本番の `/api/tts` は呼ばない）
+- キャラクター A〜D の 4 人分のスプライトを含む（ページ内のプルダウンで切替。`?cast=a` でも指定可）
+- 読み上げはブラウザの Web Speech のみ（本番の `/api/tts` もローカルの VOICEVOX Engine も呼ばない。VOICEVOX はローカルのデモだけで使う）
 - `public/` は生成物（Git 管理外）
 
 ## デプロイ（手動）

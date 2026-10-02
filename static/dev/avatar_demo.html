@@ -62,6 +62,16 @@
     line-height: 1.6;
     border-top: 1px dashed var(--border);
   }
+  .credit {
+    margin: 0;
+    padding: 0 14px 10px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: right;
+  }
+  .voice-status { font-size: 0.85rem; color: var(--muted); }
+  .voice-status.is-ok { color: #3f7d5c; }
+  .voice-status.is-ng { color: var(--accent); }
   .panel { min-height: 0; overflow-y: auto; padding-right: 6px; }
   .panel h1 { font-size: 1.25rem; margin: 0 0 4px; color: var(--primary-dark); }
   .panel p.lead { margin: 0 0 16px; color: var(--muted); font-size: 0.9rem; }
@@ -120,11 +130,28 @@
       <span id="statusSpeak">待機中</span>
     </div>
     <p class="caption" id="caption" aria-live="polite"></p>
+    <p class="credit" id="voiceCredit" hidden></p>
   </section>
 
   <section class="panel app-scrollbar" aria-label="操作">
     <h1>Sage アバター デモ（2.5D スプライト版）</h1>
     <p class="lead">Live2D モデル完成までの代替表示です。頭・顔・耳・髪・体・手を別々に動かしています。まばたき・呼吸・首のゆらぎは自動です。</p>
+
+    <fieldset>
+      <legend>キャラクターと声</legend>
+      <div class="row">
+        <select id="castSelect" aria-label="キャラクター"></select>
+        <select id="ttsMode" aria-label="読み上げ方式">
+          <option value="voicevox">VOICEVOX（ローカル）</option>
+          <option value="server">サーバー TTS</option>
+          <option value="webspeech">ブラウザ読み上げ</option>
+        </select>
+        <span class="voice-status" id="voiceStatus"></span>
+      </div>
+      <p class="hint" id="voiceHint">
+        VOICEVOX はこの PC で動くエンジン（<code>http://127.0.0.1:50021</code>）を使います。つながらないときはブラウザの読み上げで代わりに話します。
+      </p>
+    </fieldset>
 
     <fieldset>
       <legend>台本を読み上げる</legend>
@@ -136,10 +163,6 @@
       <div class="row">
         <button type="button" class="primary" id="btnSpeak">読み上げ</button>
         <button type="button" class="danger" id="btnStop">停止</button>
-        <select id="ttsMode" aria-label="読み上げ方式">
-          <option value="server">サーバー TTS → ブラウザ読み上げ</option>
-          <option value="webspeech">ブラウザ読み上げのみ</option>
-        </select>
       </div>
       <p class="hint">
         文中に <code>[心配]</code> <code>[お辞儀]</code> <code>[手を振る]</code> のようなタグを書くと、その文から感情・動き・手が切り替わります。タグがない文は、言葉（「申し訳」「受診」「こんにちは」など）から推定します。<br>
@@ -207,14 +230,24 @@
     { label: '注意して断る', text: '[心配]その薬は、今飲んでいる薬と一緒には飲まないでください。\n[首振り]自己判断で量を増やすのもおすすめできません。\n[真剣]気になる場合は、薬剤師に相談してください。' },
   ];
 
-  var renderer = new SpriteAvatarRenderer($('avatarStage'), {
-    manifestUrl: config.manifestUrl || '../live2d/sage_cast_b/sprite/manifest.json',
-  });
-  var origSetMouth = renderer.setMouth.bind(renderer);
-  renderer.setMouth = function (v) {
-    origSetMouth(v);
-    $('statusMouth').textContent = v ? ({ a: 'あ', i: 'い', u: 'う', e: 'え', o: 'お' })[v] : '—';
-  };
+  // 話者 ID は VOICEVOX Engine 0.25 系のもの。表示名はクレジット（VOICEVOX:話者名）にも使う
+  var CASTS = [
+    { key: 'a', label: 'A（やわらか）', speaker: 11, voice: '玄野武宏' },
+    { key: 'b', label: 'B（落ち着き）', speaker: 13, voice: '青山龍星' },
+    { key: 'c', label: 'C（明るい）', speaker: 12, voice: '白上虎太郎' },
+    { key: 'd', label: 'D（かわいい）', speaker: 10, voice: '雨晴はう' },
+  ];
+  var LIVE2D_BASE = '../live2d/';
+  var VOICEVOX_URL = config.voicevoxUrl || 'http://127.0.0.1:50021';
+  var MOUTH_LABEL = { a: 'あ', i: 'い', u: 'う', e: 'え', o: 'お' };
+
+  var avatar = null;
+  var cast = null;
+  var mountSeq = 0;
+  var emotionBtns = {};
+  var motionTimer = null;
+  var gestureTimer = null;
+  var voicevoxVersion = null;
 
   var sel = $('sampleSelect');
   SAMPLES.forEach(function (s, i) {
@@ -225,30 +258,57 @@
   });
   sel.addEventListener('change', function () { $('speakText').value = SAMPLES[+sel.value].text; });
   $('speakText').value = SAMPLES[0].text;
-  if (config.serverTts === false) {
-    $('ttsMode').value = 'webspeech';
-    $('ttsMode').hidden = true;
+
+  var ttsSel = $('ttsMode');
+  if (config.voicevox === false) ttsSel.querySelector('option[value="voicevox"]').remove();
+  if (config.serverTts === false) ttsSel.querySelector('option[value="server"]').remove();
+  ttsSel.value = ttsSel.options[0].value;
+  if (ttsSel.options.length < 2) ttsSel.hidden = true;
+  if (config.voicevox === false) $('voiceHint').hidden = true;
+
+  var castSel = $('castSelect');
+  CASTS.forEach(function (c) {
+    var o = document.createElement('option');
+    o.value = c.key;
+    o.textContent = c.label;
+    castSel.appendChild(o);
+  });
+  var params = new URLSearchParams(location.search);
+  var initial = CASTS.filter(function (c) { return c.key === (params.get('cast') || config.cast); })[0] || CASTS[1];
+  castSel.value = initial.key;
+
+  function updateVoiceUi() {
+    var mode = ttsSel.value;
+    var status = $('voiceStatus');
+    status.classList.remove('is-ok', 'is-ng');
+    if (mode === 'voicevox') {
+      if (voicevoxVersion) {
+        status.textContent = 'VOICEVOX ' + voicevoxVersion + ' 接続中（' + cast.voice + '）';
+        status.classList.add('is-ok');
+      } else {
+        status.textContent = 'VOICEVOX に接続できません（ブラウザ読み上げで代用）';
+        status.classList.add('is-ng');
+      }
+    } else {
+      status.textContent = '';
+    }
+    var credit = $('voiceCredit');
+    credit.hidden = !(mode === 'voicevox' && voicevoxVersion);
+    credit.textContent = 'VOICEVOX:' + cast.voice;
+    if (avatar) avatar.ttsMode = mode;
   }
 
-  renderer.load().then(function () {
-    var emotionBtns = {};
-    var avatar = new SageAvatar(renderer, {
-      useServerTts: config.serverTts !== false,
-      onSpeakingChange: function (on) {
-        $('statusSpeak').textContent = on ? '発話中' : '待機中';
-        if (!on) $('caption').textContent = '';
-      },
-      onEmotionChange: function (name) {
-        $('statusEmotion').textContent = SageAvatar.EMOTIONS[name].label;
-        Object.keys(emotionBtns).forEach(function (k) { emotionBtns[k].classList.toggle('is-active', k === name); });
-      },
-      onSegment: function (seg) { $('caption').textContent = seg.text; },
+  function checkVoicevox() {
+    if (!avatar || config.voicevox === false) return Promise.resolve();
+    return avatar.checkVoicevox().then(function (v) {
+      voicevoxVersion = v;
+      updateVoiceUi();
     });
-    window.sageAvatar = avatar;
+  }
 
-    var origPlay = avatar.playMotion.bind(avatar);
-    var motionTimer = null;
-    avatar.playMotion = function (name, opts) {
+  function wireAvatar(a) {
+    var origPlay = a.playMotion.bind(a);
+    a.playMotion = function (name, opts) {
       origPlay(name, opts);
       var def = SageAvatar.MOTIONS[name];
       if (!def || (opts && opts.scale < 1)) return;
@@ -256,27 +316,8 @@
       clearTimeout(motionTimer);
       motionTimer = setTimeout(function () { $('statusMotion').textContent = '—'; }, 1800);
     };
-
-    Object.keys(SageAvatar.EMOTIONS).forEach(function (key) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = SageAvatar.EMOTIONS[key].label;
-      b.addEventListener('click', function () { avatar.setEmotion(key); });
-      if (key === 'neutral') b.classList.add('is-active');
-      emotionBtns[key] = b;
-      $('emotionButtons').appendChild(b);
-    });
-    ['nod', 'nodDeep', 'tilt', 'shake', 'lookLeft', 'lookRight', 'lean', 'bow', 'hop'].forEach(function (key) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = SageAvatar.MOTIONS[key].label;
-      b.addEventListener('click', function () { avatar.playMotion(key); });
-      $('motionButtons').appendChild(b);
-    });
-
-    var origGesture = avatar.playGesture.bind(avatar);
-    var gestureTimer = null;
-    avatar.playGesture = function (name, opts) {
+    var origGesture = a.playGesture.bind(a);
+    a.playGesture = function (name, opts) {
       origGesture(name, opts);
       var def = SageAvatar.GESTURES[name];
       if (!def) return;
@@ -287,52 +328,137 @@
         gestureTimer = setTimeout(function () { $('statusGesture').textContent = '—'; }, (hold + 0.8) * 1000);
       }
     };
+  }
+
+  function buildButtons(renderer) {
+    Object.keys(SageAvatar.EMOTIONS).forEach(function (key) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = SageAvatar.EMOTIONS[key].label;
+      b.addEventListener('click', function () { if (avatar) avatar.setEmotion(key); });
+      if (key === 'neutral') b.classList.add('is-active');
+      emotionBtns[key] = b;
+      $('emotionButtons').appendChild(b);
+    });
+    ['nod', 'nodDeep', 'tilt', 'shake', 'lookLeft', 'lookRight', 'lean', 'bow', 'hop'].forEach(function (key) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = SageAvatar.MOTIONS[key].label;
+      b.addEventListener('click', function () { if (avatar) avatar.playMotion(key); });
+      $('motionButtons').appendChild(b);
+    });
     renderer.gestures().forEach(function (g) {
       var b = document.createElement('button');
       b.type = 'button';
       b.textContent = (SageAvatar.GESTURES[g.key] || g).label;
-      b.addEventListener('click', function () { avatar.playGesture(g.key); });
+      b.addEventListener('click', function () { if (avatar) avatar.playGesture(g.key); });
       $('gestureButtons').appendChild(b);
     });
-    $('autoGesture').addEventListener('change', function () { avatar.autoGesture = this.checked; });
-    $('btnGestureStop').addEventListener('click', function () {
-      avatar.stopGesture();
-      clearTimeout(gestureTimer);
-      $('statusGesture').textContent = '—';
-    });
+  }
 
-    $('mouthButtons').addEventListener('click', function (ev) {
-      var btn = ev.target.closest('button[data-mouth]');
-      if (!btn) return;
-      avatar.stopSpeaking();
-      avatar.setMouth(btn.dataset.mouth || null);
+  function mount(c) {
+    var seq = ++mountSeq;
+    if (avatar) {
+      avatar.destroy();
+      avatar = null;
+    }
+    cast = c;
+    $('caption').textContent = '';
+    updateVoiceUi();
+    var renderer = new SpriteAvatarRenderer($('avatarStage'), {
+      manifestUrl: LIVE2D_BASE + 'sage_cast_' + c.key + '/sprite/manifest.json',
     });
-    $('btnBlink').addEventListener('click', function () { avatar.blink(); });
-    $('autoBlink').addEventListener('change', function () {
-      if (this.checked) avatar.startAutoBlink(); else avatar.stopAutoBlink();
-    });
-    $('idleAmount').addEventListener('input', function () { avatar.idleAmount = +this.value; });
-
-    $('btnSpeak').addEventListener('click', function () {
-      avatar.useServerTts = config.serverTts !== false && $('ttsMode').value === 'server';
-      avatar.speak($('speakText').value, { autoEmotion: $('autoEmotion').checked }).then(function (mode) {
-        if (mode === 'none') $('statusSpeak').textContent = '読み上げ不可';
+    var origSetMouth = renderer.setMouth.bind(renderer);
+    renderer.setMouth = function (v) {
+      origSetMouth(v);
+      $('statusMouth').textContent = v ? MOUTH_LABEL[v] : '—';
+    };
+    return renderer.load().then(function () {
+      if (seq !== mountSeq) {
+        renderer.destroy();
+        return;
+      }
+      var a = new SageAvatar(renderer, {
+        ttsMode: ttsSel.value,
+        voicevox: { url: VOICEVOX_URL, speaker: c.speaker },
+        autoBlink: $('autoBlink').checked,
+        onSpeakingChange: function (on) {
+          $('statusSpeak').textContent = on ? '発話中' : '待機中';
+          if (!on) $('caption').textContent = '';
+        },
+        onEmotionChange: function (name) {
+          $('statusEmotion').textContent = SageAvatar.EMOTIONS[name].label;
+          Object.keys(emotionBtns).forEach(function (k) { emotionBtns[k].classList.toggle('is-active', k === name); });
+        },
+        onSegment: function (seg) { $('caption').textContent = seg.text; },
       });
+      a.idleAmount = +$('idleAmount').value;
+      a.autoGesture = $('autoGesture').checked;
+      wireAvatar(a);
+      avatar = a;
+      window.sageAvatar = a;
+      $('statusEmotion').textContent = SageAvatar.EMOTIONS.neutral.label;
+      Object.keys(emotionBtns).forEach(function (k) { emotionBtns[k].classList.toggle('is-active', k === 'neutral'); });
+      if (!$('gestureButtons').children.length) buildButtons(renderer);
+      updateVoiceUi();
+    }).catch(function (err) {
+      if (seq === mountSeq) $('avatarStage').textContent = 'アバターの読み込みに失敗しました: ' + err.message;
     });
-    $('btnStop').addEventListener('click', function () { avatar.stopSpeaking(); });
+  }
 
-    $('audioFile').addEventListener('change', function () {
-      var file = this.files && this.files[0];
-      if (!file) return;
-      avatar.playAudioUrl(URL.createObjectURL(file)).catch(function (err) {
-        console.warn(err);
-        $('statusSpeak').textContent = '再生失敗';
-      });
-      this.value = '';
-    });
-  }).catch(function (err) {
-    $('avatarStage').textContent = 'アバターの読み込みに失敗しました: ' + err.message;
+  castSel.addEventListener('change', function () {
+    var c = CASTS.filter(function (x) { return x.key === castSel.value; })[0];
+    var u = new URL(location.href);
+    u.searchParams.set('cast', c.key);
+    history.replaceState(null, '', u);
+    mount(c);
   });
+  ttsSel.addEventListener('change', function () {
+    updateVoiceUi();
+    if (ttsSel.value === 'voicevox') checkVoicevox();
+  });
+
+  $('autoGesture').addEventListener('change', function () { if (avatar) avatar.autoGesture = this.checked; });
+  $('btnGestureStop').addEventListener('click', function () {
+    if (!avatar) return;
+    avatar.stopGesture();
+    clearTimeout(gestureTimer);
+    $('statusGesture').textContent = '—';
+  });
+  $('mouthButtons').addEventListener('click', function (ev) {
+    var btn = ev.target.closest('button[data-mouth]');
+    if (!btn || !avatar) return;
+    avatar.stopSpeaking();
+    avatar.setMouth(btn.dataset.mouth || null);
+  });
+  $('btnBlink').addEventListener('click', function () { if (avatar) avatar.blink(); });
+  $('autoBlink').addEventListener('change', function () {
+    if (!avatar) return;
+    if (this.checked) avatar.startAutoBlink(); else avatar.stopAutoBlink();
+  });
+  $('idleAmount').addEventListener('input', function () { if (avatar) avatar.idleAmount = +this.value; });
+
+  $('btnSpeak').addEventListener('click', function () {
+    if (!avatar) return;
+    avatar.ttsMode = ttsSel.value;
+    avatar.speak($('speakText').value, { autoEmotion: $('autoEmotion').checked }).then(function (mode) {
+      if (mode === 'none') $('statusSpeak').textContent = '読み上げ不可';
+      if (ttsSel.value === 'voicevox' && (mode === 'voicevox') !== !!voicevoxVersion) checkVoicevox();
+    });
+  });
+  $('btnStop').addEventListener('click', function () { if (avatar) avatar.stopSpeaking(); });
+
+  $('audioFile').addEventListener('change', function () {
+    var file = this.files && this.files[0];
+    if (!file || !avatar) return;
+    avatar.playAudioUrl(URL.createObjectURL(file)).catch(function (err) {
+      console.warn(err);
+      $('statusSpeak').textContent = '再生失敗';
+    });
+    this.value = '';
+  });
+
+  mount(initial).then(checkVoicevox);
 })();
 </script>
 </body>

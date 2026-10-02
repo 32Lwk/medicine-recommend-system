@@ -156,13 +156,13 @@ static/live2d/sage_cast_b/
 
 ### 6.1 先行実装: スプライト版アバター
 
-`.moc3` 完成前の代替として、土台画像をパーツ（体・耳・顔・目鼻口・髪）に分けて視差で動かす 2.5D アバターがある（`static/live2d/sage_cast_b/README.md` 参照）。手・腕はジェスチャー 8 種（手を振る・手のひら差し出し・人差し指・胸に手・あごに手・こぶし・両手を合わせる・OK）を重ね絵で出す。
+`.moc3` 完成前の代替として、腰上の土台画像をパーツ（体・耳・顔・目鼻口・髪）に分けて視差で動かす 2.5D アバターがある（A〜D の 4 人分。`static/live2d/sage_cast_b/README.md` 参照）。手・腕はジェスチャー 8 種（手を振る・手のひら差し出し・人差し指・胸に手・あごに手・こぶし・両手を合わせる・OK）を体の差し替え絵と手の重ね絵で出す。読み上げはローカルでは VOICEVOX Engine（モーラ単位の口パク）、公開サイトではブラウザの読み上げ。
 
 | 層 | ファイル | Cubism 移行時 |
 |----|----------|---------------|
-| 制御 | `static/js/avatar/sage_avatar.js`（`SageAvatar`: 感情・モーション・まばたき・台本・リップシンク） | そのまま流用 |
+| 制御 | `static/js/avatar/sage_avatar.js`（`SageAvatar`: 感情・モーション・まばたき・台本・読み上げ・リップシンク） | そのまま流用 |
 | 描画 | `static/js/avatar/sage_avatar_sprite.js`（`SpriteAvatarRenderer`） | Cubism レンダラーに差し替え |
-| 素材 | `static/live2d/sage_cast_b/sprite/`（`scripts/live2d_build_sprite_b.py` で生成, manifest v2） | 不要になる |
+| 素材 | `static/live2d/sage_cast_{a,b,c,d}/sprite/`（`scripts/live2d_build_sprite.py --cast all` で生成, manifest v3） | 不要になる |
 
 制御側は毎フレーム `applyPose(params)` を呼ぶ。Cubism レンダラーでの対応付け:
 

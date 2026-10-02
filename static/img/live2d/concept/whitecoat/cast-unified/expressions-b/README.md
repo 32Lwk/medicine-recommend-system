@@ -28,7 +28,7 @@
 
 ## 手・腕（スプライト版アバター用）
 
-`sage-b-mouth-closed.jpg` を参照に、同じ構図のまま手だけを足して生成したもの。`scripts/live2d_build_sprite_b.py` が手と袖を切り抜く。
+腰より少し上まで写った 3:4 の土台 `sage-b-w-base.jpg` を参照に、同じ構図のまま腕のポーズだけを変えて生成したもの。`scripts/live2d_build_sprite.py --cast b` が体の差し替え絵と手の重ね絵に分ける。A / C / D も同じファイル名規則（`sage-x-w-base.jpg`, `sage-x-g-*.jpg`）で `expressions-{a,c,d}/` にある。
 
 | ファイル | 手 |
 |----------|----|

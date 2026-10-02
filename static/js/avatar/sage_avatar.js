@@ -9,6 +9,14 @@
  *   avatar.playMotion('nod');
  *   avatar.playGesture('wave');
  *   avatar.speak('[心配]それはおつらいですね。お大事にしてください。', { autoEmotion: true });
+ *
+ * 読み上げ方式（ttsMode）:
+ *   'voicevox'  — ローカルの VOICEVOX Engine（既定 http://127.0.0.1:50021）。モーラ単位の口パク
+ *   'server'    — /api/tts の音声を再生し、音量解析で口パク
+ *   'webspeech' — ブラウザの読み上げ（擬似口パク）
+ *   voicevox / server が失敗した文はブラウザの読み上げで代用する。
+ *
+ *   new SageAvatar(renderer, { ttsMode: 'voicevox', voicevox: { speaker: 11 } });
  */
 (function (global) {
     'use strict';
@@ -33,18 +41,19 @@
         confused: { label: '困惑', expr: 'confused', bias: { angleZ: -9, angleY: 3 } },
     };
 
-    /* ---------- 手・腕: 下からせり上がり、hold 秒とどまって下がる ---------- */
+    /* ---------- 手・腕: 腕の形が変わった体へディゾルブし、hold 秒とどまって戻る ---------- */
 
-    // sway: 肘を支点にした揺れ [振幅(度), 周波数(Hz)]、lift: 入り切った後の上下 [秒, px] キーフレーム
+    // 手先の動き。sway: 袖口・肘を支点にした揺れ [振幅(度), 周波数(Hz)]、
+    // lift: 入り切った後の上下 [秒, px] キーフレーム（手先は袖から離れないよう小さく）
     var GESTURES = {
-        wave: { label: '手を振る', hold: 1.8, sway: [9, 1.6] },
-        explain: { label: '手のひら差し出し', hold: 2.4, sway: [1.5, 0.5], lift: [[0, 0], [0.35, 10], [0.8, 0]] },
-        point: { label: '人差し指', hold: 2.2, sway: [1.2, 0.6], lift: [[0, 0], [0.18, 14], [0.4, 0], [0.6, 8], [0.8, 0]] },
-        chest: { label: '胸に手', hold: 2.6, sway: [0.6, 0.4] },
+        wave: { label: '手を振る', hold: 1.8, sway: [8, 1.6] },
+        explain: { label: '手のひら差し出し', hold: 2.4, sway: [2, 0.5], lift: [[0, 0], [0.35, 4], [0.8, 0]] },
+        point: { label: '人差し指', hold: 2.2, sway: [1.5, 0.6], lift: [[0, 0], [0.18, 6], [0.4, 0], [0.6, 4], [0.8, 0]] },
+        chest: { label: '胸に手', hold: 2.6, sway: [0.8, 0.4] },
         chin: { label: 'あごに手', hold: 3.0, sway: [0.4, 0.35] },
-        fist: { label: 'こぶし', hold: 1.8, sway: [1, 0.8], lift: [[0, 0], [0.14, 26], [0.3, 0], [0.46, 18], [0.62, 0]] },
-        bow_hands: { label: '両手を合わせる', hold: 2.2, sway: [0.5, 0.4], lift: [[0, 0], [0.3, 8], [0.7, 0]] },
-        ok: { label: 'OK サイン', hold: 2.0, sway: [3, 0.9], lift: [[0, 0], [0.2, 10], [0.45, 0]] },
+        fist: { label: 'こぶし', hold: 1.8, sway: [1.5, 0.8], lift: [[0, 0], [0.14, 8], [0.3, 0], [0.46, 6], [0.62, 0]] },
+        bow_hands: { label: '両手を合わせる', hold: 2.2, sway: [0.6, 0.4], lift: [[0, 0], [0.3, 3], [0.7, 0]] },
+        ok: { label: 'OK サイン', hold: 2.0, sway: [3, 0.9], lift: [[0, 0], [0.2, 4], [0.45, 0]] },
     };
     var GESTURE_IN = 0.42; // 秒
     var GESTURE_OUT = 0.38;
@@ -151,6 +160,13 @@
     var MIN_VISEME_HOLD_MS = 70;
     var BIAS_RATE = 3.5; // 1/s — 感情の姿勢へ移る速さ
 
+    var VOICEVOX_DEFAULTS = { url: 'http://127.0.0.1:50021', speaker: 3, params: {} };
+    var VOICEVOX_CACHE_MAX = 40;
+    // 唇を閉じてから開く子音
+    var LIP_CLOSE_CONSONANTS = { m: 1, my: 1, b: 1, by: 1, p: 1, py: 1 };
+    var DEVOICED_LEVEL = 0.15;
+    var UPSPEAK_SEC = 0.15;
+
     function randomBetween(min, max) {
         return min + Math.random() * (max - min);
     }
@@ -178,6 +194,59 @@
             if (out.length) last = out[out.length - 1];
         }
         return out;
+    }
+
+    /**
+     * VOICEVOX の audio_query から口形の時刻表 [{ t, v, level }] を作る（t は再生開始からの秒）。
+     * 大文字の母音は無声化（ほぼ口を開けない）、N・cl・pau は口を閉じる。
+     */
+    function voicevoxTimeline(query) {
+        var speed = query.speedScale || 1;
+        var pauseScale = query.pauseLengthScale == null ? 1 : query.pauseLengthScale;
+        var t = 0;
+        var out = [];
+        var push = function (sec, v, level) {
+            if (!(sec > 0)) return;
+            var last = out[out.length - 1];
+            if (!last || last.v !== v || last.level !== level) out.push({ t: t, v: v, level: level });
+            t += sec;
+        };
+        push((query.prePhonemeLength || 0) / speed, null, 0);
+        var phrases = query.accent_phrases || [];
+        for (var i = 0; i < phrases.length; i++) {
+            var moras = phrases[i].moras || [];
+            for (var j = 0; j < moras.length; j++) {
+                var m = moras[j];
+                var raw = m.vowel || '';
+                var lower = raw.toLowerCase();
+                var v = lower.length === 1 && 'aiueo'.indexOf(lower) >= 0 ? lower : null;
+                var level = v ? (raw === lower ? VISEME_LEVEL[v] : DEVOICED_LEVEL) : 0;
+                if (m.consonant && m.consonant_length) {
+                    var closed = LIP_CLOSE_CONSONANTS[m.consonant];
+                    push(m.consonant_length / speed, closed ? null : v, closed ? 0 : level * 0.6);
+                }
+                push((m.vowel_length || 0) / speed, v, level);
+            }
+            // 疑問文はエンジンが語尾上げの母音を 1 つ足す（モーラ一覧には出てこない）
+            if (phrases[i].is_interrogative && moras.length) {
+                var tail = (moras[moras.length - 1].vowel || '').toLowerCase();
+                if (tail.length === 1 && 'aiueo'.indexOf(tail) >= 0) push(UPSPEAK_SEC / speed, tail, VISEME_LEVEL[tail]);
+            }
+            var pause = phrases[i].pause_mora;
+            if (pause) {
+                var pauseSec = query.pauseLength != null ? query.pauseLength : pause.vowel_length * pauseScale;
+                push(pauseSec / speed, null, 0);
+            }
+        }
+        out.push({ t: t, v: null, level: 0 });
+        return out;
+    }
+
+    function decodeAudio(ctx, arrayBuffer) {
+        return new Promise(function (resolve, reject) {
+            var p = ctx.decodeAudioData(arrayBuffer, resolve, reject);
+            if (p && typeof p.then === 'function') p.then(resolve, reject);
+        });
     }
 
     function pickViseme(level, centroidHz) {
@@ -263,7 +332,10 @@
         this.renderer = renderer;
         this.lang = opts.lang || 'ja';
         this.ttsUrl = opts.ttsUrl || ((global.APP_BASE_PATH || '') + '/api/tts');
-        this.useServerTts = opts.useServerTts !== false;
+        this.ttsMode = opts.ttsMode || (opts.useServerTts === false ? 'webspeech' : 'server');
+        this.voicevox = {};
+        this.setVoicevox(VOICEVOX_DEFAULTS);
+        if (opts.voicevox) this.setVoicevox(opts.voicevox);
         this.onSpeakingChange = opts.onSpeakingChange || null;
         this.onEmotionChange = opts.onEmotionChange || null;
         this.onSegment = opts.onSegment || null;
@@ -276,7 +348,11 @@
         this._blinkTimer = null;
         this._blinking = false;
         this._audio = null;
+        this._source = null;
         this._audioCtx = null;
+        this._voicevoxCache = new Map();
+        this._voicevoxFailed = false;
+        this._serverTtsFailed = false;
         this._lipRaf = null;
         this._speechTimer = null;
         this._neutralTimer = null;
@@ -300,6 +376,7 @@
     SageAvatar.GESTURES = GESTURES;
     SageAvatar.parseScript = parseScript;
     SageAvatar.textToVisemes = textToVisemes;
+    SageAvatar.voicevoxTimeline = voicevoxTimeline;
 
     /* ---------- 姿勢ループ ---------- */
 
@@ -526,6 +603,10 @@
             this._audio.pause();
             this._audio = null;
         }
+        if (this._source) {
+            try { this._source.stop(); } catch (e) { /* not started */ }
+            this._source = null;
+        }
         if (typeof speechSynthesis !== 'undefined' && speechSynthesis) {
             speechSynthesis.cancel();
         }
@@ -540,7 +621,7 @@
     /**
      * テキストを読み上げて口を動かす。
      * options.autoEmotion: true なら文ごとにタグ・キーワードから感情とモーションを切り替える。
-     * @returns {Promise<'server'|'webspeech'|'none'>}
+     * @returns {Promise<'voicevox'|'server'|'webspeech'|'none'>} 最後に使えた読み上げ方式
      */
     SageAvatar.prototype.speak = function (text, options) {
         var self = this;
@@ -548,9 +629,18 @@
         this.stopSpeaking();
         clearTimeout(this._neutralTimer);
         this._ensureAudioContext();
+        this._voicevoxFailed = false;
         var token = this._token;
         var segs = parseScript(text, !!opts.autoEmotion);
         if (!segs.length) return Promise.resolve('none');
+
+        var prefetch = function (idx) {
+            if (self.ttsMode !== 'voicevox' || self._voicevoxFailed) return;
+            var seg = segs[idx];
+            if (seg && seg.text) self._voicevoxPrepare(seg.text).catch(function () {});
+        };
+        prefetch(0);
+        prefetch(1);
 
         var mode = 'none';
         var startedEmotion = this.emotion;
@@ -563,6 +653,7 @@
                 if (seg.gesture) self.playGesture(seg.gesture);
                 if (!seg.motions.length && !seg.emotion && !seg.gesture && idx > 0) self.playMotion('nod', { scale: 0.35 });
                 if (typeof self.onSegment === 'function') self.onSegment(seg, idx);
+                prefetch(idx + 1);
                 if (!seg.text) return new Promise(function (r) { setTimeout(r, 600); });
                 return self._speakSegment(seg.text, token).then(function (m) {
                     if (m !== 'none') mode = m;
@@ -583,8 +674,136 @@
     };
 
     SageAvatar.prototype._speakSegment = function (text, token) {
+        if (this.ttsMode === 'voicevox' && !this._voicevoxFailed) return this._speakVoicevox(text, token);
+        if (this.ttsMode === 'server' && !this._serverTtsFailed) return this._speakServer(text, token);
+        return this._speakWebSpeech(text, token);
+    };
+
+    /* ---------- VOICEVOX ---------- */
+
+    /** VOICEVOX の接続先・話者・合成パラメータ（speedScale など audio_query の項目）を変える。 */
+    SageAvatar.prototype.setVoicevox = function (conf) {
+        var vv = this.voicevox;
+        var changed = false;
+        if (conf.url != null && conf.url !== vv.url) { vv.url = String(conf.url).replace(/\/+$/, ''); changed = true; }
+        if (conf.speaker != null && conf.speaker !== vv.speaker) { vv.speaker = conf.speaker; changed = true; }
+        if (conf.params) { vv.params = conf.params; changed = true; }
+        if (changed && this._voicevoxCache) this._voicevoxCache.clear();
+    };
+
+    /** エンジンに届くか確かめる。@returns {Promise<string|null>} バージョン（届かなければ null） */
+    SageAvatar.prototype.checkVoicevox = function (timeoutMs) {
+        var url = this.voicevox.url;
+        var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, timeoutMs || 2500) : null;
+        return fetch(url + '/version', ctrl ? { signal: ctrl.signal } : {})
+            .then(function (res) { return res.ok ? res.json() : null; })
+            .catch(function () { return null; })
+            .then(function (v) { clearTimeout(timer); return v; });
+    };
+
+    /** 文を合成して { buffer, timeline } を返す（話者・文ごとにキャッシュ）。 */
+    SageAvatar.prototype._voicevoxPrepare = function (text) {
+        var vv = this.voicevox;
+        var key = vv.speaker + '\u0000' + text;
+        var cache = this._voicevoxCache;
+        if (cache.has(key)) {
+            var hit = cache.get(key);
+            cache.delete(key);
+            cache.set(key, hit);
+            return hit;
+        }
+        var ctx = this._ensureAudioContext();
+        if (!ctx) return Promise.reject(new Error('Web Audio unavailable'));
+        var speaker = encodeURIComponent(vv.speaker);
+        var job = fetch(vv.url + '/audio_query?speaker=' + speaker + '&text=' + encodeURIComponent(text), { method: 'POST' })
+            .then(function (res) {
+                if (!res.ok) throw new Error('VOICEVOX audio_query HTTP ' + res.status);
+                return res.json();
+            })
+            .then(function (query) {
+                for (var k in vv.params) {
+                    if (Object.prototype.hasOwnProperty.call(vv.params, k)) query[k] = vv.params[k];
+                }
+                return fetch(vv.url + '/synthesis?speaker=' + speaker, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(query),
+                }).then(function (res) {
+                    if (!res.ok) throw new Error('VOICEVOX synthesis HTTP ' + res.status);
+                    return res.arrayBuffer();
+                }).then(function (wav) {
+                    return decodeAudio(ctx, wav);
+                }).then(function (buffer) {
+                    return { buffer: buffer, timeline: voicevoxTimeline(query) };
+                });
+            });
+        job.catch(function () {
+            if (cache.get(key) === job) cache.delete(key);
+        });
+        cache.set(key, job);
+        while (cache.size > VOICEVOX_CACHE_MAX) cache.delete(cache.keys().next().value);
+        return job;
+    };
+
+    SageAvatar.prototype._speakVoicevox = function (text, token) {
         var self = this;
-        if (!this.useServerTts) return this._speakWebSpeech(text, token);
+        return this._voicevoxPrepare(text)
+            .then(function (res) {
+                if (token !== self._token) return 'none';
+                return self._playVoicevox(res, token).then(function () { return 'voicevox'; });
+            })
+            .catch(function (err) {
+                if (token !== self._token) return 'none';
+                console.warn('VOICEVOX unavailable, falling back to Web Speech:', err);
+                self._voicevoxFailed = true;
+                return self._speakWebSpeech(text, token);
+            });
+    };
+
+    SageAvatar.prototype._playVoicevox = function (res, token) {
+        var self = this;
+        var ctx = this._audioCtx;
+        var timeline = res.timeline;
+        var src = ctx.createBufferSource();
+        src.buffer = res.buffer;
+        src.connect(ctx.destination);
+        this._source = src;
+        var start = ctx.currentTime + 0.03;
+        var idx = -1;
+        var stopped = false;
+        return new Promise(function (resolve) {
+            var tick = function () {
+                if (stopped || token !== self._token) return;
+                var t = ctx.currentTime - start;
+                var next = idx;
+                while (next + 1 < timeline.length && timeline[next + 1].t <= t) next++;
+                if (next !== idx && next >= 0) {
+                    idx = next;
+                    self._setMouth(timeline[idx].v, timeline[idx].level);
+                }
+                self._lipRaf = requestAnimationFrame(tick);
+            };
+            src.onended = function () {
+                stopped = true;
+                src.disconnect();
+                if (token === self._token) {
+                    cancelAnimationFrame(self._lipRaf);
+                    self._lipRaf = null;
+                    self._source = null;
+                    self._setMouth(null);
+                }
+                resolve();
+            };
+            src.start(start);
+            self._lipRaf = requestAnimationFrame(tick);
+        });
+    };
+
+    /* ---------- サーバー TTS ---------- */
+
+    SageAvatar.prototype._speakServer = function (text, token) {
+        var self = this;
         return fetch(this.ttsUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -600,7 +819,7 @@
             })
             .catch(function () {
                 if (token !== self._token) return 'none';
-                self.useServerTts = false;
+                self._serverTtsFailed = true;
                 return self._speakWebSpeech(text, token);
             });
     };

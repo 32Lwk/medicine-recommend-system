@@ -1,0 +1,635 @@
+{
+  "version": 3,
+  "character": "sage_cast_d",
+  "label": "D（かわいい）",
+  "canvas": {
+    "width": 880,
+    "height": 1153
+  },
+  "pivot": {
+    "neck": {
+      "x": 481.9,
+      "y": 583.4
+    }
+  },
+  "parts": {
+    "body": {
+      "src": "part_body.webp",
+      "x": 128,
+      "y": 408,
+      "w": 705,
+      "h": 745
+    },
+    "ear_l": {
+      "src": "part_ear_l.webp",
+      "x": 285,
+      "y": 396,
+      "w": 35,
+      "h": 59
+    },
+    "ear_r": {
+      "src": "part_ear_r.webp",
+      "x": 566,
+      "y": 312,
+      "w": 62,
+      "h": 108
+    },
+    "face": {
+      "src": "part_face.webp",
+      "x": 257,
+      "y": 187,
+      "w": 351,
+      "h": 369
+    },
+    "features": {
+      "src": "part_features.webp",
+      "x": 303,
+      "y": 286,
+      "w": 260,
+      "h": 261
+    },
+    "hair": {
+      "src": "part_hair.webp",
+      "x": 231,
+      "y": 48,
+      "w": 500,
+      "h": 596
+    }
+  },
+  "partOrder": [
+    "body",
+    "ear_l",
+    "ear_r",
+    "face",
+    "features",
+    "hair"
+  ],
+  "layers": {
+    "expression": {
+      "smile": {
+        "src": "expr_smile.webp",
+        "x": 303,
+        "y": 286,
+        "w": 260,
+        "h": 261,
+        "label": "微笑み"
+      },
+      "thinking": {
+        "src": "expr_thinking.webp",
+        "x": 303,
+        "y": 286,
+        "w": 260,
+        "h": 261,
+        "label": "思案"
+      },
+      "empathy": {
+        "src": "expr_empathy.webp",
+        "x": 303,
+        "y": 286,
+        "w": 260,
+        "h": 261,
+        "label": "共感"
+      },
+      "surprise": {
+        "src": "expr_surprise.webp",
+        "x": 303,
+        "y": 286,
+        "w": 260,
+        "h": 261,
+        "label": "軽い驚き"
+      },
+      "nod": {
+        "src": "expr_nod.webp",
+        "x": 303,
+        "y": 286,
+        "w": 260,
+        "h": 261,
+        "label": "うなずき"
+      },
+      "relief": {
+        "src": "expr_relief.webp",
+        "x": 303,
+        "y": 286,
+        "w": 260,
+        "h": 261,
+        "label": "安心"
+      },
+      "worry": {
+        "src": "expr_worry.webp",
+        "x": 303,
+        "y": 286,
+        "w": 260,
+        "h": 261,
+        "label": "心配"
+      },
+      "sorry": {
+        "src": "expr_sorry.webp",
+        "x": 303,
+        "y": 286,
+        "w": 260,
+        "h": 261,
+        "label": "申し訳なさ"
+      },
+      "serious": {
+        "src": "expr_serious.webp",
+        "x": 303,
+        "y": 286,
+        "w": 260,
+        "h": 261,
+        "label": "真剣"
+      },
+      "cheer": {
+        "src": "expr_cheer.webp",
+        "x": 303,
+        "y": 286,
+        "w": 260,
+        "h": 261,
+        "label": "励まし"
+      },
+      "shy": {
+        "src": "expr_shy.webp",
+        "x": 303,
+        "y": 286,
+        "w": 260,
+        "h": 261,
+        "label": "照れ"
+      },
+      "confused": {
+        "src": "expr_confused.webp",
+        "x": 303,
+        "y": 286,
+        "w": 260,
+        "h": 261,
+        "label": "困惑"
+      }
+    },
+    "eyes": {
+      "half": {
+        "src": "eyes_half.webp",
+        "x": 279,
+        "y": 301,
+        "w": 290,
+        "h": 120
+      },
+      "closed": {
+        "src": "eyes_closed.webp",
+        "x": 291,
+        "y": 310,
+        "w": 266,
+        "h": 102
+      },
+      "half@smile": {
+        "src": "eyes_half_smile.webp",
+        "x": 279,
+        "y": 301,
+        "w": 290,
+        "h": 120
+      },
+      "half@thinking": {
+        "src": "eyes_half_thinking.webp",
+        "x": 279,
+        "y": 301,
+        "w": 290,
+        "h": 120
+      },
+      "half@empathy": {
+        "src": "eyes_half_empathy.webp",
+        "x": 279,
+        "y": 301,
+        "w": 290,
+        "h": 120
+      },
+      "half@surprise": {
+        "src": "eyes_half_surprise.webp",
+        "x": 279,
+        "y": 301,
+        "w": 290,
+        "h": 120
+      },
+      "half@nod": {
+        "src": "eyes_half_nod.webp",
+        "x": 279,
+        "y": 301,
+        "w": 290,
+        "h": 120
+      },
+      "half@relief": {
+        "src": "eyes_half_relief.webp",
+        "x": 279,
+        "y": 301,
+        "w": 290,
+        "h": 120
+      },
+      "half@worry": {
+        "src": "eyes_half_worry.webp",
+        "x": 279,
+        "y": 301,
+        "w": 290,
+        "h": 120
+      },
+      "half@sorry": {
+        "src": "eyes_half_sorry.webp",
+        "x": 279,
+        "y": 301,
+        "w": 290,
+        "h": 120
+      },
+      "half@serious": {
+        "src": "eyes_half_serious.webp",
+        "x": 279,
+        "y": 301,
+        "w": 290,
+        "h": 120
+      },
+      "half@cheer": {
+        "src": "eyes_half_cheer.webp",
+        "x": 279,
+        "y": 301,
+        "w": 290,
+        "h": 120
+      },
+      "half@shy": {
+        "src": "eyes_half_shy.webp",
+        "x": 279,
+        "y": 301,
+        "w": 290,
+        "h": 120
+      },
+      "half@confused": {
+        "src": "eyes_half_confused.webp",
+        "x": 279,
+        "y": 301,
+        "w": 290,
+        "h": 120
+      }
+    },
+    "mouth": {
+      "a": {
+        "src": "mouth_a.webp",
+        "x": 362,
+        "y": 432,
+        "w": 146,
+        "h": 97
+      },
+      "i": {
+        "src": "mouth_i.webp",
+        "x": 362,
+        "y": 432,
+        "w": 146,
+        "h": 97
+      },
+      "u": {
+        "src": "mouth_u.webp",
+        "x": 362,
+        "y": 432,
+        "w": 146,
+        "h": 97
+      },
+      "e": {
+        "src": "mouth_e.webp",
+        "x": 362,
+        "y": 432,
+        "w": 146,
+        "h": 97
+      },
+      "o": {
+        "src": "mouth_o.webp",
+        "x": 362,
+        "y": 432,
+        "w": 146,
+        "h": 97
+      }
+    },
+    "gesture": {
+      "wave": {
+        "label": "手を振る",
+        "attach": "rig",
+        "body": {
+          "src": "gesture_wave_body.webp",
+          "x": 11,
+          "y": 408,
+          "w": 822,
+          "h": 745
+        },
+        "hand": {
+          "src": "gesture_wave_hand.webp",
+          "x": 14,
+          "y": 432,
+          "w": 204,
+          "h": 373,
+          "pivot": {
+            "x": 114.3,
+            "y": 768.6
+          },
+          "enterRot": 0.0,
+          "enterDrop": 30
+        }
+      },
+      "explain": {
+        "label": "手のひら差し出し",
+        "attach": "rig",
+        "body": {
+          "src": "gesture_explain_body.webp",
+          "x": 128,
+          "y": 408,
+          "w": 752,
+          "h": 745
+        },
+        "hand": {
+          "src": "gesture_explain_hand.webp",
+          "x": 642,
+          "y": 686,
+          "w": 238,
+          "h": 467,
+          "pivot": {
+            "x": 747.7,
+            "y": 1152.3
+          },
+          "enterRot": 0.0,
+          "enterDrop": 30
+        }
+      },
+      "point": {
+        "label": "人差し指",
+        "attach": "rig",
+        "body": {
+          "src": "gesture_point_body.webp",
+          "x": 128,
+          "y": 408,
+          "w": 705,
+          "h": 745
+        },
+        "hand": {
+          "src": "gesture_point_hand.webp",
+          "x": 629,
+          "y": 518,
+          "w": 149,
+          "h": 421,
+          "pivot": {
+            "x": 702.0,
+            "y": 807.1
+          },
+          "enterRot": 0.0,
+          "enterDrop": 30
+        }
+      },
+      "chest": {
+        "label": "胸に手",
+        "attach": "rig",
+        "body": {
+          "src": "gesture_chest_body.webp",
+          "x": 92,
+          "y": 408,
+          "w": 741,
+          "h": 745
+        },
+        "hand": {
+          "src": "gesture_chest_hand.webp",
+          "x": 259,
+          "y": 747,
+          "w": 255,
+          "h": 328,
+          "pivot": {
+            "x": 305.9,
+            "y": 976.1
+          },
+          "enterRot": 16.0,
+          "enterDrop": 30
+        }
+      },
+      "chin": {
+        "label": "あごに手",
+        "attach": "head",
+        "body": {
+          "src": "gesture_chin_body.webp",
+          "x": 105,
+          "y": 408,
+          "w": 728,
+          "h": 745
+        },
+        "hand": {
+          "src": "gesture_chin_hand.webp",
+          "x": 312,
+          "y": 519,
+          "w": 157,
+          "h": 186,
+          "pivot": {
+            "x": 382.7,
+            "y": 662.6
+          },
+          "enterRot": 0.0,
+          "enterDrop": 0
+        }
+      },
+      "fist": {
+        "label": "こぶし",
+        "attach": "rig",
+        "body": {
+          "src": "gesture_fist_body.webp",
+          "x": 128,
+          "y": 408,
+          "w": 705,
+          "h": 745
+        },
+        "hand": {
+          "src": "gesture_fist_hand.webp",
+          "x": 626,
+          "y": 627,
+          "w": 142,
+          "h": 315,
+          "pivot": {
+            "x": 690.3,
+            "y": 805.6
+          },
+          "enterRot": 0.0,
+          "enterDrop": 30
+        }
+      },
+      "bow_hands": {
+        "label": "両手を合わせる",
+        "attach": "rig",
+        "body": {
+          "src": "gesture_bow_hands_body.webp",
+          "x": 99,
+          "y": 408,
+          "w": 734,
+          "h": 745
+        },
+        "hand": {
+          "src": "gesture_bow_hands_hand.webp",
+          "x": 287,
+          "y": 716,
+          "w": 197,
+          "h": 437,
+          "pivot": {
+            "x": 434.0,
+            "y": 1003.7
+          },
+          "enterRot": -16.0,
+          "enterDrop": 30
+        }
+      },
+      "ok": {
+        "label": "OK サイン",
+        "attach": "rig",
+        "body": {
+          "src": "gesture_ok_body.webp",
+          "x": 128,
+          "y": 408,
+          "w": 729,
+          "h": 745
+        },
+        "hand": {
+          "src": "gesture_ok_hand.webp",
+          "x": 602,
+          "y": 456,
+          "w": 229,
+          "h": 426,
+          "pivot": {
+            "x": 760.0,
+            "y": 736.9
+          },
+          "enterRot": -16.0,
+          "enterDrop": 30
+        }
+      }
+    }
+  },
+  "alignment": {
+    "features": {
+      "inliers": 116,
+      "scale": 0.9996,
+      "rotationDeg": 0.11
+    },
+    "eyes.closed": {
+      "inliers": 63,
+      "scale": 1.0404,
+      "rotationDeg": -0.04
+    },
+    "expression.smile": {
+      "inliers": 69,
+      "scale": 1.1455,
+      "rotationDeg": -0.3
+    },
+    "expression.thinking": {
+      "inliers": 62,
+      "scale": 0.998,
+      "rotationDeg": 0.13
+    },
+    "expression.empathy": {
+      "inliers": 70,
+      "scale": 1.1466,
+      "rotationDeg": -0.17
+    },
+    "expression.surprise": {
+      "inliers": 56,
+      "scale": 1.1467,
+      "rotationDeg": -0.3
+    },
+    "expression.nod": {
+      "inliers": 21,
+      "scale": 1.1669,
+      "rotationDeg": 2.98
+    },
+    "expression.relief": {
+      "inliers": 96,
+      "scale": 0.9981,
+      "rotationDeg": 0.08
+    },
+    "expression.worry": {
+      "inliers": 85,
+      "scale": 0.9987,
+      "rotationDeg": 0.05
+    },
+    "expression.sorry": {
+      "inliers": 52,
+      "scale": 0.9955,
+      "rotationDeg": 0.08
+    },
+    "expression.serious": {
+      "inliers": 75,
+      "scale": 0.9998,
+      "rotationDeg": 0.09
+    },
+    "expression.cheer": {
+      "inliers": 71,
+      "scale": 1.0004,
+      "rotationDeg": 0.14
+    },
+    "expression.shy": {
+      "inliers": 63,
+      "scale": 0.9994,
+      "rotationDeg": 0.08
+    },
+    "expression.confused": {
+      "inliers": 57,
+      "scale": 1.0023,
+      "rotationDeg": 0.19
+    },
+    "mouth.a": {
+      "inliers": 41,
+      "scale": 0.931,
+      "rotationDeg": -0.39
+    },
+    "mouth.i": {
+      "inliers": 101,
+      "scale": 0.9406,
+      "rotationDeg": -0.34
+    },
+    "mouth.u": {
+      "inliers": 86,
+      "scale": 0.9463,
+      "rotationDeg": -0.44
+    },
+    "mouth.e": {
+      "inliers": 65,
+      "scale": 0.9794,
+      "rotationDeg": -0.37
+    },
+    "mouth.o": {
+      "inliers": 45,
+      "scale": 0.9578,
+      "rotationDeg": 0.94
+    },
+    "gesture.wave": {
+      "inliers": 60,
+      "scale": 1.195,
+      "rotationDeg": 0.24
+    },
+    "gesture.explain": {
+      "inliers": 71,
+      "scale": 1.1914,
+      "rotationDeg": 0.11
+    },
+    "gesture.point": {
+      "inliers": 62,
+      "scale": 1.1603,
+      "rotationDeg": 0.14
+    },
+    "gesture.chest": {
+      "inliers": 45,
+      "scale": 1.1561,
+      "rotationDeg": 0.1
+    },
+    "gesture.chin": {
+      "inliers": 103,
+      "scale": 1.1593,
+      "rotationDeg": -0.03
+    },
+    "gesture.fist": {
+      "inliers": 67,
+      "scale": 1.1621,
+      "rotationDeg": 0.06
+    },
+    "gesture.bow_hands": {
+      "inliers": 44,
+      "scale": 1.1586,
+      "rotationDeg": 0.13
+    },
+    "gesture.ok": {
+      "inliers": 66,
+      "scale": 1.1582,
+      "rotationDeg": 0.03
+    }
+  }
+}

@@ -28,19 +28,42 @@ python scripts/live2d_prepare_cast_b.py
 
 ## スプライト版アバター（Cubism 完成までの代替）
 
+A〜D の 4 人とも同じ手順・同じ構成（`static/live2d/sage_cast_{a,b,c,d}/sprite/`）。
+
 ```bash
 # 開発環境のみ: pip install opencv-python
-python scripts/live2d_build_sprite_b.py                  # sprite/ を再生成
-python scripts/live2d_build_sprite_b.py --debug          # 合成確認 PNG を一時フォルダへ
-python scripts/live2d_build_sprite_b.py --gestures-only  # 手の重ね絵だけ作り直す
-python scripts/live2d_preview_poses.py [--set gestures]  # 極端な姿勢・手の動きの確認シート（ブラウザ不要）
+python scripts/live2d_build_sprite.py --cast all             # 4 人分の sprite/ を再生成（--cast b で 1 人だけ）
+python scripts/live2d_build_sprite.py --cast b --debug       # 合成確認 PNG を一時フォルダへ
+python scripts/live2d_build_sprite.py --cast b --gestures-only  # パーツと手の重ね絵だけ作り直す
+python scripts/live2d_preview_poses.py --cast b [--set gestures]  # 極端な姿勢・手の動きの確認シート（ブラウザ不要）
 ```
 
-- 土台は `sage-b-mouth-closed.jpg`。体・左右の耳・顔・目鼻口・髪に分け、首の付け根を軸に頭を回し、パーツごとの視差で横向き・うなずきを出す（首の下・耳の裏・髪の下は補完済み）
-- 表情 11 種（`expressions-b/sage-b-e1..e5`, `sage-b-x-*`）は特徴点で位置合わせし、顔の内側だけをパッチにする
+- 土台は腰より少し上まで写った 3:4 の `sage-x-w-base.jpg`。体・左右の耳・顔・目鼻口・髪に分け、首の付け根を軸に頭を回し、パーツごとの視差で横向き・うなずきを出す（首の下・耳の裏・髪の下は補完済み）
+- キャラごとの座標（顔の輪郭・首・耳の境界など）は `scripts/live2d_build_sprite.py` の `Cast` 設定にまとめてある
+- 表情 12 種（`expressions-x/sage-x-e1..e5`, `sage-x-x-*`）は正方形の顔画像から特徴点で位置合わせし、顔の内側だけをパッチにする
 - 半目は画像生成では安定しないため、上まつ毛の線を下へずらして合成する（表情ごとに生成）
-- 手・腕 8 種（`expressions-b/sage-b-g-*.jpg`: 土台と同じ構図に手を足した生成画像）は、位置合わせ後に手と袖だけを切り抜く。切り抜き範囲・表示位置のずらし・揺れの支点はスクリプト内の `GESTURES` で指定する。顔に触れる「あごに手」だけ頭と一緒に動く
-- デモ: `/static/dev/avatar_demo.html`（感情 12 種・モーション 9 種・手 8 種・台本タグ・読み上げ口パク）。公開先: `https://live2d.medicine.yutok.dev`
+- 手・腕 8 種（`expressions-x/sage-x-g-*.jpg`: 腰上の土台と同じ構図で腕だけ変えた生成画像）は、位置合わせ後に体ごと差し替える絵（元の腕が消え新しい腕が出る）と、背景や頭に重なる手の重ね絵に分ける。顔に触れる「あごに手」だけ頭と一緒に動く
+- デモ: `/static/dev/avatar_demo.html`（キャラ切替・感情 12 種・モーション 9 種・手 8 種・台本タグ・読み上げ口パク）。公開先: `https://live2d.medicine.yutok.dev`
+
+### 読み上げ（VOICEVOX）
+
+ローカルでは VOICEVOX Engine の声で読み上げ、音素の長さ（モーラ）に合わせて口を動かす。エンジンにつながらないときや公開サイトでは、ブラウザの読み上げで代わりに話す。
+
+```powershell
+# 初回のみ（NVIDIA GPU 版。以後は Docker Desktop 起動時に自動で立ち上がる）
+docker run -d --name voicevox-engine --restart unless-stopped --gpus all -p 127.0.0.1:50021:50021 voicevox/voicevox_engine:nvidia-latest
+```
+
+| キャラ | 話者（ID） |
+|--------|-----------|
+| A（やわらか） | 玄野武宏（11） |
+| B（落ち着き） | 青山龍星（13） |
+| C（明るい） | 白上虎太郎（12） |
+| D（かわいい） | 雨晴はう（10） |
+
+- デモは `http://localhost:*` / `http://127.0.0.1:*` で開く（エンジンの CORS が既定でローカルのページだけを許可するため）
+- VOICEVOX の声を使っている間は `VOICEVOX:話者名` のクレジットを表示する（各話者の利用規約に従う）
+- `new SageAvatar(renderer, { ttsMode: 'voicevox', voicevox: { speaker: 11, params: { speedScale: 1.05 } } })` のように話者と合成パラメータ（`audio_query` の項目）を渡せる
 - JS: `static/js/avatar/sage_avatar.js`（制御: 待機の揺れ・感情の姿勢・キーフレームモーション・台本解析・リップシンク）+ `sage_avatar_sprite.js`（描画）
 - Cubism 版は `load` / `applyPose` / `setExpression` / `setEyes` / `setMouth` / `destroy` を持つレンダラーを作れば `SageAvatar` をそのまま使える
 

@@ -1,8 +1,9 @@
 """Assemble the static site for live2d.medicine.yutok.dev (Cloudflare Worker static assets).
 
 Copies the avatar demo and its assets from static/ into workers/live2d-demo/public/.
-The chat app is not touched; the demo page becomes index.html with root-relative paths
-and server TTS disabled (the site has no /api/tts).
+The chat app is not touched; the demo page becomes index.html with root-relative paths.
+Server TTS and VOICEVOX are disabled there (no /api/tts, and the local VOICEVOX Engine
+rejects the public origin), so the site reads aloud with the browser's Web Speech only.
 
     python scripts/build_live2d_site.py
     cd workers/live2d-demo && npx wrangler deploy
@@ -22,9 +23,10 @@ FILES = [
     "js/avatar/sage_avatar.js",
     "js/avatar/sage_avatar_sprite.js",
 ]
-DIRS = ["live2d/sage_cast_b/sprite"]
+CASTS = ["a", "b", "c", "d"]
+DIRS = [f"live2d/sage_cast_{c}/sprite" for c in CASTS]
 
-CONFIG_SCRIPT = "<script>window.SAGE_AVATAR_CONFIG = { serverTts: false };</script>\n"
+CONFIG_SCRIPT = "<script>window.SAGE_AVATAR_CONFIG = { serverTts: false, voicevox: false };</script>\n"
 
 HEADERS = """/*
   X-Robots-Tag: noindex, nofollow

@@ -3,12 +3,13 @@
 
 Used to check seams, holes and left-behind parts at extreme poses without a browser.
 
-  python scripts/live2d_preview_poses.py                 # contact sheet of extreme poses
+  python scripts/live2d_preview_poses.py                 # contact sheet of extreme poses (cast b)
+  python scripts/live2d_preview_poses.py --cast a        # another character
   python scripts/live2d_preview_poses.py --bg normal     # stage background instead of magenta
   python scripts/live2d_preview_poses.py --crop face     # zoom on the head
-  python scripts/live2d_preview_poses.py --set gestures  # hand / arm overlays
+  python scripts/live2d_preview_poses.py --set gestures  # body variants + hand overlays
 
-Output: %TEMP%/sage_sprite_debug/{poses|gestures}_<bg>_<crop>.png
+Output: %TEMP%/sage_sprite_debug/{cast}_{poses|gestures}_<bg>_<crop>.png
 """
 from __future__ import annotations
 
@@ -24,6 +25,10 @@ from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 SPRITE = ROOT / "static/live2d/sage_cast_b/sprite"
+
+
+def sprite_dir(cast: str) -> Path:
+    return ROOT / f"static/live2d/sage_cast_{cast}/sprite"
 
 # keep in sync with sage_avatar_sprite.js
 PARALLAX = {
@@ -62,7 +67,6 @@ GESTURE_POSES: list[tuple[str, str, dict]] = [
     ("neutral", "手を振る+左を見る", {"gesture": "wave", "angleX": -25, "sway": -9}),
     ("neutral", "OK+右を見る", {"gesture": "ok", "angleX": 25}),
 ]
-GESTURE_HIDDEN_Y = 1010  # keep in sync with sage_avatar_sprite.js
 
 
 def mat(a=1.0, b=0.0, c=0.0, d=1.0, e=0.0, f=0.0) -> np.ndarray:
@@ -106,6 +110,18 @@ def load(manifest: dict, spec: dict, cw: int, ch: int, margin: int = 0) -> np.nd
 GESTURE_MARGIN = 300
 
 
+def load_layers(manifest: dict) -> dict:
+    cw, ch = manifest["canvas"]["width"], manifest["canvas"]["height"]
+    layers: dict = {k: load(manifest, v, cw, ch) for k, v in manifest["parts"].items()}
+    for key, spec in manifest["layers"]["expression"].items():
+        layers[("expression", key)] = load(manifest, spec, cw, ch)
+    for key, spec in manifest["layers"].get("gesture", {}).items():
+        layers[("gesture_body", key)] = load(manifest, spec["body"], cw, ch)
+        if "hand" in spec:
+            layers[("gesture_hand", key)] = load(manifest, spec["hand"], cw, ch, GESTURE_MARGIN)
+    return layers
+
+
 def pose_matrices(p: dict, cw: int, ch: int, pivot: tuple[float, float]) -> dict:
     tx, ty = p.get("angleX", 0) / 30, p.get("angleY", 0) / 30
     bow, lean, breath = p.get("bow", 0), p.get("lean", 0), p.get("breath", 0)
@@ -140,29 +156,40 @@ def render(manifest: dict, layers: dict, expr: str, p: dict, bg: tuple) -> np.nd
                                 borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
         over(out, warped)
 
-    order = manifest["partOrder"]
-    for k in order:
+    key = p.get("gesture")
+    spec = manifest["layers"].get("gesture", {}).get(key) if key else None
+    amount = min(p.get("amount", 1.0), 1.0)
+    clamp01 = lambda v: min(max(v, 0.0), 1.0)  # noqa: E731
+
+    def put_faded(img: np.ndarray, m: np.ndarray, opacity: float) -> None:
+        if opacity <= 0:
+            return
+        img = img.copy()
+        img[..., 3] *= opacity
+        put(img, m)
+
+    for k in manifest["partOrder"]:
         if k == "body":
-            put(layers["body"], ms["rig"])
+            put_faded(layers["body"], ms["rig"], 1 - clamp01((amount - 0.4) / 0.6) if spec else 1.0)
+            if spec:
+                put_faded(layers[("gesture_body", key)], ms["rig"], clamp01(amount / 0.6))
         elif k == "features":
             put(layers["features"], ms["features"])
             if (("expression", expr)) in layers:
                 put(layers[("expression", expr)], ms["features"])
         else:
             put(layers[k], ms[k])
-    key = p.get("gesture")
-    if key and ("gesture", key) in layers:
-        spec = manifest["layers"]["gesture"][key]
-        amount = min(p.get("amount", 1.0), 1.0)
-        slide = max(GESTURE_HIDDEN_Y - spec["y"], 0) * (1 - amount)
-        pv = (spec["pivot"]["x"], spec["pivot"]["y"])
-        g = css(pv, translate(0, slide - p.get("lift", 0)), rotate(p.get("sway", 0)))
+    if spec and ("gesture_hand", key) in layers:
+        hs = spec["hand"]
+        pv = (hs["pivot"]["x"], hs["pivot"]["y"])
+        g = css(pv, translate(0, hs.get("enterDrop", 0) * (1 - amount) - p.get("lift", 0)),
+                rotate(hs.get("enterRot", 0) * (1 - amount) + p.get("sway", 0)))
         parent = ms["head"] if spec.get("attach") == "head" else ms["rig"]
         # the layer image is stored with a margin; undo it after the element transform
         m = parent @ g @ translate(-GESTURE_MARGIN, -GESTURE_MARGIN)
-        warped = cv2.warpAffine(layers[("gesture", key)], m[:2], (cw, ch), flags=cv2.INTER_LINEAR,
+        warped = cv2.warpAffine(layers[("gesture_hand", key)], m[:2], (cw, ch), flags=cv2.INTER_LINEAR,
                                 borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
-        warped[..., 3] *= min(1.0, amount * 2.5)
+        warped[..., 3] *= clamp01(amount / 0.5)
         over(out, warped)
     # visible box of .sage-avatar (rig extends past the root on the sides and bottom)
     vw = cw / (1 + 2 * RIG_EXTEND[0])
@@ -177,22 +204,22 @@ def main() -> None:
     ap.add_argument("--cols", type=int, default=4)
     ap.add_argument("--tag", default="", help="suffix for the output file name")
     ap.add_argument("--set", choices=["poses", "gestures"], default="poses")
+    ap.add_argument("--cast", default="b", choices=["a", "b", "c", "d"])
     args = ap.parse_args()
 
+    global SPRITE
+    SPRITE = sprite_dir(args.cast)
     manifest = json.loads((SPRITE / "manifest.json").read_text(encoding="utf-8"))
-    cw, ch = manifest["canvas"]["width"], manifest["canvas"]["height"]
-    layers: dict = {k: load(manifest, v, cw, ch) for k, v in manifest["parts"].items()}
-    for key, spec in manifest["layers"]["expression"].items():
-        layers[("expression", key)] = load(manifest, spec, cw, ch)
-    for key, spec in manifest["layers"].get("gesture", {}).items():
-        layers[("gesture", key)] = load(manifest, spec, cw, ch, GESTURE_MARGIN)
+    layers = load_layers(manifest)
 
     bg = (255, 0, 255) if args.bg == "magenta" else (238, 242, 246)
+    piv = manifest["pivot"]["neck"]
     tiles = []
     for expr, label, p in (GESTURE_POSES if args.set == "gestures" else POSES):
         img = render(manifest, layers, expr, p, bg)
         if args.crop == "face":
-            img = img[150:830, 180:820]
+            fx, fy = int(piv["x"]), int(piv["y"])
+            img = img[max(fy - 520, 0):fy + 160, max(fx - 340, 0):fx + 340]
         tile = Image.fromarray((np.clip(img[..., :3], 0, 1) * 255).astype(np.uint8))
         tile = tile.resize((tile.width // 2, tile.height // 2), Image.LANCZOS)
         draw = ImageDraw.Draw(tile)
@@ -212,7 +239,7 @@ def main() -> None:
     out_dir = Path(tempfile.gettempdir()) / "sage_sprite_debug"
     out_dir.mkdir(exist_ok=True)
     name = "poses" if args.set == "poses" else "gestures"
-    out = out_dir / f"{name}_{args.bg}_{args.crop}{args.tag}.png"
+    out = out_dir / f"{args.cast}_{name}_{args.bg}_{args.crop}{args.tag}.png"
     sheet.save(out)
     print(out)
 
