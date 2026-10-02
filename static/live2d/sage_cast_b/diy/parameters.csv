@@ -1,0 +1,13 @@
+param_id,min,default,max,note
+ParamAngleX,-30,0,30,首 Yaw
+ParamAngleY,-30,0,30,首 Pitch / E5 うなずき
+ParamAngleZ,-30,0,30,首 Roll
+ParamBodyAngleX,-10,0,10,上半身（小さめ）
+ParamBreath,0,0,1,呼吸 idle
+ParamEyeLOpen,0,1,1,左目 0=閉 1=開
+ParamEyeROpen,0,1,1,右目
+ParamEyeBallX,-1,0,1,視線 X
+ParamEyeBallY,-1,0,1,視線 Y
+ParamMouthOpenY,0,0,1,口開き
+ParamMouthForm,-1,0,1,口形 い(+1)↔え寄り
+ParamExpression,0,0,5,0–5 = E0–E5 スナップ
