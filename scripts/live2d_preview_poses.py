@@ -37,6 +37,8 @@ PARALLAX = {
 }
 RIG_EXTEND = (0.025, 0.05)  # .sage-avatar__rig inset: sides -2.5%, bottom -5%
 BODY_IN_END, BASE_OUT_START, BASE_OUT_END = 0.25, 0.15, 0.4  # gesture body swap by amount
+LIMIT = {"angleX": 28, "angleY": 28, "angleZ": 14}
+BODY_FOLLOW_Z, BODY_FOLLOW_X, NECK_TURN = 0.18, 5, 0.5
 
 POSES: list[tuple[str, str, dict]] = [
     ("neutral", "通常", {}),
@@ -60,7 +62,7 @@ GESTURE_POSES: list[tuple[str, str, dict]] = [
     ("serious", "人差し指", {"gesture": "point", "lean": 0.3}),
     ("worry", "胸に手", {"gesture": "chest", "angleZ": 5, "angleY": -3, "lean": 0.25}),
     ("thinking", "あごに手", {"gesture": "chin", "angleZ": 7, "angleX": 8, "angleY": 6}),
-    ("cheer", "こぶし+弾む", {"gesture": "fist", "lift": 26, "hop": 22}),
+    ("cheer", "こぶし+弾む", {"gesture": "fist", "lift": 8, "hop": 22}),
     ("sorry", "両手+お辞儀", {"gesture": "bow_hands", "bow": 1, "angleY": -29, "angleZ": -3}),
     ("relief", "OK", {"gesture": "ok", "sway": -3}),
     ("smile", "手を振る(入り途中)", {"gesture": "wave", "amount": 0.5}),
@@ -123,18 +125,48 @@ def load_layers(manifest: dict) -> dict:
     return layers
 
 
-def pose_matrices(p: dict, cw: int, ch: int, pivot: tuple[float, float]) -> dict:
-    tx, ty = p.get("angleX", 0) / 30, p.get("angleY", 0) / 30
+def clamp(v: float, lim: float) -> float:
+    return max(-lim, min(lim, v))
+
+
+def turn_to(o, p, q) -> float:
+    d = math.atan2(q[1] - o[1], q[0] - o[0]) - math.atan2(p[1] - o[1], p[0] - o[0])
+    return math.degrees((d + math.pi) % (2 * math.pi) - math.pi)
+
+
+def apply(m: np.ndarray, x: float, y: float) -> tuple[float, float]:
+    v = m @ np.array([x, y, 1.0])
+    return float(v[0]), float(v[1])
+
+
+def pose_matrices(p: dict, cw: int, ch: int, pivots: dict) -> dict:
+    tx = clamp(p.get("angleX", 0), LIMIT["angleX"]) / 30
+    ty = clamp(p.get("angleY", 0), LIMIT["angleY"]) / 30
+    az = clamp(p.get("angleZ", 0), LIMIT["angleZ"])
     bow, lean, breath = p.get("bow", 0), p.get("lean", 0), p.get("breath", 0)
     rig_scale = 1 + lean * 0.07 + bow * 0.02
-    rig = css((cw / 2, ch), translate(0, bow * 70 + lean * 18 - p.get("hop", 0)),
-              rotate(p.get("bodyAngleZ", 0)), scale(rig_scale, rig_scale * (1 + breath * 0.008)))
-    head = css(pivot, translate(tx * PARALLAX["head"][0], -ty * PARALLAX["head"][1] - breath * 3 + bow * 10),
-               rotate(p.get("angleZ", 0)), scale(1 - abs(tx) * 0.025, 1 - abs(ty) * 0.03))
-    out = {"rig": rig, "head": rig @ head}
+    rig = css((cw / 2, ch), translate(tx * BODY_FOLLOW_X, bow * 70 + lean * 18 - p.get("hop", 0)),
+              rotate(p.get("bodyAngleZ", 0) + az * BODY_FOLLOW_Z),
+              scale(rig_scale, rig_scale * (1 + breath * 0.008)))
+    hp = pivots.get("head") or pivots["neck"]
+    head_local = css((hp["x"], hp["y"]),
+                     translate(tx * PARALLAX["head"][0], -ty * PARALLAX["head"][1] - breath * 3 + bow * 10),
+                     rotate(az * (1 - BODY_FOLLOW_Z)), scale(1 - abs(tx) * 0.025, 1 - abs(ty) * 0.03))
+    face_shift = (tx * PARALLAX["face"][0], -ty * PARALLAX["face"][1])
+    out = {"rig": rig, "head": rig @ head_local, "head_local": head_local, "face_shift": face_shift}
     for k in ("face", "features", "hair", "ear_l", "ear_r"):
         px, py = PARALLAX[k]
         out[k] = out["head"] @ translate(tx * px, -ty * py)
+    if "neckBase" in pivots:
+        b = (pivots["neckBase"]["x"], pivots["neckBase"]["y"])
+        top = (pivots["neckTop"]["x"], pivots["neckTop"]["y"])
+        moved = apply(head_local, top[0] + face_shift[0], top[1] + face_shift[1])
+        vx, vy = top[0] - b[0], min(top[1] - b[1], -1.0)
+        phi = az * (1 - BODY_FOLLOW_Z) * NECK_TURN
+        mx, my = apply(rotate(-phi), moved[0] - b[0], moved[1] - b[1])
+        out["neck"] = rig @ css(b, rotate(phi), mat(1, 0, (mx - vx) / vy, my / vy))
+    else:
+        out["neck"] = rig
     return out
 
 
@@ -146,8 +178,7 @@ def over(dst: np.ndarray, src: np.ndarray) -> None:
 
 def render(manifest: dict, layers: dict, expr: str, p: dict, bg: tuple) -> np.ndarray:
     cw, ch = manifest["canvas"]["width"], manifest["canvas"]["height"]
-    piv = manifest["pivot"]["neck"]
-    ms = pose_matrices(p, cw, ch, (piv["x"], piv["y"]))
+    ms = pose_matrices(p, cw, ch, manifest["pivot"])
     out = np.zeros((ch, cw, 4), np.float32)
     out[..., :3] = np.array(bg, np.float32) / 255.0
     out[..., 3] = 1
@@ -185,11 +216,19 @@ def render(manifest: dict, layers: dict, expr: str, p: dict, bg: tuple) -> np.nd
         hs = spec["hand"]
         pv = (hs["pivot"]["x"], hs["pivot"]["y"])
         swing = p.get("swing", amount)
-        g = css(pv, translate(0, hs.get("enterDrop", 0) * (1 - swing) - p.get("lift", 0)),
-                rotate(hs.get("enterRot", 0) * (1 - swing) + p.get("sway", 0)))
-        parent = ms["head"] if spec.get("attach") == "head" else ms["rig"]
+        rot = 0.0
+        if not hs.get("rigid"):
+            rot = hs.get("enterRot", 0) * (1 - swing) + p.get("sway", 0)
+            tip = (hs["tip"]["x"], hs["tip"]["y"]) if "tip" in hs else None
+            if tip and p.get("lift"):
+                reach = math.hypot(tip[0] - pv[0], tip[1] - pv[1]) or 1.0
+                rot -= (-1 if hs.get("enterRot", 0) < 0 else 1) * math.degrees(math.atan(p["lift"] / reach))
+            if tip and spec.get("attach") == "head":
+                fs = ms["face_shift"]
+                rot += turn_to(pv, tip, apply(ms["head_local"], tip[0] + fs[0], tip[1] + fs[1]))
+        g = css(pv, rotate(rot))
         # the layer image is stored with a margin; undo it after the element transform
-        m = parent @ g @ translate(-GESTURE_MARGIN, -GESTURE_MARGIN)
+        m = ms["rig"] @ g @ translate(-GESTURE_MARGIN, -GESTURE_MARGIN)
         warped = cv2.warpAffine(layers[("gesture_hand", key)], m[:2], (cw, ch), flags=cv2.INTER_LINEAR,
                                 borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
         warped[..., 3] *= clamp01(amount / BODY_IN_END)

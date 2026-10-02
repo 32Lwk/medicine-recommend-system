@@ -27,7 +27,7 @@
     var EMOTIONS = {
         neutral: { label: '通常', expr: 'neutral', bias: {} },
         smile: { label: '微笑み', expr: 'smile', bias: { angleZ: 2, angleY: 1 }, enter: 'nod' },
-        thinking: { label: '思案', expr: 'thinking', bias: { angleZ: 7, angleX: 8, angleY: 6 }, gesture: 'chin' },
+        thinking: { label: '思案', expr: 'thinking', bias: { angleZ: 5, angleX: 8, angleY: 6 }, gesture: 'chin' },
         empathy: {
             label: '共感', expr: 'empathy', bias: { angleZ: 4, angleY: -3, lean: 0.15 }, enter: 'nodSlow', gesture: 'explain',
         },
@@ -41,10 +41,10 @@
         confused: { label: '困惑', expr: 'confused', bias: { angleZ: -9, angleY: 3 } },
     };
 
-    /* ---------- 手・腕: 腕の形が変わった体へディゾルブし、hold 秒とどまって戻る ---------- */
+    /* ---------- 手・腕: 腕の形が変わった体へ入れ替え、前腕を振り上げ、hold 秒とどまって戻る ---------- */
 
-    // 手先の動き。sway: 袖口・肘を支点にした揺れ [振幅(度), 周波数(Hz)]、
-    // lift: 入り切った後の上下 [秒, px] キーフレーム（手先は袖から離れないよう小さく）
+    // 前腕の動き（肘を支点に手と前腕が一体で回る）。sway: 揺れ [振幅(度), 周波数(Hz)]、
+    // lift: 入り切った後の手先の上下 [秒, px] キーフレーム（レンダラーが肘まわりの回転に直す）
     var GESTURES = {
         wave: { label: '手を振る', hold: 1.8, sway: [8, 1.6] },
         explain: { label: '手のひら差し出し', hold: 2.4, sway: [2, 0.5], lift: [[0, 0], [0.35, 4], [0.8, 0]] },
@@ -72,7 +72,7 @@
         nodSlow: { label: 'ゆっくりうなずき', tracks: { angleY: [[0, 0], [0.4, -12], [0.9, 0], [1.3, -8], [1.8, 0]] } },
         tilt: {
             label: '首かしげ',
-            tracks: { angleZ: [[0, 0], [0.45, 13], [1.8, 13], [2.3, 0]], angleX: [[0, 0], [0.45, 5], [1.8, 5], [2.3, 0]] },
+            tracks: { angleZ: [[0, 0], [0.45, 10], [1.8, 10], [2.3, 0]], angleX: [[0, 0], [0.45, 5], [1.8, 5], [2.3, 0]] },
         },
         shake: { label: '首を横に振る', tracks: { angleX: [[0, 0], [0.16, -16], [0.38, 16], [0.6, -13], [0.82, 9], [1.0, 0]] } },
         lookLeft: {

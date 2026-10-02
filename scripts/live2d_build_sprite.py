@@ -125,6 +125,12 @@ CASTS: dict[str, Cast] = {
 INTERIOR_ERODE = 20
 HAIR_BAND = 48  # work px of overlap where hair continues below hair_cut
 FEATHER = 7.0
+PART_ORDER = ["body", "neck", "ear_l", "ear_r", "face", "features", "hair"]
+NECK_COLLAR_GAP = 8  # work px; the neck layer is fully faded this far above the collar ...
+NECK_FADE = 56  # ... over this many rows (it barely moves there, so the body's neck shows through)
+NECK_PAD = 8  # work px beyond the neck outline polygon that may still be outline
+NECK_UNDER_JAW = 26  # work px of neck kept above the jaw line (hidden by the face at rest)
+NECK_MIN_LEVER = 90  # work px between the jaw and the point the neck bends about
 
 
 @dataclass(frozen=True)
@@ -156,6 +162,7 @@ class Gesture:
     key: str
     label: str
     attach: str = "rig"  # "head": the hand touches the face and follows head turns
+    two_hands: bool = False  # both forearms meet: the hands stay put (no single elbow to turn about)
 
 
 GESTURES: list[Gesture] = [
@@ -165,14 +172,17 @@ GESTURES: list[Gesture] = [
     Gesture("chest", "胸に手"),
     Gesture("chin", "あごに手", "head"),
     Gesture("fist", "こぶし"),
-    Gesture("bow_hands", "両手を合わせる"),
+    Gesture("bow_hands", "両手を合わせる", two_hands=True),
     Gesture("ok", "OK サイン"),
 ]
 HEAD_ZONE = 24  # px around the head where body variants keep the base (the head covers it)
 CHANGE_MIN_AREA = 4000  # px; smaller differences are redraw noise
 HAND_MIN_AREA = 1500
-ENTER_ROT = 16.0  # deg; hand overlays swing in about the cuff by this much
-ENTER_DROP = 10  # output px; more than this lifts the hand visibly off the cuff while it swings in
+ENTER_ROT = 22.0  # deg; forearms swing up about the elbow by this much
+FOREARM_REACH = 1.5  # forearm length (geodesic from the hand) in units of sqrt(hand area)
+FOREARM_BAND = 14  # work px past the elbow where the forearm fades into the upper arm
+SLEEVE_CLOSE = 0.25  # closing radius (x sqrt(hand area)) that fills a sleeve between its outlines
+THIN_OPEN = 0.07  # strips thinner than this (x sqrt(hand area)) are coat outlines, not the arm
 
 
 # ---------------------------------------------------------------- helpers
@@ -230,6 +240,31 @@ def fill_holes(mask: np.ndarray) -> np.ndarray:
     ff = np.zeros((m.shape[0] + 2, m.shape[1] + 2), np.uint8)
     cv2.floodFill(m, ff, (0, 0), 1)
     return mask | (m[1:-1, 1:-1] == 0)
+
+
+def geodesic(seed: np.ndarray, mask: np.ndarray, limit: int) -> np.ndarray:
+    """Distance from ``seed`` inside ``mask`` (alternating 4/8-neighbour steps ≈ euclidean);
+    inf where not reached within ``limit``."""
+    mask = mask | seed
+    ys, xs = np.nonzero(mask)
+    y0, y1 = max(ys.min() - 1, 0), ys.max() + 2
+    x0, x1 = max(xs.min() - 1, 0), xs.max() + 2
+    m = mask[y0:y1, x0:x1]
+    reached = (seed[y0:y1, x0:x1] & m).astype(np.uint8)
+    d = np.full(m.shape, np.inf, np.float32)
+    d[reached > 0] = 0
+    k4 = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+    k8 = np.ones((3, 3), np.uint8)
+    for step in range(1, limit + 1):
+        grown = cv2.dilate(reached, k8 if step % 2 else k4)
+        new = (grown > 0) & m & (reached == 0)
+        if not new.any():
+            break
+        d[new] = step
+        reached[new] = 1
+    out = np.full(mask.shape, np.inf, np.float32)
+    out[y0:y1, x0:x1] = d
+    return out
 
 
 def with_alpha(bgr: np.ndarray, alpha_f: np.ndarray) -> np.ndarray:
@@ -439,6 +474,7 @@ class Builder:
         h, w = alpha.shape
         jaw = self.jaw_curve(bgr)
         jx0, jx1 = self.px(c.jaw_x[0]), self.px(c.jaw_x[1])
+        self.jaw, self.jaw_x0 = jaw, jx0
         yy = np.arange(h)[:, None]
         head = np.zeros((h, w), bool)
         head[:self.py(c.ear_split[0]), :jx0] = True
@@ -565,8 +601,64 @@ class Builder:
         outline = np.median(base_bgr[outline_src], axis=0) if outline_src.sum() > 20 else np.array([40, 40, 50])
         body[lines, :3] = outline.astype(np.uint8)
         body[lines, 3] = 255
+
+        # neck: its own layer from under the chin to just above the collar, faded out at the
+        # bottom where it rests on the body. The browser bends it between the body and the turned
+        # head; a neck fixed to the body lets the head slide off it and shows its edges beside the jaw
+        yy = np.arange(h, dtype=np.float32)[:, None]
+        zone = np.zeros((h, w), np.uint8)
+        cv2.fillPoly(zone, [np.array([lt, rt, rb, lb], np.int32)], 1)
+        zone = cv2.dilate(zone, np.ones((1, 2 * NECK_PAD + 1), np.uint8)) > 0
+        zone[nb:] = False
+        b_a = body[..., 3].copy()
+        core = zone & (b_a > 0) & (skin_mask(body[..., :3]) | fill | lines)
+        n, lab, st, _ = cv2.connectedComponentsWithStats(core.astype(np.uint8), connectivity=8)
+        core = lab == (1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))) if n > 1 else core
+        core = fill_holes(cv2.morphologyEx(core.astype(np.uint8), cv2.MORPH_CLOSE, disk(3)) > 0)
+        # the neck outlines (and their anti-aliasing against the background) go with the neck
+        rim = zone & (cv2.dilate(core.astype(np.uint8), disk(6)) > 0) & (b_a > 0) \
+            & ((body[..., :3].mean(axis=2) < 120) | (b_a < 255))
+        full = core | rim
+        # above the jaw it is the face; only a short overlap under the jaw line may be neck (more
+        # swings out beside the face as a flap when the head turns)
+        jaw = self.jaw
+        jaw_lim = np.empty(w, np.float32)
+        jaw_lim[:self.jaw_x0] = jaw[0]
+        jaw_lim[self.jaw_x0:self.jaw_x0 + len(jaw)] = jaw[:w - self.jaw_x0]
+        jaw_lim[self.jaw_x0 + len(jaw):] = jaw[-1]
+        neck_m = full & (yy >= (jaw_lim[None, :] - NECK_UNDER_JAW))
+        # fade out per column above where the neck meets the collar (it rises at the sides)
+        has = neck_m.any(axis=0)
+        bot = np.where(has, h - 1 - np.argmax(neck_m[::-1], axis=0), 0).astype(np.float32)
+        if has.any():
+            bot[~has] = np.interp(np.nonzero(~has)[0], np.nonzero(has)[0], bot[has])
+        bot = np.minimum(bot, cv2.GaussianBlur(bot.reshape(1, -1), (0, 0), 6).ravel())
+        ramp = np.clip((bot[None, :] - NECK_COLLAR_GAP - yy) / NECK_FADE, 0, 1)
+        body[full & (ramp >= 1), 3] = 0
+        neck_a = neck_m * ramp * (b_a / 255.0)
+        parts["neck"] = self.save(with_alpha(body[..., :3], neck_a), "part_neck.webp", 90)
         self.body = body
         parts["body"] = self.save(body, "part_body.webp", 90)
+
+        # head turns about the top of the neck (between the jaw corners and the chin), not its base
+        top_x = (lt[0] + rt[0]) / 2
+        ends_y = (jaw[0] + jaw[-1]) / 2
+        chin_y = float(jaw.max())
+        # the neck bends between its bottom and its highest point (behind a jaw corner in a 3/4
+        # view), which follows the head exactly; lower parts lag behind, hidden under the jaw. Matching
+        # a lower point instead makes everything above it overshoot the head and stick out
+        ys, xs = np.nonzero(neck_m)
+        top_y = float(ys.min())
+        tx_ = float(xs[ys <= top_y + 6].mean())
+        mid_x = float(xs.mean())
+        # a neck mostly hidden by the collar still bends over a usable length (below its visible
+        # bottom only the faded part moves, a little)
+        base_y = max(float(bot[int(round(mid_x))]) - NECK_COLLAR_GAP, top_y + NECK_MIN_LEVER)
+        self.pivots = {
+            "head": self.out_pt((top_x, ends_y + 0.5 * (chin_y - ends_y))),
+            "neckBase": self.out_pt((mid_x, base_y)),
+            "neckTop": self.out_pt((tx_, top_y)),
+        }
 
         # colours for every visible part come from the despilled frame (no green fringe)
         clean = np.ascontiguousarray(base_bgra[..., :3])
@@ -715,52 +807,82 @@ class Builder:
 
             sb, sg, sr = (cv2.GaussianBlur(g_rgb, (3, 3), 0)[..., i].astype(np.int16) for i in range(3))
             skin_g = (sr > 150) & (sr > sg) & (sg > sb) & (sr - sb > 40)
-            if g.attach == "head":
-                near = cv2.dilate(head_zone.astype(np.uint8), disk(60)) > 0
-                hand = self._hand_regions(g_rgb, gfg, skin_g, arm, near, blur_b)
-                free = np.zeros((h, w), bool)
-            else:
-                # the hand itself (behind it the base shows the torso or background; it swings at
-                # the cuff) and the arm where it lies over the head
-                near = cv2.dilate(arm.astype(np.uint8), disk(6)) > 0
-                free = self._hand_regions(g_rgb, gfg, skin_g, arm, near, blur_b) | (arm & head_zone)
-                n, lab, st, _ = cv2.connectedComponentsWithStats(free.astype(np.uint8), connectivity=8)
-                # pieces without a hand in them (an elbow sticking out) stay in the body variant
-                skin_n = np.bincount(lab[free & skin_g].ravel(), minlength=n)
-                free = np.isin(lab, [i for i in range(1, n)
-                                     if st[i, cv2.CC_STAT_AREA] >= HAND_MIN_AREA and skin_n[i] >= 800])
-                hand = np.zeros((h, w), bool)
+            near = cv2.dilate((head_zone if g.attach == "head" else arm).astype(np.uint8),
+                              disk(60 if g.attach == "head" else 6)) > 0
+            hand = self._hand_regions(g_rgb, gfg, skin_g, arm, near, blur_b)
+            n, lab, st, _ = cv2.connectedComponentsWithStats(hand.astype(np.uint8), connectivity=8)
+            skin_n = np.bincount(lab[hand & skin_g].ravel(), minlength=n)
+            hand = np.isin(lab, [i for i in range(1, n)
+                                 if st[i, cv2.CC_STAT_AREA] >= HAND_MIN_AREA and skin_n[i] >= 800])
 
-            overlay = free | hand
+            # the forearm: grown from the hand back along the changed arm up to the elbow. It moves as
+            # one piece about the elbow; a hand turning alone at the cuff cuts the arm at the wrist.
+            # Over the head it must not take the face or hair (the frame's head differs a little)
+            lum_g = cv2.cvtColor(g_rgb, cv2.COLOR_BGR2GRAY)
+            hair_g = cv2.morphologyEx((lum_g < self.cast.hair_lum).astype(np.uint8), cv2.MORPH_OPEN, disk(4)) > 0
+            face_zone = cv2.dilate(self.face_fill.astype(np.uint8), disk(3)) > 0
+            # a white sleeve over the white coat only differs at its outlines: close the gap between
+            # them so the sleeve is one solid piece
+            size = float(np.sqrt(hand.sum())) if hand.any() else 0.0
+            closed = cv2.morphologyEx((change & gfg).astype(np.uint8), cv2.MORPH_CLOSE,
+                                      disk(max(int(SLEEVE_CLOSE * size), 3))) > 0
+            route = ((closed & gfg) & ~(head_zone & (face_zone | hair_g))) | hand
+            if not hand.any():
+                fore = None
+            elif g.two_hands:
+                ty, tx = np.nonzero(hand)
+                fore = {"core": hand, "band": np.zeros((h, w), bool), "weight": hand.astype(np.float32),
+                        "joints": 2, "elbow": (float(tx.mean()), float(ty.max())),
+                        "tip": (float(tx.mean()), float(ty.mean()))}
+            else:
+                fore = self._forearm(hand, route, max(int(THIN_OPEN * size), 2))
+            if self.debug and fore:
+                vis = G[..., :3].copy()
+                for m, col in ((route, (255, 120, 0)), (fore["core"], (0, 140, 255)), (fore["band"], (0, 255, 255))):
+                    vis[m] = (vis[m] * 0.45 + np.array(col) * 0.55).astype(np.uint8)
+                cv2.circle(vis, tuple(int(v) for v in fore["elbow"]), 10, (0, 0, 255), -1)
+                cv2.circle(vis, tuple(int(v) for v in fore["tip"]), 10, (0, 200, 0), -1)
+                cv2.imwrite(str(self.debug / f"{self.cast.key}_forearm_{g.key}.png"),
+                            cv2.resize(vis, None, fx=0.35, fy=0.35, interpolation=cv2.INTER_AREA))
+
+            overlay = fore["core"] if fore else np.zeros((h, w), bool)
             body_change = change & ~head_zone & ~overlay
             wgt = feather(body_change, 2.0)
             wgt[overlay | head_zone] = 0
+            if fore:
+                # no trace of the forearm's edge may stay in the body variant (it would stay behind
+                # as a faint outline when the forearm turns); past the elbow the variant keeps the arm
+                rim = (cv2.dilate(overlay.astype(np.uint8), disk(6)) > 0) \
+                    & ~(cv2.dilate(fore["band"].astype(np.uint8), disk(3)) > 0)
+                wgt[rim] = 0
             variant = blend_pm(self.body, G, wgt)
             spec = {"label": g.label, "attach": g.attach,
                     "body": self.save(variant, f"gesture_{g.key}_body.webp", 88)}
 
-            if overlay.any():
-                # overlap the body variant by a couple of px so no seam opens
-                grown_in = cv2.dilate(overlay.astype(np.uint8), disk(2)) > 0
-                draw = (grown_in & gfg) | overlay
+            if fore:
+                # the band past the elbow fades out over the body variant's upper arm (same pixels at
+                # rest), so the joint stays closed while the forearm turns
+                draw = fore["core"] | fore["band"]
                 soft_out = draw | ((g_a == 0) & (cv2.dilate(draw.astype(np.uint8), disk(3)) > 0))
                 a = cv2.GaussianBlur(soft_out.astype(np.float32), (0, 0), 1.0) \
                     * (cv2.dilate(draw.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0) * (g_a / 255.0)
-                hand_bgra = despill_all(with_alpha(g_rgb, a))
-                hspec = self.save(hand_bgra, f"gesture_{g.key}_hand.webp", 90)
-                seam = (cv2.dilate(overlay.astype(np.uint8), disk(5)) > 0) & body_change & gfg & ~overlay
-                ys, xs = np.nonzero(overlay)
-                cx, cy = xs.mean(), ys.mean()
-                if seam.sum() > 20:
-                    sy, sx = np.nonzero(seam)
-                    pv = (float(sx.mean()), float(sy.mean()))
+                a *= fore["weight"]
+                hspec = self.save(despill_all(with_alpha(g_rgb, a)), f"gesture_{g.key}_hand.webp", 90)
+                pv, tip = fore["elbow"], fore["tip"]
+                v = (tip[0] - pv[0], tip[1] - pv[1])
+                # swinging in, the hand comes up from below: turn the way that lowers it, or outwards
+                # for an upright forearm
+                if abs(v[0]) > 0.35 * float(np.hypot(*v)):
+                    sign = float(np.sign(v[0]))
                 else:
-                    pv = (float(cx), float(ys.max()))
-                dx = cx - pv[0]
+                    sign = float(np.sign(pv[0] - self.px(self.cast.face_center[0]))) or 1.0
                 hspec["pivot"] = self.out_pt(pv)
-                hspec["enterRot"] = 0.0 if g.attach == "head" or abs(dx) < 10 else round(
-                    ENTER_ROT * float(np.sign(dx)), 1)
-                hspec["enterDrop"] = 0 if g.attach == "head" else ENTER_DROP
+                hspec["tip"] = self.out_pt(tip)
+                if fore["joints"] > 1:
+                    hspec["rigid"] = True  # two forearms meet: no single elbow to turn about
+                    hspec["enterRot"] = 0.0
+                else:
+                    hspec["enterRot"] = round(ENTER_ROT * sign, 1)
                 spec["hand"] = hspec
             out[g.key] = spec
             self.meta[f"gesture.{g.key}"] = info
@@ -769,6 +891,33 @@ class Builder:
             if self.debug:
                 self._debug_gesture(g.key, G, variant, overlay, change, head_zone)
         return out
+
+    def _forearm(self, hand: np.ndarray, route: np.ndarray, thin: int) -> dict | None:
+        """Grow ``hand`` along ``route`` (the changed arm) to the elbow.
+
+        core: hand + forearm; band: FOREARM_BAND past the elbow (weight fades 1 → 0 over it);
+        elbow: centroid of the cut; tip: hand centroid; joints: separate cuts (two arms → 2).
+        Strips thinner than ``thin`` (outlines of the coat next to the arm) are not followed."""
+        reach = FOREARM_REACH * float(np.sqrt(hand.sum()))
+        solid = (cv2.morphologyEx(route.astype(np.uint8), cv2.MORPH_OPEN, disk(thin)) > 0) | hand
+        dist = geodesic(hand, solid, int(reach) + FOREARM_BAND)
+        core = dist <= reach
+        if not core.any():
+            return None
+        far = float(dist[np.isfinite(dist)].max())
+        cut_at = min(reach, far)
+        cut = (dist > cut_at - 6) & (dist <= cut_at)
+        if cut.sum() < 10:
+            return None
+        n, lab, st, cen = cv2.connectedComponentsWithStats(
+            (cv2.dilate(cut.astype(np.uint8), disk(8)) > 0).astype(np.uint8), connectivity=8)
+        big = [i for i in range(1, n) if st[i, cv2.CC_STAT_AREA] >= 0.25 * st[1:, cv2.CC_STAT_AREA].max()]
+        sy, sx = np.nonzero(cut)
+        ty, tx = np.nonzero(hand)
+        band = (dist > reach) & (dist <= reach + FOREARM_BAND)
+        weight = np.where(core, 1.0, np.where(band, 1 - (dist - reach) / FOREARM_BAND, 0.0)).astype(np.float32)
+        return {"core": core, "band": band, "weight": weight, "joints": len(big),
+                "elbow": (float(sx.mean()), float(sy.mean())), "tip": (float(tx.mean()), float(ty.mean()))}
 
     def _hand_regions(self, g_rgb, gfg, skin_g, arm, near, blur_b) -> np.ndarray:
         """Hand pixels within ``near``. Skin on skin (a hand on the face) barely differs in colour,
@@ -837,6 +986,9 @@ class Builder:
 
     # ------------------------------------------------------------ main
 
+    def pivot_spec(self) -> dict:
+        return {"neck": self.out_pt(self.p(self.cast.neck_pivot)), **self.pivots}
+
     def build_gestures_only(self) -> None:
         """Rebuild the parts and gesture layers and patch them into the existing manifest."""
         path = self.out / "manifest.json"
@@ -845,6 +997,8 @@ class Builder:
             f.unlink()
         self.meta = manifest.get("alignment", {})
         manifest["parts"] = self.build_parts()
+        manifest["pivot"] = self.pivot_spec()
+        manifest["partOrder"] = PART_ORDER
         manifest["layers"]["gesture"] = self.build_gestures()
         manifest["alignment"] = self.meta
         path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -864,9 +1018,9 @@ class Builder:
             "character": f"sage_cast_{self.cast.key}",
             "label": self.cast.label,
             "canvas": {"width": self.out_w, "height": self.out_h},
-            "pivot": {"neck": self.out_pt(self.p(self.cast.neck_pivot))},
+            "pivot": self.pivot_spec(),
             "parts": parts,
-            "partOrder": ["body", "ear_l", "ear_r", "face", "features", "hair"],
+            "partOrder": PART_ORDER,
             "layers": layers,
             "alignment": self.meta,
         }

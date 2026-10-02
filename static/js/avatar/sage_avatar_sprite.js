@@ -4,15 +4,20 @@
  * manifest.json（scripts/live2d_build_sprite.py が生成, version 3）を読み、
  * body / ear / face / features / hair のパーツを視差つきで動かして首振り・うなずき・横向きを表現する。
  *
+ * 首（parts.neck）は体と頭の間で曲がる: 下端は体に固定、上端は頭のあご下に追従する。
+ * 頭は首の上端（pivot.head）を支点に傾ける。
+ *
  * 手・腕（layers.gesture）は 2 枚組:
- *   body — 腕の形が変わった体全体。素の体とディゾルブで入れ替える（元の腕が消え、新しい腕が出る）
- *   hand — 手先（背景・頭・胴の上に出る部分）。pivot を支点に揺れ、入るときは下から振り上がる
+ *   body — 腕の形が変わった体全体（上腕まで）。素の体と短く入れ替える（元の腕が消え、新しい腕が出る）
+ *   hand — 手と前腕。肘（pivot）を支点に一体で回り、入るときは下から振り上がる。
+ *          attach: 'head'（あごに手）は頭の動きに合わせて肘を支点に向きを変える。rigid は回さない
  *
  * SageAvatar（sage_avatar.js）から呼ばれるレンダラー共通インターフェース:
  *   load(): Promise<void>
  *   applyPose(params)  — Live2D 風パラメータ（下記 POSE_DEFAULTS）を毎フレーム反映
  *                        params.gestures: [{ key, amount 0..1, swing 0..1（行き過ぎ可）, sway 度, lift px }]
- *                        amount は体の入れ替えと不透明度、swing は手先の振り上げ位置
+ *                        amount は体の入れ替えと不透明度、swing は前腕の振り上げ位置、
+ *                        lift は手先の持ち上げ量（肘を支点に回して出す）
  *   setExpression(key) — 'neutral' | manifest.layers.expression のキー
  *   setEyes(state)     — 'open' | 'half' | 'closed'
  *   setMouth(viseme)   — null | 'a' | 'i' | 'u' | 'e' | 'o'
@@ -71,8 +76,58 @@
     var EXPRESSION_FADE_MS = 110;
     var Z_EYES = 100000;
 
+    // 首を切り絵で曲げられる範囲。重なった感情・モーション・待機の揺れの合計をここで抑える
+    var LIMIT = { angleX: 28, angleY: 28, angleZ: 14 };
+    // 頭の傾き・向きの一部を上半身が受け持つ（頭だけが動いて見えないように）
+    var BODY_FOLLOW_Z = 0.18; // 傾きの割合
+    var BODY_FOLLOW_X = 5; // 横を向いたときの上半身のずれ（キャンバス px）
+    var NECK_TURN = 0.5; // 首が受け持つ頭の傾きの割合（残りはせん断と頭の回転）
+
     function clamp01(v) {
         return v < 0 ? 0 : v > 1 ? 1 : v;
+    }
+
+    function clamp(v, lim) {
+        return v < -lim ? -lim : v > lim ? lim : v;
+    }
+
+    var DEG = Math.PI / 180;
+
+    /** 2D アフィン [a, b, c, d, e, f]（CSS の matrix と同じ並び） */
+    function mul(m, n) {
+        return [
+            m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1],
+            m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3],
+            m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5],
+        ];
+    }
+
+    function apply(m, x, y) {
+        return [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]];
+    }
+
+    /** origin を中心にした transform（CSS の transform-origin と同じ） */
+    function about(ox, oy, m) {
+        return mul(mul([1, 0, 0, 1, ox, oy], m), [1, 0, 0, 1, -ox, -oy]);
+    }
+
+    function rotation(deg) {
+        var r = deg * DEG;
+        return [Math.cos(r), Math.sin(r), -Math.sin(r), Math.cos(r), 0, 0];
+    }
+
+    /** 回転角（度）: 点 p を支点 o のまわりで q の方向へ向ける */
+    function turnTo(o, p, q) {
+        var a0 = Math.atan2(p[1] - o[1], p[0] - o[0]);
+        var a1 = Math.atan2(q[1] - o[1], q[0] - o[0]);
+        var d = a1 - a0;
+        while (d > Math.PI) d -= 2 * Math.PI;
+        while (d < -Math.PI) d += 2 * Math.PI;
+        return d / DEG;
+    }
+
+    function pt(p) {
+        return [p.x, p.y];
     }
 
     SpriteAvatarRenderer.POSE_DEFAULTS = POSE_DEFAULTS;
@@ -156,8 +211,23 @@
             this.gestureEls[gk] = { body: gBody, hand: null, spec: gestures[gk], shown: false };
         }
 
+        var pv = m.pivot || {};
+        this.pivots = {
+            head: pv.head || pv.neck || { x: cw / 2, y: ch * 0.75 },
+            neckBase: pv.neckBase || null,
+            neckTop: pv.neckTop || null,
+        };
+        var neck = null;
+        if (m.parts.neck && pv.neckBase && pv.neckTop) {
+            neck = img(m.parts.neck, 'sage-avatar__part');
+            neck.style.transformOrigin =
+                ((pv.neckBase.x - m.parts.neck.x) / m.parts.neck.w * 100) + '% ' +
+                ((pv.neckBase.y - m.parts.neck.y) / m.parts.neck.h * 100) + '%';
+            rig.appendChild(neck);
+        }
+
         var head = group('sage-avatar__head');
-        var pivot = (m.pivot && m.pivot.neck) || { x: cw / 2, y: ch * 0.75 };
+        var pivot = this.pivots.head;
         head.style.transformOrigin = (pivot.x / cw * 100) + '% ' + (pivot.y / ch * 100) + '%';
         rig.appendChild(head);
 
@@ -188,21 +258,22 @@
         var hair = img(m.parts.hair, 'sage-avatar__part');
         head.appendChild(hair);
 
-        // 手先: 体に付くものは頭より手前、顔に触れるもの（attach: head）は頭と一緒に動く
+        // 手と前腕は頭より手前。肘（pivot）を支点に回す
         for (gk in this.gestureEls) {
             if (!Object.prototype.hasOwnProperty.call(this.gestureEls, gk)) continue;
             var entry = this.gestureEls[gk];
             var hs = entry.spec.hand;
             if (!hs) continue;
             var hel = img(hs, 'sage-avatar__gesture');
-            var pv = hs.pivot || { x: hs.x + hs.w / 2, y: hs.y + hs.h };
-            hel.style.transformOrigin = ((pv.x - hs.x) / hs.w * 100) + '% ' + ((pv.y - hs.y) / hs.h * 100) + '%';
-            (entry.spec.attach === 'head' ? head : rig).appendChild(hel);
+            var hp = hs.pivot || { x: hs.x + hs.w / 2, y: hs.y + hs.h };
+            hel.style.transformOrigin = ((hp.x - hs.x) / hs.w * 100) + '% ' + ((hp.y - hs.y) / hs.h * 100) + '%';
+            rig.appendChild(hel);
             entry.hand = hel;
         }
 
         this.els = {
-            rig: rig, body: body, head: head, face: face, features: features, hair: hair, ear_l: earL, ear_r: earR,
+            rig: rig, body: body, neck: neck, head: head, face: face, features: features, hair: hair,
+            ear_l: earL, ear_r: earR,
         };
 
         this.container.innerHTML = '';
@@ -230,25 +301,33 @@
     SpriteAvatarRenderer.prototype.applyPose = function (p) {
         if (!this.root) return;
         var s = this.scale;
-        var tx = (p.angleX || 0) / 30;
-        var ty = (p.angleY || 0) / 30;
+        var tx = clamp(p.angleX || 0, LIMIT.angleX) / 30;
+        var ty = clamp(p.angleY || 0, LIMIT.angleY) / 30;
+        var az = clamp(p.angleZ || 0, LIMIT.angleZ);
         var bow = p.bow || 0;
         var lean = p.lean || 0;
         var breath = p.breath || 0;
 
+        var rigX = tx * BODY_FOLLOW_X * s;
         var rigY = (bow * 70 + lean * 18 - (p.hop || 0)) * s;
         var rigScale = 1 + lean * 0.07 + bow * 0.02;
+        var bodyRot = (p.bodyAngleZ || 0) + az * BODY_FOLLOW_Z;
         this.els.rig.style.transform =
-            'translate3d(0,' + rigY.toFixed(2) + 'px,0) rotate(' + (p.bodyAngleZ || 0).toFixed(2) + 'deg)' +
+            'translate3d(' + rigX.toFixed(2) + 'px,' + rigY.toFixed(2) + 'px,0) rotate(' + bodyRot.toFixed(2) + 'deg)' +
             ' scale(' + rigScale.toFixed(4) + ',' + (rigScale * (1 + breath * 0.008)).toFixed(4) + ')';
 
-        var hx = tx * PARALLAX.head.x * s;
-        var hy = (-ty * PARALLAX.head.y - breath * 3 + bow * 10) * s;
+        // 頭（rig 内のキャンバス座標）: 首の上端を支点に傾け、視差ぶんずらす
+        var hx = tx * PARALLAX.head.x;
+        var hy = -ty * PARALLAX.head.y - breath * 3 + bow * 10;
+        var headRot = az * (1 - BODY_FOLLOW_Z);
         var sx = 1 - Math.abs(tx) * 0.025;
         var sy = 1 - Math.abs(ty) * 0.03;
         this.els.head.style.transform =
-            'translate3d(' + hx.toFixed(2) + 'px,' + hy.toFixed(2) + 'px,0) rotate(' + (p.angleZ || 0).toFixed(2) + 'deg)' +
+            'translate3d(' + (hx * s).toFixed(2) + 'px,' + (hy * s).toFixed(2) + 'px,0) rotate(' + headRot.toFixed(2) + 'deg)' +
             ' scale(' + sx.toFixed(4) + ',' + sy.toFixed(4) + ')';
+        var hp = this.pivots.head;
+        this._headM = mul([1, 0, 0, 1, hx, hy], about(hp.x, hp.y, mul(rotation(headRot), [sx, 0, 0, sy, 0, 0])));
+        this._faceShift = [tx * PARALLAX.face.x, -ty * PARALLAX.face.y];
 
         var names = ['face', 'features', 'hair', 'ear_l', 'ear_r'];
         for (var i = 0; i < names.length; i++) {
@@ -259,10 +338,33 @@
             this.els[k].style.transform = 'translate3d(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px,0)';
         }
 
-        this._applyGestures(p.gestures || [], s);
+        this._applyNeck(headRot);
+        this._applyGestures(p.gestures || []);
     };
 
-    SpriteAvatarRenderer.prototype._applyGestures = function (list, s) {
+    /**
+     * 首の上端を、頭が動いた先のあご下（pivot.neckTop）へ合わせる。下端は体に固定。
+     * 横ずれはせん断で受け（上端が水平のまま）、傾きは頭の一部だけ回す。首は短いので回しすぎると
+     * 上端の角があごの横へはみ出す
+     */
+    SpriteAvatarRenderer.prototype._applyNeck = function (headRot) {
+        var neck = this.els.neck;
+        if (!neck) return;
+        var b = pt(this.pivots.neckBase);
+        var top = pt(this.pivots.neckTop);
+        var moved = apply(this._headM, top[0] + this._faceShift[0], top[1] + this._faceShift[1]);
+        var vx = top[0] - b[0];
+        var vy = top[1] - b[1];
+        if (vy > -1) vy = -1;
+        var r = rotation(-headRot * NECK_TURN);
+        var m = apply(r, moved[0] - b[0], moved[1] - b[1]);
+        var shear = [1, 0, (m[0] - vx) / vy, m[1] / vy, 0, 0];
+        var t = mul(rotation(headRot * NECK_TURN), shear);
+        neck.style.transform = 'matrix(' + t[0].toFixed(5) + ',' + t[1].toFixed(5) + ',' + t[2].toFixed(5) + ',' +
+            t[3].toFixed(5) + ',0,0)';
+    };
+
+    SpriteAvatarRenderer.prototype._applyGestures = function (list) {
         var active = {};
         var cover = 0;
         for (var i = 0; i < list.length; i++) {
@@ -276,11 +378,23 @@
             cover = Math.max(cover, clamp01((a - BASE_OUT_START) / (BASE_OUT_END - BASE_OUT_START)));
             if (entry.hand) {
                 var hs = entry.spec.hand;
-                var rot = (hs.enterRot || 0) * (1 - swing) + (g.sway || 0);
-                var y = ((hs.enterDrop || 0) * (1 - swing) - (g.lift || 0)) * s;
-                entry.hand.style.transform =
-                    'translate3d(0,' + y.toFixed(2) + 'px,0) rotate(' + rot.toFixed(2) + 'deg)';
-                // 手先の下は素の体なので、体の新しい腕と同時に出さないと袖だけの瞬間ができる
+                var rot = 0;
+                if (!hs.rigid) {
+                    var elbow = pt(hs.pivot);
+                    var tip = hs.tip ? pt(hs.tip) : null;
+                    rot = (hs.enterRot || 0) * (1 - swing) + (g.sway || 0);
+                    if (tip && g.lift) {
+                        // 持ち上げは肘まわりの回転で出す（平行移動すると肘で腕が切れる）
+                        var reach = Math.hypot(tip[0] - elbow[0], tip[1] - elbow[1]) || 1;
+                        rot -= (hs.enterRot < 0 ? -1 : 1) * Math.atan(g.lift / reach) / DEG;
+                    }
+                    if (tip && entry.spec.attach === 'head' && this._headM) {
+                        var on = apply(this._headM, tip[0] + this._faceShift[0], tip[1] + this._faceShift[1]);
+                        rot += turnTo(elbow, tip, on);
+                    }
+                }
+                entry.hand.style.transform = 'rotate(' + rot.toFixed(2) + 'deg)';
+                // 前腕の下は素の体なので、体の新しい上腕と同時に出さないと袖だけの瞬間ができる
                 entry.hand.style.opacity = clamp01(a / BODY_IN_END).toFixed(3);
             }
             if (!entry.shown) {
