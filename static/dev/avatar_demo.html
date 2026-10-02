@@ -101,8 +101,9 @@
   code { background: var(--primary-soft); border-radius: 4px; padding: 0 4px; }
   input[type="range"] { accent-color: var(--primary); }
   @media (max-width: 800px) {
-    .demo { grid-template-columns: 1fr; }
-    .stage-card { max-width: 440px; justify-self: center; width: 100%; }
+    /* 高さ固定のスクロール領域内ではグリッド行がカードを縮めるため、縦並びは通常フローにする */
+    .demo { display: block; }
+    .stage-card { max-width: 440px; width: 100%; margin: 0 auto 24px; }
     .panel { overflow: visible; }
   }
 </style>
