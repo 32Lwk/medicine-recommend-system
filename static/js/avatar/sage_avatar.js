@@ -55,8 +55,11 @@
         bow_hands: { label: '両手を合わせる', hold: 2.2, sway: [0.6, 0.4], lift: [[0, 0], [0.3, 3], [0.7, 0]] },
         ok: { label: 'OK サイン', hold: 2.0, sway: [3, 0.9], lift: [[0, 0], [0.2, 4], [0.45, 0]] },
     };
-    var GESTURE_IN = 0.42; // 秒
-    var GESTURE_OUT = 0.38;
+    var GESTURE_IN = 0.5; // 秒
+    var GESTURE_OUT = 0.4;
+    var GESTURE_SWITCH_OUT = 0.28; // 別の手へ移るとき、前の手を下ろす速さ
+    var GESTURE_OVERSHOOT = 1.4; // 手先の振り上げの行き過ぎ（easeOutBack の係数）
+    var GESTURE_HOP = 3; // 手を上げるときの肩のはずみ（キャンバス px）
 
     /* ---------- モーション: [秒, 値] のキーフレーム（待機の揺れに加算） ---------- */
 
@@ -158,7 +161,9 @@
 
     var MORA_MS = 120;
     var MIN_VISEME_HOLD_MS = 70;
-    var BIAS_RATE = 3.5; // 1/s — 感情の姿勢へ移る速さ
+    // 感情の姿勢へはバネ（臨界減衰）で移る。指数で寄せると動き出しが急になるため
+    var BIAS_OMEGA = 7; // rad/s
+    var BLINK_ON_EXPRESSION = [['half', 40], ['closed', 90], ['half', 50]];
 
     var VOICEVOX_DEFAULTS = { url: 'http://127.0.0.1:50021', speaker: 3, params: {} };
     var VOICEVOX_CACHE_MAX = 40;
@@ -259,17 +264,51 @@
         return centroidHz > 1600 ? 'i' : 'u';
     }
 
+    /**
+     * キーフレームの補間（単調 3 次エルミート）。端と山・谷では速度 0、途中のキーは速度を保ったまま通過する。
+     * 区間ごとに smoothstep にすると、すべてのキーで一瞬止まってカクつくため。
+     */
+    function trackTangents(track) {
+        var n = track.length;
+        var d = [];
+        for (var i = 0; i < n - 1; i++) d.push((track[i + 1][1] - track[i][1]) / (track[i + 1][0] - track[i][0]));
+        var m = [0];
+        for (var j = 1; j < n - 1; j++) {
+            if (d[j - 1] * d[j] <= 0) {
+                m.push(0);
+            } else {
+                var h0 = track[j][0] - track[j - 1][0];
+                var h1 = track[j + 1][0] - track[j][0];
+                var w0 = 2 * h1 + h0;
+                var w1 = h1 + 2 * h0;
+                m.push((w0 + w1) / (w0 / d[j - 1] + w1 / d[j]));
+            }
+        }
+        m.push(0);
+        return m;
+    }
+
     function sampleTrack(track, t) {
         if (t <= track[0][0]) return track[0][1];
+        var m = track.tangents || (track.tangents = trackTangents(track));
         for (var i = 1; i < track.length; i++) {
             if (t <= track[i][0]) {
                 var t0 = track[i - 1][0];
-                var u = (t - t0) / (track[i][0] - t0);
-                var s = u * u * (3 - 2 * u);
-                return track[i - 1][1] + (track[i][1] - track[i - 1][1]) * s;
+                var h = track[i][0] - t0;
+                var u = (t - t0) / h;
+                var u2 = u * u;
+                var u3 = u2 * u;
+                return (2 * u3 - 3 * u2 + 1) * track[i - 1][1] + (u3 - 2 * u2 + u) * h * m[i - 1]
+                    + (-2 * u3 + 3 * u2) * track[i][1] + (u3 - u2) * h * m[i];
             }
         }
         return track[track.length - 1][1];
+    }
+
+    function easeOutBack(v) {
+        var c = GESTURE_OVERSHOOT;
+        var x = v - 1;
+        return 1 + (c + 1) * x * x * x + c * x * x;
     }
 
     function motionDuration(def) {
@@ -358,9 +397,13 @@
         this._neutralTimer = null;
 
         this._bias = {};
+        this._biasVel = {};
         this._biasTarget = {};
+        this._exprTarget = null;
+        this.blinkOnExpression = opts.blinkOnExpression !== false;
         this._motions = [];
         this._gestures = [];
+        this._gestureHop = 0;
         this._mouthLevel = 0;
         this._mouthLevelSmooth = 0;
         this._lastTick = 0;
@@ -396,13 +439,20 @@
             breath: (Math.sin(t * 2 * Math.PI / 4.2) + 1) / 2,
         };
 
-        var k = 1 - Math.exp(-dt * BIAS_RATE);
         var keys = ['angleX', 'angleY', 'angleZ', 'bodyAngleZ', 'lean'];
+        var w = BIAS_OMEGA;
         for (var i = 0; i < keys.length; i++) {
             var name = keys[i];
             var cur = this._bias[name] || 0;
-            cur += ((this._biasTarget[name] || 0) - cur) * k;
+            var vel = this._biasVel[name] || 0;
+            // 半陰的オイラー（dt が大きくても発散しないよう 1 フレームを分割）
+            for (var sub = 0, steps = Math.ceil(dt / 0.02); sub < steps; sub++) {
+                var h = dt / steps;
+                vel += (w * w * ((this._biasTarget[name] || 0) - cur) - 2 * w * vel) * h;
+                cur += vel * h;
+            }
             this._bias[name] = cur;
+            this._biasVel[name] = vel;
             pose[name] += cur;
         }
 
@@ -424,6 +474,7 @@
         pose.angleY += this._mouthLevelSmooth * 2.2;
 
         pose.gestures = this._gesturePose(now);
+        pose.hop += this._gestureHop;
         this.renderer.applyPose(pose);
         this._raf = requestAnimationFrame(this._tick);
     };
@@ -435,7 +486,7 @@
         clearTimeout(this._neutralTimer);
         var changed = this.emotion !== name;
         this.emotion = EMOTIONS[name] ? name : 'neutral';
-        this.renderer.setExpression(def.expr);
+        this._swapExpression(def.expr, opts && opts.blink === false);
         this._biasTarget = def.bias || {};
         if (changed && def.enter && !(opts && opts.motion === false)) {
             this.playMotion(def.enter);
@@ -456,42 +507,65 @@
         });
     };
 
+    function smoothstep(u) {
+        return u * u * (3 - 2 * u);
+    }
+
+    /** 体の入れ替えと不透明度に使う出具合 0..1 */
     function gestureAmount(g, now) {
         if (g.outStart != null) {
-            var u = Math.min((now - g.outStart) / 1000 / GESTURE_OUT, 1);
-            return g.outFrom * (1 - u * u * (3 - 2 * u));
+            var u = Math.min((now - g.outStart) / 1000 / g.outDur, 1);
+            return g.outFrom * (1 - smoothstep(u));
         }
         var el = (now - g.start) / 1000;
-        if (el < GESTURE_IN) {
-            var v = el / GESTURE_IN;
-            return 1 - Math.pow(1 - v, 3);
-        }
+        if (el <= 0) return 0;
+        if (el < GESTURE_IN) return 1 - Math.pow(1 - el / GESTURE_IN, 3);
         return 1;
+    }
+
+    /** 手先の振り上げ位置。入りは少し行き過ぎてから戻る */
+    function gestureSwing(g, now, amount) {
+        if (g.outStart != null) return amount;
+        var el = (now - g.start) / 1000;
+        if (el <= 0) return 0;
+        return el < GESTURE_IN ? easeOutBack(el / GESTURE_IN) : 1;
+    }
+
+    function startOut(g, now, dur) {
+        g.outFrom = gestureAmount(g, now);
+        g.outStart = now;
+        g.outDur = dur;
     }
 
     SageAvatar.prototype._gesturePose = function (now) {
         var out = [];
         var alive = [];
+        var hop = 0;
         for (var i = 0; i < this._gestures.length; i++) {
             var g = this._gestures[i];
             var el = (now - g.start) / 1000;
             if (g.outStart == null && el >= GESTURE_IN + g.hold) {
                 g.outStart = g.start + (GESTURE_IN + g.hold) * 1000;
                 g.outFrom = 1;
+                g.outDur = GESTURE_OUT;
             }
-            if (g.outStart != null && now - g.outStart >= GESTURE_OUT * 1000) continue;
+            if (g.outStart != null && now - g.outStart >= g.outDur * 1000) continue;
             alive.push(g);
             var amount = gestureAmount(g, now);
+            if (!(amount > 0)) continue;
+            if (g.outStart == null && el < GESTURE_IN) hop += GESTURE_HOP * Math.sin(Math.PI * el / GESTURE_IN);
             var sway = g.def.sway ? g.def.sway[0] * Math.sin(2 * Math.PI * g.def.sway[1] * el) * amount : 0;
             var lift = g.def.lift && el > GESTURE_IN ? sampleTrack(g.def.lift, el - GESTURE_IN) : 0;
-            out.push({ key: g.name, amount: amount, sway: sway, lift: lift });
+            out.push({ key: g.name, amount: amount, swing: gestureSwing(g, now, amount), sway: sway, lift: lift });
         }
         this._gestures = alive;
+        this._gestureHop = hop;
         return out;
     };
 
     /**
-     * 手・腕のジェスチャーを出す。出ている別のジェスチャーは下げる。
+     * 手・腕のジェスチャーを出す。出ている別の手は先に下ろし、下ろし終えてから次の手を上げる
+     * （2 つの腕の絵を同時に重ねると腕や袖が二重に見えるため）。
      * opts.hold: とどまる秒数（Infinity なら stopGesture まで）
      */
     SageAvatar.prototype.playGesture = function (name, opts) {
@@ -500,32 +574,37 @@
         var now = performance.now();
         var hold = opts && opts.hold != null ? opts.hold : def.hold;
         var same = null;
+        var wait = 0;
+        var kept = [];
         for (var i = 0; i < this._gestures.length; i++) {
             var g = this._gestures[i];
-            if (g.outStart != null) continue;
-            if (g.name === name) {
+            if (g.outStart == null && g.name === name && g.start <= now) {
                 same = g;
-            } else {
-                g.outFrom = gestureAmount(g, now);
-                g.outStart = now;
+                kept.push(g);
+                continue;
             }
+            if (g.start > now) continue; // まだ上がっていない予約は取り消す
+            if (g.outStart == null) startOut(g, now, GESTURE_SWITCH_OUT);
+            var left = g.outDur - (now - g.outStart) / 1000;
+            if (gestureAmount(g, now) > 0) wait = Math.max(wait, left);
+            kept.push(g);
         }
+        this._gestures = kept;
         if (same) {
             // 出ている同じ手はそのまま、とどまる時間だけ延ばす
             same.hold = (now - same.start) / 1000 - GESTURE_IN + hold;
             return;
         }
-        this._gestures.push({ name: name, def: def, start: now, hold: hold, outStart: null, outFrom: 1 });
+        this._gestures.push({
+            name: name, def: def, start: now + wait * 1000, hold: hold, outStart: null, outFrom: 1, outDur: GESTURE_OUT,
+        });
     };
 
     SageAvatar.prototype.stopGesture = function () {
         var now = performance.now();
+        this._gestures = this._gestures.filter(function (g) { return g.start <= now; });
         for (var i = 0; i < this._gestures.length; i++) {
-            var g = this._gestures[i];
-            if (g.outStart == null) {
-                g.outFrom = gestureAmount(g, now);
-                g.outStart = now;
-            }
+            if (this._gestures[i].outStart == null) startOut(this._gestures[i], now, GESTURE_OUT);
         }
     };
 
@@ -563,19 +642,36 @@
         this._blinkTimer = null;
     };
 
-    SageAvatar.prototype.blink = function () {
+    /** @param {Array} [steps] [['half'|'closed'|'open', ms], ...]。目を閉じた瞬間に onClosed を呼ぶ */
+    SageAvatar.prototype.blink = function (steps, onClosed) {
         var self = this;
         if (this._blinking) return Promise.resolve();
         this._blinking = true;
-        var steps = [['half', 50], ['closed', 80], ['half', 50], ['open', 0]];
-        return steps.reduce(function (p, step) {
+        var seq = (steps || [['half', 50], ['closed', 80], ['half', 50]]).concat([['open', 0]]);
+        return seq.reduce(function (p, step) {
             return p.then(function () {
                 self.renderer.setEyes(step[0]);
+                if (step[0] === 'closed' && onClosed) onClosed();
                 return new Promise(function (r) { setTimeout(r, step[1]); });
             });
         }, Promise.resolve()).then(function () {
             self._blinking = false;
         });
+    };
+
+    /**
+     * 表情を入れ替える。目を閉じている間に替えると、目元の切り替わりが見えず自然に移れる。
+     * まばたき中に次の表情が来たら、その場で最新の表情に替える。
+     */
+    SageAvatar.prototype._swapExpression = function (expr, immediate) {
+        var self = this;
+        this._exprTarget = expr;
+        var shown = this.renderer.current && this.renderer.current.expression;
+        if (immediate || !this.blinkOnExpression || this._blinking || shown === expr) {
+            this.renderer.setExpression(expr);
+            return;
+        }
+        this.blink(BLINK_ON_EXPRESSION, function () { self.renderer.setExpression(self._exprTarget); });
     };
 
     /* ---------- 口 ---------- */

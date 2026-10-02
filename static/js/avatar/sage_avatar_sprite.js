@@ -11,7 +11,8 @@
  * SageAvatar（sage_avatar.js）から呼ばれるレンダラー共通インターフェース:
  *   load(): Promise<void>
  *   applyPose(params)  — Live2D 風パラメータ（下記 POSE_DEFAULTS）を毎フレーム反映
- *                        params.gestures: [{ key, amount 0..1, sway 度, lift px }]
+ *                        params.gestures: [{ key, amount 0..1, swing 0..1（行き過ぎ可）, sway 度, lift px }]
+ *                        amount は体の入れ替えと不透明度、swing は手先の振り上げ位置
  *   setExpression(key) — 'neutral' | manifest.layers.expression のキー
  *   setEyes(state)     — 'open' | 'half' | 'closed'
  *   setMouth(viseme)   — null | 'a' | 'i' | 'u' | 'e' | 'o'
@@ -57,7 +58,18 @@
         this.current = { expression: 'neutral', eyes: 'open', mouth: null };
         this.scale = 1;
         this._ro = null;
+        this._exprZ = 1;
+        this._exprOut = null;
+        this._exprTimer = null;
     }
+
+    // 体の入れ替えは短く: 新しい腕の体を先に出し切ってから素の体（元の腕）を消す。
+    // 長いディゾルブは元の腕と新しい腕が半透明で重なって見えるため。
+    var BODY_IN_END = 0.25;
+    var BASE_OUT_START = 0.15;
+    var BASE_OUT_END = 0.4;
+    var EXPRESSION_FADE_MS = 110;
+    var Z_EYES = 100000;
 
     function clamp01(v) {
         return v < 0 ? 0 : v > 1 ? 1 : v;
@@ -166,6 +178,7 @@
                 var el = img(entries[key], 'sage-avatar__layer sage-avatar__layer--' + groups[g]);
                 el.dataset.group = groups[g];
                 el.dataset.key = key;
+                if (groups[g] !== 'expression') el.style.zIndex = String(Z_EYES + g);
                 features.appendChild(el);
                 this.layerEls[groups[g]][key] = el;
             }
@@ -258,16 +271,17 @@
             if (!entry || !(g.amount > 0)) continue;
             active[g.key] = true;
             var a = Math.min(g.amount, 1);
-            // 新しい腕の体を先に出し切ってから素の体（元の腕）を消す
-            entry.body.style.opacity = clamp01(a / 0.6).toFixed(3);
-            cover = Math.max(cover, clamp01((a - 0.4) / 0.6));
+            var swing = g.swing == null ? a : g.swing;
+            entry.body.style.opacity = clamp01(a / BODY_IN_END).toFixed(3);
+            cover = Math.max(cover, clamp01((a - BASE_OUT_START) / (BASE_OUT_END - BASE_OUT_START)));
             if (entry.hand) {
                 var hs = entry.spec.hand;
-                var rot = (hs.enterRot || 0) * (1 - a) + (g.sway || 0);
-                var y = ((hs.enterDrop || 0) * (1 - a) - (g.lift || 0)) * s;
+                var rot = (hs.enterRot || 0) * (1 - swing) + (g.sway || 0);
+                var y = ((hs.enterDrop || 0) * (1 - swing) - (g.lift || 0)) * s;
                 entry.hand.style.transform =
                     'translate3d(0,' + y.toFixed(2) + 'px,0) rotate(' + rot.toFixed(2) + 'deg)';
-                entry.hand.style.opacity = clamp01(a / 0.5).toFixed(3);
+                // 手先の下は素の体なので、体の新しい腕と同時に出さないと袖だけの瞬間ができる
+                entry.hand.style.opacity = clamp01(a / BODY_IN_END).toFixed(3);
             }
             if (!entry.shown) {
                 entry.body.classList.add('is-visible');
@@ -296,10 +310,58 @@
         }
     };
 
+    /**
+     * 表情の入れ替え。新しい表情を一番上に重ねて短くフェードインし、出し切ってから古い表情を消す。
+     * 2 枚を同時に半透明にすると眉や口が二重に見えるため、半透明になるのは上の 1 枚だけにする。
+     */
     SpriteAvatarRenderer.prototype.setExpression = function (key) {
-        this.current.expression = key && this.layerEls.expression[key] ? key : 'neutral';
-        this._show('expression', this.current.expression);
+        var els = this.layerEls.expression;
+        var next = key && els[key] ? key : 'neutral';
+        var prev = this.current.expression;
+        if (next === prev) return;
+        this.current.expression = next;
+        this._finishExpressionFade();
+
+        var inEl = els[next] || null;
+        var outEl = els[prev] || null;
+        if (inEl) {
+            if (++this._exprZ >= Z_EYES) this._renumberExpressions();
+            inEl.style.zIndex = String(this._exprZ);
+            inEl.classList.add('is-visible');
+        }
+        if (outEl) {
+            if (inEl) {
+                this._exprOut = outEl;
+                var self = this;
+                this._exprTimer = setTimeout(function () { self._finishExpressionFade(); }, EXPRESSION_FADE_MS);
+            } else {
+                outEl.classList.remove('is-visible');
+            }
+        }
         if (this.current.eyes === 'half') this.setEyes('half');
+    };
+
+    SpriteAvatarRenderer.prototype._finishExpressionFade = function () {
+        clearTimeout(this._exprTimer);
+        this._exprTimer = null;
+        var outEl = this._exprOut;
+        this._exprOut = null;
+        if (!outEl || outEl === this.layerEls.expression[this.current.expression]) return;
+        outEl.classList.add('is-instant');
+        outEl.classList.remove('is-visible');
+        void outEl.offsetWidth;
+        outEl.classList.remove('is-instant');
+    };
+
+    SpriteAvatarRenderer.prototype._renumberExpressions = function () {
+        var els = this.layerEls.expression;
+        var list = [];
+        for (var k in els) {
+            if (Object.prototype.hasOwnProperty.call(els, k)) list.push(els[k]);
+        }
+        list.sort(function (a, b) { return (+a.style.zIndex || 0) - (+b.style.zIndex || 0); });
+        for (var i = 0; i < list.length; i++) list[i].style.zIndex = String(i + 1);
+        this._exprZ = list.length + 1;
     };
 
     SpriteAvatarRenderer.prototype.setEyes = function (state) {
@@ -321,6 +383,8 @@
     };
 
     SpriteAvatarRenderer.prototype.destroy = function () {
+        clearTimeout(this._exprTimer);
+        this._exprOut = null;
         if (this._ro) this._ro.disconnect();
         if (this.root && this.root.parentNode) {
             this.root.parentNode.removeChild(this.root);

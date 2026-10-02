@@ -171,8 +171,8 @@ GESTURES: list[Gesture] = [
 HEAD_ZONE = 24  # px around the head where body variants keep the base (the head covers it)
 CHANGE_MIN_AREA = 4000  # px; smaller differences are redraw noise
 HAND_MIN_AREA = 1500
-ENTER_ROT = 16.0  # deg; hand overlays swing in from below by this much
-ENTER_DROP = 30  # output px
+ENTER_ROT = 16.0  # deg; hand overlays swing in about the cuff by this much
+ENTER_DROP = 10  # output px; more than this lifts the hand visibly off the cuff while it swings in
 
 
 # ---------------------------------------------------------------- helpers

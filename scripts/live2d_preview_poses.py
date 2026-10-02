@@ -36,6 +36,7 @@ PARALLAX = {
     "ear_l": (0, -1), "ear_r": (0, -1),
 }
 RIG_EXTEND = (0.025, 0.05)  # .sage-avatar__rig inset: sides -2.5%, bottom -5%
+BODY_IN_END, BASE_OUT_START, BASE_OUT_END = 0.25, 0.15, 0.4  # gesture body swap by amount
 
 POSES: list[tuple[str, str, dict]] = [
     ("neutral", "通常", {}),
@@ -170,9 +171,10 @@ def render(manifest: dict, layers: dict, expr: str, p: dict, bg: tuple) -> np.nd
 
     for k in manifest["partOrder"]:
         if k == "body":
-            put_faded(layers["body"], ms["rig"], 1 - clamp01((amount - 0.4) / 0.6) if spec else 1.0)
+            cover = clamp01((amount - BASE_OUT_START) / (BASE_OUT_END - BASE_OUT_START))
+            put_faded(layers["body"], ms["rig"], 1 - cover if spec else 1.0)
             if spec:
-                put_faded(layers[("gesture_body", key)], ms["rig"], clamp01(amount / 0.6))
+                put_faded(layers[("gesture_body", key)], ms["rig"], clamp01(amount / BODY_IN_END))
         elif k == "features":
             put(layers["features"], ms["features"])
             if (("expression", expr)) in layers:
@@ -182,14 +184,15 @@ def render(manifest: dict, layers: dict, expr: str, p: dict, bg: tuple) -> np.nd
     if spec and ("gesture_hand", key) in layers:
         hs = spec["hand"]
         pv = (hs["pivot"]["x"], hs["pivot"]["y"])
-        g = css(pv, translate(0, hs.get("enterDrop", 0) * (1 - amount) - p.get("lift", 0)),
-                rotate(hs.get("enterRot", 0) * (1 - amount) + p.get("sway", 0)))
+        swing = p.get("swing", amount)
+        g = css(pv, translate(0, hs.get("enterDrop", 0) * (1 - swing) - p.get("lift", 0)),
+                rotate(hs.get("enterRot", 0) * (1 - swing) + p.get("sway", 0)))
         parent = ms["head"] if spec.get("attach") == "head" else ms["rig"]
         # the layer image is stored with a margin; undo it after the element transform
         m = parent @ g @ translate(-GESTURE_MARGIN, -GESTURE_MARGIN)
         warped = cv2.warpAffine(layers[("gesture_hand", key)], m[:2], (cw, ch), flags=cv2.INTER_LINEAR,
                                 borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
-        warped[..., 3] *= clamp01(amount / 0.5)
+        warped[..., 3] *= clamp01(amount / BODY_IN_END)
         over(out, warped)
     # visible box of .sage-avatar (rig extends past the root on the sides and bottom)
     vw = cw / (1 + 2 * RIG_EXTEND[0])

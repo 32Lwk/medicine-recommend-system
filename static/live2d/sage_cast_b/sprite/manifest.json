@@ -322,7 +322,7 @@
             "y": 649.6
           },
           "enterRot": 16.0,
-          "enterDrop": 30
+          "enterDrop": 10
         }
       },
       "explain": {
@@ -346,7 +346,7 @@
             "y": 874.0
           },
           "enterRot": 0.0,
-          "enterDrop": 30
+          "enterDrop": 10
         }
       },
       "point": {
@@ -370,7 +370,7 @@
             "y": 662.2
           },
           "enterRot": 16.0,
-          "enterDrop": 30
+          "enterDrop": 10
         }
       },
       "chest": {
@@ -394,7 +394,7 @@
             "y": 802.1
           },
           "enterRot": -16.0,
-          "enterDrop": 30
+          "enterDrop": 10
         }
       },
       "chin": {
@@ -442,7 +442,7 @@
             "y": 699.7
           },
           "enterRot": 0.0,
-          "enterDrop": 30
+          "enterDrop": 10
         }
       },
       "bow_hands": {
@@ -466,7 +466,7 @@
             "y": 831.2
           },
           "enterRot": 0.0,
-          "enterDrop": 30
+          "enterDrop": 10
         }
       },
       "ok": {
@@ -490,7 +490,7 @@
             "y": 660.2
           },
           "enterRot": 16.0,
-          "enterDrop": 30
+          "enterDrop": 10
         }
       }
     }
