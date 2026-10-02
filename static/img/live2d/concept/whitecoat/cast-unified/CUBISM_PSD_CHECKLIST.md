@@ -1,12 +1,15 @@
 # Cubism PSD 作業チェックリスト（作業者向け短版）
 
-正本: [`docs/dev/LIVE2D_CUBISM_PSD_SPEC.md`](../../../../../docs/dev/LIVE2D_CUBISM_PSD_SPEC.md)
+正本: [`docs/dev/LIVE2D_CUBISM_PSD_SPEC.md`](../../../../../docs/dev/LIVE2D_CUBISM_PSD_SPEC.md)  
+自前フロー: [`docs/dev/LIVE2D_CUBISM_DIY_WORKFLOW.md`](../../../../../docs/dev/LIVE2D_CUBISM_DIY_WORKFLOW.md)  
+作業フォルダ: [`static/live2d/sage_cast_b/`](../../../../../live2d/sage_cast_b/)
 
 ## 最初にやること
 
-1. **Character B** から着手（白衣・ピン・ポケットの寸法正本）
-2. 基準画: `sage-cast-b-unified-coat.jpg` + `expressions-b/sage-b-e0-neutral.jpg`
-3. クロマキー緑 → 透過 PNG → PSD グループ §4 どおりに配置
+1. `python3 scripts/live2d_prepare_cast_b.py` で `diy/` を生成
+2. **Character B** から着手（白衣・ピン・ポケットの寸法正本）
+3. 基準画: `static/live2d/sage_cast_b/source/sage_cast_b_e0_cutout.png`
+4. `diy/layers/` の名前どおりに切り分け → `source/sage_cast_b.psd`
 
 ## パーツ分け（必須）
 
