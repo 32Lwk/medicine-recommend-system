@@ -154,6 +154,31 @@ static/live2d/sage_cast_b/
 方式 A: Cubism SDK for Web + 既存 `POST /api/tts`。  
 フラグ案: `AVATAR_ENABLED`。詳細は VH 調査要約と `LIVE2D_CUBISM_PSD_SPEC.md` §7.2。
 
+### 6.1 先行実装: スプライト版アバター
+
+`.moc3` 完成前の代替として、土台画像をパーツ（体・耳・顔・目鼻口・髪）に分けて視差で動かす 2.5D アバターがある（`static/live2d/sage_cast_b/README.md` 参照）。
+
+| 層 | ファイル | Cubism 移行時 |
+|----|----------|---------------|
+| 制御 | `static/js/avatar/sage_avatar.js`（`SageAvatar`: 感情・モーション・まばたき・台本・リップシンク） | そのまま流用 |
+| 描画 | `static/js/avatar/sage_avatar_sprite.js`（`SpriteAvatarRenderer`） | Cubism レンダラーに差し替え |
+| 素材 | `static/live2d/sage_cast_b/sprite/`（`scripts/live2d_build_sprite_b.py` で生成, manifest v2） | 不要になる |
+
+制御側は毎フレーム `applyPose(params)` を呼ぶ。Cubism レンダラーでの対応付け:
+
+| レンダラー API | Cubism パラメータ |
+|----------------|-------------------|
+| `applyPose({angleX, angleY, angleZ})` | `ParamAngleX` / `ParamAngleY` / `ParamAngleZ`（-30..30） |
+| `applyPose({bodyAngleZ, lean, bow})` | `ParamBodyAngleZ`、前傾・お辞儀は `ParamBodyAngleY` 系の独自パラメータ |
+| `applyPose({hop, breath})` | 位置オフセット / `ParamBreath` |
+| `setExpression(key)` | 表情 exp3（neutral, smile, thinking, empathy, surprise, relief, worry, sorry, serious, cheer, shy, confused） |
+| `setEyes('open'/'half'/'closed')` | `ParamEyeLOpen` / `ParamEyeROpen` = 1 / 0.5 / 0 |
+| `setMouth(null/'a'/'i'/'u'/'e'/'o')` | `diy/mouth_param_keys.csv` の OpenY / Form |
+
+視線（黒目だけの移動）はスプライト版では未対応。頭の向きと目鼻口の視差で表現している。Cubism 版では `ParamEyeBallX/Y` を追加する。
+
+デモ: `/static/dev/avatar_demo.html`（チャット画面には未組み込み）。当面の公開先は `https://live2d.medicine.yutok.dev`（`workers/live2d-demo/README.md`）。
+
 ---
 
 ## 7. 困ったとき

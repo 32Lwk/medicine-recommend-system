@@ -24,6 +24,30 @@ python scripts/live2d_prepare_cast_b.py
 | `source/` | 切り出しベース・完成 PSD 置き場 |
 | `textures/` | Editor 書き出しテクスチャ |
 | `motions/` | motion3.json |
+| `sprite/` | Cubism 完成までの代替アバター素材（`manifest.json` + WebP パッチ） |
+
+## スプライト版アバター（Cubism 完成までの代替）
+
+```bash
+# 開発環境のみ: pip install opencv-python
+python scripts/live2d_build_sprite_b.py          # sprite/ を再生成
+python scripts/live2d_build_sprite_b.py --debug  # 合成確認 PNG を一時フォルダへ
+```
+
+- 土台は `sage-b-mouth-closed.jpg`。体・左右の耳・顔・目鼻口・髪に分け、首の付け根を軸に頭を回し、パーツごとの視差で横向き・うなずきを出す（首の下・耳の裏・髪の下は補完済み）
+- 表情 11 種（`expressions-b/sage-b-e1..e5`, `sage-b-x-*`）は特徴点で位置合わせし、顔の内側だけをパッチにする
+- 半目は画像生成では安定しないため、上まつ毛の線を下へずらして合成する（表情ごとに生成）
+- デモ: `/static/dev/avatar_demo.html`（感情 12 種・モーション 9 種・台本タグ・読み上げ口パク）。公開先: `https://live2d.medicine.yutok.dev`
+- JS: `static/js/avatar/sage_avatar.js`（制御: 待機の揺れ・感情の姿勢・キーフレームモーション・台本解析・リップシンク）+ `sage_avatar_sprite.js`（描画）
+- Cubism 版は `load` / `applyPose` / `setExpression` / `setEyes` / `setMouth` / `destroy` を持つレンダラーを作れば `SageAvatar` をそのまま使える
+
+台本の書き方（`avatar.speak(text, { autoEmotion: true })`）:
+
+```text
+[共感]なるほど、頭痛が続いているんですね。[真剣]急に激しく痛む場合は受診してください。[お辞儀]お大事に。
+```
+
+タグがない文は言葉から感情・動きを推定する（「申し訳」→申し訳なさ+お辞儀、「受診」→真剣、文末「？」→首かしげ など）。
 
 ## ゴール
 

@@ -1,0 +1,60 @@
+@import url('scrollbar.css');
+
+/*
+ * Sage アバター（sage_avatar.js / sage_avatar_sprite.js）
+ * パーツ位置は JS が manifest から % で設定し、姿勢は JS が毎フレーム transform で動かす。
+ */
+
+.sage-avatar {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.sage-avatar__group {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.sage-avatar__rig {
+  /* 下端は素材が切れているので、弾み・傾きで隙間が見えないよう少し外側まで広げる（縦横比は保つ） */
+  inset: 0 -2.5% -5% -2.5%;
+  transform-origin: 50% 100%;
+}
+
+.sage-avatar__part,
+.sage-avatar__layer {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+
+.sage-avatar__part {
+  will-change: transform;
+}
+
+.sage-avatar__layer {
+  opacity: 0;
+}
+
+.sage-avatar__layer.is-visible {
+  opacity: 1;
+}
+
+/* 新しい表情を先に出し切ってから古い表情を消す（同時に半透明になると素の顔が透けるため） */
+.sage-avatar__layer--expression {
+  transition: opacity 0.16s ease-out 0.2s;
+}
+
+.sage-avatar__layer--expression.is-visible {
+  transition: opacity 0.22s ease-out 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sage-avatar__layer--expression {
+    transition: none;
+  }
+}

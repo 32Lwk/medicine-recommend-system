@@ -91,12 +91,13 @@ PARAMETERS: list[tuple[str, float, float, float, str]] = [
 def chroma_key_green(im: Image.Image, soft: int = 55) -> Image.Image:
     """Remove green-screen-ish backgrounds. Returns RGBA."""
     arr = np.asarray(im.convert("RGBA")).copy()
-    r, g, b, a = arr[..., 0], arr[..., 1], arr[..., 2], arr[..., 3]
+    # int16: uint8 の r + 40 は明るい肌（R>215）でラップし、肌が緑判定される
+    r, g, b = (arr[..., i].astype(np.int16) for i in range(3))
     hard = (g > 140) & (g > r + 40) & (g > b + 40)
     soft_m = (g > 110) & (g > r + 25) & (g > b + 25) & ~hard
-    excess = np.minimum(g.astype(np.int16) - r.astype(np.int16), g.astype(np.int16) - b.astype(np.int16))
+    excess = np.minimum(g - r, g - b)
     soft_alpha = np.clip(255 - (excess - 25) * (255 / soft), 0, 255).astype(np.uint8)
-    a = a.copy()
+    a = arr[..., 3].copy()
     a[hard] = 0
     a[soft_m] = np.minimum(a[soft_m], soft_alpha[soft_m])
     arr[..., 3] = a

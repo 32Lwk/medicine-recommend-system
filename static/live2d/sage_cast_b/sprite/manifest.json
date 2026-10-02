@@ -1,0 +1,395 @@
+{
+  "version": 2,
+  "character": "sage_cast_b",
+  "canvas": {
+    "width": 1024,
+    "height": 1024
+  },
+  "pivot": {
+    "neck": {
+      "x": 560,
+      "y": 745
+    }
+  },
+  "parts": {
+    "body": {
+      "src": "part_body.webp",
+      "x": 83,
+      "y": 560,
+      "w": 941,
+      "h": 464
+    },
+    "ear_l": {
+      "src": "part_ear_l.webp",
+      "x": 249,
+      "y": 437,
+      "w": 88,
+      "h": 203
+    },
+    "ear_r": {
+      "src": "part_ear_r.webp",
+      "x": 726,
+      "y": 397,
+      "w": 99,
+      "h": 218
+    },
+    "face": {
+      "src": "part_face.webp",
+      "x": 281,
+      "y": 193,
+      "w": 472,
+      "h": 620
+    },
+    "features": {
+      "src": "part_features.webp",
+      "x": 300,
+      "y": 304,
+      "w": 434,
+      "h": 498
+    },
+    "hair": {
+      "src": "part_hair.webp",
+      "x": 216,
+      "y": 7,
+      "w": 613,
+      "h": 512
+    }
+  },
+  "partOrder": [
+    "body",
+    "ear_l",
+    "ear_r",
+    "face",
+    "features",
+    "hair"
+  ],
+  "layers": {
+    "expression": {
+      "smile": {
+        "src": "expr_smile.webp",
+        "x": 300,
+        "y": 304,
+        "w": 434,
+        "h": 498,
+        "label": "微笑み"
+      },
+      "thinking": {
+        "src": "expr_thinking.webp",
+        "x": 300,
+        "y": 304,
+        "w": 434,
+        "h": 498,
+        "label": "思案"
+      },
+      "empathy": {
+        "src": "expr_empathy.webp",
+        "x": 300,
+        "y": 304,
+        "w": 434,
+        "h": 498,
+        "label": "共感"
+      },
+      "surprise": {
+        "src": "expr_surprise.webp",
+        "x": 300,
+        "y": 304,
+        "w": 434,
+        "h": 498,
+        "label": "軽い驚き"
+      },
+      "nod": {
+        "src": "expr_nod.webp",
+        "x": 300,
+        "y": 304,
+        "w": 434,
+        "h": 498,
+        "label": "うなずき"
+      },
+      "relief": {
+        "src": "expr_relief.webp",
+        "x": 300,
+        "y": 304,
+        "w": 434,
+        "h": 498,
+        "label": "安心"
+      },
+      "worry": {
+        "src": "expr_worry.webp",
+        "x": 300,
+        "y": 304,
+        "w": 434,
+        "h": 498,
+        "label": "心配"
+      },
+      "sorry": {
+        "src": "expr_sorry.webp",
+        "x": 300,
+        "y": 304,
+        "w": 434,
+        "h": 498,
+        "label": "申し訳なさ"
+      },
+      "serious": {
+        "src": "expr_serious.webp",
+        "x": 300,
+        "y": 304,
+        "w": 434,
+        "h": 498,
+        "label": "真剣"
+      },
+      "cheer": {
+        "src": "expr_cheer.webp",
+        "x": 300,
+        "y": 304,
+        "w": 434,
+        "h": 498,
+        "label": "励まし"
+      },
+      "shy": {
+        "src": "expr_shy.webp",
+        "x": 300,
+        "y": 304,
+        "w": 434,
+        "h": 498,
+        "label": "照れ"
+      },
+      "confused": {
+        "src": "expr_confused.webp",
+        "x": 300,
+        "y": 304,
+        "w": 434,
+        "h": 498,
+        "label": "困惑"
+      }
+    },
+    "eyes": {
+      "half": {
+        "src": "eyes_half.webp",
+        "x": 289,
+        "y": 374,
+        "w": 433,
+        "h": 155
+      },
+      "closed": {
+        "src": "eyes_closed.webp",
+        "x": 303,
+        "y": 384,
+        "w": 405,
+        "h": 135
+      },
+      "half@smile": {
+        "src": "eyes_half_smile.webp",
+        "x": 289,
+        "y": 374,
+        "w": 433,
+        "h": 155
+      },
+      "half@thinking": {
+        "src": "eyes_half_thinking.webp",
+        "x": 289,
+        "y": 374,
+        "w": 433,
+        "h": 155
+      },
+      "half@empathy": {
+        "src": "eyes_half_empathy.webp",
+        "x": 289,
+        "y": 374,
+        "w": 433,
+        "h": 155
+      },
+      "half@surprise": {
+        "src": "eyes_half_surprise.webp",
+        "x": 289,
+        "y": 374,
+        "w": 433,
+        "h": 155
+      },
+      "half@nod": {
+        "src": "eyes_half_nod.webp",
+        "x": 289,
+        "y": 374,
+        "w": 433,
+        "h": 155
+      },
+      "half@relief": {
+        "src": "eyes_half_relief.webp",
+        "x": 289,
+        "y": 374,
+        "w": 433,
+        "h": 155
+      },
+      "half@worry": {
+        "src": "eyes_half_worry.webp",
+        "x": 289,
+        "y": 374,
+        "w": 433,
+        "h": 155
+      },
+      "half@sorry": {
+        "src": "eyes_half_sorry.webp",
+        "x": 289,
+        "y": 374,
+        "w": 433,
+        "h": 155
+      },
+      "half@serious": {
+        "src": "eyes_half_serious.webp",
+        "x": 289,
+        "y": 374,
+        "w": 433,
+        "h": 155
+      },
+      "half@cheer": {
+        "src": "eyes_half_cheer.webp",
+        "x": 289,
+        "y": 374,
+        "w": 433,
+        "h": 155
+      },
+      "half@shy": {
+        "src": "eyes_half_shy.webp",
+        "x": 289,
+        "y": 374,
+        "w": 433,
+        "h": 155
+      },
+      "half@confused": {
+        "src": "eyes_half_confused.webp",
+        "x": 289,
+        "y": 374,
+        "w": 433,
+        "h": 155
+      }
+    },
+    "mouth": {
+      "a": {
+        "src": "mouth_a.webp",
+        "x": 398,
+        "y": 592,
+        "w": 241,
+        "h": 153
+      },
+      "i": {
+        "src": "mouth_i.webp",
+        "x": 398,
+        "y": 592,
+        "w": 241,
+        "h": 153
+      },
+      "u": {
+        "src": "mouth_u.webp",
+        "x": 398,
+        "y": 592,
+        "w": 241,
+        "h": 153
+      },
+      "e": {
+        "src": "mouth_e.webp",
+        "x": 398,
+        "y": 592,
+        "w": 241,
+        "h": 153
+      },
+      "o": {
+        "src": "mouth_o.webp",
+        "x": 398,
+        "y": 592,
+        "w": 241,
+        "h": 153
+      }
+    }
+  },
+  "alignment": {
+    "eyes.closed": {
+      "inliers": 29,
+      "scale": 1.3058,
+      "rotationDeg": 2.22
+    },
+    "expression.smile": {
+      "inliers": 71,
+      "scale": 1.5493,
+      "rotationDeg": -0.01
+    },
+    "expression.thinking": {
+      "inliers": 29,
+      "scale": 1.5449,
+      "rotationDeg": 1.27
+    },
+    "expression.empathy": {
+      "inliers": 76,
+      "scale": 1.5365,
+      "rotationDeg": -0.07
+    },
+    "expression.surprise": {
+      "inliers": 44,
+      "scale": 1.4777,
+      "rotationDeg": 0.03
+    },
+    "expression.nod": {
+      "inliers": 65,
+      "scale": 1.4429,
+      "rotationDeg": 2.13
+    },
+    "expression.relief": {
+      "inliers": 83,
+      "scale": 1.0007,
+      "rotationDeg": 0.06
+    },
+    "expression.worry": {
+      "inliers": 77,
+      "scale": 0.996,
+      "rotationDeg": -0.01
+    },
+    "expression.sorry": {
+      "inliers": 41,
+      "scale": 1.0014,
+      "rotationDeg": 0.58
+    },
+    "expression.serious": {
+      "inliers": 66,
+      "scale": 1.0002,
+      "rotationDeg": -0.04
+    },
+    "expression.cheer": {
+      "inliers": 52,
+      "scale": 0.9994,
+      "rotationDeg": 0.05
+    },
+    "expression.shy": {
+      "inliers": 67,
+      "scale": 0.9987,
+      "rotationDeg": 0.1
+    },
+    "expression.confused": {
+      "inliers": 78,
+      "scale": 0.9996,
+      "rotationDeg": -0.01
+    },
+    "mouth.a": {
+      "inliers": 68,
+      "scale": 1.2103,
+      "rotationDeg": 0.09
+    },
+    "mouth.i": {
+      "inliers": 75,
+      "scale": 1.2189,
+      "rotationDeg": 0.15
+    },
+    "mouth.u": {
+      "inliers": 70,
+      "scale": 1.2137,
+      "rotationDeg": 0.57
+    },
+    "mouth.e": {
+      "inliers": 66,
+      "scale": 1.2767,
+      "rotationDeg": 0.39
+    },
+    "mouth.o": {
+      "inliers": 51,
+      "scale": 1.1054,
+      "rotationDeg": 0.64
+    }
+  }
+}

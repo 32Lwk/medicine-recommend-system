@@ -1,0 +1,15 @@
+// Sage アバター デモ（静的配信のみ・チャット本体とは無関係）
+// public/ は scripts/build_live2d_site.py が生成する。デプロイ手順は README.md。
+{
+  "name": "sage-live2d-demo",
+  "compatibility_date": "2026-09-15",
+  "account_id": "2a1ac0678cd0b207ca4fa5681a9a0690",
+  "assets": {
+    "directory": "./public"
+  },
+  "routes": [
+    { "pattern": "live2d.medicine.yutok.dev", "custom_domain": true }
+  ],
+  "workers_dev": false,
+  "preview_urls": false
+}
